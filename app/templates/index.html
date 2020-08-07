@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="de" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <title>ebrains-atlascore</title>
+</head>
+<body>
+<div class="container">
+    <div class="jumbotron">
+        <h1 class="display-4">Ebrains Atlascore</h1>
+        <p class="lead">
+            EBRAINS atlascore provides a central REST-API for core functionalities of the EBRAINS human brain atlases,
+            serving both web frontends and python clients.
+        </p>
+        <img src="{{url_for('static', filename='HBP_Primary_RGB_BlackText.png')}}" class="rounded float-right d-none d-lg-block" alt="...">
+        <hr class="my-4">
+        <p>For further information see following links:</p>
+    </div>
+    <div>
+        <ul class="list-group">
+            <li class="list-group-item">
+                <div>
+                    <h5>API Documentation</h5>
+                    <p>
+                        The swagger documentation is a great way to learn more about the API.
+                        It is even possible to use the playground of the documentation and send requests without further development.
+                    </p>
+                    <a href="/api/ui" target="_blank" class="btn btn-primary">swagger documentation</a>
+                </div>
+            </li>
+            <li class="list-group-item">
+                <div>
+                    <h5>User & Technical Documentation</h5>
+                    <p>
+                        A documentation from a user perspective and a technical scope of the atlascore.
+                    </p>
+                    <a href="/doc" target="_blank" class="btn btn-primary">documentation</a>
+                </div>
+            </li>
+            <li class="list-group-item">
+                <div>
+                    <h5>EBRAINS</h5>
+                    <p>
+                        Learn more about EBRAINS and the tools and services it provides.
+                    </p>
+                    <a href="https://ebrains.eu/" target="_blank" class="btn btn-primary">ebrains</a>
+                </div>
+            </li>
+            <li class="list-group-item">
+                <div>
+                    <h5>Atlas Viewer</h5>
+                    <p>
+                        Jump directly into the atlas viewer.
+                    </p>
+                    <a href="https://interactive-viewer.apps.hbp.eu/" target="_blank" class="btn btn-primary">atlas viewer</a>
+                </div>
+            </li>
+            <li class="list-group-item">
+                <div>
+                    <h5>Git Repository</h5>
+                    <p>
+                        The sourcecode is completely on GitHub.
+                    </p>
+                    <a href="https://github.com/HumanBrainProject/ebrains-atlascore" target="_blank" class="btn btn-primary">
+                        git repository
+                    </a>
+                </div>
+            </li>
+            <li class="list-group-item">
+                <div>
+                    <h5>python library</h5>
+                    <p>
+                        Besides the REST-API there is a python library.
+                        The library is mainly a wrapper for the atlascore REST-API but has also extended features.
+                    </p>
+                    <a href="https://pypi.org/project/ebrains-atlascore/" target="_blank" class="btn btn-primary">python library</a>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>
+</html>

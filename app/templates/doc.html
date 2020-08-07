@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="de" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <title>Documentation</title>
+</head>
+<body>
+<div class="container">
+    <div class="jumbotron">
+        <img src="../static/images/HBP_Primary_RGB_BlackText.png" class="rounded float-right d-none d-lg-block" alt="..." th:src="@{/images/HBP_Primary_RGB_BlackText.png}">
+        <h1 class="display-4">Documentation</h1>
+        <p class="lead">
+            EBRAINS atlascore provides a central REST-API for core functionalities of the EBRAINS human brain atlases,
+            serving both web frontends and python clients.
+        </p>
+    </div>
+    <div class="accordion" id="accordionDoc">
+        <div class="card">
+            <div class="card-header" id="headingOne">
+                <h2 class="mb-0">
+                    <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                        User documentation
+                    </button>
+                </h2>
+            </div>
+            <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordionDoc">
+                <div class="card-body">
+                    <h3>Referencespaces</h3>
+                    <p>
+                        The atlascore can provide either a list of all supported referencespaces, or one single referencespace.
+                        To get one single referencespace the KnowledgeGraph ID is needed.
+
+                        In Both cases the referencespaces has following format:
+                    </p>
+                    <pre>
+                        <code>
+                            {
+                                "referencespace": {
+                                    "name": &lt;String&gt;,
+                                    "id": &lt;String&gt;,
+                                    "useTheme": &lt;String&gt;,
+                                    "otherNgIds": [
+                                        &lt;String&gt;
+                                    ],
+                                    "species": &lt;String&gt;
+                                    "ngId": &lt;String&gt;
+                                    "nehubaConfigURL": &lt;String&gt;,
+                                    "type": &lt;String&gt;
+                                    "properties": {
+                                        "name": &lt;String&gt;,
+                                        "description": &lt;String&gt;,
+                                        "publications": [
+                                            {
+                                                "cite": &lt;String&gt;,
+                                                "doi": &lt;String&gt;
+                                            },
+                                            {
+                                                "cite": &lt;String&gt;
+                                            },
+                                            {
+                                                "cite": &lt;String&gt;,
+                                                "doi": &lt;String&gt;
+                                            }
+                                        ]
+                                    }
+                                },
+                                "_links": {
+                                    "self": {
+                                        "href": &lt;String&gt;
+                                    },
+                                    "parcellations": {
+                                        "href": &lt;String&gt;
+                                    }
+                                }
+                            }
+                        </code>
+                    </pre>
+                    <hline/>
+                    <h3>Parcellations</h3>
+                    <p>
+                        For each referencespace there is a list of supported parcellations.
+                        By providing a parcellation KnowledgeGraph ID, one single parcellation will be returned.
+                    </p>
+                    <pre>
+                        <code>
+                            {
+                                "parcellation": {
+                                    "name": &lt;String&gt;,
+                                    "ngId": &lt;String&gt;,
+                                    "originDatasets": [
+                                    {
+                                        "kgId": &lt;String&gt;,
+                                        "kgSchema": &lt;String&gt;
+                                    }
+                                    ],
+                                    "auxillaryMeshIndices": [
+                                        &lt;Number&gt;
+                                    ],
+                                    "properties": {
+                                        "description": &lt;String&gt;,
+                                        "version": &lt;String&gt;,
+                                    "publications": [
+                                    {
+                                        "citation": &lt;String&gt;,
+                                        "doi": &lt;String&gt;
+                                    },
+                                    {
+                                        "citation": &lt;String&gt;,
+                                        "doi": &lt;String&gt;
+                                    },
+                                    {
+                                        "citation": &lt;String&gt;,
+                                        "doi": &lt;String&gt;
+                                    }
+                                    ]
+                                }
+                                },
+                                    "_links": {
+                                    "self": {
+                                        "href": &lt;String&gt;
+                                    },
+                                    "regions": {
+                                        "href": &lt;String&gt;
+                                    },
+                                    "full-structure": {
+                                        "href": &lt;String&gt;
+                                    }
+                                }
+                            }
+                        </code>
+                    </pre>
+                    <hline/>
+                    <h3>Regions</h3>
+                    <p>
+                        For each parcellation there is a list of supported regions.
+                        By providing a region KnowledgeGraph ID, one single region will be returned.
+                    </p>
+                    <pre>
+                        <code>
+                            {
+                                "region": {
+                                    "name": &lt;String&gt;,
+                                    "rgb": [
+                                        &lt;Number&gt;,
+                                        &lt;Number&gt;,
+                                        &lt;Number&gt;
+                                    ],
+                                    "position": [
+                                        &lt;Number&gt;,
+                                        &lt;Number&gt;,
+                                        &lt;Number&gt;
+                                    ],
+                                    "label": &lt;String&gt;,
+                                    "hemisphere": &lt;String&gt;
+                                },
+                                "_links": {
+                                    "self": {
+                                        "href": &lt;String&gt;
+                                    }
+                                }
+                            }
+                        </code>
+                    </pre>
+                    <hline/>
+                    <h3>Datasets</h3>
+                    <p>
+                        It is possible to request different kinds of datasets, with different possibilities to filter the results.
+                        <div>
+                            <ol>
+                                <li>
+                                    Request all datasets. When no filter is provided all datasets are returned.
+                                    It is possible to filter by:
+                                    <ul>
+                                        <li>
+                                            referencespace id
+                                        </li>
+                                        <li>
+                                            parcellation id
+                                        </li>
+                                        <li>
+                                            region id
+                                        </li>
+                                    </ul>
+                                    All filters are combined by and.
+                                </li>
+                                <li>
+                                    Request all datasets for parcellations.
+                                    It is possible to filter the datatsets by providing a parcellation id or to get all datasets without a filter.
+                                </li>
+                                <li>
+                                    Request all datasets for referencespaces.
+                                    It is possible to filter the datatsets by providing a referencespace id or to get all datasets without a filter.
+                                </li>
+                                <li>
+                                    Request all datasets for region.
+                                    It is possible to filter the datatsets by providing a region id or to get all datasets without a filter.
+                                    Another way to filter the data is to provide a list of region ids.
+                                </li>
+                            </ol>
+                        </div>
+                    </p>
+                    <p>
+                        <b><i>The provided ids can be either long or short formatted:</i></b>
+                        <ul>
+                            <li>
+                                https://nexus.humanbrainproject.org/v0/data/minds/core/referencespace/v1.0.0/a1655b99-82f1-420f-a3c2-fe80fd4c8588
+                            </li>
+                            <li>
+                                a1655b99-82f1-420f-a3c2-fe80fd4c8588
+                            </li>
+                        </ul>
+                    </p>
+                    <pre></pre>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header" id="headingTwo">
+                <h2 class="mb-0">
+                    <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                        Technical documentation
+                    </button>
+                </h2>
+            </div>
+
+            <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionDoc">
+                <div class="card-body">
+                    <h3>System Scope and Context</h3>
+                    <table class="table">
+                        <tr>
+                            <th>Language</th>
+                            <td>Java 11</td>
+                        </tr>
+                        <tr>
+                            <th>Frameworks</th>
+                            <td>
+                                <ul>
+                                    <li>Spring boot</li>
+                                    <li>Swagger</li>
+                                    <li>Thymeleaf</li>
+                                </ul>
+                            </td>
+                        </tr>
+                    </table>
+                    <hline/>
+                    <h3>Build and run environment</h3>
+                    <p>
+                        The application runs on two different instances of Openshift.
+                        One instance is for the development version, which has the newest feature of the software.
+                        The other instance is a production instance and has the released version.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>
+</html>
