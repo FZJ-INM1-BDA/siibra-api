@@ -4,4 +4,4 @@ WORKDIR /app
 RUN pip install -r requirements.txt
 RUN pip install connexion[swagger-ui]
 ENTRYPOINT ["python"]
-CMD ["main.py"]
+CMD ["app.py"]
