@@ -12,39 +12,84 @@ basePath: "/api"
 
 # Paths supported by the server application
 paths:
-  /people:
+  /receptors/fingerprint:
     get:
-      operationId: "people.read"
+      operationId: "brainscapes_api.receptordata_fingerprint"
       tags:
-        - "People"
-      summary: "The people data structure supported by the server application"
-      description: "Read the list of people"
+        - "Receptor fingerprint for region name"
+      summary: "Receptor fingerprint for region"
+      description: "Get receptor fingerprint"
+      parameters:
+        - name: region
+          in: query
+          type: string
+          description: Region name
+          required: true
+        - name: token
+          in: query
+          type: string
+          description: Authentication token
+          required: true
       responses:
         200:
-          description: "Successful read people list operation"
-          schema:
-            type: "array"
-            items:
-              properties:
-                fname:
-                  type: "string"
-                lname:
-                  type: "string"
-                timestamp:
-                  type: "string"
-  /atlas/map:
-    get:
-      operationId: "atlas.map"
-      tags:
-        - "Parcellation map"
-      summary: "Parcellation Map NIFTI"
-      description: "Get parcellation map"
-      responses:
-        200:
-          description: "Successful read map"
+          description: "Successful get receptor fingerprint"
           schema:
             type: "object"
             items:
               properties:
                 content:
-                  type: "string"
+                  type: "object"
+  /receptors/profiles:
+    get:
+      operationId: "brainscapes_api.receptordata_profiles"
+      tags:
+        - "Receptor profiles for region name"
+      summary: "Receptor profiles for region"
+      description: "Get receptor profiles"
+      parameters:
+        - name: region
+          in: query
+          type: string
+          description: Region name
+          required: true
+        - name: token
+          in: query
+          type: string
+          description: Authentication token
+          required: true
+      responses:
+        200:
+          description: "Successful get receptor profiles"
+          schema:
+            type: "object"
+            items:
+              properties:
+                content:
+                  type: "object"
+  /receptors/autoradiographs:
+    get:
+      operationId: "brainscapes_api.receptordata_autoradiographs"
+      tags:
+        - "Receptor autoradiographs for region name"
+      summary: "Receptor autoradiographs for region"
+      description: "Get receptor autoradiographs"
+      parameters:
+        - name: region
+          in: query
+          type: string
+          description: Region name
+          required: true
+        - name: token
+          in: query
+          type: string
+          description: Authentication token
+          required: true
+      responses:
+        200:
+          description: "Successful get receptor autoradiographs"
+          schema:
+            type: "object"
+            items:
+              properties:
+                content:
+                  type: "object"
