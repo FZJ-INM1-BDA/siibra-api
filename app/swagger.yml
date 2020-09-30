@@ -12,6 +12,20 @@ basePath: "/api"
 
 # Paths supported by the server application
 paths:
+  /people:
+    get:
+      operationId: "people.read"
+      summary: "people"
+      description: "dummy"
+      responses:
+        200:
+          description: "dummy value"
+          schema:
+            type: "object"
+            items:
+              properties:
+                content:
+                  type: "object"
   /receptors/fingerprint:
     get:
       operationId: "brainscapes_api.receptordata_fingerprint"
@@ -87,6 +101,158 @@ paths:
       responses:
         200:
           description: "Successful get receptor autoradiographs"
+          schema:
+            type: "object"
+            items:
+              properties:
+                content:
+                  type: "object"
+  /parcellations:
+    get:
+      operationId: "brainscapes_api.parcellations"
+      tags:
+        - "Parcellation"
+      summary: "All parcellations for an atlas"
+      description: "Return all available parcellations for selected atlas"
+      parameters:
+        - name: token
+          in: query
+          type: string
+          description: Authentication token
+          required: true
+      responses:
+        200:
+          description: "Successful get parcellations"
+          schema:
+            type: "object"
+            items:
+              properties:
+                content:
+                  type: "object"
+  /spaces:
+    get:
+      operationId: "brainscapes_api.spaces"
+      tags:
+        - "Spaces"
+      summary: "All spaces for an atlas"
+      description: "Return all available spaces for selected atlas"
+      parameters:
+        - name: token
+          in: query
+          type: string
+          description: Authentication token
+          required: true
+      responses:
+        200:
+          description: "Successful get spaces"
+          schema:
+            type: "object"
+            items:
+              properties:
+                content:
+                  type: "object"
+  /regions:
+    get:
+      operationId: "brainscapes_api.regions"
+      tags:
+        - "Regions"
+      summary: "All regions for a parcellation"
+      description: "Return all available regions for selected parcellation"
+      parameters:
+        - name: parcellation
+          in: query
+          type: string
+          description: parcellation
+          required: false
+        - name: token
+          in: query
+          type: string
+          description: Authentication token
+          required: true
+      responses:
+        200:
+          description: "Successful get regions"
+          schema:
+            type: "object"
+            items:
+              properties:
+                content:
+                  type: "object"
+  /maps:
+    get:
+      operationId: "brainscapes_api.maps"
+      tags:
+        - "Maps"
+      summary: "Map for selected space"
+      description: "Return a map for selected space"
+      parameters:
+        - name: space
+          in: query
+          type: string
+          description: space
+          required: true
+        - name: token
+          in: query
+          type: string
+          description: Authentication token
+          required: true
+      responses:
+        200:
+          description: "Successful get map"
+          schema:
+            type: "object"
+            items:
+              properties:
+                content:
+                  type: "object"
+  /templates:
+    get:
+      operationId: "brainscapes_api.templates"
+      tags:
+        - "Template"
+      summary: "Template for selected space"
+      description: "Return a template for selected space"
+      parameters:
+        - name: space
+          in: query
+          type: string
+          description: space
+          required: true
+        - name: token
+          in: query
+          type: string
+          description: Authentication token
+          required: true
+      responses:
+        200:
+          description: "Successful get template"
+          schema:
+            type: "object"
+            items:
+              properties:
+                content:
+                  type: "object"
+  /genes:
+    get:
+      operationId: "brainscapes_api.genes"
+      tags:
+        - "Genes"
+      summary: "Genes"
+      description: "Return gene features"
+      parameters:
+        - name: region
+          in: query
+          type: string
+          description: region
+          required: true
+        - name: gene
+          in: query
+          type: string
+          description: gene
+          required: true
+      responses:
+        200:
+          description: "Successful get gene features"
           schema:
             type: "object"
             items:
