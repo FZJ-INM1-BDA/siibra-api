@@ -16,6 +16,9 @@ RUN python -m pip install anytree
 RUN python -m pip install pillow
 RUN python -m pip install scikit-image
 
+# Create directory for cache
+RUN mkdir /.cache
+
 # Expose flask port
 EXPOSE 5000
 
