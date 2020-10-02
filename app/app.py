@@ -2,6 +2,12 @@ from flask import (
     render_template
 )
 import connexion
+from os import environ
+
+
+print(environ)
+if "BRAINSCAPES_CACHEDIR" in environ:
+    print(environ['BRAINSCAPES_CACHEDIR'])
 
 # Create the application instance
 app = connexion.App(__name__, specification_dir='../')
