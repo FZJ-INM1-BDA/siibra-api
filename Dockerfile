@@ -18,7 +18,7 @@ RUN python -m pip install scikit-image
 
 # Create directory for cache and set an environment variable for brainscapes
 RUN mkdir cache
-RUN export BRAINSCAPES_CACHEDIR='/app/cache'
+ENV BRAINSCAPES_CACHEDIR=/app/cache
 
 # Expose flask port
 EXPOSE 5000
