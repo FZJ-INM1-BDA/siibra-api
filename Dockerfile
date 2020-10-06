@@ -1,5 +1,5 @@
 # Use python 3 as base image for the flask application
-FROM python:3
+FROM python:3.8
 
 #RUN useradd -p $(openssl passwd -1 password) myuser
 #RUN usermod -aG sudo myuser
@@ -29,6 +29,8 @@ RUN python -m pip install scikit-image
 # Create directory for cache and set an environment variable for brainscapes
 RUN mkdir cache
 ENV BRAINSCAPES_CACHEDIR=/app/cache
+
+RUN ls -lisa
 
 # Expose flask port
 EXPOSE 5000

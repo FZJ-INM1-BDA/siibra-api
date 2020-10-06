@@ -5,9 +5,6 @@ from flask import (
 )
 import connexion
 from os import environ
-import getpass
-
-print('user is: {}'.format(getpass.getuser()))
 
 print(environ)
 if "BRAINSCAPES_CACHEDIR" in environ:
