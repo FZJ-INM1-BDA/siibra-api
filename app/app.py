@@ -11,7 +11,7 @@ if "BRAINSCAPES_CACHEDIR" in environ:
     print(environ['BRAINSCAPES_CACHEDIR'])
 print('userid: {}'.format(os.getegid()))
 
-with open('/cache','w') as f:
+with open('/app/cache/tmp.txt','w') as f:
     f.write('Hello*****')
 
 # Create the application instance
