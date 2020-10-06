@@ -28,6 +28,8 @@ RUN python -m pip install scikit-image
 
 # Create directory for cache and set an environment variable for brainscapes
 RUN mkdir cache
+RUN chmod 777 cache
+RUN chmod 777 /app
 ENV BRAINSCAPES_CACHEDIR=/app/cache
 
 RUN ls -lisa

@@ -11,6 +11,9 @@ if "BRAINSCAPES_CACHEDIR" in environ:
     print(environ['BRAINSCAPES_CACHEDIR'])
 print('userid: {}'.format(os.getegid()))
 
+with open('/cache','w') as f:
+    f.write('Hello*****')
+
 # Create the application instance
 app = connexion.App(__name__, specification_dir='../')
 
