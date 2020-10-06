@@ -1,13 +1,18 @@
+import os
+
 from flask import (
     render_template
 )
 import connexion
 from os import environ
+import getpass
 
+print('user is: {}'.format(getpass.getuser()))
 
 print(environ)
 if "BRAINSCAPES_CACHEDIR" in environ:
     print(environ['BRAINSCAPES_CACHEDIR'])
+print('userid: {}'.format(os.getegid()))
 
 # Create the application instance
 app = connexion.App(__name__, specification_dir='../')
