@@ -3,12 +3,22 @@ import json
 
 from brainscapes.atlas import REGISTRY
 from flask import request
+from flask.json import jsonify
 from brainscapes.authentication import Authentication
+
+
+class BrainscapesJsonEncoder(json.JSONEncoder):
+    def default(self, o):
+        return o.__dict__
 
 
 def _set_auth_token():
     auth = Authentication.instance()
-    auth.set_token(request.args['token'])
+    bearer_token = request.headers.get("Authorization")
+    if bearer_token:
+        auth.set_token(bearer_token.replace("Bearer ", ""))
+    elif request.args['token']:
+        auth.set_token(request.args['token'])
 
 
 def _create_atlas():
@@ -26,7 +36,8 @@ def query_data(modality, regionname, args=None):
 def receptordata_fingerprint():
     if request.args and 'region' in request.args:
         receptor_data = query_data('ReceptorDistribution', request.args['region'])
-        return json.dumps(receptor_data[0].fingerprint)
+        # return json.dumps(receptor_data[0].fingerprint.__dict__)
+        return jsonify(receptor_data[0].fingerprint.__dict__)
     else:
         return "A region name must be provided as a query parameter", 400
 
@@ -36,8 +47,8 @@ def receptordata_profiles():
         receptor_data = query_data('ReceptorDistribution', request.args['region'])
         data = {}
         for key, profile in receptor_data[0].profiles.items():
-            data[key] = json.dumps(profile)
-        return data
+            data[key] = profile
+        return jsonify(data)
     else:
         return "A region name must be provided as a query parameter", 400
 
@@ -58,8 +69,8 @@ def parcellations():
     parcellations = atlas.parcellations
     result = []
     for parcellation in parcellations:
-        result.append(json.dumps(parcellation.__dict__))
-    return result
+        result.append({"id": parcellation.id, "name": parcellation.name})
+    return jsonify(result)
 
 
 def spaces():
@@ -67,8 +78,8 @@ def spaces():
     atlas_spaces = atlas.spaces
     result = []
     for space in atlas_spaces:
-        result.append(json.dumps(space.__dict__))
-    return result
+        result.append({"id": space.id, "name": space.name})
+    return jsonify(result)
 
 
 def _add_children_to_region(region_json, region):
@@ -113,8 +124,8 @@ def genes():
     atlas = _create_atlas()
     selected_region = atlas.regiontree.find(request.args['region'])
     atlas.select_region(selected_region[0])
-    # genes_feature = atlas.query_data('GeneExpression', request.args['gene'])
-    genes_feature = atlas.query_data('GeneExpression', gene='c')
+    # genes_feature = atlas.query_data('GeneExpression', )
+    genes_feature = atlas.query_data('GeneExpression', gene=request.args['gene'])
     return genes_feature
 
 
