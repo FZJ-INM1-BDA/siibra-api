@@ -1,8 +1,8 @@
 swagger: "2.0"
 info:
-  description: This is the swagger file that goes with our server code
+  description: This is a documentation and playground for the brainscapes client endpoints
   version: "1.0.0"
-  title: Swagger REST Article
+  title: Brainscapes REST API
 consumes:
   - "application/json"
 produces:
@@ -12,25 +12,11 @@ basePath: "/api"
 
 # Paths supported by the server application
 paths:
-  /people:
-    get:
-      operationId: "people.read"
-      summary: "people"
-      description: "dummy"
-      responses:
-        200:
-          description: "dummy value"
-          schema:
-            type: "object"
-            items:
-              properties:
-                content:
-                  type: "object"
   /receptors/fingerprint:
     get:
       operationId: "brainscapes_api.receptordata_fingerprint"
       tags:
-        - "Receptor fingerprint for region name"
+        - "Features"
       summary: "Receptor fingerprint for region"
       description: "Get receptor fingerprint"
       parameters:
@@ -57,7 +43,7 @@ paths:
     get:
       operationId: "brainscapes_api.receptordata_profiles"
       tags:
-        - "Receptor profiles for region name"
+        - "Features"
       summary: "Receptor profiles for region"
       description: "Get receptor profiles"
       parameters:
@@ -84,7 +70,7 @@ paths:
     get:
       operationId: "brainscapes_api.receptordata_autoradiographs"
       tags:
-        - "Receptor autoradiographs for region name"
+        - "Features"
       summary: "Receptor autoradiographs for region"
       description: "Get receptor autoradiographs"
       parameters:
@@ -111,7 +97,7 @@ paths:
     get:
       operationId: "brainscapes_api.parcellations"
       tags:
-        - "Parcellation"
+        - "Parcellations"
       summary: "All parcellations for an atlas"
       description: "Return all available parcellations for selected atlas"
       parameters:
@@ -182,7 +168,7 @@ paths:
     get:
       operationId: "brainscapes_api.maps"
       tags:
-        - "Maps"
+        - "Spaces"
       summary: "Map for selected space"
       description: "Return a map for selected space"
       parameters:
@@ -209,7 +195,7 @@ paths:
     get:
       operationId: "brainscapes_api.templates"
       tags:
-        - "Template"
+        - "Spaces"
       summary: "Template for selected space"
       description: "Return a template for selected space"
       parameters:
@@ -236,7 +222,7 @@ paths:
     get:
       operationId: "brainscapes_api.genes"
       tags:
-        - "Genes"
+        - "Features"
       summary: "Genes"
       description: "Return gene features"
       parameters:
