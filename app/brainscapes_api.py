@@ -1,6 +1,6 @@
 import json
 
-
+from brainscapes import features
 from brainscapes.atlas import REGISTRY
 from flask import request
 from flask.json import jsonify
@@ -124,9 +124,24 @@ def genes():
     atlas = _create_atlas()
     selected_region = atlas.regiontree.find(request.args['region'])
     atlas.select_region(selected_region[0])
-    # genes_feature = atlas.query_data('GeneExpression', )
-    genes_feature = atlas.query_data('GeneExpression', gene=request.args['gene'])
-    return genes_feature
+    if request.args['gene'] in features.gene_names:
+        genes_feature = atlas.query_data(
+            modality=features.modalities.GeneExpression,
+            gene=request.args['gene']
+        )
+        result = []
+        for g in genes_feature:
+            result.append(dict(
+                expression_levels=g.expression_levels,
+                factors=g.factors,
+                gene=g.gene,
+                location=g.location.tolist(),
+                space=g.space.id,
+                z_scores=g.z_scores
+            ))
+        return jsonify(result)
+    else:
+        return 'Gene {} not found'.format(request.args['gene']), 404
 
 
 
