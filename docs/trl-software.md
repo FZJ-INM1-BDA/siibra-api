@@ -1,4 +1,4 @@
-# Technology Readiness Level (TRL)
+# Technology Readiness Level (TRL) for software
 
 This checklist is extracted from the [HBP Technology Readiness Level (TRL) guide](https://www.humanbrainproject.eu/en/collaborate/innovation/technology-readiness-level/)
 
