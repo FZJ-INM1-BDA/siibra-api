@@ -1,6 +1,6 @@
 # Technology Readiness Level (TRL)
 
-This check list is extracted from the [HBP Technology Readiness Level (TRL) guide](https://www.humanbrainproject.eu/en/collaborate/innovation/technology-readiness-level/)
+This checklist is extracted from the [HBP Technology Readiness Level (TRL) guide](https://www.humanbrainproject.eu/en/collaborate/innovation/technology-readiness-level/)
 
 
 ## TRL1 Project initiation
