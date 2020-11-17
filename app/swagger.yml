@@ -182,15 +182,13 @@ paths:
           type: string
           description: Authentication token
           required: true
+      produces: 
+        - "application/octet-stream"          
       responses:
         200:
           description: "Successful get map"
           schema:
-            type: "object"
-            items:
-              properties:
-                content:
-                  type: "object"
+            type: "file"
   /templates:
     get:
       operationId: "brainscapes_api.templates"
@@ -209,15 +207,13 @@ paths:
           type: string
           description: Authentication token
           required: true
+      produces: 
+        - "application/octet-stream"
       responses:
         200:
           description: "Successful get template"
           schema:
-            type: "object"
-            items:
-              properties:
-                content:
-                  type: "object"
+            type: "file"
   /genes:
     get:
       operationId: "brainscapes_api.genes"

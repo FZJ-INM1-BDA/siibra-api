@@ -1,8 +1,11 @@
 import json
+import io
+from PIL import Image
+import nibabel as nib
 
 from brainscapes import features
 from brainscapes.atlas import REGISTRY
-from flask import request
+from flask import request, send_file
 from flask.json import jsonify
 from brainscapes.authentication import Authentication
 
@@ -116,8 +119,22 @@ def maps():
 def templates():
     atlas = _create_atlas()
     space = _find_space_by_id(atlas, request.args['space'])
-    # return atlas.get_template(space)
-    return {'result': 'Nifti data as json / binary or file url'}
+    template = atlas.get_template(space)
+    
+    # create file-object in memory
+    # file_object = io.BytesIO()
+    filename = 'template-{}.nii'.format(space.name.replace(' ','_'))
+    
+    # save nifti file in file-object
+    nib.save(template, filename)
+
+    # file_object.seek(0)
+
+    return send_file(
+        filename, 
+        as_attachment=True,
+        attachment_filename=filename
+    )
 
 
 def genes():
