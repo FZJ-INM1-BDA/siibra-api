@@ -2,17 +2,13 @@ import json
 import io
 from PIL import Image
 import nibabel as nib
+import zipfile
 
 from brainscapes import features
 from brainscapes.atlas import REGISTRY
 from flask import request, send_file
 from flask.json import jsonify
 from brainscapes.authentication import Authentication
-
-
-class BrainscapesJsonEncoder(json.JSONEncoder):
-    def default(self, o):
-        return o.__dict__
 
 
 def _set_auth_token():
@@ -110,11 +106,46 @@ def _find_space_by_id(atlas, space_id):
     return {}
 
 
+def _get_file_from_nibabel(nibabel_object, nifti_type, space):
+    filename = '{}-{}.nii'.format(nifti_type, space.name.replace(' ','_'))
+    # save nifti file in file-object
+    nib.save(nibabel_object, filename)
+    return filename
+
+
 def maps():
     atlas = _create_atlas()
     space = _find_space_by_id(atlas, request.args['space'])
-    # return atlas.get_maps(space)
-    return {'result': 'Nifti data as json / binary or file url'}
+    maps = atlas.get_maps(space)
+    print(maps.keys())
+
+    if len(maps) == 1:
+        filename = _get_file_from_nibabel(maps[0], 'maps', space)
+        return send_file(
+            filename, 
+            as_attachment=True,
+            attachment_filename=filename
+        )  
+    else:
+        files = []
+        mem_zip = io.BytesIO()
+
+        for label, space_map in maps.items():
+            files.append(_get_file_from_nibabel(space_map, label, space))
+
+        with zipfile.ZipFile(mem_zip, mode="w",compression=zipfile.ZIP_DEFLATED) as zf:
+            for f in files:
+                zf.write(f)
+                print(zf.namelist())
+
+        mem_zip.seek(0)
+        return send_file(
+            mem_zip, 
+            as_attachment=True,
+            attachment_filename='maps-{}.zip'.format(space.name.replace(' ','_'))
+        ) 
+        
+    return 'Maps for space: {} not found'.format(space.name), 404
 
 def templates():
     atlas = _create_atlas()
@@ -159,6 +190,5 @@ def genes():
         return jsonify(result)
     else:
         return 'Gene {} not found'.format(request.args['gene']), 404
-
 
 
