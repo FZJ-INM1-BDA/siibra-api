@@ -35,6 +35,7 @@ This checklist is extracted from the [HBP Technology Readiness Level (TRL) guide
 - [ ] The operating environment for the testing should closely represent the actual operating environment.
 - [ ] System monitoring points identified.
 - [ ] Initial service documentation and initial user documentationare available. 
+
 ## RL7 Operational integration
 - [ ] Validation of the service with all key functionality available in a relevant real-world environment. 
 - [ ] Well integrated with other systems and services demonstrating operational feasibility.
