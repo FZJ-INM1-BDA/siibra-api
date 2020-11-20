@@ -1,3 +1,17 @@
+# Copyright 2018-2020 Institute of Neuroscience and Medicine (INM-1), Forschungszentrum Jülich GmbH
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import json
 import io
 from PIL import Image
@@ -12,9 +26,13 @@ from flask.json import jsonify
 
 
 def receptordata_fingerprint():
+    """
+    GET /receptors/fingerprint
+
+    Returns a fingerprint based on the provided region.
+    """
     if request.args and 'region' in request.args:
         receptor_data = request_utils.query_data('ReceptorDistribution', request.args['region'])
-        # return json.dumps(receptor_data[0].fingerprint.__dict__)
         return jsonify(receptor_data[0].fingerprint.__dict__)
     else:
         return "A region name must be provided as a query parameter", 400
