@@ -28,7 +28,8 @@ from flask.json import jsonify
 def receptordata_fingerprint():
     """
     GET /receptors/fingerprint
-    parameters: region
+    parameters: 
+    - region
 
     Returns a fingerprint based on the provided region.
     """
@@ -40,6 +41,13 @@ def receptordata_fingerprint():
 
 
 def receptordata_profiles():
+    """
+    GET /receptors/profiles
+    parameters: 
+    - region
+
+    Returns profles based on the provided region.
+    """    
     if request.args and 'region' in request.args:
         receptor_data = request_utils.query_data('ReceptorDistribution', request.args['region'])
         data = {}
@@ -51,6 +59,13 @@ def receptordata_profiles():
 
 
 def receptordata_autoradiographs():
+    """
+    GET /receptors/autoradiographs
+    Parameters: 
+    - region
+
+    Returns autoradiographs based on the provided region.
+    """    
     if request.args and 'region' in request.args:
         receptor_data = request_utils.query_data('ReceptorDistribution', request.args['region'])
         data = {}
@@ -62,6 +77,11 @@ def receptordata_autoradiographs():
 
 
 def parcellations():
+    """
+    GET /parcellations
+
+    Returns all parcellations that are defined in the brainscapes client.
+    """    
     atlas = request_utils._create_atlas()
     parcellations = atlas.parcellations
     result = []
@@ -71,6 +91,11 @@ def parcellations():
 
 
 def spaces():
+    """
+    GET /spaces
+
+    Returns all spaces that are defined in the brainscapes client.
+    """
     atlas = request_utils._create_atlas()
     atlas_spaces = atlas.spaces
     result = []
@@ -88,6 +113,13 @@ def _add_children_to_region(region_json, region):
 
 
 def regions():
+    """
+    GET /regions
+    Parameters: 
+    - parcellation
+
+    Returns all regions for a given parcellation id.
+    """
     atlas = request_utils._create_atlas()
     result = []
     for region in atlas.regiontree.children:
@@ -112,6 +144,13 @@ def _get_file_from_nibabel(nibabel_object, nifti_type, space):
 
 
 def maps():
+    """
+    GET /maps
+    Parameters: 
+    - space
+
+    Returns all maps for a given space id.
+    """
     atlas = request_utils._create_atlas()
     space = _find_space_by_id(atlas, request.args['space'])
     maps = atlas.get_maps(space)
@@ -146,6 +185,13 @@ def maps():
     return 'Maps for space: {} not found'.format(space.name), 404
 
 def templates():
+    """
+    GET /templates
+    Parameters: 
+    - space
+
+    Returns all templates for a given space id.
+    """    
     atlas = request_utils._create_atlas()
     space = _find_space_by_id(atlas, request.args['space'])
     template = atlas.get_template(space)
@@ -167,6 +213,14 @@ def templates():
 
 
 def genes():
+    """
+    GET /genes
+    Parameters: 
+    - region 
+    - gene
+
+    Returns all genes for a given region and gene type.
+    """    
     atlas = request_utils._create_atlas()
     selected_region = atlas.regiontree.find(request.args['region'])
     atlas.select_region(selected_region[0])
@@ -188,5 +242,3 @@ def genes():
         return jsonify(result)
     else:
         return 'Gene {} not found'.format(request.args['gene']), 404
-
-
