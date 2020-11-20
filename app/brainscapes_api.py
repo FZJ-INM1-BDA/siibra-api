@@ -3,38 +3,17 @@ import io
 from PIL import Image
 import nibabel as nib
 import zipfile
+import request_utils
 
 from brainscapes import features
 from brainscapes.atlas import REGISTRY
 from flask import request, send_file
 from flask.json import jsonify
-from brainscapes.authentication import Authentication
-
-
-def _set_auth_token():
-    auth = Authentication.instance()
-    bearer_token = request.headers.get("Authorization")
-    if bearer_token:
-        auth.set_token(bearer_token.replace("Bearer ", ""))
-    elif request.args['token']:
-        auth.set_token(request.args['token'])
-
-
-def _create_atlas():
-    return REGISTRY.MULTILEVEL_HUMAN_ATLAS
-
-
-def query_data(modality, regionname, args=None):
-    _set_auth_token()
-    atlas = _create_atlas()
-    selected_region = atlas.regiontree.find(regionname)
-    atlas.select_region(selected_region[0])
-    return atlas.query_data(modality)
 
 
 def receptordata_fingerprint():
     if request.args and 'region' in request.args:
-        receptor_data = query_data('ReceptorDistribution', request.args['region'])
+        receptor_data = request_utils.query_data('ReceptorDistribution', request.args['region'])
         # return json.dumps(receptor_data[0].fingerprint.__dict__)
         return jsonify(receptor_data[0].fingerprint.__dict__)
     else:
@@ -43,7 +22,7 @@ def receptordata_fingerprint():
 
 def receptordata_profiles():
     if request.args and 'region' in request.args:
-        receptor_data = query_data('ReceptorDistribution', request.args['region'])
+        receptor_data = request_utils.query_data('ReceptorDistribution', request.args['region'])
         data = {}
         for key, profile in receptor_data[0].profiles.items():
             data[key] = profile
@@ -54,7 +33,7 @@ def receptordata_profiles():
 
 def receptordata_autoradiographs():
     if request.args and 'region' in request.args:
-        receptor_data = query_data('ReceptorDistribution', request.args['region'])
+        receptor_data = request_utils.query_data('ReceptorDistribution', request.args['region'])
         data = {}
         for key, autoradiographs in receptor_data[0].autoradiographs.items():
             data[key] = 'PLI Image'
@@ -64,7 +43,7 @@ def receptordata_autoradiographs():
 
 
 def parcellations():
-    atlas = _create_atlas()
+    atlas = request_utils._create_atlas()
     parcellations = atlas.parcellations
     result = []
     for parcellation in parcellations:
@@ -73,7 +52,7 @@ def parcellations():
 
 
 def spaces():
-    atlas = _create_atlas()
+    atlas = request_utils._create_atlas()
     atlas_spaces = atlas.spaces
     result = []
     for space in atlas_spaces:
@@ -90,7 +69,7 @@ def _add_children_to_region(region_json, region):
 
 
 def regions():
-    atlas = _create_atlas()
+    atlas = request_utils._create_atlas()
     result = []
     for region in atlas.regiontree.children:
         region_json = {'name': region.name, 'children': []}
@@ -114,7 +93,7 @@ def _get_file_from_nibabel(nibabel_object, nifti_type, space):
 
 
 def maps():
-    atlas = _create_atlas()
+    atlas = request_utils._create_atlas()
     space = _find_space_by_id(atlas, request.args['space'])
     maps = atlas.get_maps(space)
     print(maps.keys())
@@ -148,7 +127,7 @@ def maps():
     return 'Maps for space: {} not found'.format(space.name), 404
 
 def templates():
-    atlas = _create_atlas()
+    atlas = request_utils._create_atlas()
     space = _find_space_by_id(atlas, request.args['space'])
     template = atlas.get_template(space)
     
@@ -169,7 +148,7 @@ def templates():
 
 
 def genes():
-    atlas = _create_atlas()
+    atlas = request_utils._create_atlas()
     selected_region = atlas.regiontree.find(request.args['region'])
     atlas.select_region(selected_region[0])
     if request.args['gene'] in features.gene_names:
