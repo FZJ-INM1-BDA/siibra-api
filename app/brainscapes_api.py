@@ -14,13 +14,11 @@
 
 import json
 import io
-from PIL import Image
-import nibabel as nib
+
 import zipfile
 import request_utils
 
 from brainscapes import features
-from brainscapes.atlas import REGISTRY
 from flask import request, send_file
 from flask.json import jsonify
 
@@ -104,14 +102,6 @@ def spaces():
     return jsonify(result)
 
 
-def _add_children_to_region(region_json, region):
-    for child in region.children:
-        o = {'name': child.name, 'children': []}
-        if child.children:
-            _add_children_to_region(o, child)
-        region_json['children'].append(o)
-
-
 def regions():
     """
     GET /regions
@@ -124,23 +114,9 @@ def regions():
     result = []
     for region in atlas.regiontree.children:
         region_json = {'name': region.name, 'children': []}
-        _add_children_to_region(region_json, region)
+        request_utils._add_children_to_region(region_json, region)
         result.append(region_json)
     return result
-
-
-def _find_space_by_id(atlas, space_id):
-    for space in atlas.spaces:
-        if space.id == space_id:
-            return space
-    return {}
-
-
-def _get_file_from_nibabel(nibabel_object, nifti_type, space):
-    filename = '{}-{}.nii'.format(nifti_type, space.name.replace(' ','_'))
-    # save nifti file in file-object
-    nib.save(nibabel_object, filename)
-    return filename
 
 
 def maps():
@@ -152,12 +128,12 @@ def maps():
     Returns all maps for a given space id.
     """
     atlas = request_utils._create_atlas()
-    space = _find_space_by_id(atlas, request.args['space'])
+    space = request_utils._find_space_by_id(atlas, request.args['space'])
     maps = atlas.get_maps(space)
     print(maps.keys())
 
     if len(maps) == 1:
-        filename = _get_file_from_nibabel(maps[0], 'maps', space)
+        filename = request_utils._get_file_from_nibabel(maps[0], 'maps', space)
         return send_file(
             filename, 
             as_attachment=True,
@@ -168,7 +144,7 @@ def maps():
         mem_zip = io.BytesIO()
 
         for label, space_map in maps.items():
-            files.append(_get_file_from_nibabel(space_map, label, space))
+            files.append(request_utils._get_file_from_nibabel(space_map, label, space))
 
         with zipfile.ZipFile(mem_zip, mode="w",compression=zipfile.ZIP_DEFLATED) as zf:
             for f in files:
@@ -184,6 +160,7 @@ def maps():
         
     return 'Maps for space: {} not found'.format(space.name), 404
 
+
 def templates():
     """
     GET /templates
@@ -193,18 +170,13 @@ def templates():
     Returns all templates for a given space id.
     """    
     atlas = request_utils._create_atlas()
-    space = _find_space_by_id(atlas, request.args['space'])
+    space = request_utils._find_space_by_id(atlas, request.args['space'])
     template = atlas.get_template(space)
     
     # create file-object in memory
     # file_object = io.BytesIO()
-    filename = 'template-{}.nii'.format(space.name.replace(' ','_'))
+    filename = request_utils._get_file_from_nibabel(template, 'template', space)
     
-    # save nifti file in file-object
-    nib.save(template, filename)
-
-    # file_object.seek(0)
-
     return send_file(
         filename, 
         as_attachment=True,
