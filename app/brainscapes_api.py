@@ -28,6 +28,7 @@ from flask.json import jsonify
 def receptordata_fingerprint():
     """
     GET /receptors/fingerprint
+    parameters: region
 
     Returns a fingerprint based on the provided region.
     """
