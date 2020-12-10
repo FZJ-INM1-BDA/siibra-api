@@ -194,22 +194,29 @@ def genes():
     Returns all genes for a given region and gene type.
     """    
     atlas = request_utils._create_atlas()
-    selected_region = atlas.regiontree.find(request.args['region'])
-    atlas.select_region(selected_region[0])
+    selected_region = atlas.regiontree.find(request.args['region'], exact=False)
+
+    result = []
     if request.args['gene'] in features.gene_names:
-        genes_feature = atlas.query_data(
-            modality=features.modalities.GeneExpression,
-            gene=request.args['gene']
-        )
-        result = []
-        for g in genes_feature:
+        for region in selected_region:
+            atlas.select_region(region)
+            genes_feature = atlas.query_data(
+                modality=features.modalities.GeneExpression,
+                gene=request.args['gene']
+            )
+            region_result = []
+            for g in genes_feature:
+                region_result.append(dict(
+                    expression_levels=g.expression_levels,
+                    factors=g.factors,
+                    gene=g.gene,
+                    location=g.location.tolist(),
+                    space=g.space.id,
+                    z_scores=g.z_scores
+                ))
             result.append(dict(
-                expression_levels=g.expression_levels,
-                factors=g.factors,
-                gene=g.gene,
-                location=g.location.tolist(),
-                space=g.space.id,
-                z_scores=g.z_scores
+                region=region.name,
+                features=region_result
             ))
         return jsonify(result)
     else:
