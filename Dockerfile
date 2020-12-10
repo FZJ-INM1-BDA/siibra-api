@@ -5,9 +5,7 @@ FROM python:3.8
 RUN python -m pip install --upgrade pip
 
 # Install latest brainscapes client
-RUN git clone -b development https://jugit.fz-juelich.de/v.marcenko/brainscapes.git
-RUN pip install -e brainscapes/.
-#RUN pip install -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple brainscapes
+RUN pip install brainscapes
 
 # Copy the application and install dependencies
 COPY ./app /app
