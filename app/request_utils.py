@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from brainscapes.authentication import Authentication
-from flask import request, send_file
+from flask import request
 from brainscapes.atlas import REGISTRY
 
 import nibabel as nib
