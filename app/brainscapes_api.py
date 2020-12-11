@@ -79,7 +79,7 @@ def parcellations():
 
     Returns all parcellations that are defined in the brainscapes client.
     """    
-    atlas = request_utils._create_atlas()
+    atlas = request_utils.create_atlas()
     parcellations = atlas.parcellations
     result = []
     for parcellation in parcellations:
@@ -93,7 +93,7 @@ def spaces():
 
     Returns all spaces that are defined in the brainscapes client.
     """
-    atlas = request_utils._create_atlas()
+    atlas = request_utils.create_atlas()
     atlas_spaces = atlas.spaces
     result = []
     for space in atlas_spaces:
@@ -109,7 +109,7 @@ def regions():
 
     Returns all regions for a given parcellation id.
     """
-    atlas = request_utils._create_atlas()
+    atlas = request_utils.create_atlas()
     result = []
     for region in atlas.regiontree.children:
         region_json = {'name': region.name, 'children': []}
@@ -126,7 +126,7 @@ def maps():
 
     Returns all maps for a given space id.
     """
-    atlas = request_utils._create_atlas()
+    atlas = request_utils.create_atlas()
     space = request_utils._find_space_by_id(atlas, request.args['space'])
     maps = atlas.get_maps(space)
     print(maps.keys())
@@ -168,7 +168,7 @@ def templates():
 
     Returns all templates for a given space id.
     """    
-    atlas = request_utils._create_atlas()
+    atlas = request_utils.create_atlas()
     space = request_utils._find_space_by_id(atlas, request.args['space'])
     template = atlas.get_template(space)
     
@@ -192,7 +192,7 @@ def genes():
 
     Returns all genes for a given region and gene type.
     """    
-    atlas = request_utils._create_atlas()
+    atlas = request_utils.create_atlas()
     selected_region = atlas.regiontree.find(request.args['region'], exact=False)
 
     result = []
