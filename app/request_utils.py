@@ -36,8 +36,10 @@ def query_data(modality, regionname, args=None):
     _set_auth_token()
     atlas = create_atlas()
     selected_region = atlas.regiontree.find(regionname)
-    atlas.select_region(selected_region[0])
-    return atlas.query_data(modality)
+    if selected_region:
+        atlas.select_region(selected_region[0])
+        return atlas.query_data(modality)
+    return []
 
 
 def _find_space_by_id(atlas, space_id):
