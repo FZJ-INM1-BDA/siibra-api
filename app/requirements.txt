@@ -1,3 +1,4 @@
 connexion
 connexion[swagger-ui]
 Flask
+coverage
