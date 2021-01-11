@@ -34,33 +34,41 @@ def home(request: Request):
     # return render_template('index.html')
     return templates.TemplateResponse('index.html', context={'request': request})
 
-# @app.app.before_request
-# def before_request_func():
-#     test_url = request.url
-#     headers = request.headers.get
-#     test_list = ['.css', '.js', '.png', '.gif', '.json', '.ico']
-#     res = any(ele in test_url for ele in test_list)
-#
-#     if 'BRAINSCAPES_ENVIRONMENT' in os.environ:
-#         if os.environ['BRAINSCAPES_ENVIRONMENT'] == 'PRODUCTION':
-#             print('******* Im on production ********')
-#             if not res:
-#                 payload = {
-#                         'idsite': 13,
-#                         'rec': 1,
-#                         'action_name': 'brainscapes_api',
-#                         'url': request.url,
-#                         '_id': 'my_ip',
-#                         'lang':  request.headers.get('Accept-Language'),
-#                         'ua': request.headers.get('User-Agent')
-#                 }
-#                 try:
-#                     r = requests.get('https://stats.humanbrainproject.eu/matomo.php', params=payload)
-#                     print('Matomo logging with status: {}'.format(r.status_code))
-#                 except:
-#                     print('Could not log to matomo instance')
-#         else:
-#             print('Request for: {}'.format(request.url))
+
+async def add_process_time_header(request: Request, call_next):
+    response = await call_next(request)
+    return response
+
+
+@app.middleware("http")
+async def matomo_request_log(request: Request, call_next):
+    test_url = request.url
+    headers = request.headers.get
+    test_list = ['.css', '.js', '.png', '.gif', '.json', '.ico']
+    res = any(ele in test_url for ele in test_list)
+
+    if 'BRAINSCAPES_ENVIRONMENT' in os.environ:
+        if os.environ['BRAINSCAPES_ENVIRONMENT'] == 'PRODUCTION':
+            print('******* Im on production ********')
+            if not res:
+                payload = {
+                        'idsite': 13,
+                        'rec': 1,
+                        'action_name': 'brainscapes_api',
+                        'url': request.url,
+                        '_id': 'my_ip',
+                        'lang':  request.headers.get('Accept-Language'),
+                        'ua': request.headers.get('User-Agent')
+                }
+                try:
+                    r = requests.get('https://stats.humanbrainproject.eu/matomo.php', params=payload)
+                    print('Matomo logging with status: {}'.format(r.status_code))
+                except:
+                    print('Could not log to matomo instance')
+        else:
+            print('Request for: {}'.format(request.url))
+    response = await call_next(request)
+    return response
 
 
 # If we're running in stand alone mode, run the application
