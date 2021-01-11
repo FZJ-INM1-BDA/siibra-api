@@ -2,3 +2,6 @@ connexion
 connexion[swagger-ui]
 Flask
 coverage
+fastapi
+uvicorn[standard]
+aiofiles

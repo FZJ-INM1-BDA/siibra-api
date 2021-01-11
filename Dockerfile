@@ -1,5 +1,5 @@
-# Use python 3.8 as base image for the flask application
-FROM python:3.8
+# Use fastapi python 3.7 as base image
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.7
 
 # Upgrade pip to latest version
 RUN python -m pip install --upgrade pip
@@ -12,7 +12,6 @@ COPY ./app /app
 WORKDIR /app
 
 RUN python -m pip install -r requirements.txt
-RUN python -m pip install connexion[swagger-ui]
 RUN python -m pip install anytree
 RUN python -m pip install pillow
 RUN python -m pip install scikit-image
@@ -23,9 +22,8 @@ RUN chmod 777 cache
 RUN chmod 777 /app
 ENV BRAINSCAPES_CACHEDIR=/app/cache
 
-# Expose flask port
-EXPOSE 5000
+# Expose port
+EXPOSE 80
 
-# Start flask application
-ENTRYPOINT ["python"]
-CMD ["app.py"]
+# Start application
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "80"]

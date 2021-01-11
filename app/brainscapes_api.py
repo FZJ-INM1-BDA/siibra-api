@@ -15,14 +15,21 @@
 import io
 
 import zipfile
+
+from fastapi import APIRouter
+from fastapi.encoders import jsonable_encoder
+from fastapi import Request
+
 import request_utils
 
 from brainscapes import features
-from flask import request, send_file
-from flask.json import jsonify
+from flask import send_file
+
+router = APIRouter()
 
 
-def receptordata_fingerprint():
+@router.get('/receptors/fingerprint')
+def receptordata_fingerprint(request: Request):
     """
     GET /receptors/fingerprint
     parameters: 
@@ -32,12 +39,12 @@ def receptordata_fingerprint():
     """
     if request.args and 'region' in request.args:
         receptor_data = request_utils.query_data('ReceptorDistribution', request.args['region'])
-        return jsonify(receptor_data[0].fingerprint.__dict__)
+        return jsonable_encoder(receptor_data[0].fingerprint.__dict__)
     else:
         return "A region name must be provided as a query parameter", 400
 
-
-def receptordata_profiles():
+@router.get('/receptors/profiles')
+def receptordata_profiles(request: Request):
     """
     GET /receptors/profiles
     parameters: 
@@ -50,12 +57,12 @@ def receptordata_profiles():
         data = {}
         for key, profile in receptor_data[0].profiles.items():
             data[key] = profile
-        return jsonify(data)
+        return jsonable_encoder(data)
     else:
         return "A region name must be provided as a query parameter", 400
 
-
-def receptordata_autoradiographs():
+@router.get('/receptors/autoradiographs')
+def receptordata_autoradiographs(request: Request):
     """
     GET /receptors/autoradiographs
     Parameters: 
@@ -73,6 +80,7 @@ def receptordata_autoradiographs():
         return "A region name must be provided as a query parameter", 400
 
 
+@router.get('/parcellations')
 def parcellations():
     """
     GET /parcellations
@@ -84,9 +92,10 @@ def parcellations():
     result = []
     for parcellation in parcellations:
         result.append({"id": parcellation.id, "name": parcellation.name})
-    return jsonify(result)
+    return jsonable_encoder(result)
 
 
+@router.get('/spaces')
 def spaces():
     """
     GET /spaces
@@ -98,9 +107,10 @@ def spaces():
     result = []
     for space in atlas_spaces:
         result.append({"id": space.id, "name": space.name})
-    return jsonify(result)
+    return jsonable_encoder(result)
 
 
+@router.get('/regions')
 def regions():
     """
     GET /regions
@@ -118,7 +128,8 @@ def regions():
     return result
 
 
-def maps():
+@router.get('/maps')
+def maps(request: Request):
     """
     GET /maps
     Parameters: 
@@ -160,7 +171,8 @@ def maps():
     return 'Maps for space: {} not found'.format(space.name), 404
 
 
-def templates():
+@router.get('/templates')
+def templates(request: Request):
     """
     GET /templates
     Parameters: 
@@ -183,7 +195,8 @@ def templates():
     )
 
 
-def genes():
+@router.get('/genes')
+def genes(request: Request):
     """
     GET /genes
     Parameters: 
@@ -217,6 +230,6 @@ def genes():
                 region=region.name,
                 features=region_result
             ))
-        return jsonify(result)
+        return jsonable_encoder(result)
     else:
         return 'Gene {} not found'.format(request.args['gene']), 404
