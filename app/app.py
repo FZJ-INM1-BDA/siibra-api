@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from brainscapes.authentication import Authentication
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 
 import os
 
 from fastapi import Request
-from fastapi.security import HTTPBearer
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.templating import Jinja2Templates
 
 import brainscapes_api
@@ -45,7 +45,7 @@ def home(request: Request):
 
 
 @app.middleware("http")
-async def set_auth_header(request: Request, call_next):
+async def set_auth_header(request: Request, call_next, credentials: HTTPAuthorizationCredentials = Depends(security)):
     auth = Authentication.instance()
     bearer_token = request.headers.get("Authorization")
     if bearer_token:

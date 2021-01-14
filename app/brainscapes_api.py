@@ -18,8 +18,9 @@ import zipfile
 from enum import Enum
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from fastapi.encoders import jsonable_encoder
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from starlette.responses import FileResponse
 
 import request_utils
@@ -27,6 +28,8 @@ import request_utils
 from brainscapes import features
 
 router = APIRouter()
+
+security = HTTPBearer()
 
 
 class ModalityType(str, Enum):
@@ -39,7 +42,7 @@ class ModalityType(str, Enum):
 # region === parcellations
 
 @router.get('/parcellations')
-def get_all_parcellations():
+def get_all_parcellations(credentials: HTTPAuthorizationCredentials = Depends(security)):
     """
     Returns all parcellations that are defined in the brainscapes client.
     """
