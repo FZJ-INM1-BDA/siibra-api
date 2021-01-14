@@ -1,7 +1,5 @@
-connexion
-connexion[swagger-ui]
-Flask
 coverage
 fastapi
+jinja2
 uvicorn[standard]
 aiofiles

@@ -15,78 +15,34 @@
 import io
 
 import zipfile
+from enum import Enum
+from typing import Optional
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.encoders import jsonable_encoder
-from fastapi import Request
+from starlette.responses import FileResponse
 
 import request_utils
 
 from brainscapes import features
-from flask import send_file
 
 router = APIRouter()
 
 
-@router.get('/receptors/fingerprint')
-def receptordata_fingerprint(request: Request):
-    """
-    GET /receptors/fingerprint
-    parameters: 
-    - region
+class ModalityType(str, Enum):
+    ReceptorDistribution = 'ReceptorDistribution'
+    GeneExpression = 'GeneExpression'
+    ConnectivityProfile = 'ConnectivityProfile'
+    ConnectivityMatrix = 'ConnectivityMatrix'
 
-    Returns a fingerprint based on the provided region.
-    """
-    if request.args and 'region' in request.args:
-        receptor_data = request_utils.query_data('ReceptorDistribution', request.args['region'])
-        return jsonable_encoder(receptor_data[0].fingerprint.__dict__)
-    else:
-        return "A region name must be provided as a query parameter", 400
 
-@router.get('/receptors/profiles')
-def receptordata_profiles(request: Request):
-    """
-    GET /receptors/profiles
-    parameters: 
-    - region
-
-    Returns profles based on the provided region.
-    """    
-    if request.args and 'region' in request.args:
-        receptor_data = request_utils.query_data('ReceptorDistribution', request.args['region'])
-        data = {}
-        for key, profile in receptor_data[0].profiles.items():
-            data[key] = profile
-        return jsonable_encoder(data)
-    else:
-        return "A region name must be provided as a query parameter", 400
-
-@router.get('/receptors/autoradiographs')
-def receptordata_autoradiographs(request: Request):
-    """
-    GET /receptors/autoradiographs
-    Parameters: 
-    - region
-
-    Returns autoradiographs based on the provided region.
-    """    
-    if request.args and 'region' in request.args:
-        receptor_data = request_utils.query_data('ReceptorDistribution', request.args['region'])
-        data = {}
-        for key, autoradiographs in receptor_data[0].autoradiographs.items():
-            data[key] = 'PLI Image'
-        return data
-    else:
-        return "A region name must be provided as a query parameter", 400
-
+# region === parcellations
 
 @router.get('/parcellations')
-def parcellations():
+def get_all_parcellations():
     """
-    GET /parcellations
-
     Returns all parcellations that are defined in the brainscapes client.
-    """    
+    """
     atlas = request_utils.create_atlas()
     parcellations = atlas.parcellations
     result = []
@@ -95,11 +51,47 @@ def parcellations():
     return jsonable_encoder(result)
 
 
-@router.get('/spaces')
-def spaces():
+@router.get('/parcellations/{parcellation_id}')
+def get_parcellation_by_id(parcellations_id):
     """
-    GET /spaces
+    Returns one parcellation for given id or 404 Error if no parcellation is found.
+    """
+    atlas = request_utils.create_atlas()
+    parcellations = atlas.parcellations
+    result = {}
+    for parcellation in parcellations:
+        if parcellation.id.find(parcellations_id):
+            result = parcellation
+    if result:
+        return jsonable_encoder(result)
+    else:
+        raise HTTPException(status_code=404, detail='parcellation with id: {} not found'.format(parcellations_id))
 
+
+@router.get('/parcellations/{parcellation_id}/region')
+def get_all_regions_for_parcellation_id(parcellations_id):
+    """
+    Returns all regions for a given parcellation id.
+    """
+    atlas = request_utils.create_atlas()
+    # select atlas parcellation
+    # Throw Bad Request error or 404 if bad parcellation id
+    result = []
+    for region in atlas.regiontree.children:
+        region_json = {'name': region.name, 'children': []}
+        request_utils._add_children_to_region(region_json, region)
+        result.append(region_json)
+    return result
+
+
+# endregion
+
+# region === spaces
+
+
+@router.get('/spaces')
+def get_all_spaces():
+    """
     Returns all spaces that are defined in the brainscapes client.
     """
     atlas = request_utils.create_atlas()
@@ -110,45 +102,51 @@ def spaces():
     return jsonable_encoder(result)
 
 
-@router.get('/regions')
-def regions():
+@router.get('/spaces/{space_id}')
+def get_one_space_by_id(space_id: str):
     """
-    GET /regions
-    Parameters: 
-    - parcellation
-
-    Returns all regions for a given parcellation id.
+    Returns space for given id.
     """
     atlas = request_utils.create_atlas()
-    result = []
-    for region in atlas.regiontree.children:
-        region_json = {'name': region.name, 'children': []}
-        request_utils._add_children_to_region(region_json, region)
-        result.append(region_json)
-    return result
+    space = request_utils.find_space_by_id(atlas, space_id)
+    if space:
+        return jsonable_encoder(space)
+    else:
+        raise HTTPException(status_code=404, detail='space with id: {} not found'.format(space_id))
 
 
-@router.get('/maps')
-def maps(request: Request):
+@router.get('/spaces/{space_id}/templates')
+def get_template_by_space_id(space_id):
     """
-    GET /maps
-    Parameters: 
+    Parameters:
     - space
 
+    Returns all templates for a given space id.
+    """
+    atlas = request_utils.create_atlas()
+    space = request_utils.find_space_by_id(atlas, space_id)
+    template = atlas.get_template(space)
+
+    # create file-object in memory
+    # file_object = io.BytesIO()
+    filename = request_utils._get_file_from_nibabel(template, 'template', space)
+
+    return FileResponse(filename, filename=filename)
+
+
+@router.get('/spaces/{space_id}/parcellation_maps')
+def get_all_regions_for_parcellation_id(space_id):  # add parcellations_map_id as optional param
+    """
     Returns all maps for a given space id.
     """
     atlas = request_utils.create_atlas()
-    space = request_utils._find_space_by_id(atlas, request.args['space'])
+    space = request_utils.find_space_by_id(atlas, space_id)
     maps = atlas.get_maps(space)
     print(maps.keys())
 
     if len(maps) == 1:
         filename = request_utils._get_file_from_nibabel(maps[0], 'maps', space)
-        return send_file(
-            filename, 
-            as_attachment=True,
-            attachment_filename=filename
-        )  
+        return FileResponse(filename, filename=filename)
     else:
         files = []
         mem_zip = io.BytesIO()
@@ -156,65 +154,61 @@ def maps(request: Request):
         for label, space_map in maps.items():
             files.append(request_utils._get_file_from_nibabel(space_map, label, space))
 
-        with zipfile.ZipFile(mem_zip, mode="w",compression=zipfile.ZIP_DEFLATED) as zf:
+        with zipfile.ZipFile(mem_zip, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
             for f in files:
                 zf.write(f)
                 print(zf.namelist())
 
         mem_zip.seek(0)
-        return send_file(
-            mem_zip, 
-            as_attachment=True,
-            attachment_filename='maps-{}.zip'.format(space.name.replace(' ','_'))
-        ) 
-        
-    return 'Maps for space: {} not found'.format(space.name), 404
+        return FileResponse(mem_zip, filename='maps-{}.zip'.format(space.name.replace(' ', '_')))
+    raise HTTPException(status_code=404, detail='Maps for space with id: {} not found'.format(space_id))
 
 
-@router.get('/templates')
-def templates(request: Request):
-    """
-    GET /templates
-    Parameters: 
-    - space
+# endregion
 
-    Returns all templates for a given space id.
-    """    
+# region === features
+
+
+@router.get('/features')
+def get_all_available_modalities():
+    return [m for m in features.modalities]
+
+
+@router.get('/features/{modality_id}')
+def get_feature_for_modality(modality_id: ModalityType, region: str, gene: Optional[str] = None):
+    if modality_id == ModalityType.ReceptorDistribution:
+        return get_receptor_distribution()
+    if modality_id == ModalityType.ConnectivityProfile:
+        return get_connectivty_profile()
+    if modality_id == ModalityType.ConnectivityMatrix:
+        return get_connectivity_matrix()
+    if modality_id == ModalityType.ReceptorDistribution:
+        return get_receptor_distribution()
+
+    raise HTTPException(status_code=400, detail='Modality: {} is not valid'.format(modality_id))
+
+
+def get_receptor_distribution(region):
+    receptor_data = request_utils.query_data('ReceptorDistribution', region)
+    if receptor_data:
+        return jsonable_encoder(receptor_data)
+    else:
+        raise HTTPException(status_code=404, detail='No receptor distribution found for region: {}'.format(region))
+
+
+def get_gene_expression(region, gene):
     atlas = request_utils.create_atlas()
-    space = request_utils._find_space_by_id(atlas, request.args['space'])
-    template = atlas.get_template(space)
-    
-    # create file-object in memory
-    # file_object = io.BytesIO()
-    filename = request_utils._get_file_from_nibabel(template, 'template', space)
-    
-    return send_file(
-        filename, 
-        as_attachment=True,
-        attachment_filename=filename
-    )
-
-
-@router.get('/genes')
-def genes(request: Request):
-    """
-    GET /genes
-    Parameters: 
-    - region 
-    - gene
-
-    Returns all genes for a given region and gene type.
-    """    
-    atlas = request_utils.create_atlas()
-    selected_region = atlas.regiontree.find(request.args['region'], exact=False)
+    selected_region = atlas.regiontree.find(region, exact=False)
+    if not selected_region:
+        raise HTTPException(status_code=400, detail='Invalid region: {}'.format(region))
 
     result = []
-    if request.args['gene'] in features.gene_names:
+    if gene in features.gene_names:
         for region in selected_region:
             atlas.select_region(region)
             genes_feature = atlas.query_data(
                 modality=features.modalities.GeneExpression,
-                gene=request.args['gene']
+                gene=gene
             )
             region_result = []
             for g in genes_feature:
@@ -232,4 +226,104 @@ def genes(request: Request):
             ))
         return jsonable_encoder(result)
     else:
-        return 'Gene {} not found'.format(request.args['gene']), 404
+        raise HTTPException(status_code=400, detail='Invalid gene: {}'.format(gene))
+
+
+def get_connectivty_profile():
+    raise HTTPException(status_code=501, detail='No method yet for connectivity profile')
+
+
+def get_connectivity_matrix():
+    raise HTTPException(status_code=501, detail='No method yet for connectivity matrix')
+
+# endregion
+
+# @router.get('/receptors/fingerprint')
+# def receptordata_fingerprint(request: Request):
+#     """
+#     GET /receptors/fingerprint
+#     parameters:
+#     - region
+#
+#     Returns a fingerprint based on the provided region.
+#     """
+#     if request.args and 'region' in request.args:
+#         receptor_data = request_utils.query_data('ReceptorDistribution', request.args['region'])
+#         return jsonable_encoder(receptor_data[0].fingerprint.__dict__)
+#     else:
+#         return "A region name must be provided as a query parameter", 400
+#
+# @router.get('/receptors/profiles')
+# def receptordata_profiles(request: Request):
+#     """
+#     GET /receptors/profiles
+#     parameters:
+#     - region
+#
+#     Returns profles based on the provided region.
+#     """
+#     if request.args and 'region' in request.args:
+#         receptor_data = request_utils.query_data('ReceptorDistribution', request.args['region'])
+#         data = {}
+#         for key, profile in receptor_data[0].profiles.items():
+#             data[key] = profile
+#         return jsonable_encoder(data)
+#     else:
+#         return "A region name must be provided as a query parameter", 400
+#
+# @router.get('/receptors/autoradiographs')
+# def receptordata_autoradiographs(request: Request):
+#     """
+#     GET /receptors/autoradiographs
+#     Parameters:
+#     - region
+#
+#     Returns autoradiographs based on the provided region.
+#     """
+#     if request.args and 'region' in request.args:
+#         receptor_data = request_utils.query_data('ReceptorDistribution', request.args['region'])
+#         data = {}
+#         for key, autoradiographs in receptor_data[0].autoradiographs.items():
+#             data[key] = 'PLI Image'
+#         return data
+#     else:
+#         return "A region name must be provided as a query parameter", 400
+
+# @router.get('/genes')
+# def genes(request: Request):
+#     """
+#     GET /genes
+#     Parameters:
+#     - region
+#     - gene
+#
+#     Returns all genes for a given region and gene type.
+#     """
+#     atlas = request_utils.create_atlas()
+#     selected_region = atlas.regiontree.find(request.args['region'], exact=False)
+#
+#     result = []
+#     if request.args['gene'] in features.gene_names:
+#         for region in selected_region:
+#             atlas.select_region(region)
+#             genes_feature = atlas.query_data(
+#                 modality=features.modalities.GeneExpression,
+#                 gene=request.args['gene']
+#             )
+#             region_result = []
+#             for g in genes_feature:
+#                 region_result.append(dict(
+#                     expression_levels=g.expression_levels,
+#                     factors=g.factors,
+#                     gene=g.gene,
+#                     location=g.location.tolist(),
+#                     space=g.space.id,
+#                     z_scores=g.z_scores
+#                 ))
+#             result.append(dict(
+#                 region=region.name,
+#                 features=region_result
+#             ))
+#         return jsonable_encoder(result)
+#     else:
+#         return 'Gene {} not found'.format(request.args['gene']), 404

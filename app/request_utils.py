@@ -13,19 +13,20 @@
 # limitations under the License.
 
 from brainscapes.authentication import Authentication
-from flask import request
 from brainscapes.atlas import REGISTRY
+
+from fastapi import Request
 
 import nibabel as nib
 
 
 def _set_auth_token():
     auth = Authentication.instance()
-    bearer_token = request.headers.get("Authorization")
+    bearer_token = Request.headers.get("Authorization")
     if bearer_token:
         auth.set_token(bearer_token.replace("Bearer ", ""))
-    elif request.args['token']:
-        auth.set_token(request.args['token'])
+    elif Request.args['token']:
+        auth.set_token(Request.args['token'])
 
 
 def create_atlas():
@@ -42,9 +43,9 @@ def query_data(modality, regionname, args=None):
     return []
 
 
-def _find_space_by_id(atlas, space_id):
+def find_space_by_id(atlas, space_id):
     for space in atlas.spaces:
-        if space.id == space_id:
+        if space.id.find(space_id):
             return space
     return {}    
 

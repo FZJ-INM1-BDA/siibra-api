@@ -11,14 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from fastapi import FastAPI, requests
+from brainscapes.authentication import Authentication
+from fastapi import FastAPI
 
 import os
 
 from fastapi import Request
+from fastapi.security import HTTPBearer
 from fastapi.templating import Jinja2Templates
 
 import brainscapes_api
+
+security = HTTPBearer()
 
 # Main fastAPI application
 app = FastAPI()
@@ -38,6 +42,16 @@ def home(request: Request):
     :return: the rendered index.html template
     """
     return templates.TemplateResponse('index.html', context={'request': request})
+
+
+@app.middleware("http")
+async def set_auth_header(request: Request, call_next):
+    auth = Authentication.instance()
+    bearer_token = request.headers.get("Authorization")
+    if bearer_token:
+        auth.set_token(bearer_token.replace("Bearer ", ""))
+    response = await call_next(request)
+    return response
 
 
 @app.middleware("http")
