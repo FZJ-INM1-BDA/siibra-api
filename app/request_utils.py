@@ -53,6 +53,8 @@ def find_space_by_id(atlas, space_id):
 def _add_children_to_region(region_json, region):
     for child in region.children:
         o = {'name': child.name, 'children': []}
+        if hasattr(child, 'rgb'):
+            o['rgb'] = child.rgb
         if child.children:
             _add_children_to_region(o, child)
         region_json['children'].append(o)

@@ -48,6 +48,15 @@ def __parcellation_result_info(parcellation):
         "version": parcellation.version
     }
 
+
+def __region_result_info(region):
+    region_json = {'name': region.name, 'children': []}
+    if hasattr(region, 'rgb'):
+        region_json['rgb'] = region.rgb
+
+    return region_json
+
+
 @router.get('/parcellations')
 def get_all_parcellations(credentials: HTTPAuthorizationCredentials = Depends(security)):
     """
@@ -88,7 +97,7 @@ def get_all_regions_for_parcellation_id(parcellations_id):
     # Throw Bad Request error or 404 if bad parcellation id
     result = []
     for region in atlas.regiontree.children:
-        region_json = {'name': region.name, 'children': []}
+        region_json = __region_result_info(region)
         request_utils._add_children_to_region(region_json, region)
         result.append(region_json)
     return result
