@@ -18,10 +18,10 @@ import zipfile
 from enum import Enum
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from starlette.responses import FileResponse
+from starlette.responses import FileResponse, PlainTextResponse
 
 import request_utils
 
@@ -60,10 +60,17 @@ def __region_result_info(region):
 
 
 @router.get('/parcellations')
-def get_all_parcellations(credentials: HTTPAuthorizationCredentials = Depends(security)):
+def get_all_parcellations(request: Request, credentials: HTTPAuthorizationCredentials = Depends(security)):
     """
     Returns all parcellations that are defined in the brainscapes client.
     """
+    print(request.headers)
+    print(request.headers['accept'])
+    if request.headers['accept'] == 'application/text':
+        python_code = 'from brainscapes.atlas import REGISTRY \n ' \
+                      'atlas = REGISTRY.MULTILEVEL_HUMAN_ATLAS \n ' \
+                      'parcellations = atlas.parcellations'
+        return PlainTextResponse(status_code=200, content=python_code)
     atlas = request_utils.create_atlas()
     parcellations = atlas.parcellations
     result = []
