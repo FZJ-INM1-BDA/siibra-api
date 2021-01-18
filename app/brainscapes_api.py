@@ -78,7 +78,7 @@ def get_parcellation_by_id(parcellations_id):
         raise HTTPException(status_code=404, detail='parcellation with id: {} not found'.format(parcellations_id))
 
 
-@router.get('/parcellations/{parcellation_id}/region')
+@router.get('/parcellations/{parcellation_id}/regions')
 def get_all_regions_for_parcellation_id(parcellations_id):
     """
     Returns all regions for a given parcellation id.
