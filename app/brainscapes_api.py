@@ -53,6 +53,8 @@ def __region_result_info(region):
     region_json = {'name': region.name, 'children': []}
     if hasattr(region, 'rgb'):
         region_json['rgb'] = region.rgb
+    if hasattr(region, 'fullId'):
+        region_json['id'] = region.fullId
 
     return region_json
 

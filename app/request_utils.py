@@ -55,6 +55,8 @@ def _add_children_to_region(region_json, region):
         o = {'name': child.name, 'children': []}
         if hasattr(child, 'rgb'):
             o['rgb'] = child.rgb
+        if hasattr(child, 'fullId'):
+            o['id'] = child.fullId
         if child.children:
             _add_children_to_region(o, child)
         region_json['children'].append(o)
