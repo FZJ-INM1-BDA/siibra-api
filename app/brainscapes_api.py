@@ -41,6 +41,13 @@ class ModalityType(str, Enum):
 
 # region === parcellations
 
+def __parcellation_result_info(parcellation):
+    return {
+        "id": parcellation.id,
+        "name": parcellation.name,
+        "version": parcellation.version
+    }
+
 @router.get('/parcellations')
 def get_all_parcellations(credentials: HTTPAuthorizationCredentials = Depends(security)):
     """
@@ -50,7 +57,7 @@ def get_all_parcellations(credentials: HTTPAuthorizationCredentials = Depends(se
     parcellations = atlas.parcellations
     result = []
     for parcellation in parcellations:
-        result.append({"id": parcellation.id, "name": parcellation.name})
+        result.append(__parcellation_result_info(parcellation))
     return jsonable_encoder(result)
 
 
@@ -64,7 +71,7 @@ def get_parcellation_by_id(parcellations_id):
     result = {}
     for parcellation in parcellations:
         if parcellation.id.find(parcellations_id):
-            result = parcellation
+            result = __parcellation_result_info(parcellation)
     if result:
         return jsonable_encoder(result)
     else:
