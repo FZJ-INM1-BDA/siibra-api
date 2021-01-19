@@ -42,11 +42,13 @@ class ModalityType(str, Enum):
 # region === parcellations
 
 def __parcellation_result_info(parcellation):
-    return {
+    result_info = {
         "id": parcellation.id,
-        "name": parcellation.name,
-        "version": parcellation.version
+        "name": parcellation.name
     }
+    if hasattr(parcellation, 'version') and parcellation.version:
+        result_info['version'] = parcellation.version
+    return result_info
 
 
 def __region_result_info(region):
