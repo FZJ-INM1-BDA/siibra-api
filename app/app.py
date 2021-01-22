@@ -82,7 +82,8 @@ async def matomo_request_log(request: Request, call_next):
                 }
                 try:
                     # r = requests.get('https://stats.humanbrainproject.eu/matomo.php', params=payload)
-                    print('Matomo logging with status: {}'.format(r.status_code))
+                    # print('Matomo logging with status: {}'.format(r.status_code))
+                    pass
                 except:
                     print('Could not log to matomo instance')
         else:

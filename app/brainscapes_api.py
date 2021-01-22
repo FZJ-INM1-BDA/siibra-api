@@ -21,7 +21,7 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from starlette.responses import FileResponse, PlainTextResponse
+from starlette.responses import FileResponse, PlainTextResponse, StreamingResponse
 
 import request_utils
 
@@ -190,13 +190,24 @@ def get_all_regions_for_parcellation_id(space_id):  # add parcellations_map_id a
                 print(zf.namelist())
 
         mem_zip.seek(0)
-        return FileResponse(mem_zip, filename='maps-{}.zip'.format(space.name.replace(' ', '_')))
+        response = StreamingResponse(iter([mem_zip.getvalue()]), media_type="application/x-zip-compressed")
+        response.headers["Content-Disposition"] = 'attachment; filename=maps-{}.zip'.format(space.name.replace(' ', '_'))
+        return response
     raise HTTPException(status_code=404, detail='Maps for space with id: {} not found'.format(space_id))
 
 
 # endregion
 
 # region === features
+
+@router.get('/genes')
+def get_gene_names():
+    return jsonable_encoder(features.gene_names.words)
+
+
+@router.get('/genes/{gene}')
+def get_gene_names(gene: str, region: str):
+    return get_gene_expression(region, gene)
 
 
 @router.get('/features')
@@ -212,8 +223,8 @@ def get_feature_for_modality(modality_id: ModalityType, region: str, gene: Optio
         return get_connectivty_profile()
     if modality_id == ModalityType.ConnectivityMatrix:
         return get_connectivity_matrix()
-    if modality_id == ModalityType.ReceptorDistribution:
-        return get_receptor_distribution()
+    if modality_id == ModalityType.GeneExpression:
+        return get_gene_expression(region, gene)
 
     raise HTTPException(status_code=400, detail='Modality: {} is not valid'.format(modality_id))
 
