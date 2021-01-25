@@ -216,9 +216,12 @@ def get_all_available_modalities():
 
 
 @router.get('/features/{modality_id}')
-def get_feature_for_modality(modality_id: ModalityType, region: str, gene: Optional[str] = None):
+def get_feature_for_modality(modality_id: ModalityType,
+                             region: str,
+                             gene: Optional[str] = None,
+                             credentials: HTTPAuthorizationCredentials = Depends(security)):
     if modality_id == ModalityType.ReceptorDistribution:
-        return get_receptor_distribution()
+        return get_receptor_distribution(region)
     if modality_id == ModalityType.ConnectivityProfile:
         return get_connectivty_profile()
     if modality_id == ModalityType.ConnectivityMatrix:

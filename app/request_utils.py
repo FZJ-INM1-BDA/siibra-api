@@ -14,6 +14,7 @@
 
 from brainscapes.authentication import Authentication
 from brainscapes.atlas import REGISTRY
+import brainscapes as bs
 
 from fastapi import Request
 
@@ -34,12 +35,16 @@ def create_atlas():
 
 
 def query_data(modality, regionname, args=None):
-    _set_auth_token()
     atlas = create_atlas()
     selected_region = atlas.regiontree.find(regionname)
+    result = {}
     if selected_region:
         atlas.select_region(selected_region[0])
-        return atlas.query_data(modality)
+        data = atlas.query_data(modality)
+        data[0]._load()
+        result['data'] = data[0]
+        result['receptor_symbols'] = bs.features.receptors.RECEPTOR_SYMBOLS
+        return result
     return []
 
 
