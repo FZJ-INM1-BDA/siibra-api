@@ -230,7 +230,8 @@ def get_one_space_by_id(space_id: str):
 
 @router.get('/genes')
 def get_gene_names():
-    return jsonable_encoder(features.gene_names.words)
+    genes = features.genes.AllenBrainAtlasQuery.genes['msg']
+    return jsonable_encoder([{'name': g['name'], 'acronym': g['acronym']} for g in genes])
 
 
 @router.get('/genes/{gene}')
