@@ -26,6 +26,7 @@ from starlette.responses import FileResponse, PlainTextResponse, StreamingRespon
 import request_utils
 
 from brainscapes import features
+from brainscapes.atlas import REGISTRY
 
 router = APIRouter()
 
@@ -37,6 +38,28 @@ class ModalityType(str, Enum):
     GeneExpression = 'GeneExpression'
     ConnectivityProfile = 'ConnectivityProfile'
     ConnectivityMatrix = 'ConnectivityMatrix'
+
+
+# region === atlases
+
+@router.get('/atlases')
+def get_all_atlases():
+    atlases = REGISTRY.items
+    result = []
+    for a in atlases:
+        result.append({'id': a.id, 'name': a.name})
+    return result
+
+
+@router.get('/atlases/{atlas_id:path}')
+def get_all_atlases(atlas_id):
+    print('ATLAS_ID: {}'.format(atlas_id))
+    atlases = REGISTRY.items
+    for a in atlases:
+        if a.id == atlas_id:
+            return {'id': a.id, 'name': a.name}
+    raise HTTPException(status_code=404, detail='atlas with id: {} not found'.format(atlas_id))
+# endregion
 
 
 # region === parcellations
@@ -81,7 +104,23 @@ def get_all_parcellations(request: Request, credentials: HTTPAuthorizationCreden
     return jsonable_encoder(result)
 
 
-@router.get('/parcellations/{parcellation_id}')
+@router.get('/parcellations/{parcellation_id:path}/regions')
+def get_all_regions_for_parcellation_id(parcellations_id):
+    """
+    Returns all regions for a given parcellation id.
+    """
+    atlas = request_utils.create_atlas()
+    # select atlas parcellation
+    # Throw Bad Request error or 404 if bad parcellation id
+    result = []
+    for region in atlas.regiontree.children:
+        region_json = __region_result_info(region)
+        request_utils._add_children_to_region(region_json, region)
+        result.append(region_json)
+    return result
+
+
+@router.get('/parcellations/{parcellation_id:path}')
 def get_parcellation_by_id(parcellations_id):
     """
     Returns one parcellation for given id or 404 Error if no parcellation is found.
@@ -98,20 +137,7 @@ def get_parcellation_by_id(parcellations_id):
         raise HTTPException(status_code=404, detail='parcellation with id: {} not found'.format(parcellations_id))
 
 
-@router.get('/parcellations/{parcellation_id}/regions')
-def get_all_regions_for_parcellation_id(parcellations_id):
-    """
-    Returns all regions for a given parcellation id.
-    """
-    atlas = request_utils.create_atlas()
-    # select atlas parcellation
-    # Throw Bad Request error or 404 if bad parcellation id
-    result = []
-    for region in atlas.regiontree.children:
-        region_json = __region_result_info(region)
-        request_utils._add_children_to_region(region_json, region)
-        result.append(region_json)
-    return result
+
 
 
 # endregion
@@ -132,20 +158,7 @@ def get_all_spaces():
     return jsonable_encoder(result)
 
 
-@router.get('/spaces/{space_id}')
-def get_one_space_by_id(space_id: str):
-    """
-    Returns space for given id.
-    """
-    atlas = request_utils.create_atlas()
-    space = request_utils.find_space_by_id(atlas, space_id)
-    if space:
-        return jsonable_encoder(space)
-    else:
-        raise HTTPException(status_code=404, detail='space with id: {} not found'.format(space_id))
-
-
-@router.get('/spaces/{space_id}/templates')
+@router.get('/spaces/{space_id:path}/templates')
 def get_template_by_space_id(space_id):
     """
     Parameters:
@@ -164,7 +177,7 @@ def get_template_by_space_id(space_id):
     return FileResponse(filename, filename=filename)
 
 
-@router.get('/spaces/{space_id}/parcellation_maps')
+@router.get('/spaces/{space_id:path}/parcellation_maps')
 def get_all_regions_for_parcellation_id(space_id):  # add parcellations_map_id as optional param
     """
     Returns all maps for a given space id.
@@ -194,6 +207,19 @@ def get_all_regions_for_parcellation_id(space_id):  # add parcellations_map_id a
         response.headers["Content-Disposition"] = 'attachment; filename=maps-{}.zip'.format(space.name.replace(' ', '_'))
         return response
     raise HTTPException(status_code=404, detail='Maps for space with id: {} not found'.format(space_id))
+
+
+@router.get('/spaces/{space_id:path}')
+def get_one_space_by_id(space_id: str):
+    """
+    Returns space for given id.
+    """
+    atlas = request_utils.create_atlas()
+    space = request_utils.find_space_by_id(atlas, space_id)
+    if space:
+        return jsonable_encoder(space)
+    else:
+        raise HTTPException(status_code=404, detail='space with id: {} not found'.format(space_id))
 
 
 # endregion
