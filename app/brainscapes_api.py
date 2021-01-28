@@ -80,6 +80,8 @@ def __region_result_info(region):
         region_json['rgb'] = region.rgb
     if hasattr(region, 'fullId'):
         region_json['id'] = region.fullId
+    if hasattr(region, 'labelIndex'):
+        region_json['labelIndex'] = region.labelIndex
 
     return region_json
 
