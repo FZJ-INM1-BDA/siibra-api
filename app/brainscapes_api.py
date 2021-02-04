@@ -28,36 +28,83 @@ import request_utils
 from brainscapes import features
 from brainscapes.atlas import REGISTRY
 
+# FastApi router to create rest endpoints
 router = APIRouter()
 
+# secure endpoints with the need to provide a bearer token
 security = HTTPBearer()
+
+# Base URL for all endpoints
+ATLAS_PATH = '/atlases/{atlas_id}'
 
 
 class ModalityType(str, Enum):
+    """
+    A class for modality type, to provide selection options to swagger
+    """
     ReceptorDistribution = 'ReceptorDistribution'
     GeneExpression = 'GeneExpression'
     ConnectivityProfile = 'ConnectivityProfile'
     ConnectivityMatrix = 'ConnectivityMatrix'
 
 
+def _split_id(kg_id: str):
+    """
+    Parameters:
+        - kg_id
+
+    Splitting the knowledge graph id into the schema and the id part.
+    Only the id part is needed as a path parameter.
+    """
+    split_id = kg_id.split('/')
+    return {
+        'kg': {
+            'kgSchema': '/'.join(split_id[0:-1]),
+            'kgId':  split_id[-1]
+        }
+    }
+
+
 # region === atlases
 
 @router.get('/atlases')
 def get_all_atlases():
+    """
+    Get all atlases known by brainscapes
+    """
     atlases = REGISTRY.items
     result = []
     for a in atlases:
-        result.append({'id': a.id, 'name': a.name})
+        result.append({
+            'id': a.id.replace('/', '-'),
+            'name': a.name
+        })
     return result
 
 
-@router.get('/atlases/{atlas_id:path}')
-def get_all_atlases(atlas_id):
-    print('ATLAS_ID: {}'.format(atlas_id))
+@router.get(ATLAS_PATH)
+def get_all_atlases(atlas_id: str, request: Request):
+    """
+    Parameters:
+        - atlas_id: Atlas id
+
+    Get more information for a specific atlas with links to further objects.
+    """
     atlases = REGISTRY.items
     for a in atlases:
-        if a.id == atlas_id:
-            return {'id': a.id, 'name': a.name}
+        if a.id == atlas_id.replace('-', '/'):
+            return {
+                'id': a.id.replace('/', '-'),
+                'name': a.name,
+                'links': {
+                    'parcellations': {
+                        'href': '{}/parcellations'.format(request.url)
+                    },
+                    'spaces': {
+                        'href': '{}/spaces'.format(request.url)
+                    }
+                }
+            }
     raise HTTPException(status_code=404, detail='atlas with id: {} not found'.format(atlas_id))
 # endregion
 
@@ -65,8 +112,14 @@ def get_all_atlases(atlas_id):
 # region === parcellations
 
 def __parcellation_result_info(parcellation):
+    """
+    Parameters:
+        - parcellation
+
+    Create the response for a parcellation object
+    """
     result_info = {
-        "id": parcellation.id,
+        "id": _split_id(parcellation.id),
         "name": parcellation.name
     }
     if hasattr(parcellation, 'version') and parcellation.version:
@@ -74,22 +127,13 @@ def __parcellation_result_info(parcellation):
     return result_info
 
 
-def __region_result_info(region):
-    region_json = {'name': region.name, 'children': []}
-    if hasattr(region, 'rgb'):
-        region_json['rgb'] = region.rgb
-    if hasattr(region, 'fullId'):
-        region_json['id'] = region.fullId
-    if hasattr(region, 'labelIndex'):
-        region_json['labelIndex'] = region.labelIndex
-
-    return region_json
-
-
-@router.get('/parcellations')
-def get_all_parcellations(request: Request, credentials: HTTPAuthorizationCredentials = Depends(security)):
+@router.get(ATLAS_PATH+'/parcellations')
+def get_all_parcellations(atlas_id: str, request: Request, credentials: HTTPAuthorizationCredentials = Depends(security)):
     """
-    Returns all parcellations that are defined in the brainscapes client.
+    Parameters:
+        - atlas_id
+
+    Returns all parcellations that are defined in the brainscapes client for given atlas
     """
     print(request.headers)
     print(request.headers['accept'])
@@ -106,9 +150,13 @@ def get_all_parcellations(request: Request, credentials: HTTPAuthorizationCreden
     return jsonable_encoder(result)
 
 
-@router.get('/parcellations/{parcellation_id:path}/regions')
-def get_all_regions_for_parcellation_id(parcellations_id):
+@router.get(ATLAS_PATH+'/parcellations/{parcellation_id}/regions')
+def get_all_regions_for_parcellation_id(atlas_id: str, parcellations_id: str):
     """
+    Parameters:
+        - atlas_id
+        - parcellation_id
+
     Returns all regions for a given parcellation id.
     """
     atlas = request_utils.create_atlas()
@@ -116,15 +164,19 @@ def get_all_regions_for_parcellation_id(parcellations_id):
     # Throw Bad Request error or 404 if bad parcellation id
     result = []
     for region in atlas.regiontree.children:
-        region_json = __region_result_info(region)
+        region_json = request_utils.create_region_json_object(region)
         request_utils._add_children_to_region(region_json, region)
         result.append(region_json)
     return result
 
 
-@router.get('/parcellations/{parcellation_id:path}')
-def get_parcellation_by_id(parcellations_id):
+@router.get(ATLAS_PATH+'/parcellations/{parcellation_id}')
+def get_parcellation_by_id(atlas_id: str, parcellations_id: str):
     """
+    Parameters:
+        - atlas_id
+        - parcellation_id
+
     Returns one parcellation for given id or 404 Error if no parcellation is found.
     """
     atlas = request_utils.create_atlas()
@@ -139,32 +191,36 @@ def get_parcellation_by_id(parcellations_id):
         raise HTTPException(status_code=404, detail='parcellation with id: {} not found'.format(parcellations_id))
 
 
-
-
-
 # endregion
 
 # region === spaces
 
 
-@router.get('/spaces')
-def get_all_spaces():
+@router.get(ATLAS_PATH+'/spaces')
+def get_all_spaces(atlas_id: str):
     """
+    Parameters:
+        - atlas_id
+
     Returns all spaces that are defined in the brainscapes client.
     """
     atlas = request_utils.create_atlas()
     atlas_spaces = atlas.spaces
     result = []
     for space in atlas_spaces:
-        result.append({"id": space.id, "name": space.name})
+        result.append({
+            "id": _split_id(space.id),
+            "name": space.name
+        })
     return jsonable_encoder(result)
 
 
-@router.get('/spaces/{space_id:path}/templates')
-def get_template_by_space_id(space_id):
+@router.get(ATLAS_PATH+'/spaces/{space_id}/templates')
+def get_template_by_space_id(atlas_id: str, space_id: str):
     """
     Parameters:
-    - space
+        - atlas_id
+        - space_id
 
     Returns all templates for a given space id.
     """
@@ -179,9 +235,13 @@ def get_template_by_space_id(space_id):
     return FileResponse(filename, filename=filename)
 
 
-@router.get('/spaces/{space_id:path}/parcellation_maps')
-def get_all_regions_for_parcellation_id(space_id):  # add parcellations_map_id as optional param
+@router.get(ATLAS_PATH+'/spaces/{space_id}/parcellation_maps')
+def get_all_regions_for_parcellation_id(atlas_id: str, space_id: str):  # add parcellations_map_id as optional param
     """
+    Parameters:
+        - atlas_id
+        - space_id
+
     Returns all maps for a given space id.
     """
     atlas = request_utils.create_atlas()
@@ -211,9 +271,13 @@ def get_all_regions_for_parcellation_id(space_id):  # add parcellations_map_id a
     raise HTTPException(status_code=404, detail='Maps for space with id: {} not found'.format(space_id))
 
 
-@router.get('/spaces/{space_id:path}')
-def get_one_space_by_id(space_id: str):
+@router.get(ATLAS_PATH+'/spaces/{space_id}')
+def get_one_space_by_id(atlas_id: str, space_id: str):
     """
+    Parameters:
+        - atlas_id
+        - space_id
+
     Returns space for given id.
     """
     atlas = request_utils.create_atlas()
@@ -230,17 +294,30 @@ def get_one_space_by_id(space_id: str):
 
 @router.get('/genes')
 def get_gene_names():
+    """
+    Return all genes (name, acronym) in brainscapes
+    """
     genes = features.genes.AllenBrainAtlasQuery.genes['msg']
     return jsonable_encoder([{'name': g['name'], 'acronym': g['acronym']} for g in genes])
 
 
 @router.get('/genes/{gene}')
 def get_gene_names(gene: str, region: str):
+    """
+    Parameters:
+        - gene
+        - region
+
+    Return the gene expression for given gene in a given region
+    """
     return get_gene_expression(region, gene)
 
 
 @router.get('/features')
 def get_all_available_modalities():
+    """
+    Return all possible modalities
+    """
     return [m for m in features.modalities]
 
 
@@ -249,6 +326,14 @@ def get_feature_for_modality(modality_id: ModalityType,
                              region: str,
                              gene: Optional[str] = None,
                              credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """
+    Parameters:
+        - modality_id
+        - region
+        - gene
+
+    Return the feature depending on selected modality and region
+    """
     if modality_id == ModalityType.ReceptorDistribution:
         return get_receptor_distribution(region)
     if modality_id == ModalityType.ConnectivityProfile:
@@ -361,42 +446,3 @@ def get_connectivity_matrix():
 #         return data
 #     else:
 #         return "A region name must be provided as a query parameter", 400
-
-# @router.get('/genes')
-# def genes(request: Request):
-#     """
-#     GET /genes
-#     Parameters:
-#     - region
-#     - gene
-#
-#     Returns all genes for a given region and gene type.
-#     """
-#     atlas = request_utils.create_atlas()
-#     selected_region = atlas.regiontree.find(request.args['region'], exact=False)
-#
-#     result = []
-#     if request.args['gene'] in features.gene_names:
-#         for region in selected_region:
-#             atlas.select_region(region)
-#             genes_feature = atlas.query_data(
-#                 modality=features.modalities.GeneExpression,
-#                 gene=request.args['gene']
-#             )
-#             region_result = []
-#             for g in genes_feature:
-#                 region_result.append(dict(
-#                     expression_levels=g.expression_levels,
-#                     factors=g.factors,
-#                     gene=g.gene,
-#                     location=g.location.tolist(),
-#                     space=g.space.id,
-#                     z_scores=g.z_scores
-#                 ))
-#             result.append(dict(
-#                 region=region.name,
-#                 features=region_result
-#             ))
-#         return jsonable_encoder(result)
-#     else:
-#         return 'Gene {} not found'.format(request.args['gene']), 404

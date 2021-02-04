@@ -52,25 +52,31 @@ def find_space_by_id(atlas, space_id):
     for space in atlas.spaces:
         if space.id.find(space_id):
             return space
-    return {}    
+    return {}
+
+
+def create_region_json_object(region):
+    region_json = {'name': region.name, 'children': []}
+    if hasattr(region, 'rgb'):
+        region_json['rgb'] = region.rgb
+    if hasattr(region, 'fullId'):
+        region_json['id'] = region.fullId
+    if hasattr(region, 'labelIndex'):
+        region_json['labelIndex'] = region.labelIndex
+
+    return region_json
 
 
 def _add_children_to_region(region_json, region):
     for child in region.children:
-        o = {'name': child.name, 'children': []}
-        if hasattr(child, 'rgb'):
-            o['rgb'] = child.rgb
-        if hasattr(child, 'fullId'):
-            o['id'] = child.fullId
-        if hasattr(child, 'labelIndex'):
-            o['labelIndex'] = child.labelIndex
+        o = create_region_json_object(child)
         if child.children:
             _add_children_to_region(o, child)
         region_json['children'].append(o)
 
 
 def _get_file_from_nibabel(nibabel_object, nifti_type, space):
-    filename = '{}-{}.nii'.format(nifti_type, space.name.replace(' ','_'))
+    filename = '{}-{}.nii'.format(nifti_type, space.name.replace(' ', '_'))
     # save nifti file in file-object
     nib.save(nibabel_object, filename)
-    return filename        
+    return filename
