@@ -14,6 +14,7 @@
 
 from brainscapes.authentication import Authentication
 from brainscapes.atlas import REGISTRY
+from brainscapes.features import regionprops
 import brainscapes as bs
 
 from fastapi import Request
@@ -63,7 +64,7 @@ def create_region_json_object(region):
         region_json['id'] = region.fullId
     if hasattr(region, 'labelIndex'):
         region_json['labelIndex'] = region.labelIndex
-
+    # _add_children_to_region(region_json, region)
     return region_json
 
 
@@ -72,6 +73,9 @@ def _add_children_to_region(region_json, region):
         o = create_region_json_object(child)
         if child.children:
             _add_children_to_region(o, child)
+        # else:
+        #     atlas = create_atlas()
+        #     atlas.select_region(child)
         region_json['children'].append(o)
 
 

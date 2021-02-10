@@ -26,6 +26,7 @@ from starlette.responses import FileResponse, PlainTextResponse, StreamingRespon
 import request_utils
 
 from brainscapes import features
+from brainscapes.features import regionprops
 from brainscapes.atlas import REGISTRY
 
 # FastApi router to create rest endpoints
@@ -215,6 +216,55 @@ def get_all_spaces(atlas_id: str):
     return jsonable_encoder(result)
 
 
+@router.get(ATLAS_PATH+'/spaces/{space_id}/regions')
+def get_all_regions_for_space_id(atlas_id: str, space_id: str):
+    """
+    Parameters:
+        - atlas_id
+        - space_id
+
+    Returns all regions for a given space id.
+    """
+    atlas = request_utils.create_atlas()
+    # select atlas parcellation
+    # Throw Bad Request error or 404 if bad space id
+    result = []
+    for region in atlas.regiontree.children:
+        region_json = request_utils.create_region_json_object(region)
+        request_utils._add_children_to_region(region_json, region)
+        result.append(region_json)
+    return result
+
+
+@router.get(ATLAS_PATH+'/spaces/{space_id}/regions/{region_id}')
+def get_region_by_name(atlas_id: str, space_id: str, region_id):
+    """
+    Parameters:
+        - atlas_id
+        - space_id
+        - region_id
+
+    Returns all regions for a given space id.
+    """
+    atlas = request_utils.create_atlas()
+    region = atlas.regiontree.find(region_id)
+    # select atlas parcellation
+    # Throw Bad Request error or 404 if bad space id
+
+    r = region[0]
+    region_json = request_utils.create_region_json_object(r)
+    request_utils._add_children_to_region(region_json, r)
+    atlas.select_region(r)
+    r_props = regionprops.RegionProps(atlas, request_utils.find_space_by_id(atlas, space_id))
+    region_json['props'] = {}
+    region_json['props']['centroid_mm'] = list(r_props.attrs['centroid_mm'])
+    region_json['props']['volume_mm'] = r_props.attrs['volume_mm']
+    region_json['props']['surface_mm'] = r_props.attrs['surface_mm']
+    region_json['props']['is_cortical'] = r_props.attrs['is_cortical']
+
+    return jsonable_encoder(region_json)
+
+
 @router.get(ATLAS_PATH+'/spaces/{space_id}/templates')
 def get_template_by_space_id(atlas_id: str, space_id: str):
     """
@@ -236,7 +286,7 @@ def get_template_by_space_id(atlas_id: str, space_id: str):
 
 
 @router.get(ATLAS_PATH+'/spaces/{space_id}/parcellation_maps')
-def get_all_regions_for_parcellation_id(atlas_id: str, space_id: str):  # add parcellations_map_id as optional param
+def get_parcellation_map_for_space(atlas_id: str, space_id: str):  # add parcellations_map_id as optional param
     """
     Parameters:
         - atlas_id
