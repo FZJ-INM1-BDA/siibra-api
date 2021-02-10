@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from brainscapes.authentication import Authentication
 from fastapi import FastAPI, Depends
 
@@ -20,13 +21,16 @@ from fastapi import Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.templating import Jinja2Templates
 
-import brainscapes_api
+import brainscapes_api, atlas_api, space_api, parcellation_api
 
 security = HTTPBearer()
 
 # Main fastAPI application
 app = FastAPI()
 # Add a brainscapes router with further endpoints
+app.include_router(atlas_api.router)
+app.include_router(space_api.router)
+app.include_router(parcellation_api.router)
 app.include_router(brainscapes_api.router)
 # Template list, with every template in the project
 # can be rendered and returned

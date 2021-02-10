@@ -95,3 +95,20 @@ def _get_file_from_nibabel(nibabel_object, nifti_type, space):
     # save nifti file in file-object
     nib.save(nibabel_object, filename)
     return filename
+
+
+def split_id(kg_id: str):
+    """
+    Parameters:
+        - kg_id
+
+    Splitting the knowledge graph id into the schema and the id part.
+    Only the id part is needed as a path parameter.
+    """
+    split_id = kg_id.split('/')
+    return {
+        'kg': {
+            'kgSchema': '/'.join(split_id[0:-1]),
+            'kgId':  split_id[-1]
+        }
+    }
