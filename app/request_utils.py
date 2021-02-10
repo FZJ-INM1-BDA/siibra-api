@@ -31,8 +31,12 @@ def _set_auth_token():
         auth.set_token(Request.args['token'])
 
 
-def create_atlas():
+def create_atlas(atlas_id):
     return REGISTRY.MULTILEVEL_HUMAN_ATLAS
+
+
+def select_parcellation_by_id(atlas, parcellation_id):
+    atlas.select_parcellation(find_parcellation_by_id(parcellation_id))
 
 
 def query_data(modality, regionname, args=None):
@@ -47,6 +51,13 @@ def query_data(modality, regionname, args=None):
         result['receptor_symbols'] = bs.features.receptors.RECEPTOR_SYMBOLS
         return result
     return []
+
+
+def find_parcellation_by_id(atlas, parcellation_id):
+    for parcellation in atlas.parcellations:
+        if parcellation.id == parcellation_id:
+            return parcellation
+    return {}
 
 
 def find_space_by_id(atlas, space_id):

@@ -143,7 +143,7 @@ def get_all_parcellations(atlas_id: str, request: Request, credentials: HTTPAuth
                       'atlas = REGISTRY.MULTILEVEL_HUMAN_ATLAS \n ' \
                       'parcellations = atlas.parcellations'
         return PlainTextResponse(status_code=200, content=python_code)
-    atlas = request_utils.create_atlas()
+    atlas = request_utils.create_atlas(atlas_id)
     parcellations = atlas.parcellations
     result = []
     for parcellation in parcellations:
@@ -151,24 +151,27 @@ def get_all_parcellations(atlas_id: str, request: Request, credentials: HTTPAuth
     return jsonable_encoder(result)
 
 
-@router.get(ATLAS_PATH+'/parcellations/{parcellation_id}/regions')
-def get_all_regions_for_parcellation_id(atlas_id: str, parcellations_id: str):
-    """
-    Parameters:
-        - atlas_id
-        - parcellation_id
-
-    Returns all regions for a given parcellation id.
-    """
-    atlas = request_utils.create_atlas()
-    # select atlas parcellation
-    # Throw Bad Request error or 404 if bad parcellation id
-    result = []
-    for region in atlas.regiontree.children:
-        region_json = request_utils.create_region_json_object(region)
-        request_utils._add_children_to_region(region_json, region)
-        result.append(region_json)
-    return result
+# @router.get(ATLAS_PATH+'/parcellations/{parcellation_id}/regions')
+# def get_all_regions_for_parcellation_id(atlas_id: str, parcellations_id: str):
+#     """
+#     Parameters:
+#         - atlas_id
+#         - parcellation_id
+#
+#     Returns all regions for a given parcellation id.
+#     """
+#     # select atlas parcellation
+#     # Throw Bad Request error or 404 if bad parcellation id
+#     atlas = request_utils.create_atlas(atlas_id)
+#     # select parcellation
+#     request_utils.select_parcellation_by_id(atlas, parcellations_id)
+#
+#     result = []
+#     for region in atlas.regiontree.children:
+#         region_json = request_utils.create_region_json_object(region)
+#         request_utils._add_children_to_region(region_json, region)
+#         result.append(region_json)
+#     return result
 
 
 @router.get(ATLAS_PATH+'/parcellations/{parcellation_id}')
@@ -180,7 +183,7 @@ def get_parcellation_by_id(atlas_id: str, parcellations_id: str):
 
     Returns one parcellation for given id or 404 Error if no parcellation is found.
     """
-    atlas = request_utils.create_atlas()
+    atlas = request_utils.create_atlas(atlas_id)
     parcellations = atlas.parcellations
     result = {}
     for parcellation in parcellations:
@@ -205,7 +208,7 @@ def get_all_spaces(atlas_id: str):
 
     Returns all spaces that are defined in the brainscapes client.
     """
-    atlas = request_utils.create_atlas()
+    atlas = request_utils.create_atlas(atlas_id)
     atlas_spaces = atlas.spaces
     result = []
     for space in atlas_spaces:
@@ -225,7 +228,7 @@ def get_all_regions_for_space_id(atlas_id: str, space_id: str):
 
     Returns all regions for a given space id.
     """
-    atlas = request_utils.create_atlas()
+    atlas = request_utils.create_atlas(atlas_id)
     # select atlas parcellation
     # Throw Bad Request error or 404 if bad space id
     result = []
@@ -246,7 +249,7 @@ def get_region_by_name(atlas_id: str, space_id: str, region_id):
 
     Returns all regions for a given space id.
     """
-    atlas = request_utils.create_atlas()
+    atlas = request_utils.create_atlas(atlas_id)
     region = atlas.regiontree.find(region_id)
     # select atlas parcellation
     # Throw Bad Request error or 404 if bad space id
@@ -274,7 +277,7 @@ def get_template_by_space_id(atlas_id: str, space_id: str):
 
     Returns all templates for a given space id.
     """
-    atlas = request_utils.create_atlas()
+    atlas = request_utils.create_atlas(atlas_id)
     space = request_utils.find_space_by_id(atlas, space_id)
     template = atlas.get_template(space)
 
@@ -294,7 +297,7 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):  # add parcell
 
     Returns all maps for a given space id.
     """
-    atlas = request_utils.create_atlas()
+    atlas = request_utils.create_atlas(atlas_id)
     space = request_utils.find_space_by_id(atlas, space_id)
     maps = atlas.get_maps(space)
     print(maps.keys())
@@ -330,7 +333,7 @@ def get_one_space_by_id(atlas_id: str, space_id: str):
 
     Returns space for given id.
     """
-    atlas = request_utils.create_atlas()
+    atlas = request_utils.create_atlas(atlas_id)
     space = request_utils.find_space_by_id(atlas, space_id)
     if space:
         return jsonable_encoder(space)
