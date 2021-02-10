@@ -22,6 +22,8 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.templating import Jinja2Templates
 
 import brainscapes_api, atlas_api, space_api, parcellation_api
+import requests
+import json
 
 security = HTTPBearer()
 
@@ -46,6 +48,36 @@ def home(request: Request):
     :return: the rendered index.html template
     """
     return templates.TemplateResponse('index.html', context={'request': request})
+
+
+@app.get('/stats')
+def home(request: Request):
+    """
+    Return the template for the brainscapes statistics.
+
+    :param request: fastApi Request object
+    :return: the rendered stats.html template
+    """
+    download_data_json = requests.get('https://pypistats.org/api/packages/brainscapes/overall?mirrors=false')
+    download_data = json.loads(download_data_json.content)
+
+    download_sum = 0
+    download_sum_month = {}
+
+    for d in download_data['data']:
+        download_sum += d['downloads']
+        date_index = '{}-{}'.format(d['date'].split('-')[0], d['date'].split('-')[1])
+        if not date_index in download_sum_month:
+            download_sum_month[date_index] = 0
+        download_sum_month[date_index] += d['downloads']
+
+
+
+    return templates.TemplateResponse('stats.html', context={
+        'request': request,
+        'download_sum': download_sum,
+        'download_sum_month': download_sum_month
+    })
 
 
 @app.middleware("http")
