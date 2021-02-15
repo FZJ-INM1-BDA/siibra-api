@@ -21,7 +21,10 @@ from fastapi import Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.templating import Jinja2Templates
 
-import brainscapes_api, atlas_api, space_api, parcellation_api
+from .brainscapes_api import router as brainscapes_router
+from .atlas_api import router as atlas_router
+from .space_api import router as space_router
+from .parcellation_api import router as parcellation_router
 import requests
 import json
 
@@ -30,13 +33,13 @@ security = HTTPBearer()
 # Main fastAPI application
 app = FastAPI()
 # Add a brainscapes router with further endpoints
-app.include_router(parcellation_api.router)
-app.include_router(space_api.router)
-app.include_router(atlas_api.router)
-app.include_router(brainscapes_api.router)
+app.include_router(parcellation_router)
+app.include_router(space_router)
+app.include_router(atlas_router)
+app.include_router(brainscapes_router)
 # Template list, with every template in the project
 # can be rendered and returned
-templates = Jinja2Templates(directory='templates/')
+templates = Jinja2Templates(directory='templates')
 
 
 @app.get('/')
@@ -47,6 +50,7 @@ def home(request: Request):
     :param request: fastApi Request object
     :return: the rendered index.html template
     """
+    return ""
     return templates.TemplateResponse('index.html', context={'request': request})
 
 

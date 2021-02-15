@@ -16,9 +16,9 @@ from fastapi import APIRouter, Request, HTTPException, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from starlette.responses import PlainTextResponse
 from fastapi.encoders import jsonable_encoder
-from atlas_api import ATLAS_PATH
+from .atlas_api import ATLAS_PATH
 
-import request_utils
+from .request_utils import split_id, create_atlas
 
 router = APIRouter()
 
@@ -36,7 +36,7 @@ def __parcellation_result_info(parcellation, atlas_id=None, request=None):
     Create the response for a parcellation object
     """
     result_info = {
-        "id": request_utils.split_id(parcellation.id),
+        "id": split_id(parcellation.id),
         "name": parcellation.name,
         }
 
@@ -64,7 +64,7 @@ def get_all_parcellations(atlas_id: str, request: Request, credentials: HTTPAuth
                       'atlas = REGISTRY.MULTILEVEL_HUMAN_ATLAS \n ' \
                       'parcellations = atlas.parcellations'
         return PlainTextResponse(status_code=200, content=python_code)
-    atlas = request_utils.create_atlas(atlas_id)
+    atlas = create_atlas(atlas_id)
     parcellations = atlas.parcellations
     result = []
     for parcellation in parcellations:
@@ -81,7 +81,7 @@ def get_parcellation_by_id(atlas_id: str, parcellation_id: str):
 
     Returns one parcellation for given id or 404 Error if no parcellation is found.
     """
-    atlas = request_utils.create_atlas(atlas_id)
+    atlas = create_atlas(atlas_id)
     parcellations = atlas.parcellations
     result = {}
     for parcellation in parcellations:

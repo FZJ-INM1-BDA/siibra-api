@@ -19,7 +19,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from fastapi.encoders import jsonable_encoder
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-import request_utils
+from .request_utils import query_data, create_atlas
 
 from brainscapes import features
 
@@ -100,7 +100,7 @@ def get_feature_for_modality(modality_id: ModalityType,
 
 
 def get_receptor_distribution(region):
-    receptor_data = request_utils.query_data('ReceptorDistribution', region)
+    receptor_data = query_data('ReceptorDistribution', region)
     if receptor_data:
         return jsonable_encoder(receptor_data)
     else:
@@ -108,7 +108,7 @@ def get_receptor_distribution(region):
 
 
 def get_gene_expression(region, gene):
-    atlas = request_utils.create_atlas()
+    atlas = create_atlas()
     selected_region = atlas.regiontree.find(region, exact=False)
     if not selected_region:
         raise HTTPException(status_code=400, detail='Invalid region: {}'.format(region))

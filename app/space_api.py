@@ -16,14 +16,15 @@ import io
 
 import zipfile
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from starlette.responses import FileResponse, StreamingResponse
 
-import request_utils
+from .request_utils import create_atlas, split_id, create_region_json_object
+from .request_utils import _add_children_to_region, find_space_by_id, _get_file_from_nibabel
 
 from brainscapes.features import regionprops
-from atlas_api import ATLAS_PATH
+from .atlas_api import ATLAS_PATH
 
 # FastApi router to create rest endpoints
 router = APIRouter()
@@ -33,20 +34,29 @@ router = APIRouter()
 
 
 @router.get(ATLAS_PATH + '/{atlas_id:path}/spaces')
-def get_all_spaces(atlas_id: str):
+def get_all_spaces(atlas_id: str, request: Request):
     """
     Parameters:
         - atlas_id
 
     Returns all spaces that are defined in the brainscapes client.
     """
-    atlas = request_utils.create_atlas(atlas_id)
+    atlas = create_atlas(atlas_id)
     atlas_spaces = atlas.spaces
     result = []
     for space in atlas_spaces:
         result.append({
-            "id": request_utils.split_id(space.id),
-            "name": space.name
+            'id': split_id(space.id),
+            'name': space.name,
+            'links': {
+                'self': {
+                    'href': '{}atlases/{}/spaces/{}'.format(
+                        request.base_url,
+                        atlas_id.replace('/', '%2F'),
+                        space.id.replace('/', '%2F')
+                    )
+                }
+            }
         })
     return jsonable_encoder(result)
 
@@ -60,13 +70,13 @@ def get_all_regions_for_space_id(atlas_id: str, space_id: str):
 
     Returns all regions for a given space id.
     """
-    atlas = request_utils.create_atlas(atlas_id)
+    atlas = create_atlas(atlas_id)
     # select atlas parcellation
     # Throw Bad Request error or 404 if bad space id
     result = []
     for region in atlas.regiontree.children:
-        region_json = request_utils.create_region_json_object(region)
-        request_utils._add_children_to_region(region_json, region)
+        region_json = create_region_json_object(region)
+        _add_children_to_region(region_json, region)
         result.append(region_json)
     return result
 
@@ -81,16 +91,16 @@ def get_region_by_name(atlas_id: str, space_id: str, region_id):
 
     Returns all regions for a given space id.
     """
-    atlas = request_utils.create_atlas(atlas_id)
+    atlas = create_atlas(atlas_id)
     region = atlas.regiontree.find(region_id)
     # select atlas parcellation
     # Throw Bad Request error or 404 if bad space id
 
     r = region[0]
-    region_json = request_utils.create_region_json_object(r)
-    request_utils._add_children_to_region(region_json, r)
+    region_json = create_region_json_object(r)
+    _add_children_to_region(region_json, r)
     atlas.select_region(r)
-    r_props = regionprops.RegionProps(atlas, request_utils.find_space_by_id(atlas, space_id))
+    r_props = regionprops.RegionProps(atlas, find_space_by_id(atlas, space_id))
     region_json['props'] = {}
     region_json['props']['centroid_mm'] = list(r_props.attrs['centroid_mm'])
     region_json['props']['volume_mm'] = r_props.attrs['volume_mm']
@@ -109,13 +119,13 @@ def get_template_by_space_id(atlas_id: str, space_id: str):
 
     Returns all templates for a given space id.
     """
-    atlas = request_utils.create_atlas(atlas_id)
-    space = request_utils.find_space_by_id(atlas, space_id)
+    atlas = create_atlas(atlas_id)
+    space = find_space_by_id(atlas, space_id)
     template = atlas.get_template(space)
 
     # create file-object in memory
     # file_object = io.BytesIO()
-    filename = request_utils._get_file_from_nibabel(template, 'template', space)
+    filename = _get_file_from_nibabel(template, 'template', space)
 
     return FileResponse(filename, filename=filename)
 
@@ -129,20 +139,20 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):  # add parcell
 
     Returns all maps for a given space id.
     """
-    atlas = request_utils.create_atlas(atlas_id)
-    space = request_utils.find_space_by_id(atlas, space_id)
+    atlas = create_atlas(atlas_id)
+    space = find_space_by_id(atlas, space_id)
     maps = atlas.get_maps(space)
     print(maps.keys())
 
     if len(maps) == 1:
-        filename = request_utils._get_file_from_nibabel(maps[0], 'maps', space)
+        filename = _get_file_from_nibabel(maps[0], 'maps', space)
         return FileResponse(filename, filename=filename)
     else:
         files = []
         mem_zip = io.BytesIO()
 
         for label, space_map in maps.items():
-            files.append(request_utils._get_file_from_nibabel(space_map, label, space))
+            files.append(_get_file_from_nibabel(space_map, label, space))
 
         with zipfile.ZipFile(mem_zip, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
             for f in files:
@@ -157,7 +167,7 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):  # add parcell
 
 
 @router.get(ATLAS_PATH+'/{atlas_id:path}/spaces/{space_id:path}')
-def get_one_space_by_id(atlas_id: str, space_id: str):
+def get_one_space_by_id(atlas_id: str, space_id: str, request: Request):
     """
     Parameters:
         - atlas_id
@@ -165,10 +175,34 @@ def get_one_space_by_id(atlas_id: str, space_id: str):
 
     Returns space for given id.
     """
-    atlas = request_utils.create_atlas(atlas_id)
-    space = request_utils.find_space_by_id(atlas, space_id)
+    atlas = create_atlas(atlas_id)
+    space = find_space_by_id(atlas, space_id)
     if space:
-        return jsonable_encoder(space)
+        json_result = jsonable_encoder(space)
+        json_result['links'] = {
+            'regions': {
+                'href': '{}atlases/{}/spaces/{}/regions'.format(
+                    request.base_url,
+                    atlas_id.replace('/', '%2F'),
+                    space.id.replace('/', '%2F')
+                )
+            },
+            'templates': {
+                'href': '{}atlases/{}/spaces/{}/templates'.format(
+                    request.base_url,
+                    atlas_id.replace('/', '%2F'),
+                    space.id.replace('/', '%2F')
+                )
+            },
+            'parcellation_maps': {
+                'href': '{}atlases/{}/spaces/{}/parcellation_maps'.format(
+                    request.base_url,
+                    atlas_id.replace('/', '%2F'),
+                    space.id.replace('/', '%2F')
+                )
+            }
+        }
+        return json_result
     else:
         raise HTTPException(status_code=404, detail='space with id: {} not found'.format(space_id))
 
