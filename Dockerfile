@@ -8,10 +8,10 @@ RUN python -m pip install --upgrade pip
 RUN pip install brainscapes
 
 # Copy the application and install dependencies
-COPY ./app /app
+COPY . /app
 WORKDIR /app
 
-RUN python -m pip install -r requirements.txt
+RUN python -m pip install -r app/requirements.txt
 RUN python -m pip install anytree
 RUN python -m pip install pillow
 RUN python -m pip install scikit-image
@@ -26,4 +26,4 @@ ENV BRAINSCAPES_CACHEDIR=/app/cache
 EXPOSE 5000
 
 # Start application
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "5000"]
+CMD ["uvicorn", "app.app:app", "--host", "0.0.0.0", "--port", "5000"]
