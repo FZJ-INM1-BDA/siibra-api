@@ -85,7 +85,7 @@ def get_parcellation_by_id(atlas_id: str, parcellation_id: str):
     parcellations = atlas.parcellations
     result = {}
     for parcellation in parcellations:
-        if parcellation.id.find(parcellation_id):
+        if parcellation.id.find(parcellation_id) != -1:
             result = __parcellation_result_info(parcellation)
     if result:
         return jsonable_encoder(result)
