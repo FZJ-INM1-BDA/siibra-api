@@ -62,7 +62,7 @@ def find_parcellation_by_id(atlas, parcellation_id):
 
 def find_space_by_id(atlas, space_id):
     for space in atlas.spaces:
-        if space.id.find(space_id):
+        if space.id.find(space_id) != -1:
             return space
     return {}
 
