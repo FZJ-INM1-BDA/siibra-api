@@ -59,8 +59,6 @@ def get_all_parcellations(atlas_id: str, request: Request, credentials: HTTPAuth
 
     Returns all parcellations that are defined in the brainscapes client for given atlas
     """
-    print(request.headers)
-    print(request.headers['accept'])
     if request.headers['accept'] == 'application/text':
         python_code = 'from brainscapes.atlas import REGISTRY \n ' \
                       'atlas = REGISTRY.MULTILEVEL_HUMAN_ATLAS \n ' \
