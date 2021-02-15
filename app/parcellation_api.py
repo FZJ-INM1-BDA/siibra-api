@@ -28,7 +28,7 @@ security = HTTPBearer()
 # region === parcellations
 
 
-def __parcellation_result_info(parcellation):
+def __parcellation_result_info(parcellation, atlas_id=None, request=None):
     """
     Parameters:
         - parcellation
@@ -37,8 +37,15 @@ def __parcellation_result_info(parcellation):
     """
     result_info = {
         "id": request_utils.split_id(parcellation.id),
-        "name": parcellation.name
-    }
+        "name": parcellation.name,
+        }
+
+    if request:
+        result_info['links'] = {
+                'parcellations': {
+                    'href': '{}atlases/{}/parcellations/{}'.format(request.base_url, atlas_id.replace('/', '%2F'), parcellation.id.replace('/', '%2F'))
+                }
+        }
     if hasattr(parcellation, 'version') and parcellation.version:
         result_info['version'] = parcellation.version
     return result_info
@@ -63,7 +70,7 @@ def get_all_parcellations(atlas_id: str, request: Request, credentials: HTTPAuth
     parcellations = atlas.parcellations
     result = []
     for parcellation in parcellations:
-        result.append(__parcellation_result_info(parcellation))
+        result.append(__parcellation_result_info(parcellation, atlas_id, request))
     return jsonable_encoder(result)
 
 

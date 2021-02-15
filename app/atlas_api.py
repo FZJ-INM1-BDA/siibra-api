@@ -47,9 +47,6 @@ def get_atlas_by_id(atlas_id: str, request: Request):
 
     Get more information for a specific atlas with links to further objects.
     """
-    print(request.url)
-    print(request.base_url)
-    print(request.headers)
     atlases = REGISTRY.items
     for a in atlases:
         if a.id == atlas_id.replace('%2F', '/'):#.replace('-', '/'):
