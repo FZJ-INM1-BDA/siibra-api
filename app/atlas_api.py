@@ -33,7 +33,7 @@ def get_all_atlases():
     result = []
     for a in atlases:
         result.append({
-            'id': a.id,#.replace('/', '-'),
+            'id': a.id,
             'name': a.name
         })
     return result
@@ -49,9 +49,9 @@ def get_atlas_by_id(atlas_id: str, request: Request):
     """
     atlases = REGISTRY.items
     for a in atlases:
-        if a.id == atlas_id.replace('%2F', '/'):#.replace('-', '/'):
+        if a.id == atlas_id.replace('%2F', '/'):
             return {
-                'id': a.id,#.replace('/', '-'),
+                'id': a.id,
                 'name': a.name,
                 'links': {
                     'parcellations': {
