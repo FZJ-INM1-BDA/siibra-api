@@ -19,7 +19,7 @@ from brainscapes.atlas import REGISTRY
 router = APIRouter()
 
 # Base URL for all endpoints
-ATLAS_PATH = '/atlases/{atlas_id}'
+ATLAS_PATH = '/atlases'
 
 
 # region === atlases
@@ -33,32 +33,35 @@ def get_all_atlases():
     result = []
     for a in atlases:
         result.append({
-            'id': a.id.replace('/', '-'),
+            'id': a.id,#.replace('/', '-'),
             'name': a.name
         })
     return result
 
 
-@router.get(ATLAS_PATH)
-def get_all_atlases(atlas_id: str, request: Request):
+@router.get(ATLAS_PATH + '/{atlas_id:path}')
+def get_atlas_by_id(atlas_id: str, request: Request):
     """
     Parameters:
         - atlas_id: Atlas id
 
     Get more information for a specific atlas with links to further objects.
     """
+    print(request.url)
+    print(request.base_url)
+    print(request.headers)
     atlases = REGISTRY.items
     for a in atlases:
-        if a.id == atlas_id.replace('-', '/'):
+        if a.id == atlas_id.replace('%2F', '/'):#.replace('-', '/'):
             return {
-                'id': a.id.replace('/', '-'),
+                'id': a.id,#.replace('/', '-'),
                 'name': a.name,
                 'links': {
                     'parcellations': {
-                        'href': '{}/parcellations'.format(request.url)
+                        'href': '{}atlases/{}/parcellations'.format(request.base_url, atlas_id.replace('/', '%2F'))
                     },
                     'spaces': {
-                        'href': '{}/spaces'.format(request.url)
+                        'href': '{}atlases/{}/spaces'.format(request.base_url, atlas_id.replace('/', '%2F'))
                     }
                 }
             }

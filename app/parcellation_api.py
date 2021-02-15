@@ -44,7 +44,7 @@ def __parcellation_result_info(parcellation):
     return result_info
 
 
-@router.get(ATLAS_PATH+'/parcellations')
+@router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations')
 def get_all_parcellations(atlas_id: str, request: Request, credentials: HTTPAuthorizationCredentials = Depends(security)):
     """
     Parameters:
@@ -67,7 +67,7 @@ def get_all_parcellations(atlas_id: str, request: Request, credentials: HTTPAuth
     return jsonable_encoder(result)
 
 
-@router.get(ATLAS_PATH + '/parcellations/{parcellation_id:path}')
+@router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}')
 def get_parcellation_by_id(atlas_id: str, parcellation_id: str):
     """
     Parameters:

@@ -32,7 +32,7 @@ router = APIRouter()
 # region === spaces
 
 
-@router.get(ATLAS_PATH+'/spaces')
+@router.get(ATLAS_PATH + '/{atlas_id:path}/spaces')
 def get_all_spaces(atlas_id: str):
     """
     Parameters:
@@ -51,7 +51,7 @@ def get_all_spaces(atlas_id: str):
     return jsonable_encoder(result)
 
 
-@router.get(ATLAS_PATH+'/spaces/{space_id}/regions')
+@router.get(ATLAS_PATH+'/{atlas_id:path}/spaces/{space_id:path}/regions')
 def get_all_regions_for_space_id(atlas_id: str, space_id: str):
     """
     Parameters:
@@ -71,7 +71,7 @@ def get_all_regions_for_space_id(atlas_id: str, space_id: str):
     return result
 
 
-@router.get(ATLAS_PATH+'/spaces/{space_id}/regions/{region_id}')
+@router.get(ATLAS_PATH+'/{atlas_id:path}/spaces/{space_id:path}/regions/{region_id}')
 def get_region_by_name(atlas_id: str, space_id: str, region_id):
     """
     Parameters:
@@ -100,7 +100,7 @@ def get_region_by_name(atlas_id: str, space_id: str, region_id):
     return jsonable_encoder(region_json)
 
 
-@router.get(ATLAS_PATH+'/spaces/{space_id}/templates')
+@router.get(ATLAS_PATH+'/{atlas_id:path}/spaces/{space_id:path}/templates')
 def get_template_by_space_id(atlas_id: str, space_id: str):
     """
     Parameters:
@@ -120,7 +120,7 @@ def get_template_by_space_id(atlas_id: str, space_id: str):
     return FileResponse(filename, filename=filename)
 
 
-@router.get(ATLAS_PATH+'/spaces/{space_id}/parcellation_maps')
+@router.get(ATLAS_PATH+'/{atlas_id:path}/spaces/{space_id:path}/parcellation_maps')
 def get_parcellation_map_for_space(atlas_id: str, space_id: str):  # add parcellations_map_id as optional param
     """
     Parameters:
@@ -156,7 +156,7 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):  # add parcell
     raise HTTPException(status_code=404, detail='Maps for space with id: {} not found'.format(space_id))
 
 
-@router.get(ATLAS_PATH+'/spaces/{space_id}')
+@router.get(ATLAS_PATH+'/{atlas_id:path}/spaces/{space_id:path}')
 def get_one_space_by_id(atlas_id: str, space_id: str):
     """
     Parameters:

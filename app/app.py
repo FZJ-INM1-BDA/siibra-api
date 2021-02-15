@@ -30,9 +30,9 @@ security = HTTPBearer()
 # Main fastAPI application
 app = FastAPI()
 # Add a brainscapes router with further endpoints
-app.include_router(atlas_api.router)
-app.include_router(space_api.router)
 app.include_router(parcellation_api.router)
+app.include_router(space_api.router)
+app.include_router(atlas_api.router)
 app.include_router(brainscapes_api.router)
 # Template list, with every template in the project
 # can be rendered and returned
