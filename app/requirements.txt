@@ -1,3 +1,4 @@
+requests
 coverage
 fastapi
 jinja2
