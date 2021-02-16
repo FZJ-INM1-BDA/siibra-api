@@ -39,7 +39,7 @@ app.include_router(atlas_router)
 app.include_router(brainscapes_router)
 # Template list, with every template in the project
 # can be rendered and returned
-templates = Jinja2Templates(directory='templates')
+templates = Jinja2Templates(directory='app/templates/')
 
 
 @app.get('/')
@@ -50,7 +50,6 @@ def home(request: Request):
     :param request: fastApi Request object
     :return: the rendered index.html template
     """
-    return ""
     return templates.TemplateResponse('index.html', context={'request': request})
 
 
