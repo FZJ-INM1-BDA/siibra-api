@@ -1,4 +1,4 @@
-image: python:3.8
+image: tiangolo/uvicorn-gunicorn-fastapi:python3.7
 stages:
   - test
   - deploy
