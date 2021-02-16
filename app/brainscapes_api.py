@@ -55,7 +55,7 @@ def get_gene_names():
 
 
 @router.get('/genes/{gene}')
-def get_gene_names(gene: str, region: str):
+def get_gene_expression_for_region(gene: str, region: str):
     """
     Parameters:
         - gene
