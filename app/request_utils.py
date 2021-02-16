@@ -12,26 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from brainscapes.authentication import Authentication
 from brainscapes.atlas import REGISTRY
 from brainscapes.features import regionprops
 import brainscapes as bs
 
-from fastapi import Request
 
 import nibabel as nib
 
 
-def _set_auth_token():
-    auth = Authentication.instance()
-    bearer_token = Request.headers.get("Authorization")
-    if bearer_token:
-        auth.set_token(bearer_token.replace("Bearer ", ""))
-    elif Request.args['token']:
-        auth.set_token(Request.args['token'])
-
-
-def create_atlas(atlas_id):
+def create_atlas(atlas_id=None):
     return REGISTRY.MULTILEVEL_HUMAN_ATLAS
 
 
@@ -43,13 +32,14 @@ def query_data(modality, regionname, args=None):
     atlas = create_atlas()
     selected_region = atlas.regiontree.find(regionname)
     result = {}
-    if selected_region:
-        atlas.select_region(selected_region[0])
-        data = atlas.query_data(modality)
-        data[0]._load()
-        result['data'] = data[0]
-        result['receptor_symbols'] = bs.features.receptors.RECEPTOR_SYMBOLS
-        return result
+    if modality in bs.features.modalities:
+        if selected_region:
+            atlas.select_region(selected_region[0])
+            data = atlas.query_data(modality)
+            data[0]._load()
+            result['data'] = data[0]
+            result['receptor_symbols'] = bs.features.receptors.RECEPTOR_SYMBOLS
+            return result
     return []
 
 
