@@ -11,6 +11,7 @@ test:
   stage: test
   script:
     - pip install -r app/requirements.txt
+    - pip install pytest
     - pip install coverage
     - coverage run -m pytest
     - coverage html -d coverage
