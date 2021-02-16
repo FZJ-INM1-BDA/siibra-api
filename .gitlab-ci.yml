@@ -13,7 +13,6 @@ test:
     - pip install -r app/requirements.txt
     - pip install pytest
     - pip install mock
-    - pip install unittest
     - pip install coverage
     - coverage run -m pytest
     - coverage html -d coverage
