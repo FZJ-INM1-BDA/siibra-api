@@ -24,7 +24,7 @@ ATLAS_PATH = '/atlases'
 
 # region === atlases
 
-@router.get('/atlases')
+@router.get(ATLAS_PATH)
 def get_all_atlases():
     """
     Get all atlases known by brainscapes
