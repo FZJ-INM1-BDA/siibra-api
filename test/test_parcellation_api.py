@@ -49,6 +49,13 @@ def test_all_regions_for_parcellations():
     assert result_content[0]['children'] is not None
 
 
+def test_all_regions_for_parcellations_with_bad_request():
+    response = client.get('/atlases/{}/parcellations/{}/regions'.format(ATLAS_ID.replace('/', '%2F'), INVALID_PARCELLATION_ID))
+    assert response.status_code == 400
+    result_content = json.loads(response.content)
+    assert result_content['detail'] == 'The requested parcellation is not supported by the selected atlas.'
+
+
 def test_get_one_region_for_parcellation_without_extra_data():
     response = client.get('/atlases/{}/parcellations/{}/regions/{}'.format(ATLAS_ID.replace('/', '%2F'), PARCELLATION_ID, REGION_NAME))
     result_content = json.loads(response.content)

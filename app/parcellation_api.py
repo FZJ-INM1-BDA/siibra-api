@@ -74,7 +74,7 @@ def get_all_parcellations(atlas_id: str, request: Request, credentials: HTTPAuth
     return jsonable_encoder(result)
 
 
-@router.get(ATLAS_PATH+'/{atlas_id:path}/parcellations/{parcellation_id:path}/regions')
+@router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions')
 def get_all_regions_for_parcellation_id(atlas_id: str, parcellation_id: str):
     """
     Parameters:
@@ -85,8 +85,14 @@ def get_all_regions_for_parcellation_id(atlas_id: str, parcellation_id: str):
     """
     # select atlas by id
     atlas = create_atlas(atlas_id)
-    # select atlas parcellation
-    atlas.select_parcellation(parcellation_id)
+    try:
+        # select atlas parcellation
+        atlas.select_parcellation(parcellation_id)
+    except Exception:
+        raise HTTPException(
+            status_code=400,
+            detail='The requested parcellation is not supported by the selected atlas.'
+        )
 
     result = []
     for region in atlas.regiontree.children:
@@ -96,7 +102,7 @@ def get_all_regions_for_parcellation_id(atlas_id: str, parcellation_id: str):
     return result
 
 
-@router.get(ATLAS_PATH+'/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}')
+@router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}')
 def get_region_by_name(atlas_id: str, parcellation_id: str, region_id: str, space_id: Optional[str] = None):
     """
     Parameters:
