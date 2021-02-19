@@ -14,8 +14,6 @@ client = TestClient(app)
 ATLAS_ID = 'juelich/iav/atlas/v1.0.0/1'
 SPACE_ID = 'minds%2Fcore%2Freferencespace%2Fv1.0.0%2Fdafcffc5-4826-4bf1-8ff6-46b8a31ff8e2'
 INVALID_SPACE_ID = 'INVALID_SPACE_ID'
-REGION_NAME = 'Ch 123 (Basal Forebrain) - left hemisphere'
-INVALID_REGION_NAME = 'INVALID_REGION'
 
 
 class MockRegionProps:
@@ -65,54 +63,6 @@ def test_get_invalid_space():
     result_content = json.loads(response.content)
     assert response.status_code == 404
     assert result_content['detail'] == 'space with id: {} not found'.format(INVALID_SPACE_ID)
-
-
-def test_all_regions_for_space():
-    response = client.get('/atlases/{}/spaces/{}/regions'.format(ATLAS_ID.replace('/', '%2F'), SPACE_ID))
-    result_content = json.loads(response.content)
-    assert response.status_code == 200
-    assert len(result_content) == 2
-    assert result_content[0]['children'] is not None
-
-
-def test_get_region_for_space():
-    response = client.get('/atlases/{}/spaces/{}/regions/{}'.format(ATLAS_ID.replace('/', '%2F'), SPACE_ID, REGION_NAME))
-    result_content = json.loads(response.content)
-    assert response.status_code == 200
-    assert result_content == {
-        "name": "Ch 123 (Basal Forebrain) - left hemisphere",
-        "children": [],
-        "rgb": [
-            200,
-            200,
-            200
-        ],
-        "id": {
-            "kg": {
-                "kgSchema": "minds/core/parcellationregion/v1.0.0",
-                "kgId": "bb111a95-e04c-4987-8254-4af4ed8b0022"
-            }
-        },
-        "labelIndex": 62,
-        "props": {
-            "centroid_mm": [
-                1,
-                2,
-                3
-            ],
-            "volume_mm": 4.0,
-            "surface_mm": 5.0,
-            "is_cortical": False
-        }
-    }
-
-
-def test_get_region_for_space_with_invalid_region_name():
-    pass
-    # response = client.get('/atlases/{}/spaces/{}/regions/{}'.format(ATLAS_ID.replace('/', '%2F'), SPACE_ID, INVALID_REGION_NAME))
-    # result_content = json.loads(response.content)
-    # assert response.status_code == 404
-    # assert result_content['detail'] == 'region with name: {} not found'.format(INVALID_REGION_NAME)
 
 
 def test_get_templates_for_space():

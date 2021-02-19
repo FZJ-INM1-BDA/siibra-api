@@ -11,14 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
 
 from fastapi import APIRouter, Request, HTTPException, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from starlette.responses import PlainTextResponse
 from fastapi.encoders import jsonable_encoder
 from .atlas_api import ATLAS_PATH
+from .request_utils import split_id, create_atlas, create_region_json_object, _add_children_to_region, find_space_by_id
+from brainscapes.features import regionprops
 
-from .request_utils import split_id, create_atlas
 
 router = APIRouter()
 
@@ -70,6 +72,60 @@ def get_all_parcellations(atlas_id: str, request: Request, credentials: HTTPAuth
     for parcellation in parcellations:
         result.append(__parcellation_result_info(parcellation, atlas_id, request))
     return jsonable_encoder(result)
+
+
+@router.get(ATLAS_PATH+'/{atlas_id:path}/parcellations/{parcellation_id:path}/regions')
+def get_all_regions_for_parcellation_id(atlas_id: str, parcellation_id: str):
+    """
+    Parameters:
+        - atlas_id
+        - parcellation_id
+
+    Returns all regions for a given parcellation id.
+    """
+    # select atlas by id
+    atlas = create_atlas(atlas_id)
+    # select atlas parcellation
+    atlas.select_parcellation(parcellation_id)
+
+    result = []
+    for region in atlas.regiontree.children:
+        region_json = create_region_json_object(region)
+        _add_children_to_region(region_json, region)
+        result.append(region_json)
+    return result
+
+
+@router.get(ATLAS_PATH+'/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}')
+def get_region_by_name(atlas_id: str, parcellation_id: str, region_id: str, space_id: Optional[str] = None):
+    """
+    Parameters:
+        - atlas_id
+        - space_id
+        - region_id
+
+    Returns all regions for a given space id.
+    """
+    # select atlas by id
+    atlas = create_atlas(atlas_id)
+    # select atlas parcellation
+    atlas.select_parcellation(parcellation_id)
+    region = atlas.regiontree.find(region_id)
+
+    r = region[0]
+    region_json = create_region_json_object(r)
+    _add_children_to_region(region_json, r)
+
+    if space_id:
+        atlas.select_region(r)
+        r_props = regionprops.RegionProps(atlas, find_space_by_id(atlas, space_id))
+        region_json['props'] = {}
+        region_json['props']['centroid_mm'] = list(r_props.attrs['centroid_mm'])
+        region_json['props']['volume_mm'] = r_props.attrs['volume_mm']
+        region_json['props']['surface_mm'] = r_props.attrs['surface_mm']
+        region_json['props']['is_cortical'] = r_props.attrs['is_cortical']
+
+    return jsonable_encoder(region_json)
 
 
 @router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}')
