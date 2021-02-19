@@ -12,21 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from brainscapes.authentication import Authentication
-from fastapi import FastAPI, Depends
-
 import os
-
-from fastapi import Request
+import requests
+import json
+from fastapi import FastAPI, Depends, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.templating import Jinja2Templates
-
+from brainscapes.authentication import Authentication
 from .brainscapes_api import router as brainscapes_router
 from .atlas_api import router as atlas_router
 from .space_api import router as space_router
 from .parcellation_api import router as parcellation_router
-import requests
-import json
+
 
 security = HTTPBearer()
 
@@ -70,11 +67,9 @@ def home(request: Request):
     for d in download_data['data']:
         download_sum += d['downloads']
         date_index = '{}-{}'.format(d['date'].split('-')[0], d['date'].split('-')[1])
-        if not date_index in download_sum_month:
+        if date_index not in download_sum_month:
             download_sum_month[date_index] = 0
         download_sum_month[date_index] += d['downloads']
-
-
 
     return templates.TemplateResponse('stats.html', context={
         'request': request,
@@ -83,17 +78,17 @@ def home(request: Request):
     })
 
 
-@app.middleware("http")
+@app.middleware('http')
 async def set_auth_header(request: Request, call_next, credentials: HTTPAuthorizationCredentials = Depends(security)):
     auth = Authentication.instance()
-    bearer_token = request.headers.get("Authorization")
+    bearer_token = request.headers.get('Authorization')
     if bearer_token:
-        auth.set_token(bearer_token.replace("Bearer ", ""))
+        auth.set_token(bearer_token.replace('Bearer ', ''))
     response = await call_next(request)
     return response
 
 
-@app.middleware("http")
+@app.middleware('http')
 async def matomo_request_log(request: Request, call_next):
     """
     Middleware will be executed before each request.
@@ -111,13 +106,13 @@ async def matomo_request_log(request: Request, call_next):
             print('******* Im on production ********')
             if not res:
                 payload = {
-                        'idsite': 13,
-                        'rec': 1,
-                        'action_name': 'brainscapes_api',
-                        'url': request.url,
-                        '_id': 'my_ip',
-                        'lang':  request.headers.get('Accept-Language'),
-                        'ua': request.headers.get('User-Agent')
+                    'idsite': 13,
+                    'rec': 1,
+                    'action_name': 'brainscapes_api',
+                    'url': request.url,
+                    '_id': 'my_ip',
+                    'lang': request.headers.get('Accept-Language'),
+                    'ua': request.headers.get('User-Agent')
                 }
                 try:
                     # r = requests.get('https://stats.humanbrainproject.eu/matomo.php', params=payload)
