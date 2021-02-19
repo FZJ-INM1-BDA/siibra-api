@@ -12,6 +12,8 @@ test:
   script:
     - pip install -r app/requirements.txt
     - pip install pytest
+    - pip install pytest-asyncio
+    - pip install httpx
     - pip install mock
     - pip install coverage
     - coverage run -m pytest
