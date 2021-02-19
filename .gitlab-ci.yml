@@ -1,7 +1,7 @@
 image: tiangolo/uvicorn-gunicorn-fastapi:python3.7
 stages:
   - test
-  - deploy
+  - pages
 
 before-script:
   script:
@@ -28,7 +28,7 @@ test:
 pages:
   stage: deploy
   dependencies:
-    - rspec
+    - test
   script:
     - mv coverage/ public/
   artifacts:
