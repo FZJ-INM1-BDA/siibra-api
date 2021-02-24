@@ -14,7 +14,6 @@
 from typing import Optional
 
 from fastapi import APIRouter, Request, HTTPException, Depends
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from starlette.responses import PlainTextResponse
 from fastapi.encoders import jsonable_encoder
 from .atlas_api import ATLAS_PATH
@@ -23,9 +22,6 @@ from brainscapes.features import regionprops
 
 
 router = APIRouter()
-
-# secure endpoints with the need to provide a bearer token
-security = HTTPBearer()
 
 # region === parcellations
 
@@ -54,7 +50,7 @@ def __parcellation_result_info(parcellation, atlas_id=None, request=None):
 
 
 @router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations')
-def get_all_parcellations(atlas_id: str, request: Request, credentials: HTTPAuthorizationCredentials = Depends(security)):
+def get_all_parcellations(atlas_id: str, request: Request):
     """
     Parameters:
         - atlas_id

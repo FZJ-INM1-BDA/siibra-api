@@ -17,7 +17,6 @@ from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.encoders import jsonable_encoder
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from .request_utils import query_data, create_atlas
 
@@ -25,9 +24,6 @@ from brainscapes import features
 
 # FastApi router to create rest endpoints
 router = APIRouter()
-
-# secure endpoints with the need to provide a bearer token
-security = HTTPBearer()
 
 # Base URL for all endpoints
 ATLAS_PATH = '/atlases/{atlas_id}'
@@ -77,8 +73,7 @@ def get_all_available_modalities():
 @router.get('/features/{modality_id}')
 def get_feature_for_modality(modality_id: ModalityType,
                              region: str,
-                             gene: Optional[str] = None,
-                             credentials: HTTPAuthorizationCredentials = Depends(security)):
+                             gene: Optional[str] = None):
     """
     Parameters:
         - modality_id
