@@ -37,7 +37,11 @@ def test_get_one_parcellation_by_id():
             }
         },
         'name': 'Julich-Brain Probabilistic Cytoarchitectonic Maps (v2.5)',
-        'version': '2.5'
+        'version': '2.5',
+        'availableParcellations': [{'id': 'minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2',
+                                    'name': 'MNI 152 ICBM 2009c Nonlinear Asymmetric'},
+                                   {'id': 'minds/core/referencespace/v1.0.0/7f39f7be-445b-47c0-9791-e971c0b6d992',
+                                    'name': 'MNI Colin 27'}]
     }
 
 

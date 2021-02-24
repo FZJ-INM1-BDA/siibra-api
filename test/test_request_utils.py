@@ -13,6 +13,8 @@ class TestRequestUtils(unittest.TestCase):
     MODALITY_INVALID = 'DUMMY_MODALITY'
     BEARER_TOKEN = 'Bearer 1337'
     ARGS_TOKEN = '1337'
+    PARCELLATION_NAME = 'Julich-Brain Probabilistic Cytoarchitectonic Maps (v2.5)'
+    SPACE_NAME = 'MNI 152 ICBM 2009c Nonlinear Asymmetric'
     request_mock = mock.MagicMock()
     request_mock.headers.return_value = {
         'Authorization': BEARER_TOKEN
@@ -36,6 +38,14 @@ class TestRequestUtils(unittest.TestCase):
             self.assertTrue(len(hits) != 0)
             self.assertIsNotNone(hits['data'])
             self.assertIsNotNone(hits['receptor_symbols'])
+
+    def test_get_all_parcellations_for_space(self):
+        parcellations = request_utils.get_parcellations_for_space(self.SPACE_NAME)
+        self.assertEqual(len(parcellations), 9)
+
+    def test_get_all_spaces_for_parcellation(self):
+        spaces = request_utils.get_spaces_for_parcellation(self.PARCELLATION_NAME)
+        self.assertEqual(len(spaces), 2)
 
 
 if __name__ == '__main__':
