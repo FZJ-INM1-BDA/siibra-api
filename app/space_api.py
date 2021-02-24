@@ -20,7 +20,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from starlette.responses import FileResponse, StreamingResponse
 
-from .request_utils import create_atlas, split_id, find_space_by_id, _get_file_from_nibabel
+from .request_utils import create_atlas, split_id, find_space_by_id, _get_file_from_nibabel, get_parcellations_for_space
 
 from .atlas_api import ATLAS_PATH
 
@@ -131,6 +131,7 @@ def get_one_space_by_id(atlas_id: str, space_id: str, request: Request):
     space = find_space_by_id(atlas, space_id)
     if space:
         json_result = jsonable_encoder(space)
+        json_result['availableParcellations'] = get_parcellations_for_space(space.name)
         json_result['links'] = {
             'regions': {
                 'href': '{}atlases/{}/spaces/{}/regions'.format(

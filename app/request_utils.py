@@ -16,7 +16,6 @@ from brainscapes.atlas import REGISTRY
 from brainscapes.features import regionprops
 import brainscapes as bs
 
-
 import nibabel as nib
 
 
@@ -99,6 +98,25 @@ def split_id(kg_id: str):
     return {
         'kg': {
             'kgSchema': '/'.join(split_id[0:-1]),
-            'kgId':  split_id[-1]
+            'kgId': split_id[-1]
         }
     }
+
+
+def _object_to_json(o):
+    return {
+        'id': o.id,
+        'name': o.name
+    }
+
+
+def get_spaces_for_parcellation(parcellation: str):
+    return [_object_to_json(bs.spaces[s]) for s in bs.parcellations[parcellation].maps.keys()]
+
+
+def get_parcellations_for_space(space: str):
+    result = []
+    for p in bs.parcellations.items:
+        if bs.spaces[space].id in p.maps.keys():
+            result.append(_object_to_json(p))
+    return result

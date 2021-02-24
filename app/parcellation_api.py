@@ -18,7 +18,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from starlette.responses import PlainTextResponse
 from fastapi.encoders import jsonable_encoder
 from .atlas_api import ATLAS_PATH
-from .request_utils import split_id, create_atlas, create_region_json_object, _add_children_to_region, find_space_by_id
+from .request_utils import split_id, create_atlas, create_region_json_object, _add_children_to_region, find_space_by_id, get_spaces_for_parcellation
 from brainscapes.features import regionprops
 
 
@@ -40,13 +40,13 @@ def __parcellation_result_info(parcellation, atlas_id=None, request=None):
     result_info = {
         "id": split_id(parcellation.id),
         "name": parcellation.name,
-        }
+        'availableParcellations': get_spaces_for_parcellation(parcellation.name)}
 
     if request:
         result_info['links'] = {
-                'parcellations': {
-                    'href': '{}atlases/{}/parcellations/{}'.format(request.base_url, atlas_id.replace('/', '%2F'), parcellation.id.replace('/', '%2F'))
-                }
+            'parcellations': {
+                'href': '{}atlases/{}/parcellations/{}'.format(request.base_url, atlas_id.replace('/', '%2F'), parcellation.id.replace('/', '%2F'))
+            }
         }
     if hasattr(parcellation, 'version') and parcellation.version:
         result_info['version'] = parcellation.version
