@@ -36,11 +36,11 @@ def __parcellation_result_info(parcellation, atlas_id=None, request=None):
     result_info = {
         "id": split_id(parcellation.id),
         "name": parcellation.name,
-        'availableParcellations': get_spaces_for_parcellation(parcellation.name)}
+        'availableSpaces': get_spaces_for_parcellation(parcellation.name)}
 
     if request:
         result_info['links'] = {
-            'parcellations': {
+            'self': {
                 'href': '{}atlases/{}/parcellations/{}'.format(request.base_url, atlas_id.replace('/', '%2F'), parcellation.id.replace('/', '%2F'))
             }
         }
