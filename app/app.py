@@ -18,6 +18,7 @@ import json
 from fastapi import FastAPI, Depends, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.templating import Jinja2Templates
+from fastapi.middleware.cors import CORSMiddleware
 from brainscapes.authentication import Authentication
 from .brainscapes_api import router as brainscapes_router
 from .atlas_api import router as atlas_router
@@ -78,6 +79,12 @@ def home(request: Request):
         'download_sum_month': download_sum_month
     })
 
+origins= [ "*" ]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_methods=["GET"],
+)
 
 @app.middleware('http')
 async def set_auth_header(request: Request, call_next, credentials: HTTPAuthorizationCredentials = Depends(security)):
