@@ -1,6 +1,7 @@
 image: tiangolo/uvicorn-gunicorn-fastapi:python3.7
 stages:
   - test
+  -
   - deploy
 
 before-script:
@@ -26,7 +27,7 @@ test:
       cobertura: coverage.xml
 
 pages:
-  stage: test
+  stage: deploy
   dependencies:
     - test
   script:
