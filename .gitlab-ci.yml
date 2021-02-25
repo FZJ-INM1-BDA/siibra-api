@@ -1,35 +1,16 @@
-image: tiangolo/uvicorn-gunicorn-fastapi:python3.7
 stages:
   - test
   - deploy
 
-before-script:
-  script:
-    - python -m pip install --upgrade pip
-
 test:
+  image: tiangolo/uvicorn-gunicorn-fastapi:python3.7
   stage: test
   script:
+    - python -m pip install --upgrade pip
     - pip install -r app/requirements.txt
-    - pip install pytest
-    - pip install pytest-asyncio
-    - pip install httpx
-    - pip install mock
-    - pip install coverage
+    - pip install pytest, pytest-asyncio, httpx, mock, coverage
     - coverage run -m pytest
     - coverage html -d coverage
-    - coverage xml
-  artifacts:
-    paths:
-      - coverage/
-    reports:
-      cobertura: coverage.xml
-
-pages:
-  stage: deploy
-  dependencies:
-    - test
-  script:
     - mv coverage/ public/
   artifacts:
     paths:
@@ -39,12 +20,14 @@ pages:
     - master
 
 dev_deploy:
+  image: ebits/openshift-client
   stage: deploy
   only:
     - master
-  script: |
-    oc login $OPENSHIFT_URL --token=$OPENSHIFT_TOKEN
-    oc project $OPENSHIFT_PROJECT
-    oc start-build $CI_PROJECT_NAME
+  script:
+    - |
+      oc login $OPENSHIFT_URL --token=$OPENSHIFT_TOKEN
+      oc project $OPENSHIFT_PROJECT
+      oc start-build $CI_PROJECT_NAME
 
 
