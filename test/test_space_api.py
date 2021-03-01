@@ -27,14 +27,14 @@ _get_file_from_nibabel = {}
 
 
 def test_get_all_spaces():
-    response = client.get('/atlases/{}/spaces'.format(ATLAS_ID.replace('/', '%2F')))
+    response = client.get('/v1_0/atlases/{}/spaces'.format(ATLAS_ID.replace('/', '%2F')))
     result_content = json.loads(response.content)
     assert response.status_code == 200
     assert len(result_content) == 3
 
 
 def test_get_one_space():
-    response = client.get('/atlases/{}/spaces/{}'.format(ATLAS_ID.replace('/', '%2F'), SPACE_ID))
+    response = client.get('/v1_0/atlases/{}/spaces/{}'.format(ATLAS_ID.replace('/', '%2F'), SPACE_ID))
     url = response.url.split('atlases')[0]
     result_content = json.loads(response.content)
     assert response.status_code == 200
@@ -45,9 +45,6 @@ def test_get_one_space():
         'url': 'http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/mni_icbm152_nlin_asym_09c_nifti.zip',
         'ziptarget': 'mni_icbm152_t1_tal_nlin_asym_09c.nii',
         'links': {
-            'regions': {
-                'href': '{}atlases/juelich%2Fiav%2Fatlas%2Fv1.0.0%2F1/spaces/minds%2Fcore%2Freferencespace%2Fv1.0.0%2Fdafcffc5-4826-4bf1-8ff6-46b8a31ff8e2/regions'.format(url)
-            },
             'templates': {
                 'href': '{}atlases/juelich%2Fiav%2Fatlas%2Fv1.0.0%2F1/spaces/minds%2Fcore%2Freferencespace%2Fv1.0.0%2Fdafcffc5-4826-4bf1-8ff6-46b8a31ff8e2/templates'.format(url)
             },
@@ -86,7 +83,7 @@ def test_get_one_space():
 
 
 def test_get_invalid_space():
-    response = client.get('/atlases/{}/spaces/{}'.format(ATLAS_ID.replace('/', '%2F'), INVALID_SPACE_ID))
+    response = client.get('/v1_0/atlases/{}/spaces/{}'.format(ATLAS_ID.replace('/', '%2F'), INVALID_SPACE_ID))
     result_content = json.loads(response.content)
     assert response.status_code == 404
     assert result_content['detail'] == 'space with id: {} not found'.format(INVALID_SPACE_ID)
@@ -102,7 +99,7 @@ def test_get_templates_for_space():
 
 
 def test_get_parcellation_maps_for_space():
-    response = client.get('/atlases/{}/spaces/{}/parcellation_maps'.format(ATLAS_ID.replace('/', '%2F'), SPACE_ID))
+    response = client.get('/v1_0/atlases/{}/spaces/{}/parcellation_maps'.format(ATLAS_ID.replace('/', '%2F'), SPACE_ID))
     assert response.status_code == 200
     assert 'application/x-zip-compressed' in response.headers['content-type']
     assert 'attachment' in response.headers['content-disposition']

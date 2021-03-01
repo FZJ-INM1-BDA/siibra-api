@@ -1,6 +1,7 @@
 requests
 coverage
 fastapi
+fastapi-versioning
 jinja2
 uvicorn[standard]
 aiofiles

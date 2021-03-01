@@ -14,6 +14,8 @@
 
 from fastapi import APIRouter, Request, HTTPException
 from brainscapes.atlas import REGISTRY
+from fastapi_versioning import version
+from .request_utils import get_base_url_from_request
 
 # FastApi router to create rest endpoints
 router = APIRouter()
@@ -25,6 +27,7 @@ ATLAS_PATH = '/atlases'
 # region === atlases
 
 @router.get(ATLAS_PATH)
+@version(1)
 def get_all_atlases():
     """
     Get all atlases known by brainscapes
@@ -40,6 +43,7 @@ def get_all_atlases():
 
 
 @router.get(ATLAS_PATH + '/{atlas_id:path}')
+@version(1)
 def get_atlas_by_id(atlas_id: str, request: Request):
     """
     Parameters:
@@ -55,10 +59,10 @@ def get_atlas_by_id(atlas_id: str, request: Request):
                 'name': a.name,
                 'links': {
                     'parcellations': {
-                        'href': '{}atlases/{}/parcellations'.format(request.base_url, atlas_id.replace('/', '%2F'))
+                        'href': '{}atlases/{}/parcellations'.format(get_base_url_from_request(request), atlas_id.replace('/', '%2F'))
                     },
                     'spaces': {
-                        'href': '{}atlases/{}/spaces'.format(request.base_url, atlas_id.replace('/', '%2F'))
+                        'href': '{}atlases/{}/spaces'.format(get_base_url_from_request(request), atlas_id.replace('/', '%2F'))
                     }
                 }
             }

@@ -20,6 +20,8 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from brainscapes.authentication import Authentication
+from fastapi_versioning import VersionedFastAPI
+
 from .brainscapes_api import router as brainscapes_router
 from .atlas_api import router as atlas_router
 from .space_api import router as space_router
@@ -36,6 +38,9 @@ app.include_router(parcellation_router)
 app.include_router(space_router)
 app.include_router(atlas_router)
 app.include_router(brainscapes_router)
+
+app = VersionedFastAPI(app, default_api_version=1)
+
 # Template list, with every template in the project
 # can be rendered and returned
 templates = Jinja2Templates(directory='app/templates/')
@@ -79,12 +84,14 @@ def home(request: Request):
         'download_sum_month': download_sum_month
     })
 
-origins= [ "*" ]
+
+origins = [ "*" ]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_methods=["GET"],
 )
+
 
 @app.middleware('http')
 async def set_auth_header(request: Request, call_next, credentials: HTTPAuthorizationCredentials = Depends(security)):

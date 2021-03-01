@@ -8,7 +8,7 @@ client = TestClient(app)
 
 
 def test_get_all_atlases():
-    response = client.get('/atlases')
+    response = client.get('/v1_0/atlases')
     assert response.status_code == 200
     result_content = json.loads(response.content)
     assert len(result_content) == 1
@@ -36,7 +36,7 @@ def test_get_singe_atlas():
 
 def test_get_singe_atlas():
     invalid_id = 'INVALID_ID'
-    response = client.get('/atlases/{}'.format(invalid_id.replace('/', '%2F')))
+    response = client.get('/v1_0/atlases/{}'.format(invalid_id.replace('/', '%2F')))
     assert response.status_code == 404
     result_content = json.loads(response.content)
     assert result_content['detail'] == 'atlas with id: {} not found'.format(invalid_id)

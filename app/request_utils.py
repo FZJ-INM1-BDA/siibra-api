@@ -120,3 +120,7 @@ def get_parcellations_for_space(space: str):
         if bs.spaces[space].id in p.maps.keys():
             result.append(_object_to_json(p))
     return result
+
+
+def get_base_url_from_request(request):
+    return '{}{}/'.format(request.base_url, str(request.url).replace(str(request.base_url), '').split('/')[0])

@@ -16,7 +16,7 @@ SPACE_ID = 'minds%2Fcore%2Freferencespace%2Fv1.0.0%2Fdafcffc5-4826-4bf1-8ff6-46b
 
 def test_get_all_parcellations():
     response = client.get(
-        '/atlases/{}/parcellations'.format(ATLAS_ID.replace('/', '%2F')),
+        '/v1_0/atlases/{}/parcellations'.format(ATLAS_ID.replace('/', '%2F')),
         headers={"Authorization": "Bearer token"}
     )
     result_content = json.loads(response.content)
@@ -25,7 +25,7 @@ def test_get_all_parcellations():
 
 
 def test_get_one_parcellation_by_id():
-    response = client.get('/atlases/{}/parcellations/{}'.format(ATLAS_ID.replace('/', '%2F'), PARCELLATION_ID))
+    response = client.get('/v1_0/atlases/{}/parcellations/{}'.format(ATLAS_ID.replace('/', '%2F'), PARCELLATION_ID))
     url = response.url.split('atlases')[0]
     result_content = json.loads(response.content)
     assert response.status_code == 200
@@ -41,12 +41,19 @@ def test_get_one_parcellation_by_id():
         'availableSpaces': [{'id': 'minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2',
                                     'name': 'MNI 152 ICBM 2009c Nonlinear Asymmetric'},
                                    {'id': 'minds/core/referencespace/v1.0.0/7f39f7be-445b-47c0-9791-e971c0b6d992',
-                                    'name': 'MNI Colin 27'}]
+                                    'name': 'MNI Colin 27'}],
+        'links': {
+            'self': {
+                'href': 'http://testserver/v1_0/atlases/juelich%2Fiav%2Fatlas%2Fv1.0.0%2F1/parcellations/minds%2Fcore%2Fparcellationatlas%2Fv1.0.0%2F94c1125b-b87e-45e4-901c-00daee7f2579-25'
+            }
+        },
+        'regions': {
+            'href': 'http://testserver/v1_0/atlases/juelich%2Fiav%2Fatlas%2Fv1.0.0%2F1/parcellations/minds%2Fcore%2Fparcellationatlas%2Fv1.0.0%2F94c1125b-b87e-45e4-901c-00daee7f2579-25/regions'}
     }
 
 
 def test_all_regions_for_parcellations():
-    response = client.get('/atlases/{}/parcellations/{}/regions'.format(ATLAS_ID.replace('/', '%2F'), PARCELLATION_ID))
+    response = client.get('/v1_0/atlases/{}/parcellations/{}/regions'.format(ATLAS_ID.replace('/', '%2F'), PARCELLATION_ID))
     result_content = json.loads(response.content)
     assert response.status_code == 200
     assert len(result_content) == 2
@@ -54,14 +61,14 @@ def test_all_regions_for_parcellations():
 
 
 def test_all_regions_for_parcellations_with_bad_request():
-    response = client.get('/atlases/{}/parcellations/{}/regions'.format(ATLAS_ID.replace('/', '%2F'), INVALID_PARCELLATION_ID))
+    response = client.get('/v1_0/atlases/{}/parcellations/{}/regions'.format(ATLAS_ID.replace('/', '%2F'), INVALID_PARCELLATION_ID))
     assert response.status_code == 400
     result_content = json.loads(response.content)
     assert result_content['detail'] == 'The requested parcellation is not supported by the selected atlas.'
 
 
 def test_get_one_region_for_parcellation_without_extra_data():
-    response = client.get('/atlases/{}/parcellations/{}/regions/{}'.format(ATLAS_ID.replace('/', '%2F'), PARCELLATION_ID, REGION_NAME))
+    response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}'.format(ATLAS_ID.replace('/', '%2F'), PARCELLATION_ID, REGION_NAME))
     result_content = json.loads(response.content)
     assert response.status_code == 200
     assert result_content == {
@@ -83,7 +90,7 @@ def test_get_one_region_for_parcellation_without_extra_data():
 
 
 def test_get_one_region_for_parcellation_with_extra_data():
-    response = client.get('/atlases/{}/parcellations/{}/regions/{}?space_id={}'.format(ATLAS_ID.replace('/', '%2F'), PARCELLATION_ID, REGION_NAME, SPACE_ID))
+    response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}?space_id={}'.format(ATLAS_ID.replace('/', '%2F'), PARCELLATION_ID, REGION_NAME, SPACE_ID))
     result_content = json.loads(response.content)
     assert response.status_code == 200
     assert result_content == {

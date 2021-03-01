@@ -17,7 +17,8 @@ from fastapi import APIRouter, Request, HTTPException, Depends
 from starlette.responses import PlainTextResponse
 from fastapi.encoders import jsonable_encoder
 from .atlas_api import ATLAS_PATH
-from .request_utils import split_id, create_atlas, create_region_json_object, _add_children_to_region, find_space_by_id, get_spaces_for_parcellation
+from .request_utils import split_id, create_atlas, create_region_json_object, _add_children_to_region, find_space_by_id
+from .request_utils import get_spaces_for_parcellation, get_base_url_from_request
 from brainscapes.features import regionprops
 
 
@@ -36,14 +37,21 @@ def __parcellation_result_info(parcellation, atlas_id=None, request=None):
     result_info = {
         "id": split_id(parcellation.id),
         "name": parcellation.name,
-        'availableSpaces': get_spaces_for_parcellation(parcellation.name)}
-
-    if request:
-        result_info['links'] = {
+        'availableSpaces': get_spaces_for_parcellation(parcellation.name),
+        'links': {
             'self': {
-                'href': '{}atlases/{}/parcellations/{}'.format(request.base_url, atlas_id.replace('/', '%2F'), parcellation.id.replace('/', '%2F'))
+                'href': '{}atlases/{}/parcellations/{}'.format(get_base_url_from_request(request),
+                                                               atlas_id.replace('/', '%2F'),
+                                                               parcellation.id.replace('/', '%2F'))
             }
-        }
+        },
+        'regions': {
+            'href': '{}atlases/{}/parcellations/{}/regions'.format(
+                get_base_url_from_request(request),
+                atlas_id.replace('/', '%2F'),
+                parcellation.id.replace('/', '%2F')
+            )
+        }}
     if hasattr(parcellation, 'version') and parcellation.version:
         result_info['version'] = parcellation.version
     return result_info
@@ -131,7 +139,7 @@ def get_region_by_name(atlas_id: str, parcellation_id: str, region_id: str, spac
 
 
 @router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}')
-def get_parcellation_by_id(atlas_id: str, parcellation_id: str):
+def get_parcellation_by_id(atlas_id: str, parcellation_id: str, request: Request):
     """
     Parameters:
         - atlas_id
@@ -144,7 +152,7 @@ def get_parcellation_by_id(atlas_id: str, parcellation_id: str):
     result = {}
     for parcellation in parcellations:
         if parcellation.id.find(parcellation_id) != -1:
-            result = __parcellation_result_info(parcellation)
+            result = __parcellation_result_info(parcellation, atlas_id, request)
     if result:
         return jsonable_encoder(result)
     else:
