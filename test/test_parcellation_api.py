@@ -85,7 +85,9 @@ def test_get_one_region_for_parcellation_without_extra_data():
                 "kgId": "bb111a95-e04c-4987-8254-4af4ed8b0022"
             }
         },
-        "labelIndex": 62
+        "labelIndex": 62,
+        'links': {'features': 'http://testserver/v1_0/atlases/juelich%2Fiav%2Fatlas%2Fv1.0.0%2F1/parcellations/minds%2Fcore%2Fparcellationatlas%2Fv1.0.0%2F94c1125b-b87e-45e4-901c-00daee7f2579-25/regions/Ch '
+                              '123 (Basal Forebrain) - left hemisphere/features'},
     }
 
 
@@ -117,7 +119,9 @@ def test_get_one_region_for_parcellation_with_extra_data():
             "volume_mm": 4.0,
             "surface_mm": 5.0,
             "is_cortical": False
-        }
+        },
+        'links': {'features': 'http://testserver/v1_0/atlases/juelich%2Fiav%2Fatlas%2Fv1.0.0%2F1/parcellations/minds%2Fcore%2Fparcellationatlas%2Fv1.0.0%2F94c1125b-b87e-45e4-901c-00daee7f2579-25/regions/Ch '
+                              '123 (Basal Forebrain) - left hemisphere/features'}
     }
 
 

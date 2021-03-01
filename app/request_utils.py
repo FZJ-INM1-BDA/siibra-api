@@ -17,6 +17,7 @@ from brainscapes.features import regionprops
 import brainscapes as bs
 
 import nibabel as nib
+from fastapi import HTTPException
 
 
 def create_atlas(atlas_id=None):
@@ -35,10 +36,16 @@ def query_data(modality, regionname, args=None):
         if selected_region:
             atlas.select_region(selected_region[0])
             data = atlas.query_data(modality)
-            data[0]._load()
-            result['data'] = data[0]
-            result['receptor_symbols'] = bs.features.receptors.RECEPTOR_SYMBOLS
-            return result
+            if len(data) > 0:
+                data[0]._load()
+                result['data'] = data[0]
+                result['receptor_symbols'] = bs.features.receptors.RECEPTOR_SYMBOLS
+                return result
+            else:
+                raise HTTPException(
+                    status_code=404,
+                    detail='No data found for modality: {} in region: {}'.format(modality, regionname)
+                )
     return []
 
 

@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import MagicMock
 
 from app import request_utils
 import mock
@@ -33,7 +34,11 @@ class TestRequestUtils(unittest.TestCase):
         self.assertTrue(len(hits) == 0)
 
     def test_query_data_with_valid_values(self):
-        with mock.patch('app.request_utils.REGISTRY'):
+        with mock.patch('app.request_utils.REGISTRY') as reg:
+            atlas = reg.MULTILEVEL_HUMAN_ATLAS
+            data_mock = MagicMock()
+            data_mock._load.return_value
+            atlas.query_data.return_value = [data_mock]
             hits = request_utils.query_data(self.MODALITY_VALID, self.REGION_NAME_VALID)
             self.assertTrue(len(hits) != 0)
             self.assertIsNotNone(hits['data'])

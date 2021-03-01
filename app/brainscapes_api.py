@@ -48,18 +48,18 @@ def get_gene_names():
     """
     genes = features.genes.AllenBrainAtlasQuery.genes['msg']
     return jsonable_encoder([{'name': g['name'], 'acronym': g['acronym']} for g in genes])
-
-
-@router.get('/genes/{gene}')
-def get_gene_expression_for_region(gene: str, region: str):
-    """
-    Parameters:
-        - gene
-        - region
-
-    Return the gene expression for given gene in a given region
-    """
-    return get_gene_expression(region, gene)
+#
+#
+# @router.get('/genes/{gene}')
+# def get_gene_expression_for_region(gene: str, region: str):
+#     """
+#     Parameters:
+#         - gene
+#         - region
+#
+#     Return the gene expression for given gene in a given region
+#     """
+#     return get_gene_expression(region, gene)
 
 
 @router.get('/features')
@@ -68,30 +68,30 @@ def get_all_available_modalities():
     Return all possible modalities
     """
     return [m for m in features.modalities]
-
-
-@router.get('/features/{modality_id}')
-def get_feature_for_modality(modality_id: ModalityType,
-                             region: str,
-                             gene: Optional[str] = None):
-    """
-    Parameters:
-        - modality_id
-        - region
-        - gene
-
-    Return the feature depending on selected modality and region
-    """
-    if modality_id == ModalityType.ReceptorDistribution:
-        return get_receptor_distribution(region)
-    if modality_id == ModalityType.ConnectivityProfile:
-        return get_connectivty_profile()
-    if modality_id == ModalityType.ConnectivityMatrix:
-        return get_connectivity_matrix()
-    if modality_id == ModalityType.GeneExpression:
-        return get_gene_expression(region, gene)
-
-    raise HTTPException(status_code=400, detail='Modality: {} is not valid'.format(modality_id))
+#
+#
+# @router.get('/features/{modality_id}')
+# def get_feature_for_modality(modality_id: ModalityType,
+#                              region: str,
+#                              gene: Optional[str] = None):
+#     """
+#     Parameters:
+#         - modality_id
+#         - region
+#         - gene
+#
+#     Return the feature depending on selected modality and region
+#     """
+#     if modality_id == ModalityType.ReceptorDistribution:
+#         return get_receptor_distribution(region)
+#     if modality_id == ModalityType.ConnectivityProfile:
+#         return get_connectivty_profile()
+#     if modality_id == ModalityType.ConnectivityMatrix:
+#         return get_connectivity_matrix()
+#     if modality_id == ModalityType.GeneExpression:
+#         return get_gene_expression(region, gene)
+#
+#     raise HTTPException(status_code=400, detail='Modality: {} is not valid'.format(modality_id))
 
 
 def get_receptor_distribution(region):

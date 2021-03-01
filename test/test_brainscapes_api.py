@@ -15,10 +15,6 @@ def test_get_all_gene_names():
     assert len(result_content) == 29180
 
 
-def test_get_gene_expression_for_region():
-    pass
-
-
 def test_get_all_available_modalities():
     response = client.get('/v1_0/features')
     assert response.status_code == 200
@@ -26,58 +22,34 @@ def test_get_all_available_modalities():
     assert len(result_content) == 4
 
 
-def test_get_receptor_distribution():
-    pass
-    # response = client.get(
-    #     '/features/ReceptorDistribution?region=Area 4p (PreCG)',
-    #     headers={"Authorization": "Bearer token"}
-    # )
-    # assert response.status_code == 200
+# def test_raise_exception_on_receptor_distribution_for_wrong_region():
+#     response = client.get(
+#         '/v1_0/features/ReceptorDistribution?region=dummy',
+#         headers={"Authorization": "Bearer token"}
+#     )
+#     assert response.status_code == 404
+#
+#
+# def test_raise_exception_for_wrong_receptor_distribution():
+#     response = client.get(
+#         '/v1_0/features/WrongDistribution?region=dummy',
+#         headers={"Authorization": "Bearer token"}
+#     )
+#     assert response.status_code == 422
+#
+#
+# def test_get_connectivity_profile():
+#     response = client.get(
+#         '/v1_0/features/ConnectivityProfile?region=dummy',
+#         headers={"Authorization": "Bearer token"}
+#     )
+#     assert response.status_code == 501
+#
+#
+# def test_get_connectivity_matrix():
+#     response = client.get(
+#         '/v1_0/features/ConnectivityMatrix?region=dummy',
+#         headers={"Authorization": "Bearer token"}
+#     )
+#     assert response.status_code == 501
 
-
-def test_raise_exception_on_receptor_distribution_for_wrong_region():
-    response = client.get(
-        '/v1_0/features/ReceptorDistribution?region=dummy',
-        headers={"Authorization": "Bearer token"}
-    )
-    assert response.status_code == 404
-
-
-def test_raise_exception_for_wrong_receptor_distribution():
-    response = client.get(
-        '/v1_0/features/WrongDistribution?region=dummy',
-        headers={"Authorization": "Bearer token"}
-    )
-    assert response.status_code == 422
-
-
-def test_get_connectivity_profile():
-    response = client.get(
-        '/v1_0/features/ConnectivityProfile?region=dummy',
-        headers={"Authorization": "Bearer token"}
-    )
-    assert response.status_code == 501
-
-
-def test_get_connectivity_matrix():
-    response = client.get(
-        '/v1_0/features/ConnectivityMatrix?region=dummy',
-        headers={"Authorization": "Bearer token"}
-    )
-    assert response.status_code == 501
-
-
-def test_get_gene_expression():
-    pass
-
-
-def test_raise_exception_on_getting_gene_for_wrong_region():
-    pass
-
-
-def test_raise_bad_exception_for_invalid_gene():
-    pass
-
-
-def test_get_feature_for_wrong_modality():
-    pass

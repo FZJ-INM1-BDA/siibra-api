@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from enum import Enum
 from typing import Optional
 
 from fastapi import APIRouter, Request, HTTPException, Depends
@@ -20,9 +21,22 @@ from .atlas_api import ATLAS_PATH
 from .request_utils import split_id, create_atlas, create_region_json_object, _add_children_to_region, find_space_by_id
 from .request_utils import get_spaces_for_parcellation, get_base_url_from_request
 from brainscapes.features import regionprops
+from brainscapes import features
+from .brainscapes_api import get_receptor_distribution, get_connectivity_matrix, get_connectivty_profile, get_gene_expression
 
 
 router = APIRouter()
+
+
+class ModalityType(str, Enum):
+    """
+    A class for modality type, to provide selection options to swagger
+    """
+    ReceptorDistribution = 'ReceptorDistribution'
+    GeneExpression = 'GeneExpression'
+    ConnectivityProfile = 'ConnectivityProfile'
+    ConnectivityMatrix = 'ConnectivityMatrix'
+
 
 # region === parcellations
 
@@ -106,15 +120,79 @@ def get_all_regions_for_parcellation_id(atlas_id: str, parcellation_id: str):
     return result
 
 
+@router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features')
+def get_region_by_name(request: Request, atlas_id: str, parcellation_id: str, region_id: str):
+    """
+    Parameters:
+        - atlas_id
+        - parcellation_id
+        - region_id
+
+    Returns all features for a region.
+    """
+    # select atlas by id
+    atlas = create_atlas(atlas_id)
+    # select atlas parcellation
+    atlas.select_parcellation(parcellation_id)
+    region = atlas.regiontree.find(region_id)
+
+    result = {
+        'features': []
+    }
+    for m in features.modalities:
+        result['features'].append({
+            str(m): '{}atlases/{}/parcellations/{}/regions/{}/features/{}'.format(
+                get_base_url_from_request(request),
+                atlas_id.replace('/', '%2F'),
+                parcellation_id.replace('/', '%2F'),
+                region_id.replace('/', '%2F'),
+                str(m)
+            )
+        })
+
+    return jsonable_encoder(result)
+
+
+@router.get(
+    ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality}')
+def get_region_by_name(request: Request, atlas_id: str, parcellation_id: str, region_id: str, modality: str, gene: Optional[str] = None):
+    """
+    Parameters:
+        - atlas_id
+        - parcellation_id
+        - region_id
+        - modality
+        - gene
+
+    Returns all features for a region.
+    """
+    # select atlas by id
+    atlas = create_atlas(atlas_id)
+    # select atlas parcellation
+    atlas.select_parcellation(parcellation_id)
+    region = atlas.regiontree.find(region_id)
+
+    if modality == ModalityType.ReceptorDistribution:
+        return get_receptor_distribution(region_id)
+    if modality == ModalityType.ConnectivityProfile:
+        return get_connectivty_profile()
+    if modality == ModalityType.ConnectivityMatrix:
+        return get_connectivity_matrix()
+    if modality == ModalityType.GeneExpression:
+        return get_gene_expression(region_id, gene)
+
+    raise HTTPException(status_code=400, detail='Modality: {} is not valid'.format(modality))
+
+
 @router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}')
-def get_region_by_name(atlas_id: str, parcellation_id: str, region_id: str, space_id: Optional[str] = None):
+def get_region_by_name(request: Request, atlas_id: str, parcellation_id: str, region_id: str, space_id: Optional[str] = None):
     """
     Parameters:
         - atlas_id
         - space_id
         - region_id
 
-    Returns all regions for a given space id.
+    Returns a specific region for a given id.
     """
     # select atlas by id
     atlas = create_atlas(atlas_id)
@@ -134,6 +212,14 @@ def get_region_by_name(atlas_id: str, parcellation_id: str, region_id: str, spac
         region_json['props']['volume_mm'] = r_props.attrs['volume_mm']
         region_json['props']['surface_mm'] = r_props.attrs['surface_mm']
         region_json['props']['is_cortical'] = r_props.attrs['is_cortical']
+    region_json['links'] = {
+        'features': '{}atlases/{}/parcellations/{}/regions/{}/features'.format(
+            get_base_url_from_request(request),
+            atlas_id.replace('/', '%2F'),
+            parcellation_id.replace('/', '%2F'),
+            region_id.replace('/', '%2F')
+        )
+    }
 
     return jsonable_encoder(region_json)
 
