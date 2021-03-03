@@ -39,11 +39,20 @@ app.include_router(space_router)
 app.include_router(atlas_router)
 app.include_router(brainscapes_router)
 
+# Versioning for all api endpoints
 app = VersionedFastAPI(app, default_api_version=1)
 
 # Template list, with every template in the project
 # can be rendered and returned
 templates = Jinja2Templates(directory='app/templates/')
+
+# Allow CORS
+origins = ['*']
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_methods=['GET'],
+)
 
 
 @app.get('/')
@@ -85,16 +94,15 @@ def home(request: Request):
     })
 
 
-origins = [ "*" ]
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_methods=["GET"],
-)
-
-
 @app.middleware('http')
 async def set_auth_header(request: Request, call_next, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """
+    Set authentication for further requests with brainscapes
+    If a user provides a header, this one will be used otherwise use the default public token
+    :param request: current request
+    :param call_next: next middleware function
+    :return: an altered response
+    """
     auth = Authentication.instance()
     bearer_token = request.headers.get('Authorization')
     if bearer_token:
