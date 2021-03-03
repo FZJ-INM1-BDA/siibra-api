@@ -46,10 +46,10 @@ def get_all_atlases():
 @version(1)
 def get_atlas_by_id(atlas_id: str, request: Request):
     """
-    Parameters:
-        - atlas_id: Atlas id
-
     Get more information for a specific atlas with links to further objects.
+
+    Parameters:
+        - atlas_id
     """
     atlases = REGISTRY.items
     for a in atlases:
@@ -59,10 +59,16 @@ def get_atlas_by_id(atlas_id: str, request: Request):
                 'name': a.name,
                 'links': {
                     'parcellations': {
-                        'href': '{}atlases/{}/parcellations'.format(get_base_url_from_request(request), atlas_id.replace('/', '%2F'))
+                        'href': '{}atlases/{}/parcellations'.format(
+                            get_base_url_from_request(request),
+                            atlas_id.replace('/', '%2F')
+                        )
                     },
                     'spaces': {
-                        'href': '{}atlases/{}/spaces'.format(get_base_url_from_request(request), atlas_id.replace('/', '%2F'))
+                        'href': '{}atlases/{}/spaces'.format(
+                            get_base_url_from_request(request),
+                            atlas_id.replace('/', '%2F')
+                        )
                     }
                 }
             }
