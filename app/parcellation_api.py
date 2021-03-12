@@ -49,8 +49,8 @@ def __parcellation_result_info(parcellation, atlas_id=None, request=None):
     Create the response for a parcellation object
     """
     result_info = {
-        "id": split_id(parcellation.id),
-        "name": parcellation.name,
+        'id': split_id(parcellation.id),
+        'name': parcellation.name,
         'availableSpaces': get_spaces_for_parcellation(parcellation.name),
         'links': {
             'self': {
@@ -79,6 +79,10 @@ def get_all_parcellations(atlas_id: str, request: Request):
 
     Returns all parcellations that are defined in the brainscapes client for given atlas
     """
+    print('url: {}'.format(request.url))
+    print('base-url: {}'.format(request.base_url))
+    print(request.headers)
+    print(request.scope)
     if request.headers['accept'] == 'application/text':
         python_code = 'from brainscapes.atlas import REGISTRY \n ' \
                       'atlas = REGISTRY.MULTILEVEL_HUMAN_ATLAS \n ' \
@@ -121,7 +125,7 @@ def get_all_regions_for_parcellation_id(atlas_id: str, parcellation_id: str):
 
 
 @router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features')
-def get_region_by_name(request: Request, atlas_id: str, parcellation_id: str, region_id: str):
+def get_all_features_for_region(request: Request, atlas_id: str, parcellation_id: str, region_id: str):
     """
     Parameters:
         - atlas_id
@@ -155,7 +159,7 @@ def get_region_by_name(request: Request, atlas_id: str, parcellation_id: str, re
 
 @router.get(
     ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality}')
-def get_region_by_name(request: Request, atlas_id: str, parcellation_id: str, region_id: str, modality: str, gene: Optional[str] = None):
+def get_feature_modality_for_region(request: Request, atlas_id: str, parcellation_id: str, region_id: str, modality: str, gene: Optional[str] = None):
     """
     Parameters:
         - atlas_id
@@ -170,7 +174,6 @@ def get_region_by_name(request: Request, atlas_id: str, parcellation_id: str, re
     atlas = create_atlas(atlas_id)
     # select atlas parcellation
     atlas.select_parcellation(parcellation_id)
-    region = atlas.regiontree.find(region_id)
 
     if modality == ModalityType.ReceptorDistribution:
         return get_receptor_distribution(region_id)
@@ -189,7 +192,7 @@ def get_region_by_name(request: Request, atlas_id: str, parcellation_id: str, re
     """
     Parameters:
         - atlas_id
-        - space_id
+        - parcellation_id
         - region_id
 
     Returns a specific region for a given id.
