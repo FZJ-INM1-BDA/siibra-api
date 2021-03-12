@@ -17,7 +17,7 @@ from brainscapes.features import regionprops
 import brainscapes as bs
 
 import nibabel as nib
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
 
 
 def create_atlas(atlas_id=None):
@@ -129,5 +129,12 @@ def get_parcellations_for_space(space: str):
     return result
 
 
-def get_base_url_from_request(request):
-    return '{}{}/'.format(request.base_url, str(request.url).replace(str(request.base_url), '').split('/')[0])
+def get_base_url_from_request(request: Request):
+    proto_header = 'x-forwarded-proto'
+    proto = 'http'
+    host = request.headers.get('host')
+    api_version = str(request.url).replace(str(request.base_url), '').split('/')[0]
+    if proto_header in request.headers:
+        proto = request.headers.get(proto_header)
+
+    return '{}://{}/{}/'.format(proto, host, api_version)

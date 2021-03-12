@@ -52,6 +52,27 @@ class TestRequestUtils(unittest.TestCase):
         spaces = request_utils.get_spaces_for_parcellation(self.PARCELLATION_NAME)
         self.assertEqual(len(spaces), 3)
 
+    def test_base_url_without_redirect(self):
+        self.request_mock.headers = {
+            'host': 'localhost',
+        }
+        self.request_mock.url = 'http://localhost/v1_0/test'
+        self.request_mock.base_url = 'http://localhost/'
+
+        url = request_utils.get_base_url_from_request(self.request_mock)
+        self.assertEqual(url, 'http://localhost/v1_0/')
+
+    def test_base_url_with_redirect(self):
+        self.request_mock.headers = {
+            'host': 'localhost',
+            'x-forwarded-proto': 'https'
+        }
+        self.request_mock.url = 'http://localhost/v1_0/test'
+        self.request_mock.base_url = 'http://localhost/'
+
+        url = request_utils.get_base_url_from_request(self.request_mock)
+        self.assertEqual(url, 'https://localhost/v1_0/')
+
 
 if __name__ == '__main__':
     unittest.main()
