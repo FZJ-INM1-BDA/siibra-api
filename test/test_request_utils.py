@@ -50,7 +50,7 @@ class TestRequestUtils(unittest.TestCase):
 
     def test_get_all_spaces_for_parcellation(self):
         spaces = request_utils.get_spaces_for_parcellation(self.PARCELLATION_NAME)
-        self.assertEqual(len(spaces), 2)
+        self.assertEqual(len(spaces), 3)
 
 
 if __name__ == '__main__':

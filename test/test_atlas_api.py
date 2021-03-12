@@ -6,6 +6,8 @@ from app.app import app
 
 client = TestClient(app)
 
+ATLAS_ID = 'juelich/iav/atlas/v1.0.0/1'
+
 
 def test_get_all_atlases():
     response = client.get('/v1_0/atlases')
@@ -15,13 +17,12 @@ def test_get_all_atlases():
 
 
 def test_get_singe_atlas():
-    id = 'juelich/iav/atlas/v1.0.0/1'
-    response = client.get('/atlases/{}'.format(id.replace('/', '%2F')))
+    response = client.get('/v1_0/atlases/{}'.format(ATLAS_ID.replace('/', '%2F')))
     assert response.status_code == 200
     result_content = json.loads(response.content)
     url = response.url.split('atlases')[0]
     assert result_content == {
-        'id': 'juelich/iav/atlas/v1.0.0/1',
+        'id': ATLAS_ID,
         'name': 'Multilevel Human Atlas',
         'links': {
             'parcellations': {
@@ -34,7 +35,7 @@ def test_get_singe_atlas():
     }
 
 
-def test_get_singe_atlas():
+def test_get_invalid_atlas():
     invalid_id = 'INVALID_ID'
     response = client.get('/v1_0/atlases/{}'.format(invalid_id.replace('/', '%2F')))
     assert response.status_code == 404

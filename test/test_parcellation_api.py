@@ -29,27 +29,14 @@ def test_get_one_parcellation_by_id():
     url = response.url.split('atlases')[0]
     result_content = json.loads(response.content)
     assert response.status_code == 200
-    assert result_content == {
-        'id': {
-            'kg': {
-                'kgSchema': 'minds/core/parcellationatlas/v1.0.0',
-                'kgId': '94c1125b-b87e-45e4-901c-00daee7f2579-25'
-            }
-        },
-        'name': 'Julich-Brain Probabilistic Cytoarchitectonic Maps (v2.5)',
-        'version': '2.5',
-        'availableSpaces': [{'id': 'minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2',
-                                    'name': 'MNI 152 ICBM 2009c Nonlinear Asymmetric'},
-                                   {'id': 'minds/core/referencespace/v1.0.0/7f39f7be-445b-47c0-9791-e971c0b6d992',
-                                    'name': 'MNI Colin 27'}],
-        'links': {
-            'self': {
-                'href': 'http://testserver/v1_0/atlases/juelich%2Fiav%2Fatlas%2Fv1.0.0%2F1/parcellations/minds%2Fcore%2Fparcellationatlas%2Fv1.0.0%2F94c1125b-b87e-45e4-901c-00daee7f2579-25'
-            }
-        },
-        'regions': {
-            'href': 'http://testserver/v1_0/atlases/juelich%2Fiav%2Fatlas%2Fv1.0.0%2F1/parcellations/minds%2Fcore%2Fparcellationatlas%2Fv1.0.0%2F94c1125b-b87e-45e4-901c-00daee7f2579-25/regions'}
+    assert result_content['id'] == {
+        'kg': {
+            'kgSchema': 'minds/core/parcellationatlas/v1.0.0',
+            'kgId': '94c1125b-b87e-45e4-901c-00daee7f2579-25'
+        }
     }
+    assert result_content['name'] == 'Julich-Brain Probabilistic Cytoarchitectonic Maps (v2.5)'
+    assert result_content['version'] == '2.5'
 
 
 def test_all_regions_for_parcellations():
