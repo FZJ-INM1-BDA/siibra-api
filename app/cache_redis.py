@@ -27,13 +27,17 @@ class CacheRedis:
             CacheRedis.__instance = self
 
     def is_connected(self):
+        print('Checking connection: ')
         try:
             self.__r.ping()
         except:
+            print('No connection')
             return False
+        print('Valid connection')
         return True
 
     def renew_connection(self):
+        print('Renew  Connection')
         self.__r = redis.Redis(host=_host, port=_port, password=_password)
         # self.__r = redis.Redis(host='localhost', port=6379, password='')
 
