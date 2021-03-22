@@ -18,7 +18,8 @@ from fastapi import APIRouter, Request, HTTPException, Depends
 from starlette.responses import PlainTextResponse
 from fastapi.encoders import jsonable_encoder
 from .atlas_api import ATLAS_PATH
-from .request_utils import split_id, create_atlas, create_region_json_object, _add_children_to_region, find_space_by_id
+from .request_utils import split_id, create_atlas, create_region_json_object, create_region_json_object_tmp, \
+    _add_children_to_region, find_space_by_id
 from .request_utils import get_spaces_for_parcellation, get_base_url_from_request
 from brainscapes.features import regionprops
 from brainscapes import features
@@ -93,7 +94,7 @@ def get_all_parcellations(atlas_id: str, request: Request):
 
 
 @router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions')
-def get_all_regions_for_parcellation_id(atlas_id: str, parcellation_id: str):
+def get_all_regions_for_parcellation_id(atlas_id: str, parcellation_id: str, space_id: Optional[str] = None):
     """
     Parameters:
         - atlas_id
@@ -114,8 +115,9 @@ def get_all_regions_for_parcellation_id(atlas_id: str, parcellation_id: str):
 
     result = []
     for region in atlas.regiontree.children:
-        region_json = create_region_json_object(region)
-        _add_children_to_region(region_json, region)
+        # region_json = create_region_json_object(region)
+        region_json = create_region_json_object_tmp(region, space_id, atlas)
+        # _add_children_to_region(region_json, region)
         result.append(region_json)
     return result
 

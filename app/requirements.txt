@@ -6,3 +6,4 @@ jinja2
 uvicorn[standard]
 aiofiles
 brainscapes
+redis

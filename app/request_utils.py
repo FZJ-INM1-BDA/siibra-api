@@ -15,10 +15,12 @@
 from brainscapes.atlas import REGISTRY
 from brainscapes.features import regionprops
 import brainscapes as bs
-
+import json
 import nibabel as nib
 from fastapi import HTTPException, Request
+from .cache_redis import CacheRedis
 
+cache_redis = CacheRedis.get_instance()
 
 def create_atlas(atlas_id=None):
     return REGISTRY.MULTILEVEL_HUMAN_ATLAS
@@ -63,7 +65,36 @@ def find_space_by_id(atlas, space_id):
     return {}
 
 
-def create_region_json_object(region):
+def create_region_json_object_tmp(region, space_id=None, atlas=None):
+    region_json = {'name': region.name, 'children': []}
+    if hasattr(region, 'rgb'):
+        region_json['rgb'] = region.rgb
+    if hasattr(region, 'fullId'):
+        region_json['id'] = region.fullId
+    if hasattr(region, 'labelIndex'):
+        region_json['labelIndex'] = region.labelIndex
+
+    _add_children_to_region_tmp(region_json, region, space_id, atlas)
+    return region_json
+
+
+def _add_children_to_region_tmp(region_json, region, space_id=None, atlas=None):
+    for child in region.children:
+        o = create_region_json_object(child)
+        # if space_id is not None and atlas is not None:
+        #     get_region_props(space_id, atlas, o, child)
+        if space_id is not None and atlas is not None:
+            get_region_props_tmp(space_id, atlas, o, child)
+        if child.children:
+            _add_children_to_region_tmp(o, child, space_id, atlas)
+        # else:
+        #     if space_id is not None and atlas is not None:
+        #         get_region_props_tmp(space_id, atlas, o, child)
+                # get_region_props(space_id, atlas, o, child)
+        region_json['children'].append(o)
+
+
+def create_region_json_object(region, space_id=None, atlas=None):
     region_json = {'name': region.name, 'children': []}
     if hasattr(region, 'rgb'):
         region_json['rgb'] = region.rgb
@@ -78,11 +109,9 @@ def create_region_json_object(region):
 def _add_children_to_region(region_json, region):
     for child in region.children:
         o = create_region_json_object(child)
+
         if child.children:
             _add_children_to_region(o, child)
-        # else:
-        #     atlas = create_atlas()
-        #     atlas.select_region(child)
         region_json['children'].append(o)
 
 
@@ -138,3 +167,37 @@ def get_base_url_from_request(request: Request):
         proto = request.headers.get(proto_header)
 
     return '{}://{}/{}/'.format(proto, host, api_version)
+
+
+def get_region_props(space_id, atlas, region_json, region):
+    print('Getting regprops for: {}'.format(region))
+    atlas.select_region(region)
+    r_props = regionprops.RegionProps(atlas, find_space_by_id(atlas, space_id))
+    region_json['props'] = {}
+    region_json['props']['centroid_mm'] = list(r_props.attrs['centroid_mm'])
+    region_json['props']['volume_mm'] = r_props.attrs['volume_mm']
+    region_json['props']['surface_mm'] = r_props.attrs['surface_mm']
+    region_json['props']['is_cortical'] = r_props.attrs['is_cortical']
+
+
+def get_region_props_tmp(space_id, atlas, region_json, region):
+    print('Getting props for: {}'.format(str(region)))
+    region_json['props'] = {}
+    cache_value = cache_redis.get_value('{}-{}-{}-{}'.format(
+        str(atlas),
+        str(atlas.selected_parcellation.id),
+        str(find_space_by_id(atlas, space_id)),
+        str(region)
+    ))
+    print(cache_value)
+    if cache_value == '' or cache_value == 'None' or cache_value is None:
+        region_json['props']['centroid_mm'] = ''
+        region_json['props']['volume_mm'] = ''
+        region_json['props']['surface_mm'] = ''
+        region_json['props']['is_cortical'] = ''
+    else:
+        r_props = json.loads(cache_value)
+        region_json['props']['centroid_mm'] = r_props['centroid_mm']
+        region_json['props']['volume_mm'] = r_props['volume_mm']
+        region_json['props']['surface_mm'] = r_props['surface_mm']
+        region_json['props']['is_cortical'] = r_props['is_cortical']
