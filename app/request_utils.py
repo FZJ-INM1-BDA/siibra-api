@@ -183,14 +183,14 @@ def get_region_props(space_id, atlas, region_json, region):
 def get_region_props_tmp(space_id, atlas, region_json, region):
     print('Getting props for: {}'.format(str(region)))
     region_json['props'] = {}
-    cache_value = cache_redis.get_value('{}-{}-{}-{}'.format(
-        str(atlas),
+    cache_value = cache_redis.get_value('{}_{}_{}_{}'.format(
+        str(atlas.id),
         str(atlas.selected_parcellation.id),
-        str(find_space_by_id(atlas, space_id)),
+        str(find_space_by_id(atlas, space_id).id),
         str(region)
     ))
     print(cache_value)
-    if cache_value == '' or cache_value == 'None' or cache_value is None:
+    if cache_value == 'invalid' or cache_value == 'None' or cache_value is None:
         region_json['props']['centroid_mm'] = ''
         region_json['props']['volume_mm'] = ''
         region_json['props']['surface_mm'] = ''
