@@ -37,7 +37,7 @@ def get_all_spaces(atlas_id: str, request: Request):
     Parameters:
         - atlas_id
 
-    Returns all spaces that are defined in the brainscapes client.
+    Returns all spaces that are defined in the siibra client.
     """
     atlas = create_atlas(atlas_id)
     atlas_spaces = atlas.spaces

@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from brainscapes.atlas import REGISTRY
-from brainscapes.features import regionprops
-import brainscapes as bs
+from siibra.atlas import REGISTRY
+from siibra.features import regionprops
+import siibra as bs
 import json
 import nibabel as nib
 from fastapi import HTTPException, Request

@@ -20,7 +20,7 @@ from fastapi.encoders import jsonable_encoder
 
 from .request_utils import query_data, create_atlas
 
-from brainscapes import features
+from siibra import features
 
 # FastApi router to create rest endpoints
 router = APIRouter()
@@ -44,7 +44,7 @@ class ModalityType(str, Enum):
 @router.get('/genes')
 def get_gene_names():
     """
-    Return all genes (name, acronym) in brainscapes
+    Return all genes (name, acronym) in siibra
     """
     genes = features.genes.AllenBrainAtlasQuery.genes['msg']
     return jsonable_encoder([{'name': g['name'], 'acronym': g['acronym']} for g in genes])

@@ -19,10 +19,10 @@ from fastapi import FastAPI, Depends, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
-from brainscapes.authentication import Authentication
+from siibra.authentication import Authentication
 from fastapi_versioning import VersionedFastAPI
 
-from .brainscapes_api import router as brainscapes_router
+from .siibra_api import router as siibra_router
 from .atlas_api import router as atlas_router
 from .space_api import router as space_router
 from .parcellation_api import router as parcellation_router
@@ -33,11 +33,11 @@ security = HTTPBearer()
 
 # Main fastAPI application
 app = FastAPI()
-# Add a brainscapes router with further endpoints
+# Add a siibra router with further endpoints
 app.include_router(parcellation_router)
 app.include_router(space_router)
 app.include_router(atlas_router)
-app.include_router(brainscapes_router)
+app.include_router(siibra_router)
 
 # Versioning for all api endpoints
 app = VersionedFastAPI(app, default_api_version=1)
@@ -58,7 +58,7 @@ app.add_middleware(
 @app.get('/')
 def home(request: Request):
     """
-    Return the template for the brainscapes landing page.
+    Return the template for the siibra landing page.
 
     :param request: fastApi Request object
     :return: the rendered index.html template
@@ -69,12 +69,12 @@ def home(request: Request):
 @app.get('/stats')
 def home(request: Request):
     """
-    Return the template for the brainscapes statistics.
+    Return the template for the siibra statistics.
 
     :param request: fastApi Request object
     :return: the rendered stats.html template
     """
-    download_data_json = requests.get('https://pypistats.org/api/packages/brainscapes/overall?mirrors=false')
+    download_data_json = requests.get('https://pypistats.org/api/packages/siibra/overall?mirrors=false')
     download_data = json.loads(download_data_json.content)
 
     download_sum = 0
@@ -97,7 +97,7 @@ def home(request: Request):
 @app.middleware('http')
 async def set_auth_header(request: Request, call_next, credentials: HTTPAuthorizationCredentials = Depends(security)):
     """
-    Set authentication for further requests with brainscapes
+    Set authentication for further requests with siibra
     If a user provides a header, this one will be used otherwise use the default public token
     :param request: current request
     :param call_next: next middleware function
@@ -127,14 +127,14 @@ async def matomo_request_log(request: Request, call_next):
     test_list = ['.css', '.js', '.png', '.gif', '.json', '.ico']
     res = any(ele in str(test_url) for ele in test_list)
 
-    if 'BRAINSCAPES_ENVIRONMENT' in os.environ:
-        if os.environ['BRAINSCAPES_ENVIRONMENT'] == 'PRODUCTION':
+    if 'SIIBRA_ENVIRONMENT' in os.environ:
+        if os.environ['SIIBRA_ENVIRONMENT'] == 'PRODUCTION':
             print('******* Im on production ********')
             if not res:
                 payload = {
                     'idsite': 13,
                     'rec': 1,
-                    'action_name': 'brainscapes_api',
+                    'action_name': 'siibra_api',
                     'url': request.url,
                     '_id': 'my_ip',
                     'lang': request.headers.get('Accept-Language'),

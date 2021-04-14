@@ -1,4 +1,10 @@
 .idea
 *#imlwm
 brainscapes
+siibra
 __pycache__
+coverage
+htmlcov
+.coverage
+coverage.xml
+*.nii

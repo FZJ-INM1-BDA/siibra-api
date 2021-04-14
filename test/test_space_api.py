@@ -5,9 +5,9 @@ from fastapi.testclient import TestClient
 
 from app.app import app
 
-from brainscapes.features import regionprops
+from siibra.features import regionprops
 from app.request_utils import _get_file_from_nibabel
-from brainscapes import atlas
+from siibra import atlas
 
 client = TestClient(app)
 

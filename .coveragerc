@@ -4,4 +4,4 @@ omit =
     */site-packages/*
     */distutils/*
     test/*
-    *brainscapes_client*
+    *siibra_client*

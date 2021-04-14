@@ -21,9 +21,9 @@ from .atlas_api import ATLAS_PATH
 from .request_utils import split_id, create_atlas, create_region_json_object, create_region_json_object_tmp, \
     _add_children_to_region, find_space_by_id
 from .request_utils import get_spaces_for_parcellation, get_base_url_from_request
-from brainscapes.features import regionprops
-from brainscapes import features
-from .brainscapes_api import get_receptor_distribution, get_connectivity_matrix, get_connectivty_profile, get_gene_expression
+from siibra.features import regionprops
+from siibra import features
+from .siibra_api import get_receptor_distribution, get_connectivity_matrix, get_connectivty_profile, get_gene_expression
 
 
 router = APIRouter()
@@ -78,10 +78,10 @@ def get_all_parcellations(atlas_id: str, request: Request):
     Parameters:
         - atlas_id
 
-    Returns all parcellations that are defined in the brainscapes client for given atlas
+    Returns all parcellations that are defined in the siibra client for given atlas
     """
     if request.headers['accept'] == 'application/text':
-        python_code = 'from brainscapes.atlas import REGISTRY \n ' \
+        python_code = 'from siibra.atlas import REGISTRY \n ' \
                       'atlas = REGISTRY.MULTILEVEL_HUMAN_ATLAS \n ' \
                       'parcellations = atlas.parcellations'
         return PlainTextResponse(status_code=200, content=python_code)

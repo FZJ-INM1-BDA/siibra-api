@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from fastapi import APIRouter, Request, HTTPException
-from brainscapes.atlas import REGISTRY
+from siibra.atlas import REGISTRY
 from fastapi_versioning import version
 from .request_utils import get_base_url_from_request
 
@@ -30,7 +30,7 @@ ATLAS_PATH = '/atlases'
 @version(1)
 def get_all_atlases():
     """
-    Get all atlases known by brainscapes
+    Get all atlases known by siibra
     """
     atlases = REGISTRY.items
     result = []

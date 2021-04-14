@@ -1,7 +1,7 @@
 import redis
 import os
 
-_host = 'brainscapes-redis'
+_host = 'siibra-redis'
 _password = os.getenv('REDIS_PASSWORD')
 _port = 6379
 
