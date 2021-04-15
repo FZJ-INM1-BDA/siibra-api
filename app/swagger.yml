@@ -1,8 +1,8 @@
 swagger: "2.0"
 info:
-  description: This is a documentation and playground for the brainscapes client endpoints
+  description: This is a documentation and playground for the siibra client endpoints
   version: "1.0.0"
-  title: Brainscapes REST API
+  title: Siibra REST API
 consumes:
   - "application/json"
 produces:
@@ -14,7 +14,7 @@ basePath: "/api"
 paths:
   /receptors/fingerprint:
     get:
-      operationId: "brainscapes_api.receptordata_fingerprint"
+      operationId: "siibra_api.receptordata_fingerprint"
       tags:
         - "Features"
       summary: "Receptor fingerprint for region"
@@ -41,7 +41,7 @@ paths:
                   type: "object"
   /receptors/profiles:
     get:
-      operationId: "brainscapes_api.receptordata_profiles"
+      operationId: "siibra_api.receptordata_profiles"
       tags:
         - "Features"
       summary: "Receptor profiles for region"
@@ -68,7 +68,7 @@ paths:
                   type: "object"
   /receptors/autoradiographs:
     get:
-      operationId: "brainscapes_api.receptordata_autoradiographs"
+      operationId: "siibra_api.receptordata_autoradiographs"
       tags:
         - "Features"
       summary: "Receptor autoradiographs for region"
@@ -95,7 +95,7 @@ paths:
                   type: "object"
   /parcellations:
     get:
-      operationId: "brainscapes_api.parcellations"
+      operationId: "siibra_api.parcellations"
       tags:
         - "Parcellations"
       summary: "All parcellations for an atlas"
@@ -117,7 +117,7 @@ paths:
                   type: "object"
   /spaces:
     get:
-      operationId: "brainscapes_api.spaces"
+      operationId: "siibra_api.spaces"
       tags:
         - "Spaces"
       summary: "All spaces for an atlas"
@@ -139,7 +139,7 @@ paths:
                   type: "object"
   /regions:
     get:
-      operationId: "brainscapes_api.regions"
+      operationId: "siibra_api.regions"
       tags:
         - "Regions"
       summary: "All regions for a parcellation"
@@ -166,7 +166,7 @@ paths:
                   type: "object"
   /maps:
     get:
-      operationId: "brainscapes_api.maps"
+      operationId: "siibra_api.maps"
       tags:
         - "Spaces"
       summary: "Map for selected space"
@@ -191,7 +191,7 @@ paths:
             type: "file"
   /templates:
     get:
-      operationId: "brainscapes_api.templates"
+      operationId: "siibra_api.templates"
       tags:
         - "Spaces"
       summary: "Template for selected space"
@@ -216,7 +216,7 @@ paths:
             type: "file"
   /genes:
     get:
-      operationId: "brainscapes_api.genes"
+      operationId: "siibra_api.genes"
       tags:
         - "Features"
       summary: "Genes"

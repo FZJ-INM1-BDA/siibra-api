@@ -1,31 +1,26 @@
-# Use python 3.8 as base image for the flask application
-FROM python:3.8
+# Use fastapi python 3.7 as base image
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.7
 
 # Upgrade pip to latest version
 RUN python -m pip install --upgrade pip
 
-# Install latest brainscapes client
-RUN pip install brainscapes
-
 # Copy the application and install dependencies
-COPY ./app /app
+COPY . /app
 WORKDIR /app
 
-RUN python -m pip install -r requirements.txt
-RUN python -m pip install connexion[swagger-ui]
+RUN python -m pip install -r app/requirements.txt
 RUN python -m pip install anytree
 RUN python -m pip install pillow
 RUN python -m pip install scikit-image
 
-# Create directory for cache and set an environment variable for brainscapes
+# Create directory for cache and set an environment variable for siibra
 RUN mkdir cache
 RUN chmod 777 cache
 RUN chmod 777 /app
-ENV BRAINSCAPES_CACHEDIR=/app/cache
+ENV SIIBRA_CACHEDIR=/app/cache
 
-# Expose flask port
+# Expose port
 EXPOSE 5000
 
-# Start flask application
-ENTRYPOINT ["python"]
-CMD ["app.py"]
+# Start application
+CMD ["uvicorn", "app.app:app", "--host", "0.0.0.0", "--port", "5000"]
