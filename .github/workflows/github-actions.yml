@@ -17,7 +17,6 @@ jobs:
       - name: Install test dependecies
         run: pip install pytest pytest-asyncio httpx mock coverage
       - run: coverage run -m pytest
-      - run: echo "🍏 This job's status is ${{ job.status }}."
 
   dev-deploy:
     runs-on: ubuntu-latest
