@@ -3,6 +3,10 @@ on: [push]
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      EBRAINS_IAM_CLIENT_ID: ${{ secrets.EBRAINS_IAM_CLIENT_ID }}
+      EBRAINS_IAM_CLIENT_SECRET: ${{ secrets.EBRAINS_IAM_CLIENT_SECRET }}
+      EBRAINS_IAM_REFRESH_TOKEN: ${{ secrets.EBRAINS_IAM_REFRESH_TOKEN }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
