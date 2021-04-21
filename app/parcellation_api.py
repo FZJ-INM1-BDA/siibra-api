@@ -114,7 +114,7 @@ def get_all_regions_for_parcellation_id(atlas_id: str, parcellation_id: str, spa
         )
 
     result = []
-    for region in atlas.regiontree.children:
+    for region in atlas.selected_parcellation.regiontree.children:
         # region_json = create_region_json_object(region)
         region_json = create_region_json_object_tmp(region, space_id, atlas)
         # _add_children_to_region(region_json, region)
@@ -136,7 +136,7 @@ def get_all_features_for_region(request: Request, atlas_id: str, parcellation_id
     atlas = create_atlas(atlas_id)
     # select atlas parcellation
     atlas.select_parcellation(parcellation_id)
-    region = atlas.regiontree.find(region_id)
+    region = atlas.selected_parcellation.regiontree.find(region_id)
 
     result = {
         'features': []
@@ -199,7 +199,7 @@ def get_region_by_name(request: Request, atlas_id: str, parcellation_id: str, re
     atlas = create_atlas(atlas_id)
     # select atlas parcellation
     atlas.select_parcellation(parcellation_id)
-    region = atlas.regiontree.find(region_id)
+    region = atlas.selected_parcellation.regiontree.find(region_id)
 
     r = region[0]
     region_json = create_region_json_object(r)
