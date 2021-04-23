@@ -24,6 +24,9 @@ RUN chmod 777 cache
 RUN chmod 777 /app
 ENV SIIBRA_CACHEDIR=/app/cache
 
+RUN chown -R nobody /app
+USER nobody
+
 # Expose port
 EXPOSE 5000
 
