@@ -14,7 +14,7 @@ class TestRequestUtils(unittest.TestCase):
     MODALITY_INVALID = 'DUMMY_MODALITY'
     BEARER_TOKEN = 'Bearer 1337'
     ARGS_TOKEN = '1337'
-    PARCELLATION_NAME = 'Julich-Brain Probabilistic Cytoarchitectonic Maps (v2.5)'
+    PARCELLATION_NAME = 'Julich-Brain Cytoarchitectonic Maps (v2.5)'
     SPACE_NAME = 'MNI 152 ICBM 2009c Nonlinear Asymmetric'
     request_mock = mock.MagicMock()
     request_mock.headers.return_value = {
