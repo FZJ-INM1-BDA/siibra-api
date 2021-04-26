@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from siibra.atlas import REGISTRY
-from siibra.features import regionprops
+# from siibra.features import regionprops
 import siibra as bs
 import json
 import nibabel as nib
@@ -153,7 +153,7 @@ def get_spaces_for_parcellation(parcellation: str):
 def get_parcellations_for_space(space: str):
     result = []
     for p in bs.parcellations.items:
-        if bs.spaces[space].id in p.maps.keys():
+        if p.supports_space(bs.spaces[space]):
             result.append(_object_to_json(p))
     return result
 
@@ -169,15 +169,15 @@ def get_base_url_from_request(request: Request):
     return '{}://{}/{}/'.format(proto, host, api_version)
 
 
-def get_region_props(space_id, atlas, region_json, region):
-    print('Getting regprops for: {}'.format(region))
-    atlas.select_region(region)
-    r_props = regionprops.RegionProps(atlas, find_space_by_id(atlas, space_id))
-    region_json['props'] = {}
-    region_json['props']['centroid_mm'] = list(r_props.attrs['centroid_mm'])
-    region_json['props']['volume_mm'] = r_props.attrs['volume_mm']
-    region_json['props']['surface_mm'] = r_props.attrs['surface_mm']
-    region_json['props']['is_cortical'] = r_props.attrs['is_cortical']
+# def get_region_props(space_id, atlas, region_json, region):
+#     print('Getting regprops for: {}'.format(region))
+#     atlas.select_region(region)
+#     r_props = regionprops.RegionProps(atlas, find_space_by_id(atlas, space_id))
+#     region_json['props'] = {}
+#     region_json['props']['centroid_mm'] = list(r_props.attrs['centroid_mm'])
+#     region_json['props']['volume_mm'] = r_props.attrs['volume_mm']
+#     region_json['props']['surface_mm'] = r_props.attrs['surface_mm']
+#     region_json['props']['is_cortical'] = r_props.attrs['is_cortical']
 
 
 def get_region_props_tmp(space_id, atlas, region_json, region):

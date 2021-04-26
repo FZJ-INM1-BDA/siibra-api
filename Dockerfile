@@ -8,6 +8,11 @@ RUN python -m pip install --upgrade pip
 COPY . /app
 WORKDIR /app
 
+RUN python -m pip install -U pip
+
+RUN git clone -b feat_addVolsrc https://github.com/FZJ-INM1-BDA/siibra-python.git
+RUN cd siibra-python && python -m pip install .
+
 RUN python -m pip install -r app/requirements.txt
 RUN python -m pip install anytree
 RUN python -m pip install pillow
@@ -18,6 +23,9 @@ RUN mkdir cache
 RUN chmod 777 cache
 RUN chmod 777 /app
 ENV SIIBRA_CACHEDIR=/app/cache
+
+RUN chown -R nobody /app
+USER nobody
 
 # Expose port
 EXPOSE 5000

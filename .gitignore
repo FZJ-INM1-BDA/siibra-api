@@ -8,4 +8,5 @@ htmlcov
 .coverage
 coverage.xml
 *.nii
-venv
+siibra-python/*
+venv/*
