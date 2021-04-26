@@ -21,6 +21,7 @@ from fastapi.encoders import jsonable_encoder
 from .request_utils import query_data, create_atlas
 
 from siibra import features
+from memoization import cached
 
 # FastApi router to create rest endpoints
 router = APIRouter()
@@ -134,9 +135,22 @@ def get_gene_expression(region, gene):
     else:
         raise HTTPException(status_code=400, detail='Invalid gene: {}'.format(gene))
 
+@cached
+def get_connectivty_profile(atlas_id,parcellation_id,region_id):
 
-def get_connectivty_profile():
-    raise HTTPException(status_code=501, detail='No method yet for connectivity profile')
+    # select atlas by id
+    atlas = create_atlas(atlas_id)
+    # select atlas parcellation
+    atlas.select_parcellation(parcellation_id)
+    region = atlas.selected_parcellation.regions.find(region_id)
+    conn_profiles = atlas.get_features(sb.modalities.ConnectivityProfile)
+    return jsonable_encoder([ {
+        "name": conn_pr.src_name,
+        "column_names": conn_pr.column_names,
+        "parcellation": conn_pr.parcellation,
+        "src_info": conn_pr.src_info,
+        "profile": conn_pr.profile,
+    } for conn_pr in conn_profiles ])
 
 
 def get_connectivity_matrix():

@@ -178,7 +178,7 @@ def get_feature_modality_for_region(request: Request, atlas_id: str, parcellatio
     if modality == ModalityType.ReceptorDistribution:
         return get_receptor_distribution(region_id)
     if modality == ModalityType.ConnectivityProfile:
-        return get_connectivty_profile()
+        return get_connectivty_profile(atlas_id,parcellation_id,region_id)
     if modality == ModalityType.ConnectivityMatrix:
         return get_connectivity_matrix()
     if modality == ModalityType.GeneExpression:
