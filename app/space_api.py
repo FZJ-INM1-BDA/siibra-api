@@ -90,7 +90,7 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):  # add parcell
     """
     atlas = create_atlas(atlas_id)
     space = find_space_by_id(atlas, space_id)
-    maps = atlas.get_maps(space)
+    maps = atlas.get_map(space)
     print(maps.keys())
 
     if len(maps) == 1:
