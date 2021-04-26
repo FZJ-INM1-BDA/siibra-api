@@ -19,7 +19,7 @@ from starlette.responses import PlainTextResponse
 from fastapi.encoders import jsonable_encoder
 from .atlas_api import ATLAS_PATH
 from .request_utils import split_id, create_atlas, create_region_json_object, create_region_json_object_tmp, \
-    _add_children_to_region, find_space_by_id
+    _add_children_to_region, find_space_by_id, find_region_via_id
 from .request_utils import get_spaces_for_parcellation, get_base_url_from_request
 # from siibra.features import regionprops
 from siibra import features
@@ -138,7 +138,6 @@ def get_all_features_for_region(request: Request, atlas_id: str, parcellation_id
     atlas = create_atlas(atlas_id)
     # select atlas parcellation
     atlas.select_parcellation(parcellation_id)
-    region = atlas.selected_parcellation.regions.find(region_id)
 
     result = {
         'features': []
@@ -201,7 +200,7 @@ def get_region_by_name(request: Request, atlas_id: str, parcellation_id: str, re
     atlas = create_atlas(atlas_id)
     # select atlas parcellation
     atlas.select_parcellation(parcellation_id)
-    region = atlas.selected_parcellation.regions.find(region_id)
+    region = find_region_via_id(atals,region_id)
 
     r = region[0]
     region_json = create_region_json_object(r)

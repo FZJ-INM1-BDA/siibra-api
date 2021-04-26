@@ -19,6 +19,7 @@ import json
 import nibabel as nib
 from fastapi import HTTPException, Request
 from .cache_redis import CacheRedis
+import anytree
 
 cache_redis = CacheRedis.get_instance()
 
@@ -201,3 +202,25 @@ def get_region_props_tmp(space_id, atlas, region_json, region):
         region_json['props']['volume_mm'] = r_props['volume_mm']
         region_json['props']['surface_mm'] = r_props['surface_mm']
         region_json['props']['is_cortical'] = r_props['is_cortical']
+
+def find_region_via_id(atlas,region_id):
+    """
+    Pure binder function to find a region via id (fullId.kgSchema + fullId.kgId)
+    """
+
+    def match_node(node):
+        if node.attrs is None:
+            return False
+        if 'fullId' not in node.attrs:
+            return False
+
+        if node.attrs['fullId'] is None:
+            return False
+        full_id = node.attrs['fullId']
+        if 'kg' not in full_id:
+            return False
+        full_id_kg=full_id['kg']
+        return full_id_kg['kgSchema'] + '/' + full_id_kg['kgId'] == region_id
+
+    region_tree=atlas.selected_parcellation.regiontree
+    return anytree.search.findall(region_tree, match_node)

@@ -18,9 +18,9 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.encoders import jsonable_encoder
 
-from .request_utils import query_data, create_atlas
+from .request_utils import query_data, create_atlas, find_region_via_id
 
-from siibra import features
+from siibra import features, modalities
 from memoization import cached
 
 # FastApi router to create rest endpoints
@@ -142,15 +142,17 @@ def get_connectivty_profile(atlas_id,parcellation_id,region_id):
     atlas = create_atlas(atlas_id)
     # select atlas parcellation
     atlas.select_parcellation(parcellation_id)
-    region = atlas.selected_parcellation.regions.find(region_id)
-    conn_profiles = atlas.get_features(sb.modalities.ConnectivityProfile)
-    return jsonable_encoder([ {
+    regions = find_region_via_id(atlas,region_id)
+    if len(regions) == 0:
+        raise HTTPException(status_code=401, detail=f'Region with id {region_id} not found!')
+    atlas.select_region(regions[0])
+    conn_profiles = atlas.get_features(modalities.ConnectivityProfile)
+    return [{
         "name": conn_pr.src_name,
         "column_names": conn_pr.column_names,
-        "parcellation": conn_pr.parcellation,
         "src_info": conn_pr.src_info,
         "profile": conn_pr.profile,
-    } for conn_pr in conn_profiles ])
+    } for conn_pr in conn_profiles ]
 
 
 def get_connectivity_matrix():
