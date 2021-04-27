@@ -5,3 +5,5 @@ omit =
     */distutils/*
     test/*
     *siibra_client*
+    *.github*
+

@@ -33,7 +33,7 @@ def select_parcellation_by_id(atlas, parcellation_id):
 
 def query_data(modality, regionname, args=None):
     atlas = create_atlas()
-    selected_region = atlas.regiontree.find(regionname)
+    selected_region = atlas.find_regions(regionname)
     result = {}
     if modality in bs.features.modalities:
         if selected_region:

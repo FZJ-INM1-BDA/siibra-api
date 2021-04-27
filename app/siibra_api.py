@@ -47,8 +47,9 @@ def get_gene_names():
     """
     Return all genes (name, acronym) in siibra
     """
-    genes = features.genes.AllenBrainAtlasQuery.genes['msg']
-    return jsonable_encoder([{'name': g['name'], 'acronym': g['acronym']} for g in genes])
+    print(dir(features.genes.AllenBrainAtlasQuery))
+    genes = features.genes.AllenBrainAtlasQuery.GENE_NAMES
+    return jsonable_encoder([{'name': genes[g], 'acronym': g} for g in genes.keys()])
 #
 #
 # @router.get('/genes/{gene}')

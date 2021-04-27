@@ -35,7 +35,7 @@ def test_get_one_parcellation_by_id():
             'kgId': '94c1125b-b87e-45e4-901c-00daee7f2579-25'
         }
     }
-    assert result_content['name'] == 'Julich-Brain Probabilistic Cytoarchitectonic Maps (v2.5)'
+    assert result_content['name'] == 'Julich-Brain Cytoarchitectonic Maps 2.5'
     assert result_content['version'] == '2.5'
 
 

@@ -12,7 +12,7 @@ def test_get_all_gene_names():
     response = client.get('/v1_0/genes')
     assert response.status_code == 200
     result_content = json.loads(response.content)
-    assert len(result_content) == 29180
+    assert len(result_content) == 29174
 
 
 def test_get_all_available_modalities():
