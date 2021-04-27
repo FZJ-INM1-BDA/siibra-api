@@ -91,7 +91,6 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):  # add parcell
     atlas = create_atlas(atlas_id)
     space = find_space_by_id(atlas, space_id)
     maps = atlas.get_map(space)
-    print(maps.keys())
 
     if len(maps) == 1:
         filename = _get_file_from_nibabel(maps[0], 'maps', space)
@@ -100,8 +99,10 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):  # add parcell
         files = []
         mem_zip = io.BytesIO()
 
-        for label, space_map in maps.items():
-            files.append(_get_file_from_nibabel(space_map, label, space))
+        label_index = 0
+        for map in maps:
+            files.append(_get_file_from_nibabel(map, 'map-{}'.format(label_index), space))
+            label_index = label_index + 1
 
         with zipfile.ZipFile(mem_zip, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
             for f in files:
