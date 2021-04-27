@@ -10,9 +10,6 @@ WORKDIR /app
 
 RUN python -m pip install -U pip
 
-RUN git clone -b develop https://github.com/FZJ-INM1-BDA/siibra-python.git
-RUN python -m pip install ./siibra-python
-
 RUN python -m pip install -r app/requirements.txt
 RUN python -m pip install anytree
 RUN python -m pip install pillow
