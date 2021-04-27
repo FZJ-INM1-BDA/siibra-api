@@ -21,7 +21,7 @@ def test_get_all_parcellations():
     )
     result_content = json.loads(response.content)
     assert response.status_code == 200
-    assert len(result_content) == 12
+    assert len(result_content) > 0
 
 
 def test_get_one_parcellation_by_id():
