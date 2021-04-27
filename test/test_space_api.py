@@ -64,4 +64,3 @@ def test_get_parcellation_maps_for_space():
     assert response.status_code == 200
     assert 'application/x-zip-compressed' in response.headers['content-type']
     assert 'attachment' in response.headers['content-disposition']
-    assert 'maps-MNI_152_ICBM_2009c_Nonlinear_Asymmetric.zip' in response.headers['content-disposition']
