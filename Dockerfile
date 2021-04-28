@@ -8,6 +8,8 @@ RUN python -m pip install --upgrade pip
 COPY . /app
 WORKDIR /app
 
+RUN python -m pip install -U pip
+
 RUN python -m pip install -r app/requirements.txt
 RUN python -m pip install anytree
 RUN python -m pip install pillow
@@ -18,6 +20,9 @@ RUN mkdir -p cache
 RUN chmod 777 cache
 RUN chmod 777 /app
 ENV SIIBRA_CACHEDIR=/app/cache
+
+RUN chown -R nobody /app
+USER nobody
 
 # Expose port
 EXPOSE 5000

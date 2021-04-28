@@ -19,9 +19,9 @@ from starlette.responses import PlainTextResponse
 from fastapi.encoders import jsonable_encoder
 from .atlas_api import ATLAS_PATH
 from .request_utils import split_id, create_atlas, create_region_json_object, create_region_json_object_tmp, \
-    _add_children_to_region, find_space_by_id
+    _add_children_to_region, find_space_by_id, find_region_via_id
 from .request_utils import get_spaces_for_parcellation, get_base_url_from_request
-from siibra.features import regionprops
+# from siibra.features import regionprops
 from siibra import features
 from .siibra_api import get_receptor_distribution, get_connectivity_matrix, get_connectivty_profile, get_gene_expression
 
@@ -136,7 +136,6 @@ def get_all_features_for_region(request: Request, atlas_id: str, parcellation_id
     atlas = create_atlas(atlas_id)
     # select atlas parcellation
     atlas.select_parcellation(parcellation_id)
-    region = atlas.selected_parcellation.regiontree.find(region_id)
 
     result = {
         'features': []
@@ -176,7 +175,7 @@ def get_feature_modality_for_region(request: Request, atlas_id: str, parcellatio
     if modality == ModalityType.ReceptorDistribution:
         return get_receptor_distribution(region_id)
     if modality == ModalityType.ConnectivityProfile:
-        return get_connectivty_profile()
+        return get_connectivty_profile(atlas_id,parcellation_id,region_id)
     if modality == ModalityType.ConnectivityMatrix:
         return get_connectivity_matrix()
     if modality == ModalityType.GeneExpression:
@@ -199,7 +198,7 @@ def get_region_by_name(request: Request, atlas_id: str, parcellation_id: str, re
     atlas = create_atlas(atlas_id)
     # select atlas parcellation
     atlas.select_parcellation(parcellation_id)
-    region = atlas.selected_parcellation.regiontree.find(region_id)
+    region = find_region_via_id(atlas,region_id)
 
     r = region[0]
     region_json = create_region_json_object(r)
@@ -207,12 +206,12 @@ def get_region_by_name(request: Request, atlas_id: str, parcellation_id: str, re
 
     if space_id:
         atlas.select_region(r)
-        r_props = regionprops.RegionProps(atlas, find_space_by_id(atlas, space_id))
+        # r_props = regionprops.RegionProps(atlas, find_space_by_id(atlas, space_id))
         region_json['props'] = {}
-        region_json['props']['centroid_mm'] = list(r_props.attrs['centroid_mm'])
-        region_json['props']['volume_mm'] = r_props.attrs['volume_mm']
-        region_json['props']['surface_mm'] = r_props.attrs['surface_mm']
-        region_json['props']['is_cortical'] = r_props.attrs['is_cortical']
+        # region_json['props']['centroid_mm'] = list(r_props.attrs['centroid_mm'])
+        # region_json['props']['volume_mm'] = r_props.attrs['volume_mm']
+        # region_json['props']['surface_mm'] = r_props.attrs['surface_mm']
+        # region_json['props']['is_cortical'] = r_props.attrs['is_cortical']
     region_json['links'] = {
         'features': '{}atlases/{}/parcellations/{}/regions/{}/features'.format(
             get_base_url_from_request(request),
