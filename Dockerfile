@@ -16,7 +16,7 @@ RUN python -m pip install pillow
 RUN python -m pip install scikit-image
 
 # Create directory for cache and set an environment variable for siibra
-RUN mkdir cache
+RUN mkdir -p cache
 RUN chmod 777 cache
 RUN chmod 777 /app
 ENV SIIBRA_CACHEDIR=/app/cache
@@ -28,4 +28,4 @@ USER nobody
 EXPOSE 5000
 
 # Start application
-CMD ["uvicorn", "app.app:app", "--host", "0.0.0.0", "--port", "5000"]
+CMD ["uvicorn", "app.app:app", "--host", "0.0.0.0", "--port", "5000", "--reload"]
