@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 
 from app.app import app
 
-from siibra.features import regionprops
+from siibra import region
 from app.request_utils import _get_file_from_nibabel
 from siibra import atlas
 
@@ -17,11 +17,11 @@ INVALID_SPACE_ID = 'INVALID_SPACE_ID'
 
 
 class MockRegionProps:
-    def __init__(self, atlas, space):
+    def __init__(self, region, space):
         self.attrs = {'centroid_mm': [1,2,3], 'volume_mm': 4.0, 'surface_mm': 5.0, 'is_cortical': False}
 
 
-regionprops.RegionProps = MockRegionProps
+region.RegionProps = MockRegionProps
 
 _get_file_from_nibabel = {}
 

@@ -206,7 +206,9 @@ def get_region_props_tmp(space_id, atlas, region_json, region):
 
 def find_region_via_id(atlas,region_id):
     """
-    Pure binder function to find a region via id (fullId.kgSchema + fullId.kgId)
+    Pure binder function to find regions via id by:
+    - strict equality match (fullId.kgSchema + fullId.kgId)
+    - atlas.find_regions fuzzy search first
     """
 
     def match_node(node):
@@ -223,5 +225,8 @@ def find_region_via_id(atlas,region_id):
         full_id_kg=full_id['kg']
         return full_id_kg['kgSchema'] + '/' + full_id_kg['kgId'] == region_id
 
+    fuzzy_regions=atlas.find_regions(region_id)
+
     region_tree=atlas.selected_parcellation.regiontree
-    return anytree.search.findall(region_tree, match_node)
+    strict_equal_id=anytree.search.findall(region_tree, match_node)
+    return [*strict_equal_id,*fuzzy_regions]
