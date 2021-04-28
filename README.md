@@ -28,6 +28,33 @@ A list of all API endpoints and a playground to directly test it can be found he
 
 [Swagger API](https://siibra-api.apps-dev.hbp.eu/v1_0/docs#/)
 
+## Local Startup / Development
+
+
+The siibra-api can be easily started locally with docker compose.
+A `docker-compose.yml` file is already included in the project. 
+Only some environment variables are needed. This variables can be defined in a file `.env`.
+
+Step by step start up:
+
+1. Create `.env` file on the same level as `docker-compose.yml`
+2. Add all needed environment variables as described in the example:
+
+``` 
+SIIBRA_ENVIRONMENT=DEVELOPMENT
+EBRAINS_IAM_CLIENT_ID=<IAM_CLIENT_ID>
+EBRAINS_IAM_CLIENT_SECRET=<IAM_CLIENT_SECRET>
+EBRAINS_IAM_REFRESH_TOKEN=<IAM_REFRESH_TOKEN>
+```
+
+3. Run `docker-compose --env-file ./.env.dev up -d` to start the application
+
+:bulb: 
+
+Running the application with docker-compose allows **hot reload**.
+Changes in the code will be directly taken over into the running container. 
+
+
 ## Acknowledgements
 
 This software code is funded from the European Union’s Horizon 2020 Framework
