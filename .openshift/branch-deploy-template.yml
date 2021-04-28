@@ -28,8 +28,6 @@ objects:
             - name: SESSION_SECRET
               value: ${SESSION_SECRET}
 
-            - name: SIIBRA_CONFIG_GITLAB_PROJECT_TAG
-              value: ${SIIBRA_CONFIG_GITLAB_PROJECT_TAG}
             - name: EBRAINS_IAM_CLIENT_ID
               valueFrom: 
                 configMapKeyRef:
@@ -100,7 +98,6 @@ objects:
     wildcardPolicy: None
 
 parameters:
-- name: SIIBRA_CONFIG_GITLAB_PROJECT_TAG
 - name: BRANCH_NAME
   required: true
 - name: SANITIZED_BRANCH_NAME
