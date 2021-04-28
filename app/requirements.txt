@@ -5,5 +5,5 @@ fastapi-versioning
 jinja2
 uvicorn[standard]
 aiofiles
-redis
 siibra==0.0.9.dev3
+redis

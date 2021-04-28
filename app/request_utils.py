@@ -154,8 +154,9 @@ def get_spaces_for_parcellation(parcellation: str):
 def get_parcellations_for_space(space: str):
     result = []
     for p in bs.parcellations.items:
-        if p.supports_space(bs.spaces[space]):
-            result.append(_object_to_json(p))
+        for k in p.maps.keys():
+            if bs.spaces[space].id in k.id:
+                result.append(_object_to_json(p))
     return result
 
 
