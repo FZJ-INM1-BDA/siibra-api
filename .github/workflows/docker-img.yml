@@ -56,8 +56,8 @@ jobs:
         
       - name: 'Login via oc cli & deploy'
         run: |
-          oc login $OKD_URL --token=${{ env.OKD_SECRET }}
-          oc project $OKD_PROJECT
+          oc login ${{ env.OKD_ENDPOINT }} --token=${{ env.OKD_SECRET }}
+          oc project ${{ env.OKD_PROJECT }}
 
           # sanitized branchname == remove _ / and lowercase everything
           SANITIZED_BRANCH_NAME=$(echo ${BRANCH_NAME//[_\/]/} | awk '{ print tolower($0) }')
