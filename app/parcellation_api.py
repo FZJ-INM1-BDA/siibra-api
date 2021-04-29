@@ -67,6 +67,10 @@ def __parcellation_result_info(parcellation, atlas_id=None, request=None):
                 parcellation.id.replace('/', '%2F')
             )
         }}
+
+    if hasattr(parcellation, 'modality') and parcellation.modality:
+        result_info['modality'] = parcellation.modality
+        
     if hasattr(parcellation, 'version') and parcellation.version:
         result_info['version'] = parcellation.version
     return result_info
