@@ -10,6 +10,7 @@ ATLAS_ID = 'juelich/iav/atlas/v1.0.0/1'
 PARCELLATION_ID = 'minds%2Fcore%2Fparcellationatlas%2Fv1.0.0%2F94c1125b-b87e-45e4-901c-00daee7f2579-25'
 INVALID_PARCELLATION_ID = 'INVALID_PARCELLATION_ID'
 REGION_NAME = 'Ch 123 (Basal Forebrain) - left hemisphere'
+REGION_ID = 'minds%2Fcore%2Fparcellationregion%2Fv1.0.0%2Fbb111a95-e04c-4987-8254-4af4ed8b0022'
 INVALID_REGION_NAME = 'INVALID_REGION'
 SPACE_ID = 'minds%2Fcore%2Freferencespace%2Fv1.0.0%2Fdafcffc5-4826-4bf1-8ff6-46b8a31ff8e2'
 
@@ -55,61 +56,18 @@ def test_all_regions_for_parcellations_with_bad_request():
 
 
 def test_get_one_region_for_parcellation_without_extra_data():
-    response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}'.format(ATLAS_ID.replace('/', '%2F'), PARCELLATION_ID, REGION_NAME))
+    response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}'.format(ATLAS_ID.replace('/', '%2F'), PARCELLATION_ID, REGION_ID))
     result_content = json.loads(response.content)
     assert response.status_code == 200
-    assert result_content == {
-        "name": "Ch 123 (Basal Forebrain) - left hemisphere",
-        "children": [],
-        "rgb": [
-            200,
-            200,
-            200
-        ],
-        "id": {
-            "kg": {
-                "kgSchema": "minds/core/parcellationregion/v1.0.0",
-                "kgId": "bb111a95-e04c-4987-8254-4af4ed8b0022"
-            }
-        },
-        "labelIndex": 62,
-        'links': {'features': 'http://testserver/v1_0/atlases/juelich%2Fiav%2Fatlas%2Fv1.0.0%2F1/parcellations/minds%2Fcore%2Fparcellationatlas%2Fv1.0.0%2F94c1125b-b87e-45e4-901c-00daee7f2579-25/regions/Ch '
-                              '123 (Basal Forebrain) - left hemisphere/features'},
-    }
+    assert result_content['name'] == REGION_NAME
 
 
 def test_get_one_region_for_parcellation_with_extra_data():
-    response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}?space_id={}'.format(ATLAS_ID.replace('/', '%2F'), PARCELLATION_ID, REGION_NAME, SPACE_ID))
+    response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}?space_id={}'.format(ATLAS_ID.replace('/', '%2F'), PARCELLATION_ID, REGION_ID, SPACE_ID))
     result_content = json.loads(response.content)
     assert response.status_code == 200
-    assert result_content == {
-        "name": "Ch 123 (Basal Forebrain) - left hemisphere",
-        "children": [],
-        "rgb": [
-            200,
-            200,
-            200
-        ],
-        "id": {
-            "kg": {
-                "kgSchema": "minds/core/parcellationregion/v1.0.0",
-                "kgId": "bb111a95-e04c-4987-8254-4af4ed8b0022"
-            }
-        },
-        "labelIndex": 62,
-        "props": {
-            "centroid_mm": [
-                1,
-                2,
-                3
-            ],
-            "volume_mm": 4.0,
-            "surface_mm": 5.0,
-            "is_cortical": False
-        },
-        'links': {'features': 'http://testserver/v1_0/atlases/juelich%2Fiav%2Fatlas%2Fv1.0.0%2F1/parcellations/minds%2Fcore%2Fparcellationatlas%2Fv1.0.0%2F94c1125b-b87e-45e4-901c-00daee7f2579-25/regions/Ch '
-                              '123 (Basal Forebrain) - left hemisphere/features'}
-    }
+    assert result_content['name'] == REGION_NAME
+    # Add Assertion for extra data
 
 
 def test_get_region_for_space_with_invalid_region_name():
