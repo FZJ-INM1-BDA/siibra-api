@@ -1,17 +1,12 @@
 name: '[docker image]'
 
 on:
-  workflow_run:
-    workflows: [ "siibra ci pipeline" ]
-    types:
-      - completed
   push:
     branches:
     - master
 
 jobs:
   build-docker-img:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     env:
       DOCKER_REGISTRY: 'docker-registry.ebrains.eu/siibra/'
