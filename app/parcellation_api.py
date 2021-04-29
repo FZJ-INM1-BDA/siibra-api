@@ -21,7 +21,7 @@ from .atlas_api import ATLAS_PATH
 from .request_utils import split_id, create_atlas, create_region_json_object, create_region_json_object_tmp, \
     _add_children_to_region, find_space_by_id, find_region_via_id
 from .request_utils import get_spaces_for_parcellation, get_base_url_from_request
-# from siibra.features import regionprops
+from siibra import region as siibra_region
 from siibra import features
 from .siibra_api import get_receptor_distribution, get_connectivity_matrix, get_connectivty_profile, get_gene_expression
 
@@ -206,12 +206,12 @@ def get_region_by_name(request: Request, atlas_id: str, parcellation_id: str, re
 
     if space_id:
         atlas.select_region(r)
-        # r_props = regionprops.RegionProps(atlas, find_space_by_id(atlas, space_id))
+        r_props = siibra_region.RegionProps(r,find_space_by_id(atlas, space_id))
         region_json['props'] = {}
-        # region_json['props']['centroid_mm'] = list(r_props.attrs['centroid_mm'])
-        # region_json['props']['volume_mm'] = r_props.attrs['volume_mm']
-        # region_json['props']['surface_mm'] = r_props.attrs['surface_mm']
-        # region_json['props']['is_cortical'] = r_props.attrs['is_cortical']
+        region_json['props']['centroid_mm'] = list(r_props.attrs['centroid_mm'])
+        region_json['props']['volume_mm'] = r_props.attrs['volume_mm']
+        region_json['props']['surface_mm'] = r_props.attrs['surface_mm']
+        region_json['props']['is_cortical'] = r_props.attrs['is_cortical']
     region_json['links'] = {
         'features': '{}atlases/{}/parcellations/{}/regions/{}/features'.format(
             get_base_url_from_request(request),
