@@ -28,17 +28,14 @@ ATLAS_PATH = '/atlases'
 
 @router.get(ATLAS_PATH)
 @version(1)
-def get_all_atlases():
+def get_all_atlases(request: Request):
     """
     Get all atlases known by siibra
     """
     atlases = REGISTRY.items
     result = []
     for a in atlases:
-        result.append({
-            'id': a.id,
-            'name': a.name
-        })
+        result.append(__atlas_to_result_object(a, request))
     return result
 
 
@@ -54,23 +51,27 @@ def get_atlas_by_id(atlas_id: str, request: Request):
     atlases = REGISTRY.items
     for a in atlases:
         if a.id == atlas_id.replace('%2F', '/'):
-            return {
-                'id': a.id,
-                'name': a.name,
-                'links': {
-                    'parcellations': {
-                        'href': '{}atlases/{}/parcellations'.format(
-                            get_base_url_from_request(request),
-                            atlas_id.replace('/', '%2F')
-                        )
-                    },
-                    'spaces': {
-                        'href': '{}atlases/{}/spaces'.format(
-                            get_base_url_from_request(request),
-                            atlas_id.replace('/', '%2F')
-                        )
-                    }
-                }
-            }
+            return __atlas_to_result_object(a, request)
     raise HTTPException(status_code=404, detail='atlas with id: {} not found'.format(atlas_id))
 # endregion
+
+
+def __atlas_to_result_object(atlas, request: Request):
+    return {
+        'id': atlas.id,
+        'name': atlas.name,
+        'links': {
+            'parcellations': {
+                'href': '{}atlases/{}/parcellations'.format(
+                    get_base_url_from_request(request),
+                    atlas.id.replace('/', '%2F')
+                )
+            },
+            'spaces': {
+                'href': '{}atlases/{}/spaces'.format(
+                    get_base_url_from_request(request),
+                    atlas.id.replace('/', '%2F')
+                )
+            }
+        }
+    }
