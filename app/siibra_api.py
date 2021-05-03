@@ -184,6 +184,7 @@ def get_regional_feature(atlas_id,parcellation_id,region_id,modality_id):
             "@id": receptor_pr.name,
             "name": receptor_pr.name,
             "info": receptor_pr.info,
+            "__receptor_symbols": receptors_export.RECEPTOR_SYMBOLS,
             "__files": receptor_pr.files,
             "__data": {
                 "__profiles": receptor_pr.profiles,
