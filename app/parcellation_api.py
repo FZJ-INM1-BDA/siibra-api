@@ -201,7 +201,11 @@ def get_region_by_name(request: Request, atlas_id: str, parcellation_id: str, re
 
     if space_id:
         atlas.select_region(r)
-        r_props = siibra_region.RegionProps(r,find_space_by_id(atlas, space_id))
+        # r_props = siibra_region.RegionProps(r,find_space_by_id(atlas, space_id))
+        print('Space: {}'.format(find_space_by_id(atlas, space_id)))
+        print('Parcellation: {}'.format(atlas.selected_region))
+        print('Region: {}'.format(atlas.selected_region))
+        r_props = r.spatialprops(find_space_by_id(atlas, space_id))
         region_json['props'] = {}
         region_json['props']['centroid_mm'] = list(r_props.attrs['centroid_mm'])
         region_json['props']['volume_mm'] = r_props.attrs['volume_mm']
