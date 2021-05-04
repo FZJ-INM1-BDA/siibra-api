@@ -23,8 +23,8 @@ from .request_utils import split_id, create_atlas, create_region_json_object, cr
 from .request_utils import get_spaces_for_parcellation, get_base_url_from_request
 from siibra import region as siibra_region
 from siibra.features import feature as feature_export,classes as feature_classes,modalities as feature_modalities
-from .siibra_api import get_receptor_distribution, get_global_features, get_connectivty_profile, get_gene_expression
-
+from .siibra_api import get_receptor_distribution, get_global_features, get_regional_feature, get_gene_expression
+import re
 
 router = APIRouter()
 
@@ -150,9 +150,29 @@ def get_all_features_for_region(request: Request, atlas_id: str, parcellation_id
 
     return jsonable_encoder(result)
 
+@router.get(
+    ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality:path}/{modality_id:path}')
+def get_regional_modality_by_id(request: Request, atlas_id: str, parcellation_id: str, region_id: str, modality: str, modality_id: str, gene: Optional[str] = None):
+    """
+    Parameters:
+        - atlas_id
+        - parcellation_id
+        - region_id
+        - modality
+        - gene
+
+    Returns all features for a region.
+    """
+    regional_features=get_regional_feature(atlas_id,parcellation_id,region_id, modality)
+    found_conn_pr = [ conn_pr for conn_pr in regional_features if conn_pr['@id'] == modality_id ]
+    if len(found_conn_pr) == 0:
+        raise HTTPException(status_code=404, detail=f'modality with id {modality_id} not found')
+    if len(found_conn_pr) != 1:
+        raise HTTPException(status_code=401, detail=f'modality with id {modality_id} has multiple matches')
+    return found_conn_pr[0]
 
 @router.get(
-    ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality}')
+    ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality:path}')
 def get_feature_modality_for_region(request: Request, atlas_id: str, parcellation_id: str, region_id: str, modality: str, gene: Optional[str] = None):
     """
     Parameters:
@@ -164,17 +184,16 @@ def get_feature_modality_for_region(request: Request, atlas_id: str, parcellatio
 
     Returns all features for a region.
     """
-    # select atlas by id
-    atlas = create_atlas(atlas_id)
-    # select atlas parcellation
-    atlas.select_parcellation(parcellation_id)
 
-    if modality == ModalityType.ReceptorDistribution:
-        return get_receptor_distribution(region_id)
-    if modality == ModalityType.ConnectivityProfile:
-        return get_connectivty_profile(atlas_id,parcellation_id,region_id)
     if modality == ModalityType.GeneExpression:
         return get_gene_expression(region_id, gene)
+
+    regional_features=get_regional_feature(atlas_id,parcellation_id,region_id,modality)
+
+    # in summary search, only search for basic data (filter out all keys prepended by __)
+    return [{
+        key: val for key, val in f.items() if not re.search(r"^__", key)
+    } for f in regional_features ]
 
     raise HTTPException(status_code=400, detail='Modality: {} is not valid'.format(modality))
 
@@ -195,6 +214,8 @@ def get_region_by_name(request: Request, atlas_id: str, parcellation_id: str, re
     atlas.select_parcellation(parcellation_id)
     region = find_region_via_id(atlas,region_id)
 
+    if len(region) == 0:
+        raise HTTPException(status_code=404, detail=f'region with spec {region_id} not found')
     r = region[0]
     region_json = create_region_json_object(r)
     _add_children_to_region(region_json, r)
