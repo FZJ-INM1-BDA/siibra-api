@@ -60,6 +60,7 @@ def test_get_one_region_for_parcellation_without_extra_data():
     result_content = json.loads(response.content)
     assert response.status_code == 200
     assert result_content['name'] == REGION_NAME
+    assert result_content['availableIn'] is not None
 
 
 def test_get_one_region_for_parcellation_with_extra_data():

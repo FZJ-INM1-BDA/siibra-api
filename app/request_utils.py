@@ -74,7 +74,7 @@ def create_region_json_object_tmp(region, space_id=None, atlas=None):
         region_json['id'] = region.fullId
     if hasattr(region, 'labelIndex'):
         region_json['labelIndex'] = region.labelIndex
-
+    region_json['availableIn'] = get_available_spaces_for_region(region)
     _add_children_to_region_tmp(region_json, region, space_id, atlas)
     return region_json
 
@@ -103,6 +103,7 @@ def create_region_json_object(region, space_id=None, atlas=None):
         region_json['id'] = region.fullId
     if hasattr(region, 'labelIndex'):
         region_json['labelIndex'] = region.labelIndex
+    region_json['availableIn'] = get_available_spaces_for_region(region)
     # _add_children_to_region(region_json, region)
     return region_json
 
@@ -169,6 +170,14 @@ def get_base_url_from_request(request: Request):
         proto = request.headers.get(proto_header)
 
     return '{}://{}/{}/'.format(proto, host, api_version)
+
+
+def get_available_spaces_for_region(region):
+    result = []
+    for s in bs.spaces:
+        if region.parcellation.supports_space(s):
+            result.append(_object_to_json(s))
+    return result
 
 
 # def get_region_props(space_id, atlas, region_json, region):
