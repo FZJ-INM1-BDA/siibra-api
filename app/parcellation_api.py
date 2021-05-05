@@ -22,9 +22,9 @@ from .request_utils import split_id, create_atlas, create_region_json_object, cr
     _add_children_to_region, find_space_by_id, find_region_via_id
 from .request_utils import get_spaces_for_parcellation, get_base_url_from_request
 from siibra import region as siibra_region
-from siibra import features
-from .siibra_api import get_receptor_distribution, get_connectivity_matrix, get_connectivty_profile, get_gene_expression
-
+from siibra.features import feature as feature_export,classes as feature_classes,modalities as feature_modalities
+from .siibra_api import get_receptor_distribution, get_global_features, get_regional_feature, get_gene_expression
+import re
 
 router = APIRouter()
 
@@ -141,32 +141,49 @@ def get_all_features_for_region(request: Request, atlas_id: str, parcellation_id
         - parcellation_id
         - region_id
 
-    Returns all features for a region.
+    Returns all regional features for a region.
     """
     # select atlas by id
     atlas = create_atlas(atlas_id)
     # select atlas parcellation
     atlas.select_parcellation(parcellation_id)
-
     result = {
-        'features': []
-    }
-    for m in features.modalities:
-        result['features'].append({
-            str(m): '{}atlases/{}/parcellations/{}/regions/{}/features/{}'.format(
+        'features': [{
+            m: '{}atlases/{}/parcellations/{}/regions/{}/features/{}'.format(
                 get_base_url_from_request(request),
                 atlas_id.replace('/', '%2F'),
                 parcellation_id.replace('/', '%2F'),
                 region_id.replace('/', '%2F'),
-                str(m)
+                m
             )
-        })
+        } for m in feature_modalities if issubclass(feature_classes[m], feature_export.RegionalFeature) ]
+    }
 
     return jsonable_encoder(result)
 
+@router.get(
+    ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality:path}/{modality_id:path}')
+def get_regional_modality_by_id(request: Request, atlas_id: str, parcellation_id: str, region_id: str, modality: str, modality_id: str, gene: Optional[str] = None):
+    """
+    Parameters:
+        - atlas_id
+        - parcellation_id
+        - region_id
+        - modality
+        - gene
+
+    Returns all features for a region.
+    """
+    regional_features=get_regional_feature(atlas_id,parcellation_id,region_id, modality)
+    found_conn_pr = [ conn_pr for conn_pr in regional_features if conn_pr['@id'] == modality_id ]
+    if len(found_conn_pr) == 0:
+        raise HTTPException(status_code=404, detail=f'modality with id {modality_id} not found')
+    if len(found_conn_pr) != 1:
+        raise HTTPException(status_code=401, detail=f'modality with id {modality_id} has multiple matches')
+    return found_conn_pr[0]
 
 @router.get(
-    ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality}')
+    ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality:path}')
 def get_feature_modality_for_region(request: Request, atlas_id: str, parcellation_id: str, region_id: str, modality: str, gene: Optional[str] = None):
     """
     Parameters:
@@ -178,19 +195,16 @@ def get_feature_modality_for_region(request: Request, atlas_id: str, parcellatio
 
     Returns all features for a region.
     """
-    # select atlas by id
-    atlas = create_atlas(atlas_id)
-    # select atlas parcellation
-    atlas.select_parcellation(parcellation_id)
 
-    if modality == ModalityType.ReceptorDistribution:
-        return get_receptor_distribution(region_id)
-    if modality == ModalityType.ConnectivityProfile:
-        return get_connectivty_profile(atlas_id,parcellation_id,region_id)
-    if modality == ModalityType.ConnectivityMatrix:
-        return get_connectivity_matrix()
     if modality == ModalityType.GeneExpression:
         return get_gene_expression(region_id, gene)
+
+    regional_features=get_regional_feature(atlas_id,parcellation_id,region_id,modality)
+
+    # in summary search, only search for basic data (filter out all keys prepended by __)
+    return [{
+        key: val for key, val in f.items() if not re.search(r"^__", key)
+    } for f in regional_features ]
 
     raise HTTPException(status_code=400, detail='Modality: {} is not valid'.format(modality))
 
@@ -211,13 +225,19 @@ def get_region_by_name(request: Request, atlas_id: str, parcellation_id: str, re
     atlas.select_parcellation(parcellation_id)
     region = find_region_via_id(atlas,region_id)
 
+    if len(region) == 0:
+        raise HTTPException(status_code=404, detail=f'region with spec {region_id} not found')
     r = region[0]
     region_json = create_region_json_object(r)
     _add_children_to_region(region_json, r)
 
     if space_id:
         atlas.select_region(r)
-        r_props = siibra_region.RegionProps(r,find_space_by_id(atlas, space_id))
+        # r_props = siibra_region.RegionProps(r,find_space_by_id(atlas, space_id))
+        print('Space: {}'.format(find_space_by_id(atlas, space_id)))
+        print('Parcellation: {}'.format(atlas.selected_region))
+        print('Region: {}'.format(atlas.selected_region))
+        r_props = r.spatialprops(find_space_by_id(atlas, space_id))
         region_json['props'] = {}
         region_json['props']['centroid_mm'] = list(r_props.attrs['centroid_mm'])
         region_json['props']['volume_mm'] = r_props.attrs['volume_mm']
@@ -234,6 +254,74 @@ def get_region_by_name(request: Request, atlas_id: str, parcellation_id: str, re
 
     return jsonable_encoder(region_json)
 
+@router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/features/{modality}/{modality_instance_name}')
+def get_single_global_feature_detail(atlas_id: str, parcellation_id: str, modality: str, modality_instance_name:str, request: Request):
+    """
+    Parameters:
+        - atlas_id
+        - parcellation_id
+        - modality
+        - modality_instance_name
+
+    Returns a global feature for a parcellation.
+    """
+    try:
+        fs=get_global_features(atlas_id, parcellation_id, modality)
+        found=[f for f in fs if f['src_name'] == modality_instance_name]
+        if len(found) == 0:
+            raise HTTPException(status_code=404, detail=f'modality with name {modality_instance_name} not found')
+        
+        return {
+            'result': found[0]
+        }
+    except NotImplementedError:
+        return HTTPException(status_code=501, detail=f'modality {modality} not yet implemented')
+
+@router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/features/{modality}')
+def get_single_global_feature(atlas_id: str, parcellation_id: str, modality: str, request: Request):
+    """
+    Parameters:
+        - atlas_id
+        - parcellation_id
+        - modality_id
+
+    Returns a global feature for a parcellation.
+    """
+    try:
+        fs=get_global_features(atlas_id, parcellation_id, modality)
+        return [{
+            'src_name': f['src_name'],
+            'src_info': f['src_info'],
+        } for f in fs]
+    except NotImplementedError:
+        return HTTPException(status_code=501, detail=f'modality {modality} not yet implemented')
+
+@router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/features')
+def get_global_features_rest(atlas_id: str, parcellation_id: str, request: Request):
+    """
+    Parameters:
+        - atlas_id
+        - parcellation_id
+
+    Returns all global features for a parcellation.
+    """
+
+    # select atlas by id
+    atlas = create_atlas(atlas_id)
+    # select atlas parcellation
+    atlas.select_parcellation(parcellation_id)
+    result = {
+        'features': [{
+            m: '{}atlases/{}/parcellations/{}/features/{}'.format(
+                get_base_url_from_request(request),
+                atlas_id.replace('/', '%2F'),
+                parcellation_id.replace('/', '%2F'),
+                m
+            )
+        } for m in feature_modalities if issubclass(feature_classes[m], feature_export.GlobalFeature) ]
+    }
+
+    return jsonable_encoder(result)
 
 @router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}')
 def get_parcellation_by_id(atlas_id: str, parcellation_id: str, request: Request):

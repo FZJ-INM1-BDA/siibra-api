@@ -21,6 +21,7 @@ from fastapi.encoders import jsonable_encoder
 from .request_utils import query_data, create_atlas, find_region_via_id
 
 from siibra import features, modalities
+from siibra.features import feature as feature_export,classes as feature_classes, connectivity as connectivity_export, receptors as receptors_export
 from memoization import cached
 
 # FastApi router to create rest endpoints
@@ -69,7 +70,18 @@ def get_all_available_modalities():
     """
     Return all possible modalities
     """
-    return [m for m in features.modalities]
+    def get_feature_type(ft):
+        if issubclass(ft,feature_export.SpatialFeature):
+            return 'SpatialFeature'
+        if issubclass(ft,feature_export.RegionalFeature):
+            return 'RegionalFeature'
+        if issubclass(ft,feature_export.GlobalFeature):
+            return 'GlobalFeature'
+        return 'UnknownFeatureType'
+    return [{
+        'name': feature_name,
+        'type': get_feature_type(feature_classes[feature_name])
+    } for feature_name in features.modalities]
 #
 #
 # @router.get('/features/{modality_id}')
@@ -137,27 +149,76 @@ def get_gene_expression(region, gene):
         raise HTTPException(status_code=400, detail='Invalid gene: {}'.format(gene))
 
 @cached
-def get_connectivty_profile(atlas_id,parcellation_id,region_id):
+def get_regional_feature(atlas_id,parcellation_id,region_id,modality_id):
+    # select atlas by id
+    if modality_id not in feature_classes:
+        # modality_id not found in feature_classes
+        return []
+    
+    if not issubclass(feature_classes[modality_id], feature_export.RegionalFeature):
+        # modality_id is not a global feature, return empty array
+        return []
+
 
     # select atlas by id
     atlas = create_atlas(atlas_id)
     # select atlas parcellation
     atlas.select_parcellation(parcellation_id)
     regions = find_region_via_id(atlas,region_id)
+
     if len(regions) == 0:
         raise HTTPException(status_code=401, detail=f'Region with id {region_id} not found!')
+    
     atlas.select_region(regions[0])
-    conn_profiles = atlas.get_features(modalities.ConnectivityProfile)
-    return [{
-        "name": conn_pr.src_name,
-        "column_names": conn_pr.column_names,
-        "src_info": conn_pr.src_info,
-        "profile": conn_pr.profile,
-    } for conn_pr in conn_profiles ]
+    got_features=atlas.get_features(modality_id)
+    if feature_classes[modality_id] == connectivity_export.ConnectivityProfile:
+        return [{
+            "@id": conn_pr.src_name,
+            "src_name": conn_pr.src_name,
+            "src_info": conn_pr.src_info,
+            "__column_names": conn_pr.column_names,
+            "__profile": conn_pr.profile,
+        } for conn_pr in got_features ]
+    if feature_classes[modality_id] == receptors_export.ReceptorDistribution:
+        return [{
+            "@id": receptor_pr.name,
+            "name": receptor_pr.name,
+            "info": receptor_pr.info,
+            "__receptor_symbols": receptors_export.RECEPTOR_SYMBOLS,
+            "__files": receptor_pr.files,
+            "__data": {
+                "__profiles": receptor_pr.profiles,
+                "__autoradiographs": receptor_pr.autoradiographs,
+                "__fingerprint": receptor_pr.fingerprint,
+                "__profile_unit": receptor_pr.profile_unit,
+            },
+        } for receptor_pr in got_features ]
+    raise NotImplementedError(f'feature {modality_id} has not yet been implmented')
 
+@cached
+def get_global_features(atlas_id,parcellation_id,modality_id):
+    # select atlas by id
+    if modality_id not in feature_classes:
+        # modality_id not found in feature_classes
+        return []
+    
+    if not issubclass(feature_classes[modality_id], feature_export.GlobalFeature):
+        # modality_id is not a global feature, return empty array
+        return []
 
-def get_connectivity_matrix():
-    raise HTTPException(status_code=501, detail='No method yet for connectivity matrix')
+    atlas = create_atlas(atlas_id)
+    # select atlas parcellation
+    atlas.select_parcellation(parcellation_id)
+    got_features=atlas.get_features(modality_id)
+    if feature_classes[modality_id] == connectivity_export.ConnectivityMatrix:
+        return [{
+            'src_name': f.src_name,
+            'src_info': f.src_info,
+            'column_names': f.column_names,
+            'matrix': f.matrix.tolist(),
+        } for f in got_features ]
+    raise NotImplementedError(f'feature {modality_id} has not yet been implmented')
+
 
 # endregion
 
