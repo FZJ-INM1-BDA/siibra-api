@@ -25,6 +25,7 @@ from siibra import region as siibra_region
 from siibra.features import feature as feature_export,classes as feature_classes,modalities as feature_modalities
 from .siibra_api import get_receptor_distribution, get_global_features, get_regional_feature, get_gene_expression
 import re
+from memoization import cached
 
 router = APIRouter()
 
@@ -94,6 +95,7 @@ def get_all_parcellations(atlas_id: str, request: Request):
 
 
 @router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions')
+@cached
 def get_all_regions_for_parcellation_id(atlas_id: str, parcellation_id: str, space_id: Optional[str] = None):
     """
     Parameters:
