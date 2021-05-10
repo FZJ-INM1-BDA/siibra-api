@@ -107,17 +107,8 @@ def get_all_available_modalities():
 #
 #     raise HTTPException(status_code=400, detail='Modality: {} is not valid'.format(modality_id))
 
-
-def get_receptor_distribution(region):
-    receptor_data = query_data('ReceptorDistribution', region)
-    if receptor_data:
-        return jsonable_encoder(receptor_data)
-    else:
-        raise HTTPException(status_code=404, detail='No receptor distribution found for region: {}'.format(region))
-
-
-def get_gene_expression(region, gene):
-    atlas = create_atlas()
+def get_gene_expression(atlas_id, region_id, gene):
+    atlas = create_atlas(atlas_id)
     selected_region = atlas.regiontree.find(region, exact=False)
     if not selected_region:
         raise HTTPException(status_code=400, detail='Invalid region: {}'.format(region))

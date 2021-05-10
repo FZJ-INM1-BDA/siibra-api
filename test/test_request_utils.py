@@ -26,11 +26,11 @@ class TestRequestUtils(unittest.TestCase):
         self.assertEqual(atlas.name, 'Multilevel Human Atlas')
 
     def test_query_data_with_wrong_modality(self):
-        hits = request_utils.query_data(self.MODALITY_INVALID, self.REGION_NAME_VALID)
+        hits = request_utils.query_data(self.ATLAS_ID, self.MODALITY_INVALID, self.REGION_NAME_VALID)
         self.assertTrue(len(hits) == 0)
 
     def test_query_data_with_wrong_region(self):
-        hits = request_utils.query_data(self.MODALITY_VALID, self.REGION_NAME_INVALID)
+        hits = request_utils.query_data(self.ATLAS_ID, self.MODALITY_VALID, self.REGION_NAME_INVALID)
         self.assertTrue(len(hits) == 0)
 
     def test_query_data_with_valid_values(self):
@@ -39,7 +39,7 @@ class TestRequestUtils(unittest.TestCase):
             data_mock = MagicMock()
             data_mock._load.return_value
             atlas.query_data.return_value = [data_mock]
-            hits = request_utils.query_data(self.MODALITY_VALID, self.REGION_NAME_VALID)
+            hits = request_utils.query_data(self.ATLAS_ID, self.MODALITY_VALID, self.REGION_NAME_VALID)
             self.assertTrue(len(hits) != 0)
             self.assertIsNotNone(hits['data'])
             self.assertIsNotNone(hits['receptor_symbols'])
