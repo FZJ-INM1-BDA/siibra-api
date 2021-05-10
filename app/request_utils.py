@@ -24,7 +24,11 @@ import anytree
 cache_redis = CacheRedis.get_instance()
 
 def create_atlas(atlas_id=None):
-    return REGISTRY.MULTILEVEL_HUMAN_ATLAS
+    if atlas_id is None:
+        return HttpException(status_code=401, detail='atlas_id is required!')
+    if atlas_id not in bs.atlases:
+        return HttpException(status_code=404, detail=f'atlas_id {atlas_id} not found!')
+    return bs.atlases[atlas_id]
 
 
 def select_parcellation_by_id(atlas, parcellation_id):
