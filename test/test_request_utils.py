@@ -34,19 +34,8 @@ class TestRequestUtils(unittest.TestCase):
         self.assertTrue(len(hits) == 0)
 
     def test_query_data_with_valid_values(self):
-        class MockAtlas:
-            def query_data():
-                pass
-        
-        mockAtlas=MockAtlas()
-        mockAtlas.query_data=MagicMock(return_value=[data_mock])
-        request_utils.create_atlas = MagicMock(return_value=mockAtlas)
 
         hits = request_utils.query_data(self.ATLAS_ID, self.MODALITY_VALID, self.REGION_NAME_VALID)
-        
-        # assert create_atlas is called with atlas_id
-        request_utils.create_atlas.assert_called_with(self.ATLAS_ID)
-
         self.assertTrue(len(hits) != 0)
         self.assertIsNotNone(hits['data'])
         self.assertIsNotNone(hits['receptor_symbols'])
