@@ -78,8 +78,19 @@ def __parcellation_result_info(parcellation, atlas_id=None, request=None):
                 parcellation.id.replace('/', '%2F')
             )
         }}
+
+    if hasattr(parcellation, 'modality') and parcellation.modality:
+        result_info['modality'] = parcellation.modality
+        
     if hasattr(parcellation, 'version') and parcellation.version:
         result_info['version'] = parcellation.version
+
+    if hasattr(parcellation, 'volume_src') and parcellation.volume_src:
+        volumeSrc={
+            key.id: value for key, value in parcellation.volume_src.items()
+        }
+        result_info['volumeSrc']=volumeSrc
+    
     return result_info
 
 
