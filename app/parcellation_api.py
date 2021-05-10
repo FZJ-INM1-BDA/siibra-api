@@ -24,6 +24,7 @@ from .request_utils import get_spaces_for_parcellation, get_base_url_from_reques
 from siibra import region as siibra_region
 from siibra.features import feature as feature_export,classes as feature_classes,modalities as feature_modalities
 import re
+from memoization import cached
 
 router = APIRouter()
 
@@ -39,6 +40,17 @@ class ModalityType(str, Enum):
 
 
 # region === parcellations
+
+
+def __check_and_select_parcellation(atlas, parcellation_id):
+    try:
+        # select atlas parcellation
+        atlas.select_parcellation(parcellation_id)
+    except Exception:
+        raise HTTPException(
+            status_code=400,
+            detail='The requested parcellation is not supported by the selected atlas.'
+        )
 
 
 def __parcellation_result_info(parcellation, atlas_id=None, request=None):
@@ -66,8 +78,19 @@ def __parcellation_result_info(parcellation, atlas_id=None, request=None):
                 parcellation.id.replace('/', '%2F')
             )
         }}
+
+    if hasattr(parcellation, 'modality') and parcellation.modality:
+        result_info['modality'] = parcellation.modality
+        
     if hasattr(parcellation, 'version') and parcellation.version:
         result_info['version'] = parcellation.version
+
+    if hasattr(parcellation, 'volume_src') and parcellation.volume_src:
+        volumeSrc={
+            key.id: value for key, value in parcellation.volume_src.items()
+        }
+        result_info['volumeSrc']=volumeSrc
+    
     return result_info
 
 
@@ -93,6 +116,7 @@ def get_all_parcellations(atlas_id: str, request: Request):
 
 
 @router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions')
+@cached
 def get_all_regions_for_parcellation_id(atlas_id: str, parcellation_id: str, space_id: Optional[str] = None):
     """
     Parameters:
@@ -103,14 +127,7 @@ def get_all_regions_for_parcellation_id(atlas_id: str, parcellation_id: str, spa
     """
     # select atlas by id
     atlas = create_atlas(atlas_id)
-    try:
-        # select atlas parcellation
-        atlas.select_parcellation(parcellation_id)
-    except Exception:
-        raise HTTPException(
-            status_code=400,
-            detail='The requested parcellation is not supported by the selected atlas.'
-        )
+    __check_and_select_parcellation(atlas, parcellation_id)
 
     result = []
     for region in atlas.selected_parcellation.regiontree.children:
@@ -134,7 +151,7 @@ def get_all_features_for_region(request: Request, atlas_id: str, parcellation_id
     # select atlas by id
     atlas = create_atlas(atlas_id)
     # select atlas parcellation
-    atlas.select_parcellation(parcellation_id)
+    __check_and_select_parcellation(atlas, parcellation_id)
     result = {
         'features': [{
             m: '{}atlases/{}/parcellations/{}/regions/{}/features/{}'.format(
@@ -207,7 +224,7 @@ def get_region_by_name(request: Request, atlas_id: str, parcellation_id: str, re
     # select atlas by id
     atlas = create_atlas(atlas_id)
     # select atlas parcellation
-    atlas.select_parcellation(parcellation_id)
+    __check_and_select_parcellation(atlas, parcellation_id)
     region = find_region_via_id(atlas,region_id)
 
     if len(region) == 0:
@@ -294,7 +311,7 @@ def get_global_features_rest(atlas_id: str, parcellation_id: str, request: Reque
     # select atlas by id
     atlas = create_atlas(atlas_id)
     # select atlas parcellation
-    atlas.select_parcellation(parcellation_id)
+    __check_and_select_parcellation(atlas, parcellation_id)
     result = {
         'features': [{
             m: '{}atlases/{}/parcellations/{}/features/{}'.format(

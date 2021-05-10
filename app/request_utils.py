@@ -60,6 +60,9 @@ def create_region_json_object_tmp(region, space_id=None, atlas=None):
         region_json['id'] = region.fullId
     if hasattr(region, 'labelIndex'):
         region_json['labelIndex'] = region.labelIndex
+    if hasattr(region, 'attrs'):
+        region_json['volumeSrc'] = region.attrs.get('volumeSrc', {})
+
     region_json['availableIn'] = get_available_spaces_for_region(region)
     _add_children_to_region_tmp(region_json, region, space_id, atlas)
     return region_json
@@ -89,6 +92,8 @@ def create_region_json_object(region, space_id=None, atlas=None):
         region_json['id'] = region.fullId
     if hasattr(region, 'labelIndex'):
         region_json['labelIndex'] = region.labelIndex
+    if hasattr(region, 'attrs'):
+        region_json['volumeSrc'] = region.attrs.get('volumeSrc', {})
     region_json['availableIn'] = get_available_spaces_for_region(region)
     # _add_children_to_region(region_json, region)
     return region_json
