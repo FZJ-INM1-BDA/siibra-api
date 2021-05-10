@@ -173,7 +173,7 @@ def get_regional_feature(atlas_id,parcellation_id,region_id,modality_id):
     regions = find_region_via_id(atlas,region_id)
 
     if len(regions) == 0:
-        raise HTTPException(status_code=401, detail=f'Region with id {region_id} not found!')
+        raise HTTPException(status_code=404, detail=f'Region with id {region_id} not found!')
     
     atlas.select_region(regions[0])
     got_features=atlas.get_features(modality_id)
