@@ -159,11 +159,17 @@ def get_regional_feature(atlas_id,parcellation_id,region_id,modality_id):
         # modality_id is not a global feature, return empty array
         return []
 
-
     # select atlas by id
     atlas = create_atlas(atlas_id)
     # select atlas parcellation
-    atlas.select_parcellation(parcellation_id)
+    try:
+        # select atlas parcellation
+        atlas.select_parcellation(parcellation_id)
+    except Exception:
+        raise HTTPException(
+            status_code=400,
+            detail='The requested parcellation is not supported by the selected atlas.'
+        )
     regions = find_region_via_id(atlas,region_id)
 
     if len(regions) == 0:
