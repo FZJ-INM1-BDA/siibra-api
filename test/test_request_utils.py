@@ -26,23 +26,19 @@ class TestRequestUtils(unittest.TestCase):
         self.assertEqual(atlas.name, 'Multilevel Human Atlas')
 
     def test_query_data_with_wrong_modality(self):
-        hits = request_utils.query_data(self.MODALITY_INVALID, self.REGION_NAME_VALID)
+        hits = request_utils.query_data(self.ATLAS_ID, self.MODALITY_INVALID, self.REGION_NAME_VALID)
         self.assertTrue(len(hits) == 0)
 
     def test_query_data_with_wrong_region(self):
-        hits = request_utils.query_data(self.MODALITY_VALID, self.REGION_NAME_INVALID)
+        hits = request_utils.query_data(self.ATLAS_ID, self.MODALITY_VALID, self.REGION_NAME_INVALID)
         self.assertTrue(len(hits) == 0)
 
     def test_query_data_with_valid_values(self):
-        with mock.patch('app.request_utils.REGISTRY') as reg:
-            atlas = reg.MULTILEVEL_HUMAN_ATLAS
-            data_mock = MagicMock()
-            data_mock._load.return_value
-            atlas.query_data.return_value = [data_mock]
-            hits = request_utils.query_data(self.MODALITY_VALID, self.REGION_NAME_VALID)
-            self.assertTrue(len(hits) != 0)
-            self.assertIsNotNone(hits['data'])
-            self.assertIsNotNone(hits['receptor_symbols'])
+
+        hits = request_utils.query_data(self.ATLAS_ID, self.MODALITY_VALID, self.REGION_NAME_VALID)
+        self.assertTrue(len(hits) != 0)
+        self.assertIsNotNone(hits['data'])
+        self.assertIsNotNone(hits['receptor_symbols'])
 
     def test_get_all_parcellations_for_space(self):
         parcellations = request_utils.get_parcellations_for_space(self.SPACE_NAME)

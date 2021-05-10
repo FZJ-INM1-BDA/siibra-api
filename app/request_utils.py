@@ -24,15 +24,21 @@ import anytree
 cache_redis = CacheRedis.get_instance()
 
 def create_atlas(atlas_id=None):
-    return REGISTRY.MULTILEVEL_HUMAN_ATLAS
+    if atlas_id is None:
+        raise HttpException(status_code=401, detail='atlas_id is required!')
+    if atlas_id not in bs.atlases:
+        raise HttpException(status_code=404, detail=f'atlas_id {atlas_id} not found!')
+    return bs.atlases[atlas_id]
 
 
 def select_parcellation_by_id(atlas, parcellation_id):
     atlas.select_parcellation(find_parcellation_by_id(parcellation_id))
 
 
-def query_data(modality, regionname, args=None):
-    atlas = create_atlas()
+def query_data(atlas_id, modality, regionname, args=None):
+    if atlas_id is None:
+        raise HttpException(status_code=500, detail='#query_data atlas_id is required')
+    atlas = create_atlas(atlas_id)
     selected_region = atlas.find_regions(regionname)
     result = {}
     if modality in bs.features.modalities:
