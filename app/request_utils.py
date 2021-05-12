@@ -12,14 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from siibra.atlas import REGISTRY
-# from siibra.features import regionprops
 import siibra as bs
 import json
 import nibabel as nib
 from fastapi import HTTPException, Request
 from .cache_redis import CacheRedis
 import anytree
+from siibra.features import feature as feature_export, classes as feature_classes, connectivity as connectivity_export, \
+    receptors as receptors_export, genes as genes_export, kg_regional_features as kg_rf_export
+from memoization import cached
+import hashlib
+import json
 
 cache_redis = CacheRedis.get_instance()
 
@@ -33,30 +36,6 @@ def create_atlas(atlas_id=None):
 
 def select_parcellation_by_id(atlas, parcellation_id):
     atlas.select_parcellation(find_parcellation_by_id(parcellation_id))
-
-
-def query_data(atlas_id, modality, regionname, args=None):
-    if atlas_id is None:
-        raise HttpException(status_code=500, detail='#query_data atlas_id is required')
-    atlas = create_atlas(atlas_id)
-    selected_region = atlas.find_regions(regionname)
-    result = {}
-    if modality in bs.features.modalities:
-        if selected_region:
-            atlas.select_region(selected_region[0])
-            data = atlas.query_data(modality)
-            if len(data) > 0:
-                data[0]._load()
-                result['data'] = data[0]
-                result['receptor_symbols'] = bs.features.receptors.RECEPTOR_SYMBOLS
-                return result
-            else:
-                raise HTTPException(
-                    status_code=404,
-                    detail='No data found for modality: {} in region: {}'.format(modality, regionname)
-                )
-    return []
-
 
 def find_parcellation_by_id(atlas, parcellation_id):
     for parcellation in atlas.parcellations:
@@ -250,3 +229,104 @@ def find_region_via_id(atlas,region_id):
     region_tree=atlas.selected_parcellation.regiontree
     strict_equal_id=anytree.search.findall(region_tree, match_node)
     return [*strict_equal_id,*fuzzy_regions]
+
+# allow for fast fails
+SUPPORTED_FEATURES=[genes_export.GeneExpression, connectivity_export.ConnectivityProfile, receptors_export.ReceptorDistribution, kg_rf_export.KgRegionalFeature]
+
+@cached
+def get_regional_feature(atlas_id,parcellation_id,region_id,modality_id):
+    # select atlas by id
+    if modality_id not in feature_classes:
+        # modality_id not found in feature_classes
+        return []
+
+    # fail fast if not in supported feature list
+    if feature_classes[modality_id] not in SUPPORTED_FEATURES:
+        raise HTTPException(status_code=501, detail=f'feature {modality_id} has not yet been implmented')
+    
+    if not issubclass(feature_classes[modality_id], feature_export.RegionalFeature):
+        # modality_id is not a global feature, return empty array
+        return []
+
+
+    # select atlas by id
+    atlas = create_atlas(atlas_id)
+    # select atlas parcellation
+    try:
+        # select atlas parcellation
+        atlas.select_parcellation(parcellation_id)
+    except Exception:
+        raise HTTPException(
+            status_code=400,
+            detail='The requested parcellation is not supported by the selected atlas.'
+        )
+    regions = find_region_via_id(atlas,region_id)
+
+    if len(regions) == 0:
+        raise HTTPException(status_code=404, detail=f'Region with id {region_id} not found!')
+    
+    atlas.select_region(regions[0])
+    got_features=atlas.get_features(modality_id)
+    if feature_classes[modality_id] == kg_rf_export.KgRegionalFeature:
+        return [{
+            '@id': kg_rf_f.id,
+            'src_name': kg_rf_f.name,
+            '__detail': lambda kg_rf_f=kg_rf_f: kg_rf_f.detail
+        } for kg_rf_f in got_features]
+    if feature_classes[modality_id] == genes_export.GeneExpression:
+        return [{
+            '@id': hashlib.md5(json.dumps(gene_feat.donor_info)).hexdigest(),
+            '__donor_info':gene_feat.donor_info,
+            '__gene':gene_feat.gene,
+            '__probe_ids':gene_feat.probe_ids,
+            '__mri_coord':gene_feat.mri_coord,
+            '__z_scores':gene_feat.z_scores,
+            '__expression_levels':gene_feat.expression_levels
+        } for gene_feat in got_features]
+    if feature_classes[modality_id] == connectivity_export.ConnectivityProfile:
+        return [{
+            "@id": conn_pr.src_name,
+            "src_name": conn_pr.src_name,
+            "src_info": conn_pr.src_info,
+            "__column_names": conn_pr.column_names,
+            "__profile": conn_pr.profile,
+        } for conn_pr in got_features ]
+    if feature_classes[modality_id] == receptors_export.ReceptorDistribution:
+        return [{
+            "@id": receptor_pr.name,
+            "name": receptor_pr.name,
+            "info": receptor_pr.info,
+            "__receptor_symbols": receptors_export.RECEPTOR_SYMBOLS,
+            "__files": receptor_pr.files,
+            "__data": {
+                "__profiles": receptor_pr.profiles,
+                "__autoradiographs": receptor_pr.autoradiographs,
+                "__fingerprint": receptor_pr.fingerprint,
+                "__profile_unit": receptor_pr.profile_unit,
+            },
+        } for receptor_pr in got_features ]
+    raise HTTPException(status_code=501, detail=f'feature {modality_id} has not yet been implmented')
+
+@cached
+def get_global_features(atlas_id,parcellation_id,modality_id):
+    if modality_id not in feature_classes:
+        # modality_id not found in feature_classes
+        return []
+    
+    if not issubclass(feature_classes[modality_id], feature_export.GlobalFeature):
+        # modality_id is not a global feature, return empty array
+        return []
+
+    atlas = create_atlas(atlas_id)
+    # select atlas parcellation
+    atlas.select_parcellation(parcellation_id)
+    got_features=atlas.get_features(modality_id)
+    if feature_classes[modality_id] == connectivity_export.ConnectivityMatrix:
+        return [{
+            '@id': f.src_name,
+            'src_name': f.src_name,
+            'src_info': f.src_info,
+            'column_names': f.column_names,
+            'matrix': f.matrix.tolist(),
+        } for f in got_features ]
+    raise NotImplementedError(f'feature {modality_id} has not yet been implmented')

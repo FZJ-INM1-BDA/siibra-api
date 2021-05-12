@@ -19,11 +19,10 @@ from starlette.responses import PlainTextResponse
 from fastapi.encoders import jsonable_encoder
 from .atlas_api import ATLAS_PATH
 from .request_utils import split_id, create_atlas, create_region_json_object, create_region_json_object_tmp, \
-    _add_children_to_region, find_space_by_id, find_region_via_id
+    _add_children_to_region, find_space_by_id, find_region_via_id, get_global_features, get_regional_feature
 from .request_utils import get_spaces_for_parcellation, get_base_url_from_request
 from siibra import region as siibra_region
 from siibra.features import feature as feature_export,classes as feature_classes,modalities as feature_modalities
-from .siibra_api import get_global_features, get_regional_feature, get_gene_expression
 import re
 from memoization import cached
 
@@ -205,9 +204,6 @@ def get_feature_modality_for_region(request: Request, atlas_id: str, parcellatio
 
     Returns all features for a region.
     """
-
-    if modality == ModalityType.GeneExpression:
-        return get_gene_expression(atlas_id, region_id, gene)
 
     regional_features=get_regional_feature(atlas_id,parcellation_id,region_id,modality)
 
