@@ -11,9 +11,11 @@ PARCELLATION_ID = 'minds%2Fcore%2Fparcellationatlas%2Fv1.0.0%2F94c1125b-b87e-45e
 INVALID_PARCELLATION_ID = 'INVALID_PARCELLATION_ID'
 REGION_NAME = 'Ch 123 (Basal Forebrain) - left hemisphere'
 REGION_ID = 'minds%2Fcore%2Fparcellationregion%2Fv1.0.0%2Fbb111a95-e04c-4987-8254-4af4ed8b0022'
+HOC1_REGION_ID = 'minds%2Fcore%2Fparcellationregion%2Fv1.0.0%2F5151ab8f-d8cb-4e67-a449-afe2a41fb007'
 INVALID_REGION_NAME = 'INVALID_REGION'
 SPACE_ID = 'minds%2Fcore%2Freferencespace%2Fv1.0.0%2Fdafcffc5-4826-4bf1-8ff6-46b8a31ff8e2'
-
+VALID_MODALITY='KgRegionalFeature'
+VALID_MODALITY_INSTANCE_ID='https%3A%2F%2Fnexus.humanbrainproject.org%2Fv0%2Fdata%2Fminds%2Fcore%2Fdataset%2Fv1.0.0%2F87c6dea7-bdf7-4049-9975-6a9925df393f'
 
 def test_get_all_parcellations():
     response = client.get(
@@ -77,3 +79,13 @@ def test_get_region_for_space_with_invalid_region_name():
     # result_content = json.loads(response.content)
     # assert response.status_code == 404
     # assert result_content['detail'] == 'region with name: {} not found'.format(INVALID_REGION_NAME)
+
+# enable after siibra-python==0.1.0 release
+# def test_regional_modality_by_id():
+#     url='/v1_0/atlases/{}/parcellations/{}/regions/{}/features/{}/{}'.format(
+#         ATLAS_ID.replace('/', '%2F'), PARCELLATION_ID, HOC1_REGION_ID, VALID_MODALITY, VALID_MODALITY_INSTANCE_ID)
+#     print('url', url)
+#     response = client.get(url)
+    
+#     result_content = json.loads(response.content)
+#     assert response.status_code == 200

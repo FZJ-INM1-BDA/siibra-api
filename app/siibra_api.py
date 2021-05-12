@@ -21,7 +21,8 @@ from fastapi.encoders import jsonable_encoder
 from .request_utils import query_data, create_atlas, find_region_via_id
 
 from siibra import features, modalities
-from siibra.features import feature as feature_export,classes as feature_classes, connectivity as connectivity_export, receptors as receptors_export
+from siibra.features import feature as feature_export,classes as feature_classes, \
+    connectivity as connectivity_export, receptors as receptors_export, kg_regional_features as kg_rf_export
 from memoization import cached
 
 # FastApi router to create rest endpoints
@@ -139,12 +140,19 @@ def get_gene_expression(atlas_id, region_id, gene):
     else:
         raise HTTPException(status_code=400, detail='Invalid gene: {}'.format(gene))
 
+# allow for fast fails
+SUPPORTED_FEATURES=[connectivity_export.ConnectivityProfile, receptors_export.ReceptorDistribution, kg_rf_export.KgRegionalFeature]
+
 @cached
 def get_regional_feature(atlas_id,parcellation_id,region_id,modality_id):
     # select atlas by id
     if modality_id not in feature_classes:
         # modality_id not found in feature_classes
         return []
+
+    # fail fast if not in supported feature list
+    if feature_classes[modality_id] not in SUPPORTED_FEATURES:
+        raise HTTPException(status_code=501, detail=f'feature {modality_id} has not yet been implmented')
     
     if not issubclass(feature_classes[modality_id], feature_export.RegionalFeature):
         # modality_id is not a global feature, return empty array
@@ -168,6 +176,12 @@ def get_regional_feature(atlas_id,parcellation_id,region_id,modality_id):
     
     atlas.select_region(regions[0])
     got_features=atlas.get_features(modality_id)
+    if feature_classes[modality_id] == kg_rf_export.KgRegionalFeature:
+        return [{
+            '@id': kg_rf_f.id,
+            'src_name': kg_rf_f.name,
+            '__detail': lambda kg_rf_f=kg_rf_f: kg_rf_f.detail
+        } for kg_rf_f in got_features]
     if feature_classes[modality_id] == connectivity_export.ConnectivityProfile:
         return [{
             "@id": conn_pr.src_name,
@@ -190,11 +204,10 @@ def get_regional_feature(atlas_id,parcellation_id,region_id,modality_id):
                 "__profile_unit": receptor_pr.profile_unit,
             },
         } for receptor_pr in got_features ]
-    raise NotImplementedError(f'feature {modality_id} has not yet been implmented')
+    raise HTTPException(status_code=501, detail=f'feature {modality_id} has not yet been implmented')
 
 @cached
 def get_global_features(atlas_id,parcellation_id,modality_id):
-    # select atlas by id
     if modality_id not in feature_classes:
         # modality_id not found in feature_classes
         return []

@@ -168,7 +168,7 @@ def get_all_features_for_region(request: Request, atlas_id: str, parcellation_id
     return jsonable_encoder(result)
 
 @router.get(
-    ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality:path}/{modality_id:path}')
+    ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality}/{modality_id:path}')
 def get_regional_modality_by_id(request: Request, atlas_id: str, parcellation_id: str, region_id: str, modality: str, modality_id: str, gene: Optional[str] = None):
     """
     Parameters:
@@ -181,7 +181,11 @@ def get_regional_modality_by_id(request: Request, atlas_id: str, parcellation_id
     Returns all features for a region.
     """
     regional_features=get_regional_feature(atlas_id,parcellation_id,region_id, modality)
-    found_conn_pr = [ conn_pr for conn_pr in regional_features if conn_pr['@id'] == modality_id ]
+
+    found_conn_pr = [{
+        key: val() if callable(val) else val for key, val in f.items()
+    } for f in regional_features if f['@id'] == modality_id ]
+    
     if len(found_conn_pr) == 0:
         raise HTTPException(status_code=404, detail=f'modality with id {modality_id} not found')
     if len(found_conn_pr) != 1:
@@ -189,7 +193,7 @@ def get_regional_modality_by_id(request: Request, atlas_id: str, parcellation_id
     return found_conn_pr[0]
 
 @router.get(
-    ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality:path}')
+    ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality}')
 def get_feature_modality_for_region(request: Request, atlas_id: str, parcellation_id: str, region_id: str, modality: str, gene: Optional[str] = None):
     """
     Parameters:
@@ -209,10 +213,8 @@ def get_feature_modality_for_region(request: Request, atlas_id: str, parcellatio
 
     # in summary search, only search for basic data (filter out all keys prepended by __)
     return [{
-        key: val for key, val in f.items() if not re.search(r"^__", key)
+        key: val() if callable(val) else val for key, val in f.items() if not re.search(r"^__", key)
     } for f in regional_features ]
-
-    raise HTTPException(status_code=400, detail='Modality: {} is not valid'.format(modality))
 
 
 @router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}')
