@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import MagicMock
+from fastapi import HTTPException
 
 from app import request_utils
 import mock
@@ -25,20 +26,21 @@ class TestRequestUtils(unittest.TestCase):
         atlas = request_utils.create_atlas(self.ATLAS_ID)
         self.assertEqual(atlas.name, 'Multilevel Human Atlas')
 
-    def test_query_data_with_wrong_modality(self):
-        hits = request_utils.query_data(self.ATLAS_ID, self.MODALITY_INVALID, self.REGION_NAME_VALID)
+    def test_get_regional_feature_with_wrong_modality(self):
+        hits = request_utils.get_regional_feature(atlas_id=self.ATLAS_ID, parcellation_id=self.PARCELLATION_NAME, modality_id=self.MODALITY_INVALID, region_id=self.REGION_NAME_VALID)
         self.assertTrue(len(hits) == 0)
 
-    def test_query_data_with_wrong_region(self):
-        hits = request_utils.query_data(self.ATLAS_ID, self.MODALITY_VALID, self.REGION_NAME_INVALID)
-        self.assertTrue(len(hits) == 0)
+    def test_get_regional_feature_with_wrong_region(self):
 
-    def test_query_data_with_valid_values(self):
+        with self.assertRaises(HTTPException):
+            hits = request_utils.get_regional_feature(atlas_id=self.ATLAS_ID, parcellation_id=self.PARCELLATION_NAME, modality_id=self.MODALITY_VALID, region_id=self.REGION_NAME_INVALID)
 
-        hits = request_utils.query_data(self.ATLAS_ID, self.MODALITY_VALID, self.REGION_NAME_VALID)
+    def test_get_regional_feature_with_valid_values(self):
+
+        hits = request_utils.get_regional_feature(atlas_id=self.ATLAS_ID, parcellation_id=self.PARCELLATION_NAME, modality_id=self.MODALITY_VALID, region_id=self.REGION_NAME_VALID)
         self.assertTrue(len(hits) != 0)
-        self.assertIsNotNone(hits['data'])
-        self.assertIsNotNone(hits['receptor_symbols'])
+        self.assertTrue(all([ hit['@id'] is not None for hit in hits]))
+
 
     def test_get_all_parcellations_for_space(self):
         parcellations = request_utils.get_parcellations_for_space(self.SPACE_NAME)
