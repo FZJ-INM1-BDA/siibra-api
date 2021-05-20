@@ -77,7 +77,15 @@ def __parcellation_result_info(parcellation, atlas_id=None, request=None):
                 atlas_id.replace('/', '%2F'),
                 parcellation.id.replace('/', '%2F')
             )
-        }}
+        },
+        'features': {
+            'href': '{}atlases/{}/parcellations/{}/features'.format(
+                get_base_url_from_request(request),
+                atlas_id.replace('/', '%2F'),
+                parcellation.id.replace('/', '%2F')
+            )
+        }
+    }
 
     if hasattr(parcellation, 'modality') and parcellation.modality:
         result_info['modality'] = parcellation.modality
