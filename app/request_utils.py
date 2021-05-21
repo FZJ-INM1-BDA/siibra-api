@@ -19,7 +19,7 @@ from fastapi import HTTPException, Request
 from .cache_redis import CacheRedis
 import anytree
 from siibra.features import feature as feature_export, classes as feature_classes, connectivity as connectivity_export, \
-    receptors as receptors_export, genes as genes_export, kg_regional_features as kg_rf_export
+    receptors as receptors_export, genes as genes_export, ebrainsquery as ebrainsquery_export
 from memoization import cached
 import hashlib
 import json
@@ -139,7 +139,7 @@ def _object_to_json(o):
 
 
 def get_spaces_for_parcellation(parcellation: str):
-    return [_object_to_json(bs.spaces[s]) for s in bs.parcellations[parcellation].maps.keys()]
+    return [_object_to_json(bs.spaces[s]) for s in bs.parcellations[parcellation].volume_src.keys()]
 
 
 def get_parcellations_for_space(space: str):
@@ -231,7 +231,7 @@ def find_region_via_id(atlas,region_id):
     return [*strict_equal_id,*fuzzy_regions]
 
 # allow for fast fails
-SUPPORTED_FEATURES=[genes_export.GeneExpression, connectivity_export.ConnectivityProfile, receptors_export.ReceptorDistribution, kg_rf_export.KgRegionalFeature]
+SUPPORTED_FEATURES=[genes_export.GeneExpression, connectivity_export.ConnectivityProfile, receptors_export.ReceptorDistribution, ebrainsquery_export.EbrainsRegionalDataset]
 
 @cached
 def get_regional_feature(atlas_id,parcellation_id,region_id,modality_id):
@@ -267,7 +267,7 @@ def get_regional_feature(atlas_id,parcellation_id,region_id,modality_id):
     
     atlas.select_region(regions[0])
     got_features=atlas.get_features(modality_id)
-    if feature_classes[modality_id] == kg_rf_export.KgRegionalFeature:
+    if feature_classes[modality_id] == ebrainsquery_export.EbrainsRegionalDataset:
         return [{
             '@id': kg_rf_f.id,
             'src_name': kg_rf_f.name,
