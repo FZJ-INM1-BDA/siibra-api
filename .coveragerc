@@ -6,4 +6,4 @@ omit =
     test/*
     *siibra_client*
     *.github*
-
+    siibra-python/*
