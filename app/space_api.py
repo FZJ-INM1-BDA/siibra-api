@@ -24,6 +24,8 @@ from .request_utils import create_atlas, split_id, find_space_by_id, _get_file_f
 from .request_utils import get_base_url_from_request
 from .atlas_api import ATLAS_PATH
 
+from siibra.volume_src import VolumeSrc
+
 # FastApi router to create rest endpoints
 router = APIRouter()
 
@@ -128,7 +130,7 @@ def get_one_space_by_id(atlas_id: str, space_id: str, request: Request):
     atlas = create_atlas(atlas_id)
     space = find_space_by_id(atlas, space_id)
     if space:
-        json_result = jsonable_encoder(space)
+        json_result = jsonable_encoder(space, custom_encoder=space_custom_encoder)
         json_result['availableParcellations'] = get_parcellations_for_space(space.name)
         json_result['links'] = {
             'templates': {
@@ -150,5 +152,12 @@ def get_one_space_by_id(atlas_id: str, space_id: str, request: Request):
     else:
         raise HTTPException(status_code=404, detail='space with id: {} not found'.format(space_id))
 
+# using a custom encoder is necessary to avoid cyclic reference
+def vol_src_sans_space(vol_src):
+    vol_src.space = None
+    return jsonable_encoder(vol_src)
 
+space_custom_encoder={
+    VolumeSrc: vol_src_sans_space
+}
 # endregion
