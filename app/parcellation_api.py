@@ -187,7 +187,7 @@ def get_regional_modality_by_id(request: Request, atlas_id: str, parcellation_id
 
     Returns all features for a region.
     """
-    regional_features=get_regional_feature(atlas_id,parcellation_id,region_id, modality)
+    regional_features=get_regional_feature(atlas_id,parcellation_id,region_id, modality, gene=gene)
     found_conn_pr = [ conn_pr for conn_pr in regional_features if conn_pr['@id'] == modality_id ]
     if len(found_conn_pr) == 0:
         raise HTTPException(status_code=404, detail=f'modality with id {modality_id} not found')
@@ -209,7 +209,7 @@ def get_feature_modality_for_region(request: Request, atlas_id: str, parcellatio
     Returns all features for a region.
     """
 
-    regional_features=get_regional_feature(atlas_id,parcellation_id,region_id,modality)
+    regional_features=get_regional_feature(atlas_id,parcellation_id,region_id,modality,gene=gene)
 
     # in summary search, only search for basic data (filter out all keys prepended by __)
     return [{
