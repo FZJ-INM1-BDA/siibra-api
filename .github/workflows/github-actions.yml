@@ -21,6 +21,16 @@ jobs:
       - name: Install test dependecies
         run: pip install pytest pytest-asyncio httpx mock coverage
       - run: coverage run -m pytest
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          directory: ./coverage
+          flags: unittests
+          env_vars: OS,PYTHON
+          name: siibra-api
+          fail_ci_if_error: true
+          path_to_write_report: ./coverage/codecov_report.txt
+          verbose: true
 
   dev-deploy:
     runs-on: ubuntu-latest
