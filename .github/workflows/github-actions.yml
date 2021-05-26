@@ -24,8 +24,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r app/requirements.txt
       - name: Install test dependecies
-        run: pip install pytest pytest-asyncio httpx mock coverage
-      - run: coverage run -m pytest
+        run: pip install pytest pytest-asyncio httpx mock coverage pytest-cov
+      - run: |
+          coverage run -m pytest
+          coverage report
+          coverage html
+      - name: Archive code coverage html report
+        uses: actions/upload-artifact@v2
+        with:
+          name: siibra-code-coverage-report
+          path: htmlcov
 
   dev-deploy:
     runs-on: ubuntu-latest

@@ -234,7 +234,7 @@ def find_region_via_id(atlas,region_id):
 SUPPORTED_FEATURES=[genes_export.GeneExpression, connectivity_export.ConnectivityProfile, receptors_export.ReceptorDistribution, ebrainsquery_export.EbrainsRegionalDataset]
 
 @cached
-def get_regional_feature(atlas_id,parcellation_id,region_id,modality_id):
+def get_regional_feature(atlas_id,parcellation_id,region_id,modality_id,gene=None):
     # select atlas by id
     if modality_id not in feature_classes:
         # modality_id not found in feature_classes
@@ -266,7 +266,11 @@ def get_regional_feature(atlas_id,parcellation_id,region_id,modality_id):
         raise HTTPException(status_code=404, detail=f'Region with id {region_id} not found!')
     
     atlas.select_region(regions[0])
-    got_features=atlas.get_features(modality_id)
+    try:
+        got_features=atlas.get_features(modality_id,gene=gene)
+    except:
+        raise HTTPException(status_code=404, detail=f'Could not get features for region with id {region_id}')
+
     if feature_classes[modality_id] == ebrainsquery_export.EbrainsRegionalDataset:
         return [{
             '@id': kg_rf_f.id,
@@ -275,7 +279,7 @@ def get_regional_feature(atlas_id,parcellation_id,region_id,modality_id):
         } for kg_rf_f in got_features]
     if feature_classes[modality_id] == genes_export.GeneExpression:
         return [{
-            '@id': hashlib.md5(json.dumps(gene_feat.donor_info)).hexdigest(),
+            '@id': hashlib.md5(str(gene_feat).encode("utf-8")).hexdigest(),
             '__donor_info':gene_feat.donor_info,
             '__gene':gene_feat.gene,
             '__probe_ids':gene_feat.probe_ids,

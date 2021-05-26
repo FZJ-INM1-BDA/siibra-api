@@ -77,7 +77,15 @@ def __parcellation_result_info(parcellation, atlas_id=None, request=None):
                 atlas_id.replace('/', '%2F'),
                 parcellation.id.replace('/', '%2F')
             )
-        }}
+        },
+        'features': {
+            'href': '{}atlases/{}/parcellations/{}/features'.format(
+                get_base_url_from_request(request),
+                atlas_id.replace('/', '%2F'),
+                parcellation.id.replace('/', '%2F')
+            )
+        }
+    }
 
     if hasattr(parcellation, 'modality') and parcellation.modality:
         result_info['modality'] = parcellation.modality
@@ -179,7 +187,7 @@ def get_regional_modality_by_id(request: Request, atlas_id: str, parcellation_id
 
     Returns all features for a region.
     """
-    regional_features=get_regional_feature(atlas_id,parcellation_id,region_id, modality)
+    regional_features=get_regional_feature(atlas_id,parcellation_id,region_id, modality, gene=gene)
 
     found_conn_pr = [{
         key: val() if callable(val) else val for key, val in f.items()
@@ -205,7 +213,7 @@ def get_feature_modality_for_region(request: Request, atlas_id: str, parcellatio
     Returns all features for a region.
     """
 
-    regional_features=get_regional_feature(atlas_id,parcellation_id,region_id,modality)
+    regional_features=get_regional_feature(atlas_id,parcellation_id,region_id,modality,gene=gene)
 
     # in summary search, only search for basic data (filter out all keys prepended by __)
     return [{
