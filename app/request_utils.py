@@ -20,9 +20,9 @@ from .cache_redis import CacheRedis
 import anytree
 from siibra.features import feature as feature_export, classes as feature_classes, connectivity as connectivity_export, \
     receptors as receptors_export, genes as genes_export, ebrainsquery as ebrainsquery_export
-from memoization import cached
 import hashlib
-import json
+import os
+from .diskcache import fanout_cache, CACHEDIR
 
 cache_redis = CacheRedis.get_instance()
 
@@ -62,6 +62,8 @@ def create_region_json_object_tmp(region, space_id=None, atlas=None):
     if hasattr(region, 'attrs'):
         region_json['volumeSrc'] = region.attrs.get('volumeSrc', {})
 
+    region_json['hasRegionalMap'] = region.has_regional_map(bs.spaces[space_id], bs.commons.MapType.CONTINUOUS)
+
     region_json['availableIn'] = get_available_spaces_for_region(region)
     _add_children_to_region_tmp(region_json, region, space_id, atlas)
     return region_json
@@ -94,6 +96,9 @@ def create_region_json_object(region, space_id=None, atlas=None):
     if hasattr(region, 'attrs'):
         region_json['volumeSrc'] = region.attrs.get('volumeSrc', {})
     region_json['availableIn'] = get_available_spaces_for_region(region)
+
+    region_json['hasRegionalMap'] = region.has_regional_map(bs.spaces[space_id], bs.commons.MapType.CONTINUOUS) if space_id is not None else None
+
     # _add_children_to_region(region_json, region)
     return region_json
 
@@ -113,6 +118,14 @@ def _get_file_from_nibabel(nibabel_object, nifti_type, space):
     nib.save(nibabel_object, filename)
     return filename
 
+def get_cached_file(filename: str, fn: callable):
+    cached_fullpath=os.path.join(CACHEDIR, filename)
+
+    # if path does not exist, call the provided fn
+    if not os.path.exists(cached_fullpath):
+        fn(cached_fullpath)
+    
+    return cached_fullpath
 
 def split_id(kg_id: str):
     """
@@ -233,7 +246,7 @@ def find_region_via_id(atlas,region_id):
 # allow for fast fails
 SUPPORTED_FEATURES=[genes_export.GeneExpression, connectivity_export.ConnectivityProfile, receptors_export.ReceptorDistribution, ebrainsquery_export.EbrainsRegionalDataset]
 
-@cached
+@fanout_cache.memoize(typed=True, expire=60*60)
 def get_regional_feature(atlas_id,parcellation_id,region_id,modality_id,gene=None):
     # select atlas by id
     if modality_id not in feature_classes:
@@ -311,7 +324,7 @@ def get_regional_feature(atlas_id,parcellation_id,region_id,modality_id,gene=Non
         } for receptor_pr in got_features ]
     raise HTTPException(status_code=501, detail=f'feature {modality_id} has not yet been implmented')
 
-@cached
+@fanout_cache.memoize(typed=True, expire=60*60)
 def get_global_features(atlas_id,parcellation_id,modality_id):
     if modality_id not in feature_classes:
         # modality_id not found in feature_classes

@@ -15,16 +15,17 @@ from enum import Enum
 from typing import Optional
 
 from fastapi import APIRouter, Request, HTTPException, Depends
-from starlette.responses import PlainTextResponse
+from starlette.responses import PlainTextResponse, FileResponse
 from fastapi.encoders import jsonable_encoder
 from .atlas_api import ATLAS_PATH
 from .request_utils import split_id, create_atlas, create_region_json_object, create_region_json_object_tmp, \
-    _add_children_to_region, find_space_by_id, find_region_via_id, get_global_features, get_regional_feature
+    _add_children_to_region, find_space_by_id, find_region_via_id, get_global_features, get_regional_feature, get_cached_file
 from .request_utils import get_spaces_for_parcellation, get_base_url_from_request
-from siibra import region as siibra_region
+from siibra import spaces as siibra_spaces, region as siibra_region, commons as siibra_commons
 from siibra.features import feature as feature_export,classes as feature_classes,modalities as feature_modalities
 import re
-from memoization import cached
+from .diskcache import fanout_cache
+import hashlib
 
 router = APIRouter()
 
@@ -124,7 +125,7 @@ def get_all_parcellations(atlas_id: str, request: Request):
 
 
 @router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions')
-@cached
+@fanout_cache.memoize(typed=True, expire=60*60)
 def get_all_regions_for_parcellation_id(atlas_id: str, parcellation_id: str, space_id: Optional[str] = None):
     """
     Parameters:
@@ -220,6 +221,71 @@ def get_feature_modality_for_region(request: Request, atlas_id: str, parcellatio
         key: val() if callable(val) else val for key, val in f.items() if not re.search(r"^__", key)
     } for f in regional_features ]
 
+def parse_region_selection(atlas_id: str, parcellation_id: str, region_id: str, space_id: str):
+    if space_id is None:
+        raise HTTPException(status_code=401, detail='space_id is required for this functionality')
+
+    space_of_interest = siibra_spaces[space_id]
+    if space_of_interest is None:
+        raise HTTPException(status_code=401, detail=f'space_id {space_id} did not match any spaces')
+
+    atlas = create_atlas(atlas_id)
+    __check_and_select_parcellation(atlas,parcellation_id)
+    region = find_region_via_id(atlas,region_id)
+    if len(region) == 0:
+        raise HTTPException(status_code=404, detail=f'cannot find region with spec {region_id}')
+    if len(region) > 1:
+        raise HTTPException(status_code=401, detail=f'found multiple region withs pec {region_id}')
+    return (region[0], space_of_interest)
+
+def get_path_to_regional_map(query_id, roi, space_of_interest):
+
+    regional_map=roi.get_regional_map(space_of_interest, siibra_commons.MapType.CONTINUOUS)
+    if regional_map is None:
+        raise HTTPException(status_code=404, detail=f'continuous regional map for region {roi.name} cannot be found')
+    
+    cached_filename=str(hashlib.sha256(query_id.encode('utf-8')).hexdigest()) + '.nii.gz'
+
+    # cache fails, fetch from source
+    def save_new_nii(cached_fullpath):
+        import nibabel as nib
+        # fix regional_map if necessary
+
+        regional_map.header.set_xyzt_units('mm', 'sec')
+
+        # time series
+        regional_map.header['dim'][4] = 1
+
+        # num channel
+        regional_map.header['dim'][5] = 1
+        nib.save(regional_map, cached_fullpath)
+        
+    return get_cached_file(cached_filename, save_new_nii )
+    
+
+@router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/regional_map/info')
+@fanout_cache.memoize(typed=True, expire=60*60)
+def get_regional_map_info(atlas_id: str, parcellation_id: str, region_id: str, space_id: Optional[str] = None):
+    roi, space_of_interest = parse_region_selection(atlas_id, parcellation_id, region_id, space_id)
+    query_id=f'{atlas_id}{parcellation_id}{roi.name}{space_id}'
+    cached_fullpath = get_path_to_regional_map(query_id, roi, space_of_interest)
+    import nibabel as nib
+    import numpy as np
+    nii=nib.load(cached_fullpath)
+    data=nii.get_fdata()
+    return {
+        'min': np.min(data),
+        'max': np.max(data),
+    }
+
+
+@router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/regional_map/map')
+@fanout_cache.memoize(typed=True, expire=60*60)
+def get_regional_map_file(atlas_id: str, parcellation_id: str, region_id: str, space_id: Optional[str] = None):
+    roi, space_of_interest = parse_region_selection(atlas_id, parcellation_id, region_id, space_id)
+    query_id=f'{atlas_id}{parcellation_id}{roi.name}{space_id}'
+    cached_fullpath = get_path_to_regional_map(query_id, roi, space_of_interest)
+    return FileResponse(cached_fullpath, media_type='application/octet-stream')
 
 @router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}')
 def get_region_by_name(request: Request, atlas_id: str, parcellation_id: str, region_id: str, space_id: Optional[str] = None):
@@ -240,7 +306,7 @@ def get_region_by_name(request: Request, atlas_id: str, parcellation_id: str, re
     if len(region) == 0:
         raise HTTPException(status_code=404, detail=f'region with spec {region_id} not found')
     r = region[0]
-    region_json = create_region_json_object(r)
+    region_json = create_region_json_object(r, space_id)
     _add_children_to_region(region_json, r)
 
     if space_id:
@@ -255,13 +321,17 @@ def get_region_by_name(request: Request, atlas_id: str, parcellation_id: str, re
         region_json['props']['volume_mm'] = r_props.attrs['volume_mm']
         region_json['props']['surface_mm'] = r_props.attrs['surface_mm']
         region_json['props']['is_cortical'] = r_props.attrs['is_cortical']
+    
+    single_region_root_url = '{}atlases/{}/parcellations/{}/regions/{}'.format(
+        get_base_url_from_request(request),
+        atlas_id.replace('/', '%2F'),
+        parcellation_id.replace('/', '%2F'),
+        region_id.replace('/', '%2F'))
+
     region_json['links'] = {
-        'features': '{}atlases/{}/parcellations/{}/regions/{}/features'.format(
-            get_base_url_from_request(request),
-            atlas_id.replace('/', '%2F'),
-            parcellation_id.replace('/', '%2F'),
-            region_id.replace('/', '%2F')
-        )
+        'features': f'{single_region_root_url}/features',
+        'regional_map_info': f'{single_region_root_url}/regional_map/info?space_id={space_id}' if region_json['hasRegionalMap'] else None,
+        'regional_map': f'{single_region_root_url}/regional_map/map?space_id={space_id}' if region_json['hasRegionalMap'] else None,
     }
 
     return jsonable_encoder(region_json)
