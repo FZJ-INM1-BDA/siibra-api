@@ -94,12 +94,14 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):  # add parcell
     atlas = create_atlas(atlas_id)
     space = find_space_by_id(atlas, space_id)
     valid_parcs = [ p for p in sb.parcellations if p.supports_space(space)]
-    maps = [p.get_map(space) for p in valid_parcs]
-
-    if len(maps) == 1:
+    
+    if len(valid_parcs) == 1:
+        maps=[valid_parcs[0].get_map(space)]
         filename = _get_file_from_nibabel(maps[0], 'maps', space)
         return FileResponse(filename, filename=filename)
     else:
+        raise HTTPException(status=501, detail=f'space with id {space_id} has multiple parc, not yet implemented')
+        maps = [p.get_map(space) for p in valid_parcs]
         files = []
         mem_zip = io.BytesIO()
 

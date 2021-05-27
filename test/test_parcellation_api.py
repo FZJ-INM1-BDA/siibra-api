@@ -6,6 +6,7 @@ from app.app import app
 
 client = TestClient(app)
 
+ICBM_152_SPACE_ID='minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2'
 ATLAS_ID = 'juelich/iav/atlas/v1.0.0/1'
 PARCELLATION_ID = 'minds%2Fcore%2Fparcellationatlas%2Fv1.0.0%2F94c1125b-b87e-45e4-901c-00daee7f2579-25'
 INVALID_PARCELLATION_ID = 'INVALID_PARCELLATION_ID'
@@ -39,11 +40,18 @@ def test_get_one_parcellation_by_id():
         }
     }
     assert result_content['name'] == 'Julich-Brain Cytoarchitectonic Maps 2.5'
-    assert result_content['version'] == '2.5'
+    assert result_content['version'] == {
+        'name': '2.5',
+        'next': 'minds/core/parcellationatlas/v1.0.0/94c1125b-b87e-45e4-901c-00daee7f2579-273',
+        'prev': 'minds/core/parcellationatlas/v1.0.0/94c1125b-b87e-45e4-901c-00daee7f2579'
+    }
 
 
 def test_all_regions_for_parcellations():
-    response = client.get('/v1_0/atlases/{}/parcellations/{}/regions'.format(ATLAS_ID.replace('/', '%2F'), PARCELLATION_ID))
+    response = client.get('/v1_0/atlases/{}/parcellations/{}/regions?space_id={}'.format(
+        ATLAS_ID.replace('/', '%2F'),
+        PARCELLATION_ID,
+        ICBM_152_SPACE_ID))
     result_content = json.loads(response.content)
     assert response.status_code == 200
     assert len(result_content) == 2
