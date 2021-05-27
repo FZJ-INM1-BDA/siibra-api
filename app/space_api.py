@@ -23,6 +23,7 @@ from starlette.responses import FileResponse, StreamingResponse
 from .request_utils import create_atlas, split_id, find_space_by_id, _get_file_from_nibabel, get_parcellations_for_space
 from .request_utils import get_base_url_from_request
 from .atlas_api import ATLAS_PATH
+import siibra as sb
 
 from siibra.volume_src import VolumeSrc
 
@@ -92,7 +93,8 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):  # add parcell
     """
     atlas = create_atlas(atlas_id)
     space = find_space_by_id(atlas, space_id)
-    maps = atlas.get_map(space)
+    valid_parcs = [ p for p in sb.parcellations if p.supports_space(space)]
+    maps = [p.get_map(space) for p in valid_parcs]
 
     if len(maps) == 1:
         filename = _get_file_from_nibabel(maps[0], 'maps', space)
