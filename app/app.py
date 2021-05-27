@@ -13,9 +13,10 @@
 # limitations under the License.
 
 import os
+
 import requests
 import json
-from fastapi import FastAPI, Depends, Request
+from fastapi import FastAPI, Depends, Request, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
@@ -75,23 +76,26 @@ def home(request: Request):
     :return: the rendered stats.html template
     """
     download_data_json = requests.get('https://pypistats.org/api/packages/siibra/overall?mirrors=false')
-    download_data = json.loads(download_data_json.content)
+    if download_data_json.status_code == 200:
+        download_data = json.loads(download_data_json.content)
 
-    download_sum = 0
-    download_sum_month = {}
+        download_sum = 0
+        download_sum_month = {}
 
-    for d in download_data['data']:
-        download_sum += d['downloads']
-        date_index = '{}-{}'.format(d['date'].split('-')[0], d['date'].split('-')[1])
-        if date_index not in download_sum_month:
-            download_sum_month[date_index] = 0
-        download_sum_month[date_index] += d['downloads']
+        for d in download_data['data']:
+            download_sum += d['downloads']
+            date_index = '{}-{}'.format(d['date'].split('-')[0], d['date'].split('-')[1])
+            if date_index not in download_sum_month:
+                download_sum_month[date_index] = 0
+            download_sum_month[date_index] += d['downloads']
 
-    return templates.TemplateResponse('stats.html', context={
-        'request': request,
-        'download_sum': download_sum,
-        'download_sum_month': download_sum_month
-    })
+        return templates.TemplateResponse('stats.html', context={
+            'request': request,
+            'download_sum': download_sum,
+            'download_sum_month': download_sum_month
+        })
+    else:
+        raise HTTPException(status_code=500, detail='Could not retrieve pypi statistics')
 
 
 @app.middleware('http')
