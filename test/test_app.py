@@ -24,3 +24,11 @@ async def test_stats():
         response = await ac.get("/stats")
     assert response.status_code == 200
     assert 'Siibra - statistics' in str(response.content)
+
+
+@pytest.mark.asyncio
+async def test_stats():
+    app.pypi_stat_url = 'invalid_url'
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        response = await ac.get("/stats")
+    assert response.status_code == 500

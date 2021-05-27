@@ -47,6 +47,8 @@ app = VersionedFastAPI(app, default_api_version=1)
 # can be rendered and returned
 templates = Jinja2Templates(directory='app/templates/')
 
+pypi_stat_url = 'https://pypistats.org/api/packages/siibra/overall?mirrors=false'
+
 # Allow CORS
 origins = ['*']
 app.add_middleware(
@@ -75,7 +77,7 @@ def home(request: Request):
     :param request: fastApi Request object
     :return: the rendered stats.html template
     """
-    download_data_json = requests.get('https://pypistats.org/api/packages/siibra/overall?mirrors=false')
+    download_data_json = requests.get(pypi_stat_url)
     if download_data_json.status_code == 200:
         download_data = json.loads(download_data_json.content)
 
