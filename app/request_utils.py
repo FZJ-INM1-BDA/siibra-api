@@ -286,7 +286,7 @@ def get_regional_feature(atlas_id,parcellation_id,region_id,modality_id,gene=Non
         return [{
             '@id': kg_rf_f.id,
             'src_name': kg_rf_f.name,
-            '__detail': lambda kg_rf_f=kg_rf_f: kg_rf_f.detail
+            '__detail': kg_rf_f.detail
         } for kg_rf_f in got_features]
     if feature_classes[modality_id] == genes_export.GeneExpression:
         return [{
