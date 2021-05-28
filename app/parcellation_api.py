@@ -20,7 +20,7 @@ from fastapi.encoders import jsonable_encoder
 from .atlas_api import ATLAS_PATH
 from .request_utils import split_id, create_atlas, create_region_json_object, create_region_json_object_tmp, \
     _add_children_to_region, find_space_by_id, find_region_via_id, get_global_features, get_regional_feature, get_cached_file
-from .request_utils import get_spaces_for_parcellation, get_base_url_from_request
+from .request_utils import get_spaces_for_parcellation, get_base_url_from_request, siibra_custom_json_encoder
 from siibra import spaces as siibra_spaces, region as siibra_region, commons as siibra_commons
 from siibra.features import feature as feature_export,classes as feature_classes,modalities as feature_modalities
 import re
@@ -98,7 +98,7 @@ def __parcellation_result_info(parcellation, atlas_id=None, request=None):
         volumeSrc={
             key.id: value for key, value in parcellation.volume_src.items()
         }
-        result_info['volumeSrc']=volumeSrc
+        result_info['volumeSrc']=jsonable_encoder(volumeSrc, custom_encoder=siibra_custom_json_encoder)
     
     return result_info
 
@@ -118,10 +118,7 @@ def get_all_parcellations(atlas_id: str, request: Request):
         return PlainTextResponse(status_code=200, content=python_code)
     atlas = create_atlas(atlas_id)
     parcellations = atlas.parcellations
-    result = []
-    for parcellation in parcellations:
-        result.append(__parcellation_result_info(parcellation, atlas_id, request))
-    return jsonable_encoder(result)
+    return [ __parcellation_result_info(parcellation, atlas_id, request) for parcellation in parcellations ]
 
 
 @router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions')
@@ -421,7 +418,7 @@ def get_parcellation_by_id(atlas_id: str, parcellation_id: str, request: Request
         if parcellation.id.find(parcellation_id) != -1:
             result = __parcellation_result_info(parcellation, atlas_id, request)
     if result:
-        return jsonable_encoder(result)
+        return jsonable_encoder(result, custom_encoder=siibra_custom_json_encoder)
     else:
         raise HTTPException(status_code=404, detail='parcellation with id: {} not found'.format(parcellation_id))
 

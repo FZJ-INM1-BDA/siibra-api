@@ -69,7 +69,17 @@ def test_get_one_region_for_parcellation_without_extra_data():
     response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}'.format(ATLAS_ID.replace('/', '%2F'), PARCELLATION_ID, REGION_ID))
     result_content = json.loads(response.content)
     assert response.status_code == 200
-    assert result_content['name'] == REGION_NAME
+
+    # siibra-python v0.1a4 sanitize region name
+    import re
+    REMOVE_FROM_NAME=['hemisphere','-']
+
+    def _clear_name(name):
+        for word in REMOVE_FROM_NAME:
+            name = re.sub(r' *'+word,'',name)
+        return name
+
+    assert result_content['name'] == _clear_name(REGION_NAME)
     assert result_content['availableIn'] is not None
 
 
@@ -77,7 +87,17 @@ def test_get_one_region_for_parcellation_with_extra_data():
     response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}?space_id={}'.format(ATLAS_ID.replace('/', '%2F'), PARCELLATION_ID, REGION_ID, SPACE_ID))
     result_content = json.loads(response.content)
     assert response.status_code == 200
-    assert result_content['name'] == REGION_NAME
+
+    # siibra-python v0.1a4 sanitize region name
+    import re
+    REMOVE_FROM_NAME=['hemisphere','-']
+
+    def _clear_name(name):
+        for word in REMOVE_FROM_NAME:
+            name = re.sub(r' *'+word,'',name)
+        return name
+
+    assert result_content['name'] == _clear_name(REGION_NAME)
     # Add Assertion for extra data
 
 

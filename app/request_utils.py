@@ -23,6 +23,7 @@ from siibra.features import feature as feature_export, classes as feature_classe
 import hashlib
 import os
 from .diskcache import fanout_cache, CACHEDIR
+from siibra.volumesrc import VolumeSrc, NiftiVolume, NgVolume
 
 cache_redis = CacheRedis.get_instance()
 
@@ -45,10 +46,11 @@ def find_parcellation_by_id(atlas, parcellation_id):
 
 
 def find_space_by_id(atlas, space_id):
-    for space in atlas.spaces:
-        if space.id.find(space_id) != -1:
-            return space
-    return {}
+    try:
+        found_space = bs.spaces[space_id]
+        return found_space if found_space in atlas.spaces else None
+    except IndexError:
+        return None
 
 
 def create_region_json_object_tmp(region, space_id=None, atlas=None):
@@ -155,13 +157,9 @@ def get_spaces_for_parcellation(parcellation: str):
     return [_object_to_json(bs.spaces[s]) for s in bs.parcellations[parcellation].volume_src.keys()]
 
 
-def get_parcellations_for_space(space: str):
-    result = []
-    for p in bs.parcellations.items:
-        for k in p.volume_src.keys():
-            if bs.spaces[space].id in k.id:
-                result.append(_object_to_json(p))
-    return result
+def get_parcellations_for_space(space):
+    space_instance = bs.spaces[space] if type(space) is str else space
+    return [_object_to_json(p) for p in bs.parcellations if p.supports_space(space_instance)]
 
 
 def get_base_url_from_request(request: Request):
@@ -347,3 +345,16 @@ def get_global_features(atlas_id,parcellation_id,modality_id):
             'matrix': f.matrix.tolist(),
         } for f in got_features ]
     raise NotImplementedError(f'feature {modality_id} has not yet been implmented')
+
+# using a custom encoder is necessary to avoid cyclic reference
+def vol_src_sans_space(vol_src):
+    keys = ['id','name','url','volume_type','detail']
+    return {
+        key: getattr(vol_src, key) for key in keys
+    }
+
+siibra_custom_json_encoder={
+    VolumeSrc: vol_src_sans_space,
+    NiftiVolume: vol_src_sans_space,
+    NgVolume: vol_src_sans_space,
+}
