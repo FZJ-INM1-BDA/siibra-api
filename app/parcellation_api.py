@@ -46,7 +46,7 @@ class ModalityType(str, Enum):
 def __check_and_select_parcellation(atlas, parcellation_id):
     try:
         # select atlas parcellation
-        atlas.select_parcellation(parcellation_id)
+        atlas.select_parcellation(parcellation_id, force=True)
     except Exception:
         raise HTTPException(
             status_code=400,
