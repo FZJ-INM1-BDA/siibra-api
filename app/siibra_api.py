@@ -15,13 +15,11 @@
 from enum import Enum
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter
 from fastapi.encoders import jsonable_encoder
 
-from .request_utils import create_atlas, find_region_via_id
-
-from siibra import features, modalities
-from siibra.features import feature as feature_export, classes as feature_classes
+from siibra import features
+from siibra.features import feature as feature_export,classes as feature_classes
 
 # FastApi router to create rest endpoints
 router = APIRouter()

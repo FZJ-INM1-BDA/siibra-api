@@ -20,7 +20,7 @@ from fastapi import FastAPI, Depends, Request, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
-from siibra.authentication import Authentication
+from siibra.ebrains import Authentication
 from fastapi_versioning import VersionedFastAPI
 
 from .siibra_api import router as siibra_router

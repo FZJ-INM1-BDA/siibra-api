@@ -21,8 +21,9 @@ from fastapi.encoders import jsonable_encoder
 from starlette.responses import FileResponse, StreamingResponse
 
 from .request_utils import create_atlas, split_id, find_space_by_id, _get_file_from_nibabel, get_parcellations_for_space
-from .request_utils import get_base_url_from_request
+from .request_utils import get_base_url_from_request, siibra_custom_json_encoder
 from .atlas_api import ATLAS_PATH
+import siibra as sb
 
 # FastApi router to create rest endpoints
 router = APIRouter()
@@ -90,12 +91,15 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):  # add parcell
     """
     atlas = create_atlas(atlas_id)
     space = find_space_by_id(atlas, space_id)
-    maps = atlas.get_map(space)
-
-    if len(maps) == 1:
+    valid_parcs = [ p for p in sb.parcellations if p.supports_space(space)]
+    
+    if len(valid_parcs) == 1:
+        maps=[valid_parcs[0].get_map(space)]
         filename = _get_file_from_nibabel(maps[0], 'maps', space)
         return FileResponse(filename, filename=filename)
     else:
+        raise HTTPException(status=501, detail=f'space with id {space_id} has multiple parc, not yet implemented')
+        maps = [p.get_map(space) for p in valid_parcs]
         files = []
         mem_zip = io.BytesIO()
 
@@ -128,8 +132,8 @@ def get_one_space_by_id(atlas_id: str, space_id: str, request: Request):
     atlas = create_atlas(atlas_id)
     space = find_space_by_id(atlas, space_id)
     if space:
-        json_result = jsonable_encoder(space)
-        json_result['availableParcellations'] = get_parcellations_for_space(space.name)
+        json_result = jsonable_encoder(space, custom_encoder=siibra_custom_json_encoder)
+        json_result['availableParcellations'] = get_parcellations_for_space(space)
         json_result['links'] = {
             'templates': {
                 'href': '{}atlases/{}/spaces/{}/templates'.format(
@@ -149,6 +153,5 @@ def get_one_space_by_id(atlas_id: str, space_id: str, request: Request):
         return json_result
     else:
         raise HTTPException(status_code=404, detail='space with id: {} not found'.format(space_id))
-
 
 # endregion
