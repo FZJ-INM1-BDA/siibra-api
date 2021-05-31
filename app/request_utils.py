@@ -12,18 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from siibra.atlas import REGISTRY
-# from siibra.features import regionprops
 import siibra as bs
 import json
 import nibabel as nib
 from fastapi import HTTPException, Request
 from .cache_redis import CacheRedis
 import anytree
-from siibra.features import feature as feature_export, classes as feature_classes, connectivity as connectivity_export, receptors as receptors_export, genes as genes_export
-from memoization import cached
+from siibra.features import feature as feature_export, classes as feature_classes, connectivity as connectivity_export, \
+    receptors as receptors_export, genes as genes_export, ebrainsquery as ebrainsquery_export
 import hashlib
-import json
+import os
+from .diskcache import fanout_cache, CACHEDIR
+from siibra.volumesrc import VolumeSrc, NiftiVolume, NgVolume
 
 cache_redis = CacheRedis.get_instance()
 
@@ -46,10 +46,11 @@ def find_parcellation_by_id(atlas, parcellation_id):
 
 
 def find_space_by_id(atlas, space_id):
-    for space in atlas.spaces:
-        if space.id.find(space_id) != -1:
-            return space
-    return {}
+    try:
+        found_space = bs.spaces[space_id]
+        return found_space if found_space in atlas.spaces else None
+    except IndexError:
+        return None
 
 
 def create_region_json_object_tmp(region, space_id=None, atlas=None):
@@ -62,6 +63,8 @@ def create_region_json_object_tmp(region, space_id=None, atlas=None):
         region_json['labelIndex'] = region.labelIndex
     if hasattr(region, 'attrs'):
         region_json['volumeSrc'] = region.attrs.get('volumeSrc', {})
+
+    region_json['hasRegionalMap'] = region.has_regional_map(bs.spaces[space_id], bs.commons.MapType.CONTINUOUS)
 
     region_json['availableIn'] = get_available_spaces_for_region(region)
     _add_children_to_region_tmp(region_json, region, space_id, atlas)
@@ -95,6 +98,9 @@ def create_region_json_object(region, space_id=None, atlas=None):
     if hasattr(region, 'attrs'):
         region_json['volumeSrc'] = region.attrs.get('volumeSrc', {})
     region_json['availableIn'] = get_available_spaces_for_region(region)
+
+    region_json['hasRegionalMap'] = region.has_regional_map(bs.spaces[space_id], bs.commons.MapType.CONTINUOUS) if space_id is not None else None
+
     # _add_children_to_region(region_json, region)
     return region_json
 
@@ -114,6 +120,14 @@ def _get_file_from_nibabel(nibabel_object, nifti_type, space):
     nib.save(nibabel_object, filename)
     return filename
 
+def get_cached_file(filename: str, fn: callable):
+    cached_fullpath=os.path.join(CACHEDIR, filename)
+
+    # if path does not exist, call the provided fn
+    if not os.path.exists(cached_fullpath):
+        fn(cached_fullpath)
+    
+    return cached_fullpath
 
 def split_id(kg_id: str):
     """
@@ -140,16 +154,12 @@ def _object_to_json(o):
 
 
 def get_spaces_for_parcellation(parcellation: str):
-    return [_object_to_json(bs.spaces[s]) for s in bs.parcellations[parcellation].maps.keys()]
+    return [_object_to_json(bs.spaces[s]) for s in bs.parcellations[parcellation].volume_src.keys()]
 
 
-def get_parcellations_for_space(space: str):
-    result = []
-    for p in bs.parcellations.items:
-        for k in p.maps.keys():
-            if bs.spaces[space].id in k.id:
-                result.append(_object_to_json(p))
-    return result
+def get_parcellations_for_space(space):
+    space_instance = bs.spaces[space] if type(space) is str else space
+    return [_object_to_json(p) for p in bs.parcellations if p.supports_space(space_instance)]
 
 
 def get_base_url_from_request(request: Request):
@@ -231,33 +241,53 @@ def find_region_via_id(atlas,region_id):
     strict_equal_id=anytree.search.findall(region_tree, match_node)
     return [*strict_equal_id,*fuzzy_regions]
 
+# allow for fast fails
+SUPPORTED_FEATURES=[genes_export.GeneExpression, connectivity_export.ConnectivityProfile, receptors_export.ReceptorDistribution, ebrainsquery_export.EbrainsRegionalDataset]
 
-@cached
+@fanout_cache.memoize(typed=True, expire=60*60)
 def get_regional_feature(atlas_id,parcellation_id,region_id,modality_id,gene=None):
     # select atlas by id
     if modality_id not in feature_classes:
         # modality_id not found in feature_classes
         return []
+
+    # fail fast if not in supported feature list
+    if feature_classes[modality_id] not in SUPPORTED_FEATURES:
+        raise HTTPException(status_code=501, detail=f'feature {modality_id} has not yet been implmented')
     
-    if not issubclass(feature_classes[modality_id], feature_export.RegionalFeature) and not issubclass(feature_classes[modality_id], feature_export.SpatialFeature):
-        # modality_id is not a regional feature, return empty array
+    if not issubclass(feature_classes[modality_id], feature_export.RegionalFeature):
+        # modality_id is not a global feature, return empty array
         return []
 
 
     # select atlas by id
     atlas = create_atlas(atlas_id)
     # select atlas parcellation
-    atlas.select_parcellation(parcellation_id)
+    try:
+        # select atlas parcellation
+        atlas.select_parcellation(parcellation_id)
+    except Exception:
+        raise HTTPException(
+            status_code=400,
+            detail='The requested parcellation is not supported by the selected atlas.'
+        )
     regions = find_region_via_id(atlas,region_id)
 
     if len(regions) == 0:
-        raise HTTPException(status_code=401, detail=f'Region with id {region_id} not found!')
+        raise HTTPException(status_code=404, detail=f'Region with id {region_id} not found!')
     
     atlas.select_region(regions[0])
     try:
         got_features=atlas.get_features(modality_id,gene=gene)
     except:
         raise HTTPException(status_code=404, detail=f'Could not get features for region with id {region_id}')
+
+    if feature_classes[modality_id] == ebrainsquery_export.EbrainsRegionalDataset:
+        return [{
+            '@id': kg_rf_f.id,
+            'src_name': kg_rf_f.name,
+            '__detail': kg_rf_f.detail
+        } for kg_rf_f in got_features]
     if feature_classes[modality_id] == genes_export.GeneExpression:
         return [{
             '@id': hashlib.md5(str(gene_feat).encode("utf-8")).hexdigest(),
@@ -290,11 +320,10 @@ def get_regional_feature(atlas_id,parcellation_id,region_id,modality_id,gene=Non
                 "__profile_unit": receptor_pr.profile_unit,
             },
         } for receptor_pr in got_features ]
-    raise NotImplementedError(f'feature {modality_id} has not yet been implmented')
+    raise HTTPException(status_code=501, detail=f'feature {modality_id} has not yet been implmented')
 
-@cached
+@fanout_cache.memoize(typed=True, expire=60*60)
 def get_global_features(atlas_id,parcellation_id,modality_id):
-    # select atlas by id
     if modality_id not in feature_classes:
         # modality_id not found in feature_classes
         return []
@@ -316,3 +345,16 @@ def get_global_features(atlas_id,parcellation_id,modality_id):
             'matrix': f.matrix.tolist(),
         } for f in got_features ]
     raise NotImplementedError(f'feature {modality_id} has not yet been implmented')
+
+# using a custom encoder is necessary to avoid cyclic reference
+def vol_src_sans_space(vol_src):
+    keys = ['id','name','url','volume_type','detail']
+    return {
+        key: getattr(vol_src, key) for key in keys
+    }
+
+siibra_custom_json_encoder={
+    VolumeSrc: vol_src_sans_space,
+    NiftiVolume: vol_src_sans_space,
+    NgVolume: vol_src_sans_space,
+}

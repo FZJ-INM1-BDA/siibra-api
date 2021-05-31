@@ -13,7 +13,7 @@ def test_get_all_atlases():
     response = client.get('/v1_0/atlases')
     assert response.status_code == 200
     result_content = json.loads(response.content)
-    assert len(result_content) == 1
+    assert len(result_content) == 3
 
 
 def test_get_singe_atlas():
