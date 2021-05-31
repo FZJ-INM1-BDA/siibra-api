@@ -194,7 +194,7 @@ def get_regional_modality_by_id(request: Request, atlas_id: str, parcellation_id
     if len(found_conn_pr) == 0:
         raise HTTPException(status_code=404, detail=f'modality with id {modality_id} not found')
     if len(found_conn_pr) != 1:
-        raise HTTPException(status_code=401, detail=f'modality with id {modality_id} has multiple matches')
+        raise HTTPException(status_code=400, detail=f'modality with id {modality_id} has multiple matches')
     return found_conn_pr[0]
 
 @router.get(
@@ -220,11 +220,11 @@ def get_feature_modality_for_region(request: Request, atlas_id: str, parcellatio
 
 def parse_region_selection(atlas_id: str, parcellation_id: str, region_id: str, space_id: str):
     if space_id is None:
-        raise HTTPException(status_code=401, detail='space_id is required for this functionality')
+        raise HTTPException(status_code=400, detail='space_id is required for this functionality')
 
     space_of_interest = siibra_spaces[space_id]
     if space_of_interest is None:
-        raise HTTPException(status_code=401, detail=f'space_id {space_id} did not match any spaces')
+        raise HTTPException(status_code=400, detail=f'space_id {space_id} did not match any spaces')
 
     atlas = create_atlas(atlas_id)
     __check_and_select_parcellation(atlas,parcellation_id)
@@ -232,7 +232,7 @@ def parse_region_selection(atlas_id: str, parcellation_id: str, region_id: str, 
     if len(region) == 0:
         raise HTTPException(status_code=404, detail=f'cannot find region with spec {region_id}')
     if len(region) > 1:
-        raise HTTPException(status_code=401, detail=f'found multiple region withs pec {region_id}')
+        raise HTTPException(status_code=400, detail=f'found multiple region withs pec {region_id}')
     return (region[0], space_of_interest)
 
 def get_path_to_regional_map(query_id, roi, space_of_interest):
