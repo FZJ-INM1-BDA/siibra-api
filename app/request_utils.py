@@ -24,6 +24,7 @@ import hashlib
 import os
 from .diskcache import fanout_cache, CACHEDIR
 from siibra.volumesrc import VolumeSrc, NiftiVolume, NgVolume
+from siibra import commons as siibra_commons
 
 cache_redis = CacheRedis.get_instance()
 
@@ -347,6 +348,30 @@ def get_global_features(atlas_id,parcellation_id,modality_id):
             'matrix': f.matrix.tolist(),
         } for f in got_features ]
     raise NotImplementedError(f'feature {modality_id} has not yet been implmented')
+
+def get_path_to_regional_map(query_id, roi, space_of_interest):
+
+    regional_map=roi.get_regional_map(space_of_interest, siibra_commons.MapType.CONTINUOUS)
+    if regional_map is None:
+        raise HTTPException(status_code=404, detail=f'continuous regional map for region {roi.name} cannot be found')
+    
+    cached_filename=str(hashlib.sha256(query_id.encode('utf-8')).hexdigest()) + '.nii.gz'
+
+    # cache fails, fetch from source
+    def save_new_nii(cached_fullpath):
+        import nibabel as nib
+        # fix regional_map if necessary
+
+        regional_map.image.header.set_xyzt_units('mm', 'sec')
+
+        # time series
+        regional_map.image.header['dim'][4] = 1
+
+        # num channel
+        regional_map.image.header['dim'][5] = 1
+        nib.save(regional_map.image, cached_fullpath)
+        
+    return get_cached_file(cached_filename, save_new_nii )
 
 # using a custom encoder is necessary to avoid cyclic reference
 def vol_src_sans_space(vol_src):

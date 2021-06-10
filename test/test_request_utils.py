@@ -71,6 +71,21 @@ class TestRequestUtils(unittest.TestCase):
         url = request_utils.get_base_url_from_request(self.request_mock)
         self.assertEqual(url, 'https://localhost/v1_0/')
 
+    def test_get_path_to_regional_map(self):
+        import siibra as sb
+        
+        atlas=sb.atlases['human']
+        assert atlas is not None
+        atlas.select_region('hoc1 left')
+        space_of_interest=sb.spaces['152']
+        assert space_of_interest is not None
+
+        path_to_file=request_utils.get_path_to_regional_map('tmp_req_id', atlas.selected_region, space_of_interest)
+        assert path_to_file is not None
+
+        import nibabel as nib
+        nii=nib.load(path_to_file)
+        assert nii is not None
 
 if __name__ == '__main__':
     unittest.main()
