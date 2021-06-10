@@ -244,7 +244,7 @@ def find_region_via_id(atlas,region_id):
 # allow for fast fails
 SUPPORTED_FEATURES=[genes_export.GeneExpression, connectivity_export.ConnectivityProfile, receptors_export.ReceptorDistribution, ebrainsquery_export.EbrainsRegionalDataset]
 
-@fanout_cache.memoize(typed=True, expire=60*60)
+# @fanout_cache.memoize(typed=True, expire=60*60)
 def get_regional_feature(atlas_id,parcellation_id,region_id,modality_id,gene=None):
     # select atlas by id
     if modality_id not in feature_classes:
@@ -303,6 +303,8 @@ def get_regional_feature(atlas_id,parcellation_id,region_id,modality_id,gene=Non
             "@id": conn_pr.src_name,
             "src_name": conn_pr.src_name,
             "src_info": conn_pr.src_info,
+            "kgSchema":  conn_pr.kg_schema,
+            "kgId":  conn_pr.kg_id,
             "__column_names": conn_pr.column_names,
             "__profile": conn_pr.profile,
         } for conn_pr in got_features ]
