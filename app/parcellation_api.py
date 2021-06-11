@@ -19,9 +19,9 @@ from starlette.responses import PlainTextResponse, FileResponse
 from fastapi.encoders import jsonable_encoder
 from .atlas_api import ATLAS_PATH
 from .request_utils import split_id, create_atlas, create_region_json_object, create_region_json_object_tmp, \
-    _add_children_to_region, find_space_by_id, find_region_via_id, get_global_features, get_regional_feature, get_cached_file
+    _add_children_to_region, find_space_by_id, find_region_via_id, get_global_features, get_regional_feature, get_path_to_regional_map
 from .request_utils import get_spaces_for_parcellation, get_base_url_from_request, siibra_custom_json_encoder
-from siibra import spaces as siibra_spaces, region as siibra_region, commons as siibra_commons
+from siibra import spaces as siibra_spaces
 from siibra.features import feature as feature_export,classes as feature_classes,modalities as feature_modalities
 import re
 from .diskcache import fanout_cache
@@ -235,29 +235,6 @@ def parse_region_selection(atlas_id: str, parcellation_id: str, region_id: str, 
         raise HTTPException(status_code=400, detail=f'found multiple region withs pec {region_id}')
     return (region[0], space_of_interest)
 
-def get_path_to_regional_map(query_id, roi, space_of_interest):
-
-    regional_map=roi.get_regional_map(space_of_interest, siibra_commons.MapType.CONTINUOUS)
-    if regional_map is None:
-        raise HTTPException(status_code=404, detail=f'continuous regional map for region {roi.name} cannot be found')
-    
-    cached_filename=str(hashlib.sha256(query_id.encode('utf-8')).hexdigest()) + '.nii.gz'
-
-    # cache fails, fetch from source
-    def save_new_nii(cached_fullpath):
-        import nibabel as nib
-        # fix regional_map if necessary
-
-        regional_map.header.set_xyzt_units('mm', 'sec')
-
-        # time series
-        regional_map.header['dim'][4] = 1
-
-        # num channel
-        regional_map.header['dim'][5] = 1
-        nib.save(regional_map, cached_fullpath)
-        
-    return get_cached_file(cached_filename, save_new_nii )
     
 
 @router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/regional_map/info')
