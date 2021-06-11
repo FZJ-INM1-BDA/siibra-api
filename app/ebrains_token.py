@@ -17,6 +17,9 @@ import os
 import base64
 import json
 import time
+from fastapi import HTTPException
+from . import logger
+from .siibra_custom_exception import SiibraCustomException
 
 _client_id = os.getenv('EBRAINS_IAM_CLIENT_ID')
 _client_secret = os.getenv('EBRAINS_IAM_CLIENT_SECRET')
@@ -59,6 +62,9 @@ class TokenWrapper:
                 'client_id': self.client_id,
                 'client_secret': self.client_secret
             })
+        if resp.status_code != 200 or 'json' not in resp.headers['Content-Type']:
+            logger.info(f'Could not reach {self.iam_url} to get access token')
+            raise SiibraCustomException(message='siibra-api service is temporary not available', status_code=503)
         json_token = resp.json()
         self.access_token = json_token['access_token']
 

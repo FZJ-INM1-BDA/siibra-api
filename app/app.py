@@ -22,12 +22,14 @@ from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from siibra.ebrains import Authentication
 from fastapi_versioning import VersionedFastAPI
+from fastapi.responses import JSONResponse
 
 from .siibra_api import router as siibra_router
 from .atlas_api import router as atlas_router
 from .space_api import router as space_router
 from .parcellation_api import router as parcellation_router
 from .ebrains_token import get_public_token
+from .siibra_custom_exception import SiibraCustomException
 
 
 security = HTTPBearer()
@@ -111,13 +113,16 @@ async def set_auth_header(request: Request, call_next, credentials: HTTPAuthoriz
     """
     auth = Authentication.instance()
     bearer_token = request.headers.get('Authorization')
-    if bearer_token:
-        auth.set_token(bearer_token.replace('Bearer ', ''))
-    else:
-        public_token=get_public_token()
-        auth.set_token(public_token)
-    response = await call_next(request)
-    return response
+    try:
+        if bearer_token:
+            auth.set_token(bearer_token.replace('Bearer ', ''))
+        else:
+            public_token=get_public_token()
+            auth.set_token(public_token)
+        response = await call_next(request)
+        return response
+    except SiibraCustomException as err:
+        return JSONResponse(status_code=err.status_code, content={'message': err.message})
 
 
 @app.middleware('http')
