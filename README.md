@@ -47,7 +47,7 @@ EBRAINS_IAM_CLIENT_SECRET=<IAM_CLIENT_SECRET>
 EBRAINS_IAM_REFRESH_TOKEN=<IAM_REFRESH_TOKEN>
 ```
 
-3. Run `docker-compose --env-file ./.env.dev up -d` to start the application
+3. Run `docker-compose --env-file ./.env.dev -f docker-compose.yml -f docker-compose-dev.yml up -d` to start the application
 
 :bulb: 
 
