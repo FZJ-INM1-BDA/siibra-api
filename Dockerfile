@@ -28,4 +28,4 @@ USER nobody
 EXPOSE 5000
 
 # Start application
-CMD ["uvicorn", "app.app:app", "--host", "0.0.0.0", "--port", "5000", "--reload"]
+ENTRYPOINT ["uvicorn", "app.app:app", "--host", "0.0.0.0", "--port", "5000"]
