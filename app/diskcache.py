@@ -16,4 +16,4 @@ from siibra import retrieval
 from diskcache import FanoutCache
 
 CACHEDIR = retrieval.CACHEDIR
-fanout_cache=FanoutCache(CACHEDIR)
+fanout_cache = FanoutCache(CACHEDIR)
