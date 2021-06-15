@@ -27,6 +27,7 @@ from fastapi.responses import JSONResponse
 from .siibra_api import router as siibra_router
 from .atlas_api import router as atlas_router
 from .space_api import router as space_router
+from .health import router as health_router
 from .parcellation_api import router as parcellation_router
 from .ebrains_token import get_public_token
 from .siibra_custom_exception import SiibraCustomException
@@ -41,6 +42,7 @@ app.include_router(parcellation_router)
 app.include_router(space_router)
 app.include_router(atlas_router)
 app.include_router(siibra_router)
+app.include_router(health_router)
 
 # Versioning for all api endpoints
 app = VersionedFastAPI(app, default_api_version=1)

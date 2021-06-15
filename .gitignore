@@ -12,3 +12,4 @@ siibra-python/*
 venv/*
 .env
 tmp
+*.sh
