@@ -31,6 +31,7 @@ from .health import router as health_router
 from .parcellation_api import router as parcellation_router
 from .ebrains_token import get_public_token
 from .siibra_custom_exception import SiibraCustomException
+from . import logger
 
 
 security = HTTPBearer()
@@ -101,11 +102,12 @@ def home(request: Request):
             'download_sum_month': download_sum_month
         })
     else:
+        logger.warn('Could not retrieve pypi statistics')
         raise HTTPException(status_code=500, detail='Could not retrieve pypi statistics')
 
 
 @app.middleware('http')
-async def set_auth_header(request: Request, call_next, credentials: HTTPAuthorizationCredentials = Depends(security)):
+async def set_auth_header(request: Request, call_next):
     """
     Set authentication for further requests with siibra
     If a user provides a header, this one will be used otherwise use the default public token
@@ -124,6 +126,7 @@ async def set_auth_header(request: Request, call_next, credentials: HTTPAuthoriz
         response = await call_next(request)
         return response
     except SiibraCustomException as err:
+        logger.error('Could not set authentication token')
         return JSONResponse(status_code=err.status_code, content={'message': err.message})
 
 
@@ -142,7 +145,6 @@ async def matomo_request_log(request: Request, call_next):
 
     if 'SIIBRA_ENVIRONMENT' in os.environ:
         if os.environ['SIIBRA_ENVIRONMENT'] == 'PRODUCTION':
-            print('******* Im on production ********')
             if not res:
                 payload = {
                     'idsite': 13,
@@ -158,8 +160,8 @@ async def matomo_request_log(request: Request, call_next):
                     # print('Matomo logging with status: {}'.format(r.status_code))
                     pass
                 except:
-                    print('Could not log to matomo instance')
+                    logger.info('Could not log to matomo instance')
         else:
-            print('Request for: {}'.format(request.url))
+            logger.info('Request for: {}'.format(request.url))
     response = await call_next(request)
     return response
