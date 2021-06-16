@@ -31,7 +31,7 @@ cache_redis = CacheRedis.get_instance()
 
 def create_atlas(atlas_id=None):
     if atlas_id is None:
-        raise HttpException(status_code=401, detail='atlas_id is required!')
+        raise HttpException(status_code=400, detail='atlas_id is required!')
     if atlas_id not in bs.atlases:
         raise HttpException(status_code=404, detail=f'atlas_id {atlas_id} not found!')
     return bs.atlases[atlas_id]
