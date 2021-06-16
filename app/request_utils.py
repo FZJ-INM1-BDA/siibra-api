@@ -28,6 +28,7 @@ from siibra import commons as siibra_commons
 
 cache_redis = CacheRedis.get_instance()
 
+
 def create_atlas(atlas_id=None):
     if atlas_id is None:
         raise HttpException(status_code=401, detail='atlas_id is required!')
@@ -38,6 +39,7 @@ def create_atlas(atlas_id=None):
 
 def select_parcellation_by_id(atlas, parcellation_id):
     atlas.select_parcellation(find_parcellation_by_id(parcellation_id))
+
 
 def find_parcellation_by_id(atlas, parcellation_id):
     for parcellation in atlas.parcellations:
@@ -65,7 +67,8 @@ def create_region_json_object_tmp(region, space_id=None, atlas=None):
     if hasattr(region, 'attrs'):
         region_json['volumeSrc'] = region.attrs.get('volumeSrc', {})
 
-    region_json['hasRegionalMap'] = region.has_regional_map(bs.spaces[space_id], bs.commons.MapType.CONTINUOUS)
+    if space_id is not None:
+        region_json['hasRegionalMap'] = region.has_regional_map(bs.spaces[space_id], bs.commons.MapType.CONTINUOUS)
 
     region_json['availableIn'] = get_available_spaces_for_region(region)
     _add_children_to_region_tmp(region_json, region, space_id, atlas)
@@ -121,6 +124,7 @@ def _get_file_from_nibabel(nibabel_object, nifti_type, space):
     nib.save(nibabel_object, filename)
     return filename
 
+
 def get_cached_file(filename: str, fn: callable):
     cached_fullpath=os.path.join(CACHEDIR, filename)
 
@@ -129,6 +133,7 @@ def get_cached_file(filename: str, fn: callable):
         fn(cached_fullpath)
     
     return cached_fullpath
+
 
 def split_id(kg_id: str):
     """
@@ -215,6 +220,7 @@ def get_region_props_tmp(space_id, atlas, region_json, region):
         region_json['props']['surface_mm'] = r_props['surface_mm']
         region_json['props']['is_cortical'] = r_props['is_cortical']
 
+
 def find_region_via_id(atlas,region_id):
     """
     Pure binder function to find regions via id by:
@@ -244,6 +250,7 @@ def find_region_via_id(atlas,region_id):
 
 # allow for fast fails
 SUPPORTED_FEATURES=[genes_export.GeneExpression, connectivity_export.ConnectivityProfile, receptors_export.ReceptorDistribution, ebrainsquery_export.EbrainsRegionalDataset]
+
 
 # @fanout_cache.memoize(typed=True, expire=60*60)
 def get_regional_feature(atlas_id,parcellation_id,region_id,modality_id,gene=None):
@@ -325,6 +332,7 @@ def get_regional_feature(atlas_id,parcellation_id,region_id,modality_id,gene=Non
         } for receptor_pr in got_features ]
     raise HTTPException(status_code=501, detail=f'feature {modality_id} has not yet been implmented')
 
+
 @fanout_cache.memoize(typed=True, expire=60*60)
 def get_global_features(atlas_id,parcellation_id,modality_id):
     if modality_id not in feature_classes:
@@ -348,6 +356,7 @@ def get_global_features(atlas_id,parcellation_id,modality_id):
             'matrix': f.matrix.tolist(),
         } for f in got_features ]
     raise NotImplementedError(f'feature {modality_id} has not yet been implmented')
+
 
 def get_path_to_regional_map(query_id, roi, space_of_interest):
 
@@ -373,12 +382,14 @@ def get_path_to_regional_map(query_id, roi, space_of_interest):
         
     return get_cached_file(cached_filename, save_new_nii )
 
+
 # using a custom encoder is necessary to avoid cyclic reference
 def vol_src_sans_space(vol_src):
     keys = ['id','name','url','volume_type','detail']
     return {
         key: getattr(vol_src, key) for key in keys
     }
+
 
 siibra_custom_json_encoder={
     VolumeSrc: vol_src_sans_space,
