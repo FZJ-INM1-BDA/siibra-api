@@ -127,13 +127,13 @@ def _get_file_from_nibabel(nibabel_object, nifti_type, space):
 
 
 def get_cached_file(filename: str, fn: callable):
-    cached_fullpath=os.path.join(CACHEDIR, filename)
+    cached_full_path = os.path.join(CACHEDIR, filename)
 
     # if path does not exist, call the provided fn
-    if not os.path.exists(cached_fullpath):
-        fn(cached_fullpath)
+    if not os.path.exists(cached_full_path):
+        fn(cached_full_path)
     
-    return cached_fullpath
+    return cached_full_path
 
 
 def split_id(kg_id: str):
@@ -222,7 +222,7 @@ def get_region_props_tmp(space_id, atlas, region_json, region):
         region_json['props']['is_cortical'] = r_props['is_cortical']
 
 
-def find_region_via_id(atlas,region_id):
+def find_region_via_id(atlas, region_id):
     """
     Pure binder function to find regions via id by:
     - strict equality match (fullId.kgSchema + fullId.kgId)
@@ -240,7 +240,7 @@ def find_region_via_id(atlas,region_id):
         full_id = node.attrs['fullId']
         if 'kg' not in full_id:
             return False
-        full_id_kg=full_id['kg']
+        full_id_kg = full_id['kg']
         return full_id_kg['kgSchema'] + '/' + full_id_kg['kgId'] == region_id
 
     fuzzy_regions=atlas.find_regions(region_id)
@@ -251,7 +251,7 @@ def find_region_via_id(atlas,region_id):
 
 
 # allow for fast fails
-SUPPORTED_FEATURES=[genes_export.GeneExpression, connectivity_export.ConnectivityProfile, receptors_export.ReceptorDistribution, ebrainsquery_export.EbrainsRegionalDataset]
+SUPPORTED_FEATURES = [genes_export.GeneExpression, connectivity_export.ConnectivityProfile, receptors_export.ReceptorDistribution, ebrainsquery_export.EbrainsRegionalDataset]
 
 
 @fanout_cache.memoize(typed=True, expire=60*60)
@@ -362,17 +362,16 @@ def get_global_features(atlas_id, parcellation_id, modality_id):
 
 def get_path_to_regional_map(query_id, roi, space_of_interest):
 
-    regional_map=roi.get_regional_map(space_of_interest, siibra_commons.MapType.CONTINUOUS)
+    regional_map = roi.get_regional_map(space_of_interest, siibra_commons.MapType.CONTINUOUS)
     if regional_map is None:
         raise HTTPException(status_code=404, detail=f'continuous regional map for region {roi.name} cannot be found')
     
-    cached_filename=str(hashlib.sha256(query_id.encode('utf-8')).hexdigest()) + '.nii.gz'
+    cached_filename = str(hashlib.sha256(query_id.encode('utf-8')).hexdigest()) + '.nii.gz'
 
     # cache fails, fetch from source
     def save_new_nii(cached_fullpath):
         import nibabel as nib
         # fix regional_map if necessary
-
         regional_map.image.header.set_xyzt_units('mm', 'sec')
 
         # time series
@@ -382,12 +381,12 @@ def get_path_to_regional_map(query_id, roi, space_of_interest):
         regional_map.image.header['dim'][5] = 1
         nib.save(regional_map.image, cached_fullpath)
         
-    return get_cached_file(cached_filename, save_new_nii )
+    return get_cached_file(cached_filename, save_new_nii)
 
 
 # using a custom encoder is necessary to avoid cyclic reference
 def vol_src_sans_space(vol_src):
-    keys = ['id','name','url','volume_type','detail']
+    keys = ['id', 'name', 'url', 'volume_type', 'detail']
     return {
         key: getattr(vol_src, key) for key in keys
     }
