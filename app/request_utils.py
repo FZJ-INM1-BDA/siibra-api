@@ -23,6 +23,7 @@ from siibra.features import feature as feature_export, classes as feature_classe
 import hashlib
 import os
 from .diskcache import fanout_cache, CACHEDIR
+from . import logger
 from siibra.volumesrc import VolumeSrc, NiftiVolume, NgVolume
 from siibra import commons as siibra_commons
 
@@ -248,16 +249,17 @@ def find_region_via_id(atlas,region_id):
     strict_equal_id=anytree.search.findall(region_tree, match_node)
     return [*strict_equal_id,*fuzzy_regions]
 
+
 # allow for fast fails
 SUPPORTED_FEATURES=[genes_export.GeneExpression, connectivity_export.ConnectivityProfile, receptors_export.ReceptorDistribution, ebrainsquery_export.EbrainsRegionalDataset]
 
 
-# @fanout_cache.memoize(typed=True, expire=60*60)
-def get_regional_feature(atlas_id,parcellation_id,region_id,modality_id,gene=None):
+@fanout_cache.memoize(typed=True, expire=60*60)
+def get_regional_feature(atlas_id, parcellation_id, region_id, modality_id, gene=None):
     # select atlas by id
     if modality_id not in feature_classes:
         # modality_id not found in feature_classes
-        return []
+        raise HTTPException(status_code=400, detail=f'{modality_id} is not a valid modality')
 
     # fail fast if not in supported feature list
     if feature_classes[modality_id] not in SUPPORTED_FEATURES:
@@ -266,7 +268,6 @@ def get_regional_feature(atlas_id,parcellation_id,region_id,modality_id,gene=Non
     if not issubclass(feature_classes[modality_id], feature_export.RegionalFeature):
         # modality_id is not a global feature, return empty array
         return []
-
 
     # select atlas by id
     atlas = create_atlas(atlas_id)
@@ -279,15 +280,15 @@ def get_regional_feature(atlas_id,parcellation_id,region_id,modality_id,gene=Non
             status_code=400,
             detail='The requested parcellation is not supported by the selected atlas.'
         )
-    regions = find_region_via_id(atlas,region_id)
+    regions = find_region_via_id(atlas, region_id)
 
     if len(regions) == 0:
         raise HTTPException(status_code=404, detail=f'Region with id {region_id} not found!')
     
     atlas.select_region(regions[0])
     try:
-        got_features=atlas.get_features(modality_id,gene=gene)
-    except:
+        got_features = atlas.get_features(modality_id, gene=gene)
+    except Exception:
         raise HTTPException(status_code=404, detail=f'Could not get features for region with id {region_id}')
 
     if feature_classes[modality_id] == ebrainsquery_export.EbrainsRegionalDataset:
@@ -334,10 +335,10 @@ def get_regional_feature(atlas_id,parcellation_id,region_id,modality_id,gene=Non
 
 
 @fanout_cache.memoize(typed=True, expire=60*60)
-def get_global_features(atlas_id,parcellation_id,modality_id):
+def get_global_features(atlas_id, parcellation_id, modality_id):
     if modality_id not in feature_classes:
         # modality_id not found in feature_classes
-        return []
+        raise HTTPException(status_code=400, detail=f'{modality_id} is not a valid modality')
     
     if not issubclass(feature_classes[modality_id], feature_export.GlobalFeature):
         # modality_id is not a global feature, return empty array
@@ -346,7 +347,7 @@ def get_global_features(atlas_id,parcellation_id,modality_id):
     atlas = create_atlas(atlas_id)
     # select atlas parcellation
     atlas.select_parcellation(parcellation_id)
-    got_features=atlas.get_features(modality_id)
+    got_features = atlas.get_features(modality_id)
     if feature_classes[modality_id] == connectivity_export.ConnectivityMatrix:
         return [{
             '@id': f.src_name,
@@ -354,8 +355,9 @@ def get_global_features(atlas_id,parcellation_id,modality_id):
             'src_info': f.src_info,
             'column_names': f.column_names,
             'matrix': f.matrix.tolist(),
-        } for f in got_features ]
-    raise NotImplementedError(f'feature {modality_id} has not yet been implmented')
+        } for f in got_features]
+    logger.info(f'feature {modality_id} has not yet been implemented')
+    raise HTTPException(status_code=204, detail=f'feature {modality_id} has not yet been implemented')
 
 
 def get_path_to_regional_map(query_id, roi, space_of_interest):

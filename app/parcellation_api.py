@@ -25,7 +25,6 @@ from siibra import spaces as siibra_spaces
 from siibra.features import feature as feature_export,classes as feature_classes,modalities as feature_modalities
 import re
 from .diskcache import fanout_cache
-import hashlib
 
 router = APIRouter()
 
@@ -172,6 +171,7 @@ def get_all_features_for_region(request: Request, atlas_id: str, parcellation_id
 
     return jsonable_encoder(result)
 
+
 @router.get(
     ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality}/{modality_id:path}')
 def get_regional_modality_by_id(request: Request, atlas_id: str, parcellation_id: str, region_id: str, modality: str, modality_id: str, gene: Optional[str] = None):
@@ -185,7 +185,7 @@ def get_regional_modality_by_id(request: Request, atlas_id: str, parcellation_id
 
     Returns all features for a region.
     """
-    regional_features=get_regional_feature(atlas_id,parcellation_id,region_id, modality, gene=gene)
+    regional_features = get_regional_feature(atlas_id,parcellation_id,region_id, modality, gene=gene)
 
     found_conn_pr = [{
         key: val() if callable(val) else val for key, val in f.items()
