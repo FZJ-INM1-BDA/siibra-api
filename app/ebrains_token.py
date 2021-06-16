@@ -17,7 +17,6 @@ import os
 import base64
 import json
 import time
-from fastapi import HTTPException
 from . import logger
 from .siibra_custom_exception import SiibraCustomException
 
@@ -26,27 +25,25 @@ _client_secret = os.getenv('EBRAINS_IAM_CLIENT_SECRET')
 _refresh_token = os.getenv('EBRAINS_IAM_REFRESH_TOKEN')
 
 
-class InsufficientInfoException(Exception):
-    pass
-
-
 class TokenWrapper:
     def __init__(self, iam_url='https://services.humanbrainproject.eu/oidc', client_id=None, client_secret=None, refresh_token=None):
-        
         self.iam_url = iam_url
-
         self.client_id = client_id
         self.client_secret = client_secret
         self.refresh_token = refresh_token
         self.access_token = None
 
     def _check_req(self):
+        error_msg = 'Could not retrieve authentication token'
         if self.client_id is None:
-            raise InsufficientInfoException('client_id is required')
+            logger.error('client_id is required')
+            raise SiibraCustomException(error_msg)
         if self.client_secret is None:
-            raise InsufficientInfoException('client_secret is required')
+            logger.error('client_secret is required')
+            raise SiibraCustomException(error_msg)
         if self.refresh_token is None:
-            raise InsufficientInfoException('refresh_token is required')
+            logger.error('refresh_token is required')
+            raise SiibraCustomException(error_msg)
         return True
 
     def _get_new_token(self):
