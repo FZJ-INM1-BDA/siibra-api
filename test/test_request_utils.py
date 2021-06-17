@@ -28,7 +28,7 @@ class TestRequestUtils(unittest.TestCase):
 
     def test_get_regional_feature_with_wrong_modality(self):
         hits = request_utils.get_regional_feature(atlas_id=self.ATLAS_ID, parcellation_id=self.PARCELLATION_NAME, modality_id=self.MODALITY_INVALID, region_id=self.REGION_NAME_VALID)
-        self.assertTrue(len(hits) == 0)
+        self.assertEqual(hits.status_code, 400)
 
     def test_get_regional_feature_with_wrong_region(self):
 
