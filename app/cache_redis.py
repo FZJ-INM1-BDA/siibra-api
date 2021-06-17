@@ -1,4 +1,5 @@
-# Copyright 2018-2020 Institute of Neuroscience and Medicine (INM-1), Forschungszentrum Jülich GmbH
+# Copyright 2018-2020 Institute of Neuroscience and Medicine (INM-1),
+# Forschungszentrum Jülich GmbH
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -36,13 +37,14 @@ class CacheRedis:
         if CacheRedis.__instance is not None:
             raise Exception("This class is a singleton!")
         else:
-            CacheRedis.__r = redis.Redis(host=_host, port=_port, password=_password)
+            CacheRedis.__r = redis.Redis(
+                host=_host, port=_port, password=_password)
             CacheRedis.__instance = self
 
     def is_connected(self):
         try:
             self.__r.ping()
-        except:
+        except BaseException:
             return False
         return True
 

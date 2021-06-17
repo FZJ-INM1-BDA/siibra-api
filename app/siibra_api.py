@@ -1,4 +1,5 @@
-# Copyright 2018-2020 Institute of Neuroscience and Medicine (INM-1), Forschungszentrum Jülich GmbH
+# Copyright 2018-2020 Institute of Neuroscience and Medicine (INM-1),
+# Forschungszentrum Jülich GmbH
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +20,7 @@ from fastapi import APIRouter
 from fastapi.encoders import jsonable_encoder
 
 from siibra import features
-from siibra.features import feature as feature_export,classes as feature_classes
+from siibra.features import feature as feature_export, classes as feature_classes
 
 # FastApi router to create rest endpoints
 router = APIRouter()
@@ -46,7 +47,8 @@ def get_gene_names():
     Return all genes (name, acronym) in siibra
     """
     genes = features.genes.AllenBrainAtlasQuery.GENE_NAMES
-    return jsonable_encoder([{'name': genes[g], 'acronym': g} for g in genes.keys()])
+    return jsonable_encoder([{'name': genes[g], 'acronym': g}
+                            for g in genes.keys()])
 #
 #
 # @router.get('/genes/{gene}')
@@ -67,11 +69,11 @@ def get_all_available_modalities():
     Return all possible modalities
     """
     def get_feature_type(ft):
-        if issubclass(ft,feature_export.SpatialFeature):
+        if issubclass(ft, feature_export.SpatialFeature):
             return 'SpatialFeature'
-        if issubclass(ft,feature_export.RegionalFeature):
+        if issubclass(ft, feature_export.RegionalFeature):
             return 'RegionalFeature'
-        if issubclass(ft,feature_export.GlobalFeature):
+        if issubclass(ft, feature_export.GlobalFeature):
             return 'GlobalFeature'
         return 'UnknownFeatureType'
     return [{

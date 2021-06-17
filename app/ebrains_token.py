@@ -1,4 +1,5 @@
-# Copyright 2018-2020 Institute of Neuroscience and Medicine (INM-1), Forschungszentrum Jülich GmbH
+# Copyright 2018-2020 Institute of Neuroscience and Medicine (INM-1),
+# Forschungszentrum Jülich GmbH
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,7 +27,12 @@ _refresh_token = os.getenv('EBRAINS_IAM_REFRESH_TOKEN')
 
 
 class TokenWrapper:
-    def __init__(self, iam_url='https://services.humanbrainproject.eu/oidc', client_id=None, client_secret=None, refresh_token=None):
+    def __init__(
+            self,
+            iam_url='https://services.humanbrainproject.eu/oidc',
+            client_id=None,
+            client_secret=None,
+            refresh_token=None):
         self.iam_url = iam_url
         self.client_id = client_id
         self.client_secret = client_secret
@@ -61,7 +67,9 @@ class TokenWrapper:
             })
         if resp.status_code != 200 or 'json' not in resp.headers['Content-Type']:
             logger.info(f'Could not reach {self.iam_url} to get access token')
-            raise SiibraCustomException(message='siibra-api service is temporary not available', status_code=503)
+            raise SiibraCustomException(
+                message='siibra-api service is temporary not available',
+                status_code=503)
         json_token = resp.json()
         self.access_token = json_token['access_token']
 
@@ -72,8 +80,8 @@ class TokenWrapper:
         needs to add padding manually, as jwt spec allows missing padding, but python decode does not
         """
         r = len(input) % 4
-        padding = '='*(4-r)
-        decoded = base64.urlsafe_b64decode(input+padding)
+        padding = '=' * (4 - r)
+        decoded = base64.urlsafe_b64decode(input + padding)
         return json.loads(decoded)
 
     def get_token(self):
@@ -91,11 +99,14 @@ class TokenWrapper:
         current_utc_sec = time.time()
         if (expire_utc_sec - current_utc_sec) < (60 * 5):
             self._get_new_token()
-            
+
         return self.access_token
 
 
-token_wrapper = TokenWrapper(client_id=_client_id, client_secret=_client_secret, refresh_token=_refresh_token)
+token_wrapper = TokenWrapper(
+    client_id=_client_id,
+    client_secret=_client_secret,
+    refresh_token=_refresh_token)
 
 
 def get_public_token():

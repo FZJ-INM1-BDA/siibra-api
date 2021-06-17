@@ -1,4 +1,5 @@
-# Copyright 2018-2020 Institute of Neuroscience and Medicine (INM-1), Forschungszentrum Jülich GmbH
+# Copyright 2018-2020 Institute of Neuroscience and Medicine (INM-1),
+# Forschungszentrum Jülich GmbH
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -60,7 +61,7 @@ def get_all_spaces(atlas_id: str, request: Request):
     return jsonable_encoder(result)
 
 
-@router.get(ATLAS_PATH+'/{atlas_id:path}/spaces/{space_id:path}/templates')
+@router.get(ATLAS_PATH + '/{atlas_id:path}/spaces/{space_id:path}/templates')
 def get_template_by_space_id(atlas_id: str, space_id: str):
     """
     Parameters:
@@ -80,8 +81,10 @@ def get_template_by_space_id(atlas_id: str, space_id: str):
     return FileResponse(filename, filename=filename)
 
 
-@router.get(ATLAS_PATH+'/{atlas_id:path}/spaces/{space_id:path}/parcellation_maps')
-def get_parcellation_map_for_space(atlas_id: str, space_id: str):  # add parcellations_map_id as optional param
+@router.get(ATLAS_PATH +
+            '/{atlas_id:path}/spaces/{space_id:path}/parcellation_maps')
+# add parcellations_map_id as optional param
+def get_parcellation_map_for_space(atlas_id: str, space_id: str):
     """
     Parameters:
         - atlas_id
@@ -91,21 +94,27 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):  # add parcell
     """
     atlas = create_atlas(atlas_id)
     space = find_space_by_id(atlas, space_id)
-    valid_parcs = [ p for p in sb.parcellations if p.supports_space(space)]
-    
+    valid_parcs = [p for p in sb.parcellations if p.supports_space(space)]
+
     if len(valid_parcs) == 1:
-        maps=[valid_parcs[0].get_map(space)]
+        maps = [valid_parcs[0].get_map(space)]
         filename = _get_file_from_nibabel(maps[0], 'maps', space)
         return FileResponse(filename, filename=filename)
     else:
-        raise HTTPException(status=501, detail=f'space with id {space_id} has multiple parc, not yet implemented')
+        raise HTTPException(
+            status=501,
+            detail=f'space with id {space_id} has multiple parc, not yet implemented')
         maps = [p.get_map(space) for p in valid_parcs]
         files = []
         mem_zip = io.BytesIO()
 
         label_index = 0
         for map in maps:
-            files.append(_get_file_from_nibabel(map, 'map-{}'.format(label_index), space))
+            files.append(
+                _get_file_from_nibabel(
+                    map,
+                    'map-{}'.format(label_index),
+                    space))
             label_index = label_index + 1
 
         with zipfile.ZipFile(mem_zip, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
@@ -114,13 +123,17 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):  # add parcell
                 print(zf.namelist())
 
         mem_zip.seek(0)
-        response = StreamingResponse(iter([mem_zip.getvalue()]), media_type="application/x-zip-compressed")
-        response.headers["Content-Disposition"] = 'attachment; filename=maps-{}.zip'.format(space.name.replace(' ', '_'))
+        response = StreamingResponse(
+            iter([mem_zip.getvalue()]), media_type="application/x-zip-compressed")
+        response.headers["Content-Disposition"] = 'attachment; filename=maps-{}.zip'.format(
+            space.name.replace(' ', '_'))
         return response
-    raise HTTPException(status_code=404, detail='Maps for space with id: {} not found'.format(space_id))
+    raise HTTPException(
+        status_code=404,
+        detail='Maps for space with id: {} not found'.format(space_id))
 
 
-@router.get(ATLAS_PATH+'/{atlas_id:path}/spaces/{space_id:path}')
+@router.get(ATLAS_PATH + '/{atlas_id:path}/spaces/{space_id:path}')
 def get_one_space_by_id(atlas_id: str, space_id: str, request: Request):
     """
     Parameters:
@@ -132,8 +145,10 @@ def get_one_space_by_id(atlas_id: str, space_id: str, request: Request):
     atlas = create_atlas(atlas_id)
     space = find_space_by_id(atlas, space_id)
     if space:
-        json_result = jsonable_encoder(space, custom_encoder=siibra_custom_json_encoder)
-        json_result['availableParcellations'] = get_parcellations_for_space(space)
+        json_result = jsonable_encoder(
+            space, custom_encoder=siibra_custom_json_encoder)
+        json_result['availableParcellations'] = get_parcellations_for_space(
+            space)
         json_result['links'] = {
             'templates': {
                 'href': '{}atlases/{}/spaces/{}/templates'.format(
@@ -152,6 +167,8 @@ def get_one_space_by_id(atlas_id: str, space_id: str, request: Request):
         }
         return json_result
     else:
-        raise HTTPException(status_code=404, detail='space with id: {} not found'.format(space_id))
+        raise HTTPException(
+            status_code=404,
+            detail='space with id: {} not found'.format(space_id))
 
 # endregion

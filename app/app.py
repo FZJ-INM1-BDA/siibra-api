@@ -1,4 +1,5 @@
-# Copyright 2018-2020 Institute of Neuroscience and Medicine (INM-1), Forschungszentrum Jülich GmbH
+# Copyright 2018-2020 Institute of Neuroscience and Medicine (INM-1),
+# Forschungszentrum Jülich GmbH
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -71,7 +72,9 @@ def home(request: Request):
     :param request: fastApi Request object
     :return: the rendered index.html template
     """
-    return templates.TemplateResponse('index.html', context={'request': request})
+    return templates.TemplateResponse(
+        'index.html', context={
+            'request': request})
 
 
 @app.get('/stats')
@@ -91,7 +94,8 @@ def home(request: Request):
 
         for d in download_data['data']:
             download_sum += d['downloads']
-            date_index = '{}-{}'.format(d['date'].split('-')[0], d['date'].split('-')[1])
+            date_index = '{}-{}'.format(d['date'].split('-')
+                                        [0], d['date'].split('-')[1])
             if date_index not in download_sum_month:
                 download_sum_month[date_index] = 0
             download_sum_month[date_index] += d['downloads']
@@ -103,7 +107,8 @@ def home(request: Request):
         })
     else:
         logger.warn('Could not retrieve pypi statistics')
-        raise HTTPException(status_code=500, detail='Could not retrieve pypi statistics')
+        raise HTTPException(status_code=500,
+                            detail='Could not retrieve pypi statistics')
 
 
 @app.middleware('http')
@@ -121,13 +126,15 @@ async def set_auth_header(request: Request, call_next):
         if bearer_token:
             auth.set_token(bearer_token.replace('Bearer ', ''))
         else:
-            public_token=get_public_token()
+            public_token = get_public_token()
             auth.set_token(public_token)
         response = await call_next(request)
         return response
     except SiibraCustomException as err:
         logger.error('Could not set authentication token')
-        return JSONResponse(status_code=err.status_code, content={'message': err.message})
+        return JSONResponse(
+            status_code=err.status_code, content={
+                'message': err.message})
 
 
 @app.middleware('http')
@@ -159,7 +166,7 @@ async def matomo_request_log(request: Request, call_next):
                     # r = requests.get('https://stats.humanbrainproject.eu/matomo.php', params=payload)
                     # print('Matomo logging with status: {}'.format(r.status_code))
                     pass
-                except:
+                except Exception:
                     logger.info('Could not log to matomo instance')
         else:
             logger.info('Request for: {}'.format(request.url))

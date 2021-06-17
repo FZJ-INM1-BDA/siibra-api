@@ -1,4 +1,5 @@
-# Copyright 2018-2020 Institute of Neuroscience and Medicine (INM-1), Forschungszentrum Jülich GmbH
+# Copyright 2018-2020 Institute of Neuroscience and Medicine (INM-1),
+# Forschungszentrum Jülich GmbH
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,7 +35,8 @@ def create_atlas(atlas_id=None):
     if atlas_id is None:
         raise HttpException(status_code=400, detail='atlas_id is required!')
     if atlas_id not in bs.atlases:
-        raise HttpException(status_code=404, detail=f'atlas_id {atlas_id} not found!')
+        raise HttpException(status_code=404,
+                            detail=f'atlas_id {atlas_id} not found!')
     return bs.atlases[atlas_id]
 
 
@@ -85,7 +87,9 @@ def _create_region_json_object(region, space_id=None, atlas=None):
         region_json['volumeSrc'] = region.attrs.get('volumeSrc', {})
     region_json['availableIn'] = get_available_spaces_for_region(region)
 
-    region_json['hasRegionalMap'] = region.has_regional_map(bs.spaces[space_id], bs.commons.MapType.CONTINUOUS) if space_id is not None else None
+    region_json['hasRegionalMap'] = region.has_regional_map(
+        bs.spaces[space_id],
+        bs.commons.MapType.CONTINUOUS) if space_id is not None else None
 
     return region_json
 
@@ -103,7 +107,7 @@ def get_cached_file(filename: str, fn: callable):
     # if path does not exist, call the provided fn
     if not os.path.exists(cached_full_path):
         fn(cached_full_path)
-    
+
     return cached_full_path
 
 
@@ -132,19 +136,22 @@ def _object_to_json(o):
 
 
 def get_spaces_for_parcellation(parcellation: str):
-    return [_object_to_json(bs.spaces[s]) for s in bs.parcellations[parcellation].volume_src.keys()]
+    return [_object_to_json(bs.spaces[s])
+            for s in bs.parcellations[parcellation].volume_src.keys()]
 
 
 def get_parcellations_for_space(space):
-    space_instance = bs.spaces[space] if type(space) is str else space
-    return [_object_to_json(p) for p in bs.parcellations if p.supports_space(space_instance)]
+    space_instance = bs.spaces[space] if isinstance(space, str) else space
+    return [_object_to_json(
+        p) for p in bs.parcellations if p.supports_space(space_instance)]
 
 
 def get_base_url_from_request(request: Request):
     proto_header = 'x-forwarded-proto'
     proto = 'http'
     host = request.headers.get('host')
-    api_version = str(request.url).replace(str(request.base_url), '').split('/')[0]
+    api_version = str(request.url).replace(
+        str(request.base_url), '').split('/')[0]
     if proto_header in request.headers:
         proto = request.headers.get(proto_header)
 
@@ -214,29 +221,43 @@ def find_region_via_id(atlas, region_id):
         full_id_kg = full_id['kg']
         return full_id_kg['kgSchema'] + '/' + full_id_kg['kgId'] == region_id
 
-    fuzzy_regions=atlas.find_regions(region_id)
+    fuzzy_regions = atlas.find_regions(region_id)
 
-    region_tree=atlas.selected_parcellation.regiontree
-    strict_equal_id=anytree.search.findall(region_tree, match_node)
-    return [*strict_equal_id,*fuzzy_regions]
+    region_tree = atlas.selected_parcellation.regiontree
+    strict_equal_id = anytree.search.findall(region_tree, match_node)
+    return [*strict_equal_id, *fuzzy_regions]
 
 
 # allow for fast fails
-SUPPORTED_FEATURES = [genes_export.GeneExpression, connectivity_export.ConnectivityProfile, receptors_export.ReceptorDistribution, ebrainsquery_export.EbrainsRegionalDataset]
+SUPPORTED_FEATURES = [
+    genes_export.GeneExpression,
+    connectivity_export.ConnectivityProfile,
+    receptors_export.ReceptorDistribution,
+    ebrainsquery_export.EbrainsRegionalDataset]
 
 
-@fanout_cache.memoize(typed=True, expire=60*60)
-def get_regional_feature(atlas_id, parcellation_id, region_id, modality_id, gene=None):
+@fanout_cache.memoize(typed=True, expire=60 * 60)
+def get_regional_feature(
+        atlas_id,
+        parcellation_id,
+        region_id,
+        modality_id,
+        gene=None):
     # select atlas by id
     if modality_id not in feature_classes:
         # modality_id not found in feature_classes
-        raise HTTPException(status_code=400, detail=f'{modality_id} is not a valid modality')
+        raise HTTPException(status_code=400,
+                            detail=f'{modality_id} is not a valid modality')
 
     # fail fast if not in supported feature list
     if feature_classes[modality_id] not in SUPPORTED_FEATURES:
-        raise HTTPException(status_code=501, detail=f'feature {modality_id} has not yet been implmented')
-    
-    if not issubclass(feature_classes[modality_id], feature_export.RegionalFeature):
+        raise HTTPException(
+            status_code=501,
+            detail=f'feature {modality_id} has not yet been implmented')
+
+    if not issubclass(
+            feature_classes[modality_id],
+            feature_export.RegionalFeature):
         # modality_id is not a global feature, return empty array
         return []
 
@@ -249,18 +270,20 @@ def get_regional_feature(atlas_id, parcellation_id, region_id, modality_id, gene
     except Exception:
         raise HTTPException(
             status_code=400,
-            detail='The requested parcellation is not supported by the selected atlas.'
-        )
+            detail='The requested parcellation is not supported by the selected atlas.')
     regions = find_region_via_id(atlas, region_id)
 
     if len(regions) == 0:
-        raise HTTPException(status_code=404, detail=f'Region with id {region_id} not found!')
-    
+        raise HTTPException(status_code=404,
+                            detail=f'Region with id {region_id} not found!')
+
     atlas.select_region(regions[0])
     try:
         got_features = atlas.get_features(modality_id, gene=gene)
     except Exception:
-        raise HTTPException(status_code=404, detail=f'Could not get features for region with id {region_id}')
+        raise HTTPException(
+            status_code=404,
+            detail=f'Could not get features for region with id {region_id}')
 
     if feature_classes[modality_id] == ebrainsquery_export.EbrainsRegionalDataset:
         return [{
@@ -271,23 +294,23 @@ def get_regional_feature(atlas_id, parcellation_id, region_id, modality_id, gene
     if feature_classes[modality_id] == genes_export.GeneExpression:
         return [{
             '@id': hashlib.md5(str(gene_feat).encode("utf-8")).hexdigest(),
-            '__donor_info':gene_feat.donor_info,
-            '__gene':gene_feat.gene,
-            '__probe_ids':gene_feat.probe_ids,
-            '__mri_coord':gene_feat.mri_coord,
-            '__z_scores':gene_feat.z_scores,
-            '__expression_levels':gene_feat.expression_levels
+            '__donor_info': gene_feat.donor_info,
+            '__gene': gene_feat.gene,
+            '__probe_ids': gene_feat.probe_ids,
+            '__mri_coord': gene_feat.mri_coord,
+            '__z_scores': gene_feat.z_scores,
+            '__expression_levels': gene_feat.expression_levels
         } for gene_feat in got_features]
     if feature_classes[modality_id] == connectivity_export.ConnectivityProfile:
         return [{
             "@id": conn_pr.src_name,
             "src_name": conn_pr.src_name,
             "src_info": conn_pr.src_info,
-            "kgSchema":  conn_pr.kg_schema,
-            "kgId":  conn_pr.kg_id,
+            "kgSchema": conn_pr.kg_schema,
+            "kgId": conn_pr.kg_id,
             "__column_names": conn_pr.column_names,
             "__profile": conn_pr.profile,
-        } for conn_pr in got_features ]
+        } for conn_pr in got_features]
     if feature_classes[modality_id] == receptors_export.ReceptorDistribution:
         return [{
             "@id": receptor_pr.name,
@@ -301,17 +324,22 @@ def get_regional_feature(atlas_id, parcellation_id, region_id, modality_id, gene
                 "__fingerprint": receptor_pr.fingerprint,
                 "__profile_unit": receptor_pr.profile_unit,
             },
-        } for receptor_pr in got_features ]
-    raise HTTPException(status_code=501, detail=f'feature {modality_id} has not yet been implmented')
+        } for receptor_pr in got_features]
+    raise HTTPException(
+        status_code=501,
+        detail=f'feature {modality_id} has not yet been implmented')
 
 
-@fanout_cache.memoize(typed=True, expire=60*60)
+@fanout_cache.memoize(typed=True, expire=60 * 60)
 def get_global_features(atlas_id, parcellation_id, modality_id):
     if modality_id not in feature_classes:
         # modality_id not found in feature_classes
-        raise HTTPException(status_code=400, detail=f'{modality_id} is not a valid modality')
-    
-    if not issubclass(feature_classes[modality_id], feature_export.GlobalFeature):
+        raise HTTPException(status_code=400,
+                            detail=f'{modality_id} is not a valid modality')
+
+    if not issubclass(
+            feature_classes[modality_id],
+            feature_export.GlobalFeature):
         # modality_id is not a global feature, return empty array
         return []
 
@@ -328,16 +356,23 @@ def get_global_features(atlas_id, parcellation_id, modality_id):
             'matrix': f.matrix.tolist(),
         } for f in got_features]
     logger.info(f'feature {modality_id} has not yet been implemented')
-    raise HTTPException(status_code=204, detail=f'feature {modality_id} has not yet been implemented')
+    raise HTTPException(
+        status_code=204,
+        detail=f'feature {modality_id} has not yet been implemented')
 
 
 def get_path_to_regional_map(query_id, roi, space_of_interest):
 
-    regional_map = roi.get_regional_map(space_of_interest, siibra_commons.MapType.CONTINUOUS)
+    regional_map = roi.get_regional_map(
+        space_of_interest, siibra_commons.MapType.CONTINUOUS)
     if regional_map is None:
-        raise HTTPException(status_code=404, detail=f'continuous regional map for region {roi.name} cannot be found')
-    
-    cached_filename = str(hashlib.sha256(query_id.encode('utf-8')).hexdigest()) + '.nii.gz'
+        raise HTTPException(
+            status_code=404,
+            detail=f'continuous regional map for region {roi.name} cannot be found')
+
+    cached_filename = str(
+        hashlib.sha256(
+            query_id.encode('utf-8')).hexdigest()) + '.nii.gz'
 
     # cache fails, fetch from source
     def save_new_nii(cached_fullpath):
@@ -351,7 +386,7 @@ def get_path_to_regional_map(query_id, roi, space_of_interest):
         # num channel
         regional_map.image.header['dim'][5] = 1
         nib.save(regional_map.image, cached_fullpath)
-        
+
     return get_cached_file(cached_filename, save_new_nii)
 
 
@@ -363,7 +398,7 @@ def vol_src_sans_space(vol_src):
     }
 
 
-siibra_custom_json_encoder={
+siibra_custom_json_encoder = {
     VolumeSrc: vol_src_sans_space,
     NiftiVolume: vol_src_sans_space,
     NgVolume: vol_src_sans_space,

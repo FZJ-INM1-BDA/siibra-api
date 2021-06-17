@@ -1,4 +1,5 @@
-# Copyright 2018-2020 Institute of Neuroscience and Medicine (INM-1), Forschungszentrum Jülich GmbH
+# Copyright 2018-2020 Institute of Neuroscience and Medicine (INM-1),
+# Forschungszentrum Jülich GmbH
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -52,7 +53,9 @@ def get_atlas_by_id(atlas_id: str, request: Request):
     for a in atlases:
         if a.id == atlas_id.replace('%2F', '/'):
             return __atlas_to_result_object(a, request)
-    raise HTTPException(status_code=404, detail='atlas with id: {} not found'.format(atlas_id))
+    raise HTTPException(
+        status_code=404,
+        detail='atlas with id: {} not found'.format(atlas_id))
 # endregion
 
 
