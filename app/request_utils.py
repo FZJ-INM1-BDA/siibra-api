@@ -57,42 +57,23 @@ def find_space_by_id(atlas, space_id):
         return None
 
 
-def create_region_json_object_tmp(region, space_id=None, atlas=None):
-    region_json = {'name': region.name, 'children': []}
-    if hasattr(region, 'rgb'):
-        region_json['rgb'] = region.rgb
-    if hasattr(region, 'fullId'):
-        region_json['id'] = region.fullId
-    if hasattr(region, 'labelIndex'):
-        region_json['labelIndex'] = region.labelIndex
-    if hasattr(region, 'attrs'):
-        region_json['volumeSrc'] = region.attrs.get('volumeSrc', {})
-
-    if space_id is not None:
-        region_json['hasRegionalMap'] = region.has_regional_map(bs.spaces[space_id], bs.commons.MapType.CONTINUOUS)
-
-    region_json['availableIn'] = get_available_spaces_for_region(region)
-    _add_children_to_region_tmp(region_json, region, space_id, atlas)
+def create_region_json_response(region, space_id=None, atlas=None):
+    region_json = _create_region_json_object(region, space_id, atlas)
+    _add_children_to_region(region_json, region, space_id, atlas)
     return region_json
 
 
-def _add_children_to_region_tmp(region_json, region, space_id=None, atlas=None):
+def _add_children_to_region(region_json, region, space_id=None, atlas=None):
     for child in region.children:
-        o = create_region_json_object(child)
-        # if space_id is not None and atlas is not None:
-        #     get_region_props(space_id, atlas, o, child)
+        o = _create_region_json_object(child)
         if space_id is not None and atlas is not None:
             get_region_props_tmp(space_id, atlas, o, child)
         if child.children:
-            _add_children_to_region_tmp(o, child, space_id, atlas)
-        # else:
-        #     if space_id is not None and atlas is not None:
-        #         get_region_props_tmp(space_id, atlas, o, child)
-                # get_region_props(space_id, atlas, o, child)
+            _add_children_to_region(o, child, space_id, atlas)
         region_json['children'].append(o)
 
 
-def create_region_json_object(region, space_id=None, atlas=None):
+def _create_region_json_object(region, space_id=None, atlas=None):
     region_json = {'name': region.name, 'children': []}
     if hasattr(region, 'rgb'):
         region_json['rgb'] = region.rgb
@@ -106,17 +87,7 @@ def create_region_json_object(region, space_id=None, atlas=None):
 
     region_json['hasRegionalMap'] = region.has_regional_map(bs.spaces[space_id], bs.commons.MapType.CONTINUOUS) if space_id is not None else None
 
-    # _add_children_to_region(region_json, region)
     return region_json
-
-
-def _add_children_to_region(region_json, region):
-    for child in region.children:
-        o = create_region_json_object(child)
-
-        if child.children:
-            _add_children_to_region(o, child)
-        region_json['children'].append(o)
 
 
 def _get_file_from_nibabel(nibabel_object, nifti_type, space):

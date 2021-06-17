@@ -18,9 +18,9 @@ from fastapi import APIRouter, Request, HTTPException, Depends
 from starlette.responses import PlainTextResponse, FileResponse
 from fastapi.encoders import jsonable_encoder
 from .atlas_api import ATLAS_PATH
-from .request_utils import split_id, create_atlas, create_region_json_object, create_region_json_object_tmp, \
-    _add_children_to_region, find_space_by_id, find_region_via_id, get_global_features, get_regional_feature, get_path_to_regional_map
-from .request_utils import get_spaces_for_parcellation, get_base_url_from_request, siibra_custom_json_encoder
+from .request_utils import split_id, create_atlas, \
+    find_space_by_id, find_region_via_id, get_global_features, get_regional_feature, get_path_to_regional_map
+from .request_utils import get_spaces_for_parcellation, get_base_url_from_request, siibra_custom_json_encoder, create_region_json_response
 from siibra import spaces as siibra_spaces
 from siibra.features import feature as feature_export,classes as feature_classes,modalities as feature_modalities
 import re
@@ -136,9 +136,7 @@ def get_all_regions_for_parcellation_id(atlas_id: str, parcellation_id: str, spa
 
     result = []
     for region in atlas.selected_parcellation.regiontree.children:
-        # region_json = create_region_json_object(region)
-        region_json = create_region_json_object_tmp(region, space_id, atlas)
-        # _add_children_to_region(region_json, region)
+        region_json = create_region_json_response(region, space_id, atlas)
         result.append(region_json)
     return result
 
@@ -261,6 +259,7 @@ def get_regional_map_file(atlas_id: str, parcellation_id: str, region_id: str, s
     cached_fullpath = get_path_to_regional_map(query_id, roi, space_of_interest)
     return FileResponse(cached_fullpath, media_type='application/octet-stream')
 
+
 @router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}')
 def get_region_by_name(request: Request, atlas_id: str, parcellation_id: str, region_id: str, space_id: Optional[str] = None):
     """
@@ -280,8 +279,7 @@ def get_region_by_name(request: Request, atlas_id: str, parcellation_id: str, re
     if len(region) == 0:
         raise HTTPException(status_code=404, detail=f'region with spec {region_id} not found')
     r = region[0]
-    region_json = create_region_json_object(r, space_id)
-    _add_children_to_region(region_json, r)
+    region_json = create_region_json_response(r, space_id, atlas)
 
     if space_id:
         atlas.select_region(r)
