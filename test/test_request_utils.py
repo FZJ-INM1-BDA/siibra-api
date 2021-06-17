@@ -27,8 +27,8 @@ class TestRequestUtils(unittest.TestCase):
         self.assertEqual(atlas.name, 'Multilevel Human Atlas')
 
     def test_get_regional_feature_with_wrong_modality(self):
-        hits = request_utils.get_regional_feature(atlas_id=self.ATLAS_ID, parcellation_id=self.PARCELLATION_NAME, modality_id=self.MODALITY_INVALID, region_id=self.REGION_NAME_VALID)
-        self.assertEqual(hits.status_code, 400)
+        with self.assertRaises(HTTPException):
+            hits = request_utils.get_regional_feature(atlas_id=self.ATLAS_ID, parcellation_id=self.PARCELLATION_NAME, modality_id=self.MODALITY_INVALID, region_id=self.REGION_NAME_VALID)
 
     def test_get_regional_feature_with_wrong_region(self):
 
@@ -40,7 +40,6 @@ class TestRequestUtils(unittest.TestCase):
         hits = request_utils.get_regional_feature(atlas_id=self.ATLAS_ID, parcellation_id=self.PARCELLATION_NAME, modality_id=self.MODALITY_VALID, region_id=self.REGION_NAME_VALID)
         self.assertTrue(len(hits) != 0)
         self.assertTrue(all([ hit['@id'] is not None for hit in hits]))
-
 
     def test_get_all_parcellations_for_space(self):
         parcellations = request_utils.get_parcellations_for_space(self.SPACE_NAME)
