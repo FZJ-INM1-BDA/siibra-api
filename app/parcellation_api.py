@@ -103,7 +103,7 @@ def __parcellation_result_info(parcellation, atlas_id=None, request=None):
     return result_info
 
 
-@router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations')
+@router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations', tags=['parcellations'])
 def get_all_parcellations(atlas_id: str, request: Request):
     """
     Parameters:
@@ -126,7 +126,7 @@ def get_all_parcellations(atlas_id: str, request: Request):
 
 
 @router.get(ATLAS_PATH +
-            '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions')
+            '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions', tags=['parcellations'])
 @fanout_cache.memoize(typed=True, expire=60 * 60)
 def get_all_regions_for_parcellation_id(
         atlas_id: str,
@@ -151,7 +151,8 @@ def get_all_regions_for_parcellation_id(
 
 
 @router.get(ATLAS_PATH +
-            '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features')
+            '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features',
+            tags=['parcellations'])
 def get_all_features_for_region(
         request: Request,
         atlas_id: str,
@@ -191,7 +192,8 @@ def get_all_features_for_region(
 
 
 @router.get(ATLAS_PATH +
-            '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality}/{modality_id:path}')
+            '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality}/{modality_id:path}',
+            tags=['parcellations'])
 def get_regional_modality_by_id(
         request: Request,
         atlas_id: str,
@@ -229,7 +231,8 @@ def get_regional_modality_by_id(
 
 
 @router.get(ATLAS_PATH +
-            '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality}')
+            '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality}',
+            tags=['parcellations'])
 def get_feature_modality_for_region(
         request: Request,
         atlas_id: str,
@@ -288,7 +291,8 @@ def parse_region_selection(
 
 
 @router.get(ATLAS_PATH +
-            '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/regional_map/info')
+            '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/regional_map/info',
+            tags=['parcellations'])
 @fanout_cache.memoize(typed=True, expire=60 * 60)
 def get_regional_map_info(
         atlas_id: str,
@@ -311,7 +315,8 @@ def get_regional_map_info(
 
 
 @router.get(ATLAS_PATH +
-            '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/regional_map/map')
+            '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/regional_map/map',
+            tags=['parcellations'])
 @fanout_cache.memoize(typed=True, expire=60 * 60)
 def get_regional_map_file(
         atlas_id: str,
@@ -327,7 +332,8 @@ def get_regional_map_file(
 
 
 @router.get(ATLAS_PATH +
-            '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}')
+            '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}',
+            tags=['parcellations'])
 def get_region_by_name(
         request: Request,
         atlas_id: str,
@@ -384,7 +390,8 @@ def get_region_by_name(
 
 
 @router.get(ATLAS_PATH +
-            '/{atlas_id:path}/parcellations/{parcellation_id:path}/features/{modality}/{modality_instance_name}')
+            '/{atlas_id:path}/parcellations/{parcellation_id:path}/features/{modality}/{modality_instance_name}',
+            tags=['parcellations'])
 def get_single_global_feature_detail(
         atlas_id: str,
         parcellation_id: str,
@@ -417,7 +424,8 @@ def get_single_global_feature_detail(
 
 
 @router.get(ATLAS_PATH +
-            '/{atlas_id:path}/parcellations/{parcellation_id:path}/features/{modality}')
+            '/{atlas_id:path}/parcellations/{parcellation_id:path}/features/{modality}',
+            tags=['parcellations'])
 def get_single_global_feature(
         atlas_id: str,
         parcellation_id: str,
@@ -443,7 +451,8 @@ def get_single_global_feature(
 
 
 @router.get(ATLAS_PATH +
-            '/{atlas_id:path}/parcellations/{parcellation_id:path}/features')
+            '/{atlas_id:path}/parcellations/{parcellation_id:path}/features',
+            tags=['parcellations'])
 def get_global_features_rest(
         atlas_id: str,
         parcellation_id: str,
@@ -479,7 +488,8 @@ def get_global_features_rest(
 
 
 @router.get(ATLAS_PATH +
-            '/{atlas_id:path}/parcellations/{parcellation_id:path}')
+            '/{atlas_id:path}/parcellations/{parcellation_id:path}',
+            tags=['parcellations'])
 def get_parcellation_by_id(
         atlas_id: str,
         parcellation_id: str,

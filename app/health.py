@@ -19,7 +19,7 @@ from fastapi.responses import JSONResponse
 router = APIRouter()
 
 
-@router.get('/health')
+@router.get('/health', include_in_schema=False)
 def get_all_parcellations():
     return JSONResponse(
         status_code=200,

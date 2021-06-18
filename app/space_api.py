@@ -33,7 +33,7 @@ router = APIRouter()
 # region === spaces
 
 
-@router.get(ATLAS_PATH + '/{atlas_id:path}/spaces')
+@router.get(ATLAS_PATH + '/{atlas_id:path}/spaces', tags=['spaces'])
 def get_all_spaces(atlas_id: str, request: Request):
     """
     Parameters:
@@ -61,7 +61,7 @@ def get_all_spaces(atlas_id: str, request: Request):
     return jsonable_encoder(result)
 
 
-@router.get(ATLAS_PATH + '/{atlas_id:path}/spaces/{space_id:path}/templates')
+@router.get(ATLAS_PATH + '/{atlas_id:path}/spaces/{space_id:path}/templates', tags=['spaces'])
 def get_template_by_space_id(atlas_id: str, space_id: str):
     """
     Parameters:
@@ -82,7 +82,7 @@ def get_template_by_space_id(atlas_id: str, space_id: str):
 
 
 @router.get(ATLAS_PATH +
-            '/{atlas_id:path}/spaces/{space_id:path}/parcellation_maps')
+            '/{atlas_id:path}/spaces/{space_id:path}/parcellation_maps', tags=['spaces'])
 # add parcellations_map_id as optional param
 def get_parcellation_map_for_space(atlas_id: str, space_id: str):
     """
@@ -133,7 +133,7 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):
         detail='Maps for space with id: {} not found'.format(space_id))
 
 
-@router.get(ATLAS_PATH + '/{atlas_id:path}/spaces/{space_id:path}')
+@router.get(ATLAS_PATH + '/{atlas_id:path}/spaces/{space_id:path}', tags=['spaces'])
 def get_one_space_by_id(atlas_id: str, space_id: str, request: Request):
     """
     Parameters:

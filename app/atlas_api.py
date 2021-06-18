@@ -27,7 +27,7 @@ ATLAS_PATH = '/atlases'
 
 # region === atlases
 
-@router.get(ATLAS_PATH)
+@router.get(ATLAS_PATH, tags=['atlases'])
 @version(1)
 def get_all_atlases(request: Request):
     """
@@ -40,7 +40,7 @@ def get_all_atlases(request: Request):
     return result
 
 
-@router.get(ATLAS_PATH + '/{atlas_id:path}')
+@router.get(ATLAS_PATH + '/{atlas_id:path}', tags=['atlases'])
 @version(1)
 def get_atlas_by_id(atlas_id: str, request: Request):
     """

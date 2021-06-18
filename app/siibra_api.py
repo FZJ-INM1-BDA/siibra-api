@@ -41,7 +41,7 @@ class ModalityType(str, Enum):
 
 # region === features
 
-@router.get('/genes')
+@router.get('/genes', tags=['data'])
 def get_gene_names():
     """
     Return all genes (name, acronym) in siibra
@@ -63,7 +63,7 @@ def get_gene_names():
 #     return get_gene_expression(region, gene)
 
 
-@router.get('/features')
+@router.get('/features', tags=['data'])
 def get_all_available_modalities():
     """
     Return all possible modalities

@@ -24,6 +24,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from siibra.ebrains import Authentication
 from fastapi_versioning import VersionedFastAPI
 from fastapi.responses import JSONResponse
+from fastapi.openapi.utils import get_openapi
 
 from .siibra_api import router as siibra_router
 from .atlas_api import router as atlas_router
@@ -37,14 +38,40 @@ from . import logger
 
 security = HTTPBearer()
 
+# Tags to structure the api documentation
+tags_metadata = [
+    {
+        "name": "atlases",
+        "description": "Atlas related data",
+    },
+    {
+        "name": "parcellations",
+        "description": "Parcellations related data, depending on selected atlas",
+    },
+    {
+        "name": "spaces",
+        "description": "Spaces related data, depending on selected atlas",
+    },
+    {
+        "name": "data",
+        "description": "Further information like, genes, features, ...",
+    },
+]
+
 # Main fastAPI application
-app = FastAPI()
+app = FastAPI(
+    title="Siibra API",
+    description="This is the REST api for siibra tools",
+    version="1.0",
+    openapi_tags=tags_metadata
+)
 # Add a siibra router with further endpoints
+app.include_router(atlas_router)
 app.include_router(parcellation_router)
 app.include_router(space_router)
-app.include_router(atlas_router)
 app.include_router(siibra_router)
 app.include_router(health_router)
+
 
 # Versioning for all api endpoints
 app = VersionedFastAPI(app, default_api_version=1)
@@ -64,7 +91,7 @@ app.add_middleware(
 )
 
 
-@app.get('/')
+@app.get('/', include_in_schema=False)
 def home(request: Request):
     """
     Return the template for the siibra landing page.
@@ -77,7 +104,7 @@ def home(request: Request):
             'request': request})
 
 
-@app.get('/stats')
+@app.get('/stats', include_in_schema=False)
 def home(request: Request):
     """
     Return the template for the siibra statistics.
@@ -172,3 +199,6 @@ async def matomo_request_log(request: Request, call_next):
             logger.info('Request for: {}'.format(request.url))
     response = await call_next(request)
     return response
+
+
+
