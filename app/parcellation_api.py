@@ -12,19 +12,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+import re
 from enum import Enum
 from typing import Optional
-
 from fastapi import APIRouter, Request, HTTPException, Depends
 from starlette.responses import PlainTextResponse, FileResponse
 from fastapi.encoders import jsonable_encoder
-from .atlas_api import ATLAS_PATH
-from .request_utils import split_id, create_atlas, \
-    find_space_by_id, find_region_via_id, get_global_features, get_regional_feature, get_path_to_regional_map
-from .request_utils import get_spaces_for_parcellation, get_base_url_from_request, siibra_custom_json_encoder, create_region_json_response
 from siibra import spaces as siibra_spaces
 from siibra.features import feature as feature_export, classes as feature_classes, modalities as feature_modalities
-import re
+from .atlas_api import ATLAS_PATH
+from .request_utils import split_id, create_atlas, find_space_by_id, find_region_via_id, create_region_json_response
+from .request_utils import get_spaces_for_parcellation, get_base_url_from_request, siibra_custom_json_encoder
+from .request_utils import get_global_features, get_regional_feature, get_path_to_regional_map
 from .diskcache import fanout_cache
 
 router = APIRouter()
@@ -106,10 +106,7 @@ def __parcellation_result_info(parcellation, atlas_id=None, request=None):
 @router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations', tags=['parcellations'])
 def get_all_parcellations(atlas_id: str, request: Request):
     """
-    Parameters:
-        - atlas_id
-
-    Returns all parcellations that are defined in the siibra client for given atlas
+    Returns all parcellations that are defined in the siibra client for given atlas.
     """
     if request.headers['accept'] == 'application/text':
         python_code = 'from siibra.atlas import REGISTRY \n ' \
@@ -133,10 +130,6 @@ def get_all_regions_for_parcellation_id(
         parcellation_id: str,
         space_id: Optional[str] = None):
     """
-    Parameters:
-        - atlas_id
-        - parcellation_id
-
     Returns all regions for a given parcellation id.
     """
     # select atlas by id
@@ -159,11 +152,6 @@ def get_all_features_for_region(
         parcellation_id: str,
         region_id: str):
     """
-    Parameters:
-        - atlas_id
-        - parcellation_id
-        - region_id
-
     Returns all regional features for a region.
     """
     # select atlas by id
@@ -203,14 +191,7 @@ def get_regional_modality_by_id(
         modality_id: str,
         gene: Optional[str] = None):
     """
-    Parameters:
-        - atlas_id
-        - parcellation_id
-        - region_id
-        - modality
-        - gene
-
-    Returns all features for a region.
+    Returns all features for a region. The returned feature is defined by the given modality type and modality id.
     """
     regional_features = get_regional_feature(
         atlas_id, parcellation_id, region_id, modality, gene=gene)
@@ -241,14 +222,7 @@ def get_feature_modality_for_region(
         modality: str,
         gene: Optional[str] = None):
     """
-    Parameters:
-        - atlas_id
-        - parcellation_id
-        - region_id
-        - modality
-        - gene
-
-    Returns all features for a region.
+    Returns one modality feature for a region.
     """
 
     regional_features = get_regional_feature(
@@ -299,6 +273,9 @@ def get_regional_map_info(
         parcellation_id: str,
         region_id: str,
         space_id: Optional[str] = None):
+    """
+    Returns information about a regional map for given region name.
+    """
     roi, space_of_interest = parse_region_selection(
         atlas_id, parcellation_id, region_id, space_id)
     query_id = f'{atlas_id}{parcellation_id}{roi.name}{space_id}'
@@ -323,6 +300,9 @@ def get_regional_map_file(
         parcellation_id: str,
         region_id: str,
         space_id: Optional[str] = None):
+    """
+    Returns a regional map for given region name.
+    """
     roi, space_of_interest = parse_region_selection(
         atlas_id, parcellation_id, region_id, space_id)
     query_id = f'{atlas_id}{parcellation_id}{roi.name}{space_id}'
@@ -341,11 +321,6 @@ def get_region_by_name(
         region_id: str,
         space_id: Optional[str] = None):
     """
-    Parameters:
-        - atlas_id
-        - parcellation_id
-        - region_id
-
     Returns a specific region for a given id.
     """
     # select atlas by id
@@ -399,13 +374,7 @@ def get_single_global_feature_detail(
         modality_instance_name: str,
         request: Request):
     """
-    Parameters:
-        - atlas_id
-        - parcellation_id
-        - modality
-        - modality_instance_name
-
-    Returns a global feature for a parcellation.
+    Returns a global feature for a specific modality id.
     """
     try:
         fs = get_global_features(atlas_id, parcellation_id, modality)
@@ -432,12 +401,7 @@ def get_single_global_feature(
         modality: str,
         request: Request):
     """
-    Parameters:
-        - atlas_id
-        - parcellation_id
-        - modality_id
-
-    Returns a global feature for a parcellation.
+    Returns a global feature for a parcellation, filtered by given modality.
     """
     try:
         fs = get_global_features(atlas_id, parcellation_id, modality)
@@ -458,13 +422,8 @@ def get_global_features_rest(
         parcellation_id: str,
         request: Request):
     """
-    Parameters:
-        - atlas_id
-        - parcellation_id
-
     Returns all global features for a parcellation.
     """
-
     # select atlas by id
     atlas = create_atlas(atlas_id)
     # select atlas parcellation
@@ -495,11 +454,7 @@ def get_parcellation_by_id(
         parcellation_id: str,
         request: Request):
     """
-    Parameters:
-        - atlas_id
-        - parcellation_id
-
-    Returns one parcellation for given id or 404 Error if no parcellation is found.
+    Returns one parcellation for given id.
     """
     atlas = create_atlas(atlas_id)
     parcellations = atlas.parcellations

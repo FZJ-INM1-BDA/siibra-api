@@ -36,9 +36,6 @@ router = APIRouter()
 @router.get(ATLAS_PATH + '/{atlas_id:path}/spaces', tags=['spaces'])
 def get_all_spaces(atlas_id: str, request: Request):
     """
-    Parameters:
-        - atlas_id
-
     Returns all spaces that are defined in the siibra client.
     """
     atlas = create_atlas(atlas_id)
@@ -64,10 +61,6 @@ def get_all_spaces(atlas_id: str, request: Request):
 @router.get(ATLAS_PATH + '/{atlas_id:path}/spaces/{space_id:path}/templates', tags=['spaces'])
 def get_template_by_space_id(atlas_id: str, space_id: str):
     """
-    Parameters:
-        - atlas_id
-        - space_id
-
     Returns all templates for a given space id.
     """
     atlas = create_atlas(atlas_id)
@@ -86,11 +79,7 @@ def get_template_by_space_id(atlas_id: str, space_id: str):
 # add parcellations_map_id as optional param
 def get_parcellation_map_for_space(atlas_id: str, space_id: str):
     """
-    Parameters:
-        - atlas_id
-        - space_id
-
-    Returns all maps for a given space id.
+    Returns all parcellation maps for a given space id.
     """
     atlas = create_atlas(atlas_id)
     space = find_space_by_id(atlas, space_id)
@@ -136,11 +125,7 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):
 @router.get(ATLAS_PATH + '/{atlas_id:path}/spaces/{space_id:path}', tags=['spaces'])
 def get_one_space_by_id(atlas_id: str, space_id: str, request: Request):
     """
-    Parameters:
-        - atlas_id
-        - space_id
-
-    Returns space for given id.
+    Returns one space for given id.
     """
     atlas = create_atlas(atlas_id)
     space = find_space_by_id(atlas, space_id)

@@ -14,8 +14,8 @@
 # limitations under the License.
 
 from fastapi import APIRouter, Request, HTTPException
-from siibra.atlas import REGISTRY
 from fastapi_versioning import version
+from siibra.atlas import REGISTRY
 from .request_utils import get_base_url_from_request
 
 # FastApi router to create rest endpoints
@@ -31,7 +31,7 @@ ATLAS_PATH = '/atlases'
 @version(1)
 def get_all_atlases(request: Request):
     """
-    Get all atlases known by siibra
+    Get all atlases known by siibra.
     """
     atlases = REGISTRY.items
     result = []
@@ -45,9 +45,6 @@ def get_all_atlases(request: Request):
 def get_atlas_by_id(atlas_id: str, request: Request):
     """
     Get more information for a specific atlas with links to further objects.
-
-    Parameters:
-        - atlas_id
     """
     atlases = REGISTRY.items
     for a in atlases:
