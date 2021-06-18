@@ -66,9 +66,9 @@ app = FastAPI(
     openapi_tags=tags_metadata
 )
 # Add a siibra router with further endpoints
-app.include_router(atlas_router)
 app.include_router(parcellation_router)
 app.include_router(space_router)
+app.include_router(atlas_router)
 app.include_router(siibra_router)
 app.include_router(health_router)
 
