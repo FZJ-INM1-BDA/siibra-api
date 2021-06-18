@@ -24,7 +24,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from siibra.ebrains import Authentication
 from fastapi_versioning import VersionedFastAPI
 from fastapi.responses import JSONResponse
-from fastapi.openapi.utils import get_openapi
+from fastapi.staticfiles import StaticFiles
 
 from .siibra_api import router as siibra_router
 from .atlas_api import router as atlas_router
@@ -79,6 +79,7 @@ app = VersionedFastAPI(app, default_api_version=1)
 # Template list, with every template in the project
 # can be rendered and returned
 templates = Jinja2Templates(directory='templates/')
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 pypi_stat_url = 'https://pypistats.org/api/packages/siibra/overall?mirrors=false'
 
