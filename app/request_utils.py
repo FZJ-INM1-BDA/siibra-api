@@ -236,7 +236,7 @@ SUPPORTED_FEATURES = [
     ebrainsquery_export.EbrainsRegionalDataset]
 
 
-@fanout_cache.memoize(typed=True, expire=60 * 60)
+@fanout_cache.memoize(typed=True)
 def get_regional_feature(
         atlas_id,
         parcellation_id,
@@ -339,7 +339,7 @@ def get_regional_feature(
         detail=f'feature {modality_id} has not yet been implmented')
 
 
-@fanout_cache.memoize(typed=True, expire=60 * 60)
+@fanout_cache.memoize(typed=True)
 def get_global_features(atlas_id, parcellation_id, modality_id):
     if modality_id not in feature_classes:
         # modality_id not found in feature_classes

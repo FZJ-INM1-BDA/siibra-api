@@ -124,7 +124,7 @@ def get_all_parcellations(atlas_id: str, request: Request):
 
 @router.get(ATLAS_PATH +
             '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions', tags=['parcellations'])
-@fanout_cache.memoize(typed=True, expire=60 * 60)
+@fanout_cache.memoize(typed=True)
 def get_all_regions_for_parcellation_id(
         atlas_id: str,
         parcellation_id: str,
@@ -263,7 +263,7 @@ def parse_region_selection(
 @router.get(ATLAS_PATH +
             '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/regional_map/info',
             tags=['parcellations'])
-@fanout_cache.memoize(typed=True, expire=60 * 60)
+@fanout_cache.memoize(typed=True)
 def get_regional_map_info(
         atlas_id: str,
         parcellation_id: str,
@@ -290,7 +290,7 @@ def get_regional_map_info(
 @router.get(ATLAS_PATH +
             '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/regional_map/map',
             tags=['parcellations'])
-@fanout_cache.memoize(typed=True, expire=60 * 60)
+@fanout_cache.memoize(typed=True)
 def get_regional_map_file(
         atlas_id: str,
         parcellation_id: str,
