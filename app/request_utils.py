@@ -242,6 +242,7 @@ def get_regional_feature(
         parcellation_id,
         region_id,
         modality_id,
+        detail=True,
         gene=None):
     # select atlas by id
     if modality_id not in feature_classes:
@@ -289,17 +290,21 @@ def get_regional_feature(
         return [{
             '@id': kg_rf_f.id,
             'src_name': kg_rf_f.name,
-            '__detail': kg_rf_f.detail
+            **({
+                '__detail': kg_rf_f.detail
+            } if detail else {})
         } for kg_rf_f in got_features]
     if feature_classes[modality_id] == genes_export.GeneExpression:
         return [{
             '@id': hashlib.md5(str(gene_feat).encode("utf-8")).hexdigest(),
-            '__donor_info': gene_feat.donor_info,
-            '__gene': gene_feat.gene,
-            '__probe_ids': gene_feat.probe_ids,
-            '__mri_coord': gene_feat.mri_coord,
-            '__z_scores': gene_feat.z_scores,
-            '__expression_levels': gene_feat.expression_levels
+            **({
+                '__donor_info': gene_feat.donor_info,
+                '__gene': gene_feat.gene,
+                '__probe_ids': gene_feat.probe_ids,
+                '__mri_coord': gene_feat.mri_coord,
+                '__z_scores': gene_feat.z_scores,
+                '__expression_levels': gene_feat.expression_levels
+            } if detail else {}),
         } for gene_feat in got_features]
     if feature_classes[modality_id] == connectivity_export.ConnectivityProfile:
         return [{
@@ -308,22 +313,26 @@ def get_regional_feature(
             "src_info": conn_pr.src_info,
             "kgSchema": conn_pr.kg_schema,
             "kgId": conn_pr.kg_id,
-            "__column_names": conn_pr.column_names,
-            "__profile": conn_pr.profile,
+            **({
+                "__column_names": conn_pr.column_names,
+                "__profile": conn_pr.profile,
+            } if detail else {}),
         } for conn_pr in got_features]
     if feature_classes[modality_id] == receptors_export.ReceptorDistribution:
         return [{
             "@id": receptor_pr.name,
             "name": receptor_pr.name,
             "info": receptor_pr.info,
-            "__receptor_symbols": receptors_export.RECEPTOR_SYMBOLS,
-            "__files": receptor_pr.files,
-            "__data": {
-                "__profiles": receptor_pr.profiles,
-                "__autoradiographs": receptor_pr.autoradiographs,
-                "__fingerprint": receptor_pr.fingerprint,
-                "__profile_unit": receptor_pr.profile_unit,
-            },
+            **({
+                "__receptor_symbols": receptors_export.RECEPTOR_SYMBOLS,
+                "__files": receptor_pr.files,
+                "__data": {
+                    "__profiles": receptor_pr.profiles,
+                    "__autoradiographs": receptor_pr.autoradiographs,
+                    "__fingerprint": receptor_pr.fingerprint,
+                    "__profile_unit": receptor_pr.profile_unit,
+                },
+            } if detail else {}),
         } for receptor_pr in got_features]
     raise HTTPException(
         status_code=501,

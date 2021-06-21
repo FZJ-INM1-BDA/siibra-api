@@ -226,13 +226,9 @@ def get_feature_modality_for_region(
     """
 
     regional_features = get_regional_feature(
-        atlas_id, parcellation_id, region_id, modality, gene=gene)
+        atlas_id, parcellation_id, region_id, modality, detail=False, gene=gene)
 
-    # in summary search, only search for basic data (filter out all keys
-    # prepended by __)
-    return [{key: val() if callable(val) else val for key, val in f.items(
-    ) if not re.search(r"^__", key)} for f in regional_features]
-
+    return regional_features
 
 def parse_region_selection(
         atlas_id: str,
