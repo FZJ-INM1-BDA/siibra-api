@@ -24,7 +24,7 @@ from .siibra_custom_exception import SiibraCustomException
 _client_id = os.getenv('EBRAINS_IAM_CLIENT_ID')
 _client_secret = os.getenv('EBRAINS_IAM_CLIENT_SECRET')
 _refresh_token = os.getenv('EBRAINS_IAM_REFRESH_TOKEN')
-
+_access_token=os.getenv('EBRAINS_IAM_ACCESS_TOKEN')
 
 class TokenWrapper:
     def __init__(
@@ -110,6 +110,8 @@ token_wrapper = TokenWrapper(
 
 
 def get_public_token():
+    if _access_token is not None:
+        return _access_token
     return token_wrapper.get_token()
 
 
