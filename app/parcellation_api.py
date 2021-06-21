@@ -194,21 +194,17 @@ def get_regional_modality_by_id(
     Returns all features for a region. The returned feature is defined by the given modality type and modality id.
     """
     regional_features = get_regional_feature(
-        atlas_id, parcellation_id, region_id, modality, gene=gene)
+        atlas_id, parcellation_id, region_id, modality, feature_id=modality_id, detail=True, gene=gene)
 
-    found_conn_pr = [{
-        key: val() if callable(val) else val for key, val in f.items()
-    } for f in regional_features if f['@id'] == modality_id]
-
-    if len(found_conn_pr) == 0:
+    if len(regional_features) == 0:
         raise HTTPException(
             status_code=404,
             detail=f'modality with id {modality_id} not found')
-    if len(found_conn_pr) != 1:
+    if len(regional_features) != 1:
         raise HTTPException(
             status_code=400,
             detail=f'modality with id {modality_id} has multiple matches')
-    return found_conn_pr[0]
+    return regional_features[0]
 
 
 @router.get(ATLAS_PATH +

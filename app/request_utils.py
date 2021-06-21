@@ -243,6 +243,7 @@ def get_regional_feature(
         region_id,
         modality_id,
         detail=True,
+        feature_id=None,
         gene=None):
     # select atlas by id
     if modality_id not in feature_classes:
@@ -286,44 +287,51 @@ def get_regional_feature(
             status_code=404,
             detail=f'Could not get features for region with id {region_id}')
 
+    shaped_features = None
     if feature_classes[modality_id] == ebrainsquery_export.EbrainsRegionalDataset:
-        return [{
-            '@id': kg_rf_f.id,
-            'src_name': kg_rf_f.name,
-            **({
-                '__detail': kg_rf_f.detail
-            } if detail else {})
+        shaped_features=[{
+            'summary': {
+                '@id': kg_rf_f.id,
+                'src_name': kg_rf_f.name,
+            },
+            'get_detail': lambda: { '__detail': kg_rf_f.detail },
         } for kg_rf_f in got_features]
     if feature_classes[modality_id] == genes_export.GeneExpression:
-        return [{
-            '@id': hashlib.md5(str(gene_feat).encode("utf-8")).hexdigest(),
-            **({
+        shaped_features=[{
+            'summary': {
+                '@id': hashlib.md5(str(gene_feat).encode("utf-8")).hexdigest(),
+            },
+            'get_detail': lambda : { 
                 '__donor_info': gene_feat.donor_info,
                 '__gene': gene_feat.gene,
                 '__probe_ids': gene_feat.probe_ids,
                 '__mri_coord': gene_feat.mri_coord,
                 '__z_scores': gene_feat.z_scores,
                 '__expression_levels': gene_feat.expression_levels
-            } if detail else {}),
+             },
         } for gene_feat in got_features]
     if feature_classes[modality_id] == connectivity_export.ConnectivityProfile:
-        return [{
-            "@id": conn_pr.src_name,
-            "src_name": conn_pr.src_name,
-            "src_info": conn_pr.src_info,
-            "kgSchema": conn_pr.kg_schema,
-            "kgId": conn_pr.kg_id,
-            **({
+        shaped_features=[{
+            'summary': {
+                "@id": conn_pr.src_name,
+                "src_name": conn_pr.src_name,
+                "src_info": conn_pr.src_info,
+                "kgSchema": conn_pr.kg_schema,
+                "kgId": conn_pr.kg_id,
+            },
+            'get_detail': lambda : { 
                 "__column_names": conn_pr.column_names,
                 "__profile": conn_pr.profile,
-            } if detail else {}),
+             }
         } for conn_pr in got_features]
     if feature_classes[modality_id] == receptors_export.ReceptorDistribution:
-        return [{
-            "@id": receptor_pr.name,
-            "name": receptor_pr.name,
-            "info": receptor_pr.info,
-            **({
+        shaped_features=[{
+            'summary': {
+                "@id": receptor_pr.name,
+                "name": receptor_pr.name,
+                "info": receptor_pr.info,
+            },
+            'get_detail': lambda : { 
                 "__receptor_symbols": receptors_export.RECEPTOR_SYMBOLS,
                 "__files": receptor_pr.files,
                 "__data": {
@@ -332,11 +340,20 @@ def get_regional_feature(
                     "__fingerprint": receptor_pr.fingerprint,
                     "__profile_unit": receptor_pr.profile_unit,
                 },
-            } if detail else {}),
+             }
         } for receptor_pr in got_features]
-    raise HTTPException(
-        status_code=501,
-        detail=f'feature {modality_id} has not yet been implmented')
+
+    if shaped_features is None:
+        raise HTTPException(
+            status_code=501,
+            detail=f'feature {modality_id} has not yet been implmented')
+
+    if feature_id is not None:
+        shaped_features = [ f for f in shaped_features if f['summary']['@id'] == feature_id]
+    return [{
+        **f['summary'],
+        **(f['get_detail']() if detail else {})
+    } for f in shaped_features ]
 
 
 @fanout_cache.memoize(typed=True)
