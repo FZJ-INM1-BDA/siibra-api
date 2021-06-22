@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from copy import copy
 
 import siibra as bs
 import json
@@ -37,7 +38,7 @@ def create_atlas(atlas_id=None):
     if atlas_id not in bs.atlases:
         raise HttpException(status_code=404,
                             detail=f'atlas_id {atlas_id} not found!')
-    return bs.atlases[atlas_id]
+    return copy(bs.atlases[atlas_id])
 
 
 def select_parcellation_by_id(atlas, parcellation_id):
