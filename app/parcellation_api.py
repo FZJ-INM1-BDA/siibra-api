@@ -21,11 +21,22 @@ from starlette.responses import PlainTextResponse, FileResponse
 from fastapi.encoders import jsonable_encoder
 from siibra import spaces as siibra_spaces
 from siibra.features import feature as feature_export, classes as feature_classes, modalities as feature_modalities
+from siibra.ebrains import Authentication
 from .atlas_api import ATLAS_PATH
 from .request_utils import split_id, create_atlas, find_space_by_id, find_region_via_id, create_region_json_response
 from .request_utils import get_spaces_for_parcellation, get_base_url_from_request, siibra_custom_json_encoder
 from .request_utils import get_global_features, get_regional_feature, get_path_to_regional_map
 from .diskcache import fanout_cache
+from .ebrains_token import get_public_token
+
+
+def preheat(id=None):
+    auth = Authentication.instance()
+    public_token = get_public_token()
+    auth.set_token(public_token)
+    
+    EbrainsRegionalFeatureCls=feature_classes[feature_modalities.EbrainsRegionalDataset]
+    EbrainsRegionalFeatureCls.preheat(id)
 
 router = APIRouter()
 
@@ -465,3 +476,6 @@ def get_parcellation_by_id(
 
 
 # endregion
+print('--preheat start--')
+preheat()
+print('--preheat complete--')
