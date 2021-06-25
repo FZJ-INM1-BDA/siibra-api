@@ -37,6 +37,7 @@ def get_preheat_status():
     return preheat_flag
 
 def preheat(id=None):
+    global preheat_flag
     logger.info('--start parcellation preheat--')
     auth = Authentication.instance()
     public_token = get_public_token()
@@ -46,6 +47,9 @@ def preheat(id=None):
     if hasattr(EbrainsRegionalFeatureCls, 'preheat') and callable(EbrainsRegionalFeatureCls.preheat):
         EbrainsRegionalFeatureCls.preheat(id)
         logger.info('--end parcellation preheat--')
+    else:
+        logger.info('--siibra-python does not suppport preheat. exiting--')
+    preheat_flag=True
 
 router = APIRouter()
 
