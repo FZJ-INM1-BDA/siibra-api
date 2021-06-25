@@ -28,15 +28,24 @@ from .request_utils import get_spaces_for_parcellation, get_base_url_from_reques
 from .request_utils import get_global_features, get_regional_feature, get_path_to_regional_map
 from .diskcache import fanout_cache
 from .ebrains_token import get_public_token
+from . import logger
 
+preheat_flag=False
+
+def get_preheat_status():
+    global preheat_flag
+    return preheat_flag
 
 def preheat(id=None):
+    logger.info('--start parcellation preheat--')
     auth = Authentication.instance()
     public_token = get_public_token()
     auth.set_token(public_token)
     
     EbrainsRegionalFeatureCls=feature_classes[feature_modalities.EbrainsRegionalDataset]
-    EbrainsRegionalFeatureCls.preheat(id)
+    if hasattr(EbrainsRegionalFeatureCls, 'preheat') and callable(EbrainsRegionalFeatureCls.preheat):
+        EbrainsRegionalFeatureCls.preheat(id)
+        logger.info('--end parcellation preheat--')
 
 router = APIRouter()
 
@@ -476,6 +485,3 @@ def get_parcellation_by_id(
 
 
 # endregion
-print('--preheat start--')
-preheat()
-print('--preheat complete--')

@@ -30,7 +30,7 @@ from .siibra_api import router as siibra_router
 from .atlas_api import router as atlas_router
 from .space_api import router as space_router
 from .health import router as health_router
-from .parcellation_api import router as parcellation_router
+from .parcellation_api import router as parcellation_router, preheat, get_preheat_status
 from .ebrains_token import get_public_token
 from .siibra_custom_exception import SiibraCustomException
 from . import logger
@@ -201,5 +201,35 @@ async def matomo_request_log(request: Request, call_next):
     response = await call_next(request)
     return response
 
+@app.get('/ready', include_in_schema=False)
+def get_ready():
+    if not all([get_preheat_status()]):
+        raise HTTPException(400, detail='Not yet ready.')
+    return 'OK'
 
 
+# TODO cleanup is not exactly ... clean it seems
+def cleanup_on_termination():
+    print('cleaning up on terminat')
+    import asyncio
+    pendings = asyncio.Task.all_tasks()
+    for pending in pendings:
+        pending.cancel()
+    
+    loop=asyncio.get_event_loop()
+    loop.stop()
+    loop.close()
+    
+
+@app.on_event('startup')
+async def on_startup():
+    import asyncio
+    from signal import SIGINT, SIGTERM
+
+    async def run_async():
+        loop=asyncio.get_event_loop()
+        for sig in [SIGINT, SIGTERM]:
+            loop.add_signal_handler(sig, cleanup_on_termination)
+        loop.run_in_executor(None, preheat)
+
+    asyncio.ensure_future(run_async())
