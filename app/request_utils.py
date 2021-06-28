@@ -295,14 +295,15 @@ def get_regional_feature(
                 '@id': kg_rf_f.id,
                 'src_name': kg_rf_f.name,
             },
-            'get_detail': lambda: { '__detail': kg_rf_f.detail },
+            'get_detail': lambda kg_rf_f: { '__detail': kg_rf_f.detail },
+            'instance': kg_rf_f,
         } for kg_rf_f in got_features]
     if feature_classes[modality_id] == genes_export.GeneExpression:
         shaped_features=[{
             'summary': {
                 '@id': hashlib.md5(str(gene_feat).encode("utf-8")).hexdigest(),
             },
-            'get_detail': lambda : { 
+            'get_detail': lambda gene_feat : { 
                 '__donor_info': gene_feat.donor_info,
                 '__gene': gene_feat.gene,
                 '__probe_ids': gene_feat.probe_ids,
@@ -310,6 +311,7 @@ def get_regional_feature(
                 '__z_scores': gene_feat.z_scores,
                 '__expression_levels': gene_feat.expression_levels
              },
+             'instance': gene_feat,
         } for gene_feat in got_features]
     if feature_classes[modality_id] == connectivity_export.ConnectivityProfile:
         shaped_features=[{
@@ -321,10 +323,11 @@ def get_regional_feature(
                 # "kgSchema": conn_pr.kg_schema,
                 # "kgId": conn_pr.kg_id,
             },
-            'get_detail': lambda : { 
+            'get_detail': lambda conn_pr: { 
                 "__column_names": conn_pr.column_names,
                 "__profile": conn_pr.profile,
-             }
+             },
+             'instance': conn_pr,
         } for conn_pr in got_features]
     if feature_classes[modality_id] == receptors_export.ReceptorDistribution:
         shaped_features=[{
@@ -333,7 +336,7 @@ def get_regional_feature(
                 "name": receptor_pr.name,
                 "info": receptor_pr.info,
             },
-            'get_detail': lambda : { 
+            'get_detail': lambda receptor_pr: { 
                 "__receptor_symbols": receptors_export.RECEPTOR_SYMBOLS,
                 "__files": receptor_pr.files,
                 "__data": {
@@ -342,7 +345,8 @@ def get_regional_feature(
                     "__fingerprint": receptor_pr.fingerprint,
                     "__profile_unit": receptor_pr.profile_unit,
                 },
-             }
+             },
+             'instance': receptor_pr,
         } for receptor_pr in got_features]
 
     if shaped_features is None:
@@ -354,7 +358,7 @@ def get_regional_feature(
         shaped_features = [ f for f in shaped_features if f['summary']['@id'] == feature_id]
     return [{
         **f['summary'],
-        **(f['get_detail']() if detail else {})
+        **(f['get_detail'](f['instance']) if detail else {})
     } for f in shaped_features ]
 
 
