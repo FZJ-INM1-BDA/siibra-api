@@ -12,6 +12,7 @@ jobs:
       EBRAINS_IAM_CLIENT_ID: ${{ secrets.EBRAINS_IAM_CLIENT_ID }}
       EBRAINS_IAM_CLIENT_SECRET: ${{ secrets.EBRAINS_IAM_CLIENT_SECRET }}
       EBRAINS_IAM_REFRESH_TOKEN: ${{ secrets.EBRAINS_IAM_REFRESH_TOKEN }}
+      DEPLOY_ENVIRONMENT: 'production'
       # SIIBRA_CONFIG_GITLAB_PROJECT_TAG: develop
     steps:
       - name: Check out repository code
