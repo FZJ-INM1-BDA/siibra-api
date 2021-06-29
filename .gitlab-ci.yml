@@ -8,7 +8,7 @@ test:
   before_script:
     - python -m pip install --upgrade pip
   script:
-    - pip install -r app/requirements.txt
+    - pip install -r requirements/dev.txt
     - pip install pytest pytest-asyncio httpx mock coverage
     - coverage run -m pytest
     - coverage html -d coverage

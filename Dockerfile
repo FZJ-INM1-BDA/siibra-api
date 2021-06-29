@@ -10,7 +10,7 @@ WORKDIR /app
 
 RUN python -m pip install -U pip
 
-RUN python -m pip install -r app/requirements.txt
+RUN if [ "$DEPLOY_ENVIRONMENT" = "production" ] ; then python -m pip install -r requirements/prod.txt ; else python -m pip install -r requirements/dev.txt ; fi
 RUN python -m pip install anytree
 RUN python -m pip install pillow
 RUN python -m pip install scikit-image

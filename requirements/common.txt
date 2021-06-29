@@ -5,6 +5,5 @@ fastapi-versioning
 jinja2
 uvicorn[standard]
 aiofiles
-siibra==0.1a4
 redis
 diskcache
