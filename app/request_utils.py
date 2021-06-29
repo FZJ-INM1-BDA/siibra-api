@@ -319,9 +319,8 @@ def get_regional_feature(
                 "@id": conn_pr.src_name,
                 "src_name": conn_pr.src_name,
                 "src_info": conn_pr.src_info,
-                # TODO remove comment with new siibra python release
-                # "kgSchema": conn_pr.kg_schema,
-                # "kgId": conn_pr.kg_id,
+                "kgSchema": conn_pr.kg_schema,
+                "kgId": conn_pr.kg_id,
             },
             'get_detail': lambda conn_pr: { 
                 "__column_names": conn_pr.column_names,
