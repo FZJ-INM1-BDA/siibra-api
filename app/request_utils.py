@@ -60,8 +60,8 @@ def find_space_by_id(atlas, space_id):
         return None
 
 
-def create_region_json_response(region, space_id=None, atlas=None):
-    region_json = _create_region_json_object(region, space_id, atlas)
+def create_region_json_response(region, space_id=None, atlas=None, detail=False):
+    region_json = _create_region_json_object(region, space_id, atlas, detail)
     _add_children_to_region(region_json, region, space_id, atlas)
     return region_json
 
@@ -76,7 +76,7 @@ def _add_children_to_region(region_json, region, space_id=None, atlas=None):
         region_json['children'].append(o)
 
 
-def _create_region_json_object(region, space_id=None, atlas=None):
+def _create_region_json_object(region, space_id=None, atlas=None, detail=False):
     region_json = {'name': region.name, 'children': []}
     if hasattr(region, 'rgb'):
         region_json['rgb'] = region.rgb
@@ -86,13 +86,14 @@ def _create_region_json_object(region, space_id=None, atlas=None):
         region_json['labelIndex'] = region.labelIndex
     if hasattr(region, 'attrs'):
         region_json['volumeSrc'] = region.attrs.get('volumeSrc', {})
-    if hasattr(region, 'origin_datainfos'):
+    if detail and hasattr(region, 'origin_datainfos'):
         region_json['originDatainfos'] = [origin_data_decoder(datainfo) for datainfo in region.origin_datainfos]
     region_json['availableIn'] = get_available_spaces_for_region(region)
 
-    region_json['hasRegionalMap'] = region.has_regional_map(
-        bs.spaces[space_id],
-        bs.commons.MapType.CONTINUOUS) if space_id is not None else None
+    if detail:
+        region_json['hasRegionalMap'] = region.has_regional_map(
+            bs.spaces[space_id],
+            bs.commons.MapType.CONTINUOUS) if space_id is not None else None
 
     return region_json
 
@@ -181,7 +182,7 @@ def get_available_spaces_for_region(region):
 
 
 def get_region_props_tmp(space_id, atlas, region_json, region):
-    print('Getting props for: {}'.format(str(region)))
+    logger.debug('Getting props for: {}'.format(str(region)))
     region_json['props'] = {}
     cache_value = cache_redis.get_value('{}_{}_{}_{}'.format(
         str(atlas.id),
@@ -189,7 +190,6 @@ def get_region_props_tmp(space_id, atlas, region_json, region):
         str(find_space_by_id(atlas, space_id).id),
         str(region)
     ))
-    print(cache_value)
     if cache_value == 'invalid' or cache_value == 'None' or cache_value is None:
         region_json['props']['centroid_mm'] = ''
         region_json['props']['volume_mm'] = ''

@@ -351,14 +351,14 @@ def get_region_by_name(
         raise HTTPException(status_code=404,
                             detail=f'region with spec {region_id} not found')
     r = region[0]
-    region_json = create_region_json_response(r, space_id, atlas)
-
+    region_json = create_region_json_response(r, space_id, atlas, detail=True)
     if space_id:
         atlas.select_region(r)
         # r_props = siibra_region.RegionProps(r,find_space_by_id(atlas, space_id))
-        print('Space: {}'.format(find_space_by_id(atlas, space_id)))
-        print('Parcellation: {}'.format(atlas.selected_region))
-        print('Region: {}'.format(atlas.selected_region))
+        logger.debug('Space: {}'.format(find_space_by_id(atlas, space_id)))
+        logger.debug('Parcellation: {}'.format(atlas.selected_region))
+        logger.debug('Region: {}'.format(atlas.selected_region))
+
         r_props = r.spatialprops(find_space_by_id(atlas, space_id))
         region_json['props'] = {}
         region_json['props']['centroid_mm'] = list(
