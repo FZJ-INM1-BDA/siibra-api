@@ -25,7 +25,7 @@ from siibra.ebrains import Authentication
 from .atlas_api import ATLAS_PATH
 from .request_utils import split_id, create_atlas, find_space_by_id, find_region_via_id, create_region_json_response
 from .request_utils import get_spaces_for_parcellation, get_base_url_from_request, siibra_custom_json_encoder
-from .request_utils import get_global_features, get_regional_feature, get_path_to_regional_map
+from .request_utils import get_global_features, get_regional_feature, get_path_to_regional_map, origin_data_decoder
 from .diskcache import fanout_cache
 from .ebrains_token import get_public_token
 from . import logger
@@ -123,6 +123,8 @@ def __parcellation_result_info(parcellation, atlas_id=None, request=None):
         }
         result_info['volumeSrc'] = jsonable_encoder(
             volumeSrc, custom_encoder=siibra_custom_json_encoder)
+    if hasattr(parcellation, 'origin_datainfos'):
+        result_info['originDatainfos'] = [ origin_data_decoder(datainfo) for datainfo in parcellation.origin_datainfos]
 
     return result_info
 

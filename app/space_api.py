@@ -22,7 +22,7 @@ from fastapi.encoders import jsonable_encoder
 from starlette.responses import FileResponse, StreamingResponse
 
 from .request_utils import create_atlas, split_id, find_space_by_id, _get_file_from_nibabel, get_parcellations_for_space
-from .request_utils import get_base_url_from_request, siibra_custom_json_encoder
+from .request_utils import get_base_url_from_request, siibra_custom_json_encoder,origin_data_decoder
 from .atlas_api import ATLAS_PATH
 import siibra as sb
 
@@ -150,6 +150,8 @@ def get_one_space_by_id(atlas_id: str, space_id: str, request: Request):
                 )
             }
         }
+        if hasattr(space, 'origin_datainfos'):
+            json_result['originDatainfos'] = [ origin_data_decoder(datainfo) for datainfo in space.origin_datainfos]
         return json_result
     else:
         raise HTTPException(

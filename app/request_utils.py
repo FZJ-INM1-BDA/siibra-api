@@ -86,6 +86,8 @@ def _create_region_json_object(region, space_id=None, atlas=None):
         region_json['labelIndex'] = region.labelIndex
     if hasattr(region, 'attrs'):
         region_json['volumeSrc'] = region.attrs.get('volumeSrc', {})
+    if hasattr(region, 'origin_datainfos'):
+        region_json['originDatainfos'] = [origin_data_decoder(datainfo) for datainfo in region.origin_datainfos]
     region_json['availableIn'] = get_available_spaces_for_region(region)
 
     region_json['hasRegionalMap'] = region.has_regional_map(
@@ -427,6 +429,14 @@ def vol_src_sans_space(vol_src):
     return {
         key: getattr(vol_src, key) for key in keys
     }
+
+def origin_data_decoder(origin_data):
+    description=origin_data.description
+    name=origin_data.name
+    urls=origin_data.urls
+    return {'name': name,
+        'description': description,
+        'urls': urls}
 
 
 siibra_custom_json_encoder = {
