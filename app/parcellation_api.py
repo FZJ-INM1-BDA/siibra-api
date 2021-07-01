@@ -25,7 +25,7 @@ from siibra.ebrains import Authentication
 from .atlas_api import ATLAS_PATH
 from .request_utils import split_id, create_atlas, find_space_by_id, find_region_via_id, create_region_json_response
 from .request_utils import get_spaces_for_parcellation, get_base_url_from_request, siibra_custom_json_encoder
-from .request_utils import get_global_features, get_regional_feature, get_path_to_regional_map
+from .request_utils import get_global_features, get_regional_feature, get_path_to_regional_map, origin_data_decoder
 from .diskcache import fanout_cache
 from .ebrains_token import get_public_token
 from . import logger
@@ -123,6 +123,8 @@ def __parcellation_result_info(parcellation, atlas_id=None, request=None):
         }
         result_info['volumeSrc'] = jsonable_encoder(
             volumeSrc, custom_encoder=siibra_custom_json_encoder)
+    if hasattr(parcellation, 'origin_datainfos'):
+        result_info['originDatainfos'] = [ origin_data_decoder(datainfo) for datainfo in parcellation.origin_datainfos]
 
     return result_info
 
@@ -349,14 +351,14 @@ def get_region_by_name(
         raise HTTPException(status_code=404,
                             detail=f'region with spec {region_id} not found')
     r = region[0]
-    region_json = create_region_json_response(r, space_id, atlas)
-
+    region_json = create_region_json_response(r, space_id, atlas, detail=True)
     if space_id:
         atlas.select_region(r)
         # r_props = siibra_region.RegionProps(r,find_space_by_id(atlas, space_id))
-        print('Space: {}'.format(find_space_by_id(atlas, space_id)))
-        print('Parcellation: {}'.format(atlas.selected_region))
-        print('Region: {}'.format(atlas.selected_region))
+        logger.debug('Space: {}'.format(find_space_by_id(atlas, space_id)))
+        logger.debug('Parcellation: {}'.format(atlas.selected_region))
+        logger.debug('Region: {}'.format(atlas.selected_region))
+
         r_props = r.spatialprops(find_space_by_id(atlas, space_id))
         region_json['props'] = {}
         region_json['props']['centroid_mm'] = list(
