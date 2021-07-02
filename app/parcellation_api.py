@@ -26,6 +26,7 @@ from .atlas_api import ATLAS_PATH
 from .request_utils import split_id, create_atlas, find_space_by_id, find_region_via_id, create_region_json_response
 from .request_utils import get_spaces_for_parcellation, get_base_url_from_request, siibra_custom_json_encoder
 from .request_utils import get_global_features, get_regional_feature, get_path_to_regional_map, origin_data_decoder
+from .request_utils import get_region_props
 from .diskcache import fanout_cache
 from .ebrains_token import get_public_token
 from . import logger
@@ -353,19 +354,7 @@ def get_region_by_name(
     r = region[0]
     region_json = create_region_json_response(r, space_id, atlas, detail=True)
     if space_id:
-        atlas.select_region(r)
-        # r_props = siibra_region.RegionProps(r,find_space_by_id(atlas, space_id))
-        logger.debug('Space: {}'.format(find_space_by_id(atlas, space_id)))
-        logger.debug('Parcellation: {}'.format(atlas.selected_region))
-        logger.debug('Region: {}'.format(atlas.selected_region))
-
-        r_props = r.spatialprops(find_space_by_id(atlas, space_id))
-        region_json['props'] = {}
-        region_json['props']['centroid_mm'] = list(
-            r_props.attrs['centroid_mm'])
-        region_json['props']['volume_mm'] = r_props.attrs['volume_mm']
-        region_json['props']['surface_mm'] = r_props.attrs['surface_mm']
-        region_json['props']['is_cortical'] = r_props.attrs['is_cortical']
+        region_json['props'] = get_region_props(space_id, atlas, r)
 
     single_region_root_url = '{}atlases/{}/parcellations/{}/regions/{}'.format(
         get_base_url_from_request(request),
