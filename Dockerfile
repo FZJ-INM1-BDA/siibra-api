@@ -8,6 +8,9 @@ RUN python -m pip install --upgrade pip
 COPY . /app
 WORKDIR /app
 
+# TODO: Quick solution. Configuration should be done on a higher level, depending on branch and environment.
+ENV SIIBRA_CONFIG_GITLAB_PROJECT_TAG="develop"
+
 RUN python -m pip install -U pip
 
 RUN if [ "$DEPLOY_ENVIRONMENT" = "production" ] ; then python -m pip install -r requirements/prod.txt ; else python -m pip install -r requirements/dev.txt ; fi
