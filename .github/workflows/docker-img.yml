@@ -13,13 +13,13 @@ jobs:
       DOCKER_IMG: 'siibra-api'
     steps:
     - uses: actions/checkout@v2
-    - name: 'Set matomo env var'
+    - name: 'Set DOCKER_IMG_TAG'
       run: |
         echo "Using github.ref: $GITHUB_REF"
-        echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+        echo "DOCKER_IMG_TAG=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
     - name: 'Build docker image'
       run: |
-        DOCKER_BUILT_TAG=${{ env.DOCKER_REGISTRY }}${{ env.DOCKER_IMG }}:$BRANCH_NAME
+        DOCKER_BUILT_TAG=${{ env.DOCKER_REGISTRY }}${{ env.DOCKER_IMG }}:$DOCKER_IMG_TAG
         echo "Building $DOCKER_BUILT_TAG"
         docker build \
           -t $DOCKER_BUILT_TAG \

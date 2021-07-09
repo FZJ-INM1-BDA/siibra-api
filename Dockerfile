@@ -8,21 +8,31 @@ RUN python -m pip install --upgrade pip
 COPY . /app
 WORKDIR /app
 
-# TODO: Quick solution. Configuration should be done on a higher level, depending on branch and environment.
-ENV SIIBRA_CONFIG_GITLAB_PROJECT_TAG="develop"
-
 RUN python -m pip install -U pip
 
-RUN if [ "$DEPLOY_ENVIRONMENT" = "production" ] ; then python -m pip install -r requirements/prod.txt ; else python -m pip install -r requirements/dev.txt ; fi
+# can be passed in via --build-arg PROD_FLAG=1
+ARG PROD_FLAG
+# if prod flag is set, set DEPLOY_ENVIRONMENT=production
+ENV DEPLOY_ENVIRONMENT=${PROD_FLAG:+production}
+# if prod flag is NOT set, set SIIBRA_CONFIG_GITLAB_PROJECT_TAG=develop
+ENV SIIBRA_CONFIG_GITLAB_PROJECT_TAG=${PROD_FLAG:-develop}
+
+RUN if [ "$DEPLOY_ENVIRONMENT" = "production" ] \
+  then \
+    python -m pip install -r requirements/prod.txt \
+  else \
+    python -m pip install -r requirements/dev.txt \
+  fi
+
 RUN python -m pip install anytree
 RUN python -m pip install pillow
 RUN python -m pip install scikit-image
 
 # Create directory for cache and set an environment variable for siibra
-RUN mkdir -p cache
-RUN chmod 777 cache
+RUN mkdir -p /tmp/.siibra-cache
+RUN chmod 777 /tmp/.siibra-cache
 RUN chmod 777 /app
-ENV SIIBRA_CACHEDIR=/app/cache
+ENV SIIBRA_CACHEDIR=/tmp/.siibra-cache
 
 RUN chown -R nobody /app
 USER nobody
