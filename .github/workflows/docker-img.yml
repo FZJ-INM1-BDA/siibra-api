@@ -22,13 +22,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: 'Set DOCKER_IMG_TAG'
+    - name: 'Set DOCKER_IMAGE_TAG'
       run: |
         echo "Event: $GITHUB_EVENT_NAME"
 
         if [ "$GITHUB_EVENT_NAME" = "push" ]
         then
-          DOCKER_IMG_TAG=latest
+          DOCKER_IMAGE_TAG=latest
         fi
 
         if [ "$GITHUB_EVENT_NAME" = "release" ]
@@ -40,19 +40,19 @@ jobs:
           if [[ "$GITHUB_REF" = *"rc"* ]]
           then
             # if release contains rc, set img tag to rc
-            DOCKER_IMG_TAG=rc
+            DOCKER_IMAGE_TAG=rc
           else
             # if release contains rc, otherwise, set img tag to stable
-            DOCKER_IMG_TAG=stable
+            DOCKER_IMAGE_TAG=stable
           fi
         fi
 
-        echo "DOCKER_IMG_TAG: $DOCKER_IMG_TAG"
-        echo "DOCKER_IMG_TAG=$DOCKER_IMG_TAG" >> $GITHUB_ENV
+        echo "DOCKER_IMAGE_TAG: $DOCKER_IMAGE_TAG"
+        echo "DOCKER_IMAGE_TAG=$DOCKER_IMAGE_TAG" >> $GITHUB_ENV
 
     - name: 'Build docker image'
       run: |
-        DOCKER_BUILT_TAG=${{ env.DOCKER_REGISTRY }}${{ env.DOCKER_IMG }}:$DOCKER_IMG_TAG
+        DOCKER_BUILT_TAG=${{ env.DOCKER_REGISTRY }}${{ env.DOCKER_IMG }}:$DOCKER_IMAGE_TAG
         echo "Building $DOCKER_BUILT_TAG"
         if [ -z "$PROD_FLAG" ]
         then
@@ -99,7 +99,7 @@ jobs:
           OKD_SECRET=${{ env.OKD_DEV_SECRET }}
           DEPLOY_SITE_POSTFIX="-dev"
 
-          DOCKER_IMG_TAG=latest
+          DOCKER_IMAGE_TAG=latest
         fi
 
         if [ "$GITHUB_EVENT_NAME" = "release" ]
@@ -115,10 +115,10 @@ jobs:
           if [[ "$GITHUB_REF" = *"rc"* ]]
           then
             # if release contains rc, set img tag to rc
-            DOCKER_IMG_TAG=rc
+            DOCKER_IMAGE_TAG=rc
           else
             # if release contains rc, otherwise, set img tag to stable
-            DOCKER_IMG_TAG=stable
+            DOCKER_IMAGE_TAG=stable
           fi
         fi
 
@@ -126,8 +126,8 @@ jobs:
         echo "OKD_SECRET=$OKD_SECRET" >> $GITHUB_ENV
         echo "DEPLOY_SITE_POSTFIX=$DEPLOY_SITE_POSTFIX" >> $GITHUB_ENV
 
-        echo "DOCKER_IMG_TAG: $DOCKER_IMG_TAG"
-        echo "DOCKER_IMG_TAG=$DOCKER_IMG_TAG" >> $GITHUB_ENV
+        echo "DOCKER_IMAGE_TAG: $DOCKER_IMAGE_TAG"
+        echo "DOCKER_IMAGE_TAG=$DOCKER_IMAGE_TAG" >> $GITHUB_ENV
 
     - name: 'Login via oc cli & deploy'
       run: |
@@ -135,8 +135,8 @@ jobs:
         oc project ${{ env.OKD_PROJECT }}
 
         # sanitise docker_img_tag, even though it shouldn't be necessary (valid tags are latest | rc | stable )
-        DEPLOY_FLAVOUR=$(echo ${DOCKER_IMG_TAG//[_\/]/} | awk '{ print tolower($0) }')
-        echo "Working docker tag: $DOCKER_IMG_TAG, sanitized flavour: $DEPLOY_FLAVOUR"
+        DEPLOY_FLAVOUR=$(echo ${DOCKER_IMAGE_TAG//[_\/]/} | awk '{ print tolower($0) }')
+        echo "Working docker tag: $DOCKER_IMAGE_TAG, sanitized flavour: $DEPLOY_FLAVOUR"
         
         # check if the deploy already exist
         if oc get dc siibra-api-branch-deploy-$DEPLOY_FLAVOUR; then
@@ -147,7 +147,7 @@ jobs:
           # create new app if deployconfig does not yet exist
           echo "dc siibra-api-branch-deploy-$DEPLOY_FLAVOUR does not yet exist, create new app..."
           oc new-app --template siibra-api-branch-deploy \
-            -p BRANCH_NAME=$BRANCH_NAME \
+            -p DOCKER_IMAGE_TAG=$DOCKER_IMAGE_TAG \
             -p DEPLOY_SITE_POSTFIX=$DEPLOY_SITE_POSTFIX \
             -p DEPLOY_FLAVOUR=$DEPLOY_FLAVOUR
         fi
