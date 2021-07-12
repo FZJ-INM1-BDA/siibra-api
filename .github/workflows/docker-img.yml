@@ -56,14 +56,14 @@ jobs:
         echo "Building $DOCKER_BUILT_TAG"
         if [ -z "$PROD_FLAG" ]
         then
-          echo "PROD_FLAG set, build for prod"
+          echo "PROD_FLAG not set, build latest"
           docker build \
-            --build-arg PROD_FLAG=1 \
             -t $DOCKER_BUILT_TAG \
             .
         else
-          echo "PROD_FLAG not set, build latest"
+          echo "PROD_FLAG set, build for prod"
           docker build \
+            --build-arg PROD_FLAG=1 \
             -t $DOCKER_BUILT_TAG \
             .
         fi
