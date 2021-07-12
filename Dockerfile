@@ -17,11 +17,9 @@ ENV DEPLOY_ENVIRONMENT=${PROD_FLAG:+production}
 # if prod flag is NOT set, set SIIBRA_CONFIG_GITLAB_PROJECT_TAG=develop
 ENV SIIBRA_CONFIG_GITLAB_PROJECT_TAG=${PROD_FLAG:-develop}
 
-RUN if [ "$DEPLOY_ENVIRONMENT" = "production" ] \
-  then \
-    python -m pip install -r requirements/prod.txt \
-  else \
-    python -m pip install -r requirements/dev.txt \
+RUN if [ "$DEPLOY_ENVIRONMENT" = "production" ]; \
+  then python -m pip install -r requirements/prod.txt; \
+  else python -m pip install -r requirements/dev.txt; \
   fi
 
 RUN python -m pip install anytree
