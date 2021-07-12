@@ -18,7 +18,7 @@ env:
   DOCKER_IMG: 'siibra-api'
 
 jobs:
-  build-docker-and-deploy:
+  build-docker-img:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
