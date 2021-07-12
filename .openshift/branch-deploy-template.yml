@@ -9,25 +9,29 @@ objects:
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
-    name: siibra-api-branch-deploy-${SANITIZED_BRANCH_NAME}
+    name: siibra-api-branch-deploy-${DEPLOY_FLAVOUR}
     labels:
-      app: siibra-api-branch-deploy-${SANITIZED_BRANCH_NAME}
+      app: siibra-api-branch-deploy-${DEPLOY_FLAVOUR}
   spec:
     replicas: 1
     revisionHistoryLimit: 10
     selector:
-      deploymentconfig: siibra-api-branch-deploy-${SANITIZED_BRANCH_NAME}
+      deploymentconfig: siibra-api-branch-deploy-${DEPLOY_FLAVOUR}
     template:
       metadata:
         labels:
           app: siibra-api-branch-deploy
-          deploymentconfig: siibra-api-branch-deploy-${SANITIZED_BRANCH_NAME}
+          deploymentconfig: siibra-api-branch-deploy-${DEPLOY_FLAVOUR}
       spec:
         containers:
         - env:
           - name: SESSION_SECRET
             value: ${SESSION_SECRET}
-
+          - name: REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: database-password
+                name: siibra-redis
           - name: EBRAINS_IAM_CLIENT_ID
             valueFrom: 
               configMapKeyRef:
@@ -73,9 +77,9 @@ objects:
             successThreshold: 1
             timeoutSeconds: 10
 
-          image: "docker-registry.ebrains.eu/siibra/siibra-api:${BRANCH_NAME}"
+          image: "docker-registry.ebrains.eu/siibra/siibra-api:${DOCKER_IMAGE_TAG}"
           imagePullPolicy: Always
-          name: siibra-api-${SANITIZED_BRANCH_NAME}
+          name: siibra-api-${DEPLOY_FLAVOUR}
           ports:
           - containerPort: 5000
             protocol: TCP
@@ -91,8 +95,8 @@ objects:
   kind: Service
   metadata:
     labels:
-      app: siibra-api-branch-deploy-${SANITIZED_BRANCH_NAME}
-    name: siibra-api-branch-deploy-${SANITIZED_BRANCH_NAME}
+      app: siibra-api-branch-deploy-${DEPLOY_FLAVOUR}
+    name: siibra-api-branch-deploy-${DEPLOY_FLAVOUR}
   spec:
     ports:
     - name: 5000-tcp
@@ -100,16 +104,16 @@ objects:
       protocol: TCP
       targetPort: 5000
     selector:
-      deploymentconfig: siibra-api-branch-deploy-${SANITIZED_BRANCH_NAME}
+      deploymentconfig: siibra-api-branch-deploy-${DEPLOY_FLAVOUR}
     type: ClusterIP
 - apiVersion: v1
   kind: Route
   metadata:
     labels:
-      app: siibra-api-branch-deploy-${SANITIZED_BRANCH_NAME}
-    name: siibra-api-branch-deploy-${SANITIZED_BRANCH_NAME}
+      app: siibra-api-branch-deploy-${DEPLOY_FLAVOUR}
+    name: siibra-api-branch-deploy-${DEPLOY_FLAVOUR}
   spec:
-    host: siibra-api-${SANITIZED_BRANCH_NAME}.apps-dev.hbp.eu
+    host: siibra-api-${DEPLOY_FLAVOUR}.apps${DEPLOY_SITE_POSTFIX}.hbp.eu
     port:
       targetPort: 5000-tcp
     tls:
@@ -117,20 +121,28 @@ objects:
       termination: edge
     to:
       kind: Service
-      name: siibra-api-branch-deploy-${SANITIZED_BRANCH_NAME}
+      name: siibra-api-branch-deploy-${DEPLOY_FLAVOUR}
       weight: 100
     wildcardPolicy: None
 
 parameters:
-- name: BRANCH_NAME
+- description: Session secret
+  from: '[A-Z0-9]{16}'
+  generate: expression
+  name: SESSION_SECRET
+- name: DOCKER_IMAGE_TAG
   required: true
-- name: SANITIZED_BRANCH_NAME
+- name: DEPLOY_FLAVOUR
   required: true
   description: |
     A lot of routing/naming follow special rules:
     - does not allow special characters, except for - or . .
     - only allows lower case.
-    Strip all special characters from BRANCH_NAME, change to all lower case and pass it as SANITIZED_BRANCH_NAME
+    valid values are: stable | rc | latest
+- name: DEPLOY_SITE_POSTFIX
+  description: |
+    Where to deploy. Valid values are: '-dev'
+  value: ''
 
 labels:
   template: siibra-api-branch-deploy-template
