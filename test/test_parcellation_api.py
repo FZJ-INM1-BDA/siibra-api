@@ -21,7 +21,6 @@ VALID_MODALITY_INSTANCE_ID='https%3A%2F%2Fnexus.humanbrainproject.org%2Fv0%2Fdat
 def test_get_all_parcellations():
     response = client.get(
         '/v1_0/atlases/{}/parcellations'.format(ATLAS_ID.replace('/', '%2F')),
-        headers={"Authorization": "Bearer token"}
     )
     result_content = json.loads(response.content)
     assert response.status_code == 200
@@ -42,7 +41,7 @@ def test_get_one_parcellation_by_id():
     assert result_content['name'] == 'Julich-Brain Cytoarchitectonic Maps 2.5'
     assert result_content['version'] == {
         'name': '2.5',
-        'next': 'minds/core/parcellationatlas/v1.0.0/94c1125b-b87e-45e4-901c-00daee7f2579-273',
+        'next': 'minds/core/parcellationatlas/v1.0.0/94c1125b-b87e-45e4-901c-00daee7f2579-290',
         'prev': 'minds/core/parcellationatlas/v1.0.0/94c1125b-b87e-45e4-901c-00daee7f2579'
     }
 

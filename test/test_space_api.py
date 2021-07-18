@@ -30,7 +30,7 @@ def test_get_all_spaces():
     response = client.get('/v1_0/atlases/{}/spaces'.format(ATLAS_ID.replace('/', '%2F')))
     result_content = json.loads(response.content)
     assert response.status_code == 200
-    assert len(result_content) == 3
+    assert len(result_content) == 4
 
 
 def test_get_one_space():
