@@ -28,14 +28,14 @@ jobs:
 
         if [ "$GITHUB_EVENT_NAME" = "push" ]
         then
+
+          # since it's latest, set DEV_FLAG to true
+          echo "DEV_FLAG=1" >> $GITHUB_ENV
           DOCKER_IMAGE_TAG=latest
         fi
 
         if [ "$GITHUB_EVENT_NAME" = "release" ]
         then
-
-          # since it's release, set PROD_FLAG to true
-          echo "PROD_FLAG=1" >> $GITHUB_ENV
 
           if [[ "$GITHUB_REF" = *"rc"* ]]
           then
@@ -54,16 +54,16 @@ jobs:
       run: |
         DOCKER_BUILT_TAG=${{ env.DOCKER_REGISTRY }}${{ env.DOCKER_IMG }}:$DOCKER_IMAGE_TAG
         echo "Building $DOCKER_BUILT_TAG"
-        if [ -z "$PROD_FLAG" ]
+        if [ -z "$DEV_FLAG" ]
         then
-          echo "PROD_FLAG not set, build latest"
+          echo "DEV_FLAG not set, build latest"
           docker build \
             -t $DOCKER_BUILT_TAG \
             .
         else
-          echo "PROD_FLAG set, build for prod"
+          echo "DEV_FLAG set, build for prod"
           docker build \
-            --build-arg PROD_FLAG=1 \
+            --build-arg DEV_FLAG=1 \
             -t $DOCKER_BUILT_TAG \
             .
         fi
@@ -94,6 +94,11 @@ jobs:
 
         if [ "$GITHUB_EVENT_NAME" = "push" ]
         then
+
+          echo "event triggered is 'push', use dev envvar"
+          # since it's release, set DEV_FLAG to true
+          echo "DEV_FLAG=1" >> $GITHUB_ENV
+
           echo "event triggered is 'push', use develop envvar"
           OKD_ENDPOINT=${{ env.OKD_DEV_ENDPOINT }}
           OKD_SECRET=${{ env.OKD_DEV_SECRET }}
@@ -104,9 +109,6 @@ jobs:
 
         if [ "$GITHUB_EVENT_NAME" = "release" ]
         then
-          echo "event triggered is 'reelease', use prod envvar"
-          # since it's release, set PROD_FLAG to true
-          echo "PROD_FLAG=1" >> $GITHUB_ENV
 
           OKD_ENDPOINT=${{ env.OKD_PROD_ENDPOINT }}
           OKD_SECRET=${{ env.OKD_PROD_SECRET }}

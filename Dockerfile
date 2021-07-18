@@ -10,12 +10,13 @@ WORKDIR /app
 
 RUN python -m pip install -U pip
 
-# can be passed in via --build-arg PROD_FLAG=1
-ARG PROD_FLAG
+# can be passed in via --build-arg DEV_FLAG=1
+ARG DEV_FLAG
 # if prod flag is set, set DEPLOY_ENVIRONMENT=production
-ENV DEPLOY_ENVIRONMENT=${PROD_FLAG:+production}
+ENV DEPLOY_ENVIRONMENT=${DEV_FLAG:+develop}
+ENV DEPLOY_ENVIRONMENT=${DEPLOY_ENVIRONMENT:-production}
 # if prod flag is NOT set, set SIIBRA_CONFIG_GITLAB_PROJECT_TAG=develop
-ENV SIIBRA_CONFIG_GITLAB_PROJECT_TAG=${PROD_FLAG:-develop}
+ENV SIIBRA_CONFIG_GITLAB_PROJECT_TAG=${DEV_FLAG:-develop}
 
 RUN if [ "$DEPLOY_ENVIRONMENT" = "production" ]; \
   then python -m pip install -r requirements/prod.txt; \
