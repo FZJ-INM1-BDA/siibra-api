@@ -42,7 +42,8 @@ def test_get_one_parcellation_by_id():
     assert result_content['version'] == {
         'name': '2.5',
         'next': 'minds/core/parcellationatlas/v1.0.0/94c1125b-b87e-45e4-901c-00daee7f2579-290',
-        'prev': 'minds/core/parcellationatlas/v1.0.0/94c1125b-b87e-45e4-901c-00daee7f2579'
+        'prev': 'minds/core/parcellationatlas/v1.0.0/94c1125b-b87e-45e4-901c-00daee7f2579',
+        'deprecated': True
     }
 
 
