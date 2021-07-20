@@ -125,7 +125,18 @@ def __parcellation_result_info(parcellation, atlas_id=None, request=None):
         result_info['volumeSrc'] = jsonable_encoder(
             volumeSrc, custom_encoder=siibra_custom_json_encoder)
     if hasattr(parcellation, 'origin_datainfos'):
-        result_info['originDatainfos'] = [ origin_data_decoder(datainfo) for datainfo in parcellation.origin_datainfos]
+        original_infos=[]
+        for datainfo in parcellation.origin_datainfos:
+            try:
+                original_info=origin_data_decoder(datainfo)
+                original_infos.append(original_info)
+            except RuntimeError:
+                continue
+
+        result_info['originDatainfos'] = original_infos
+
+    if hasattr(parcellation, 'deprecated'):
+        result_info['deprecated'] = parcellation.deprecated
 
     return result_info
 
