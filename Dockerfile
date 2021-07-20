@@ -12,10 +12,11 @@ RUN python -m pip install -U pip
 
 # can be passed in via --build-arg DEV_FLAG=1
 ARG DEV_FLAG
-# if prod flag is set, set DEPLOY_ENVIRONMENT=production
+# if DEV_FLAG flag is set, set DEPLOY_ENVIRONMENT=develop
 ENV DEPLOY_ENVIRONMENT=${DEV_FLAG:+develop}
+# if DEPLOY_ENVIRONMENT is not yet set, set it to production
 ENV DEPLOY_ENVIRONMENT=${DEPLOY_ENVIRONMENT:-production}
-# if prod flag is NOT set, set SIIBRA_CONFIG_GITLAB_PROJECT_TAG=develop
+# if DEV_FLAG flag is set, set SIIBRA_CONFIG_GITLAB_PROJECT_TAG=develop
 ENV SIIBRA_CONFIG_GITLAB_PROJECT_TAG=${DEV_FLAG:+develop}
 
 RUN if [ "$DEPLOY_ENVIRONMENT" = "production" ]; \
@@ -40,4 +41,6 @@ USER nobody
 EXPOSE 5000
 
 # Start application
-ENTRYPOINT ["uvicorn", "app.app:app", "--host", "0.0.0.0", "--port", "5000"]
+# SIIBRA_CONFIG_GITLAB_PROJECT_TAG will be set to empty string if DEV_FLAG build arg is unset
+# It needs to be unset, in this case, or the empty string will be parsed as truthy in python
+ENTRYPOINT ["/bin/bash", "-c", "if [ -z $SIIBRA_CONFIG_GITLAB_PROJECT_TAG ]; then unset SIIBRA_CONFIG_GITLAB_PROJECT_TAG; fi && uvicorn app.app:app --host 0.0.0.0 --port 5000"]
