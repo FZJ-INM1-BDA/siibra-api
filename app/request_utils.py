@@ -170,19 +170,15 @@ def get_available_spaces_for_region(region):
     return result
 
 
-def get_region_props(space_id, atlas, region):
-    result_props = {}
+def get_region_props(space_id, atlas, region) -> list:
     atlas.select_region(region)
     space = find_space_by_id(atlas, space_id)
     try:
         logger.info(f'Getting region props for: {region}')
-        r_props = region.spatialprops(space, force=True)
-        result_props['centroid_mm'] = list(r_props.attrs['centroid_mm'])
-        result_props['volume_mm'] = r_props.attrs['volume_mm']
-        result_props['surface_mm'] = r_props.attrs['surface_mm']
-        result_props['is_cortical'] = r_props.attrs['is_cortical']
+        result_props = region.spatialprops(space, force=True)
     except:
         logger.info(f'Could not get region properties for region: {region} and space: {space}')
+        result_props = []
     return result_props
 
 
