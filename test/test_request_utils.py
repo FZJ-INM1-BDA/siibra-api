@@ -22,6 +22,11 @@ class TestRequestUtils(unittest.TestCase):
         'Authorization': BEARER_TOKEN
     }
 
+    JULICH_BRAIN_29_ID = 'minds/core/parcellationatlas/v1.0.0/94c1125b-b87e-45e4-901c-00daee7f2579-290'
+    MNI152_SPACE_ID = 'minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2'
+    FP1_RIGHT = 'Area Fp1 (FPole) right'
+    IEEG_ELECTRODE_MODALITY = 'IEEG_Electrode'
+
     def test_create_atlas(self):
         atlas = request_utils.create_atlas(self.ATLAS_ID)
         self.assertEqual(atlas.name, 'Multilevel Human Atlas')
@@ -48,6 +53,16 @@ class TestRequestUtils(unittest.TestCase):
     def test_get_all_spaces_for_parcellation(self):
         spaces = request_utils.get_spaces_for_parcellation(self.PARCELLATION_NAME)
         self.assertGreater(len(spaces), 0)
+
+    def test_get_spatial_features(self):
+        features=request_utils.get_spatial_features(
+            self.ATLAS_ID,
+            self.MNI152_SPACE_ID,
+            self.IEEG_ELECTRODE_MODALITY,
+            parc_id=self.JULICH_BRAIN_29_ID,
+            region_id=self.FP1_RIGHT)
+
+        self.assertGreater(len(features), 0)
 
     def test_base_url_without_redirect(self):
         self.request_mock.headers = {

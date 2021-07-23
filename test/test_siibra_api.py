@@ -19,7 +19,7 @@ def test_get_all_available_modalities():
     response = client.get('/v1_0/features')
     assert response.status_code == 200
     result_content = json.loads(response.content)
-    assert len(result_content) == 5
+    assert len(result_content) > 0
 
 
 # def test_raise_exception_on_receptor_distribution_for_wrong_region():

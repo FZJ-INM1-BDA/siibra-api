@@ -21,7 +21,7 @@ from fastapi import HTTPException, Request
 from .cache_redis import CacheRedis
 import anytree
 from siibra.features import feature as feature_export, classes as feature_classes, connectivity as connectivity_export, \
-    receptors as receptors_export, genes as genes_export, ebrainsquery as ebrainsquery_export
+    receptors as receptors_export, genes as genes_export, ebrainsquery as ebrainsquery_export, ieeg as ieeg_export
 import hashlib
 import os
 from .diskcache import fanout_cache, CACHEDIR
@@ -239,7 +239,9 @@ SUPPORTED_FEATURES = [
     genes_export.GeneExpression,
     connectivity_export.ConnectivityProfile,
     receptors_export.ReceptorDistribution,
-    ebrainsquery_export.EbrainsRegionalDataset]
+    ebrainsquery_export.EbrainsRegionalDataset,
+    ieeg_export.IEEG_Electrode,
+    ieeg_export.IEEG_ContactPoint]
 
 
 @fanout_cache.memoize(typed=True)
@@ -403,6 +405,78 @@ def get_global_features(atlas_id, parcellation_id, modality_id):
         status_code=204,
         detail=f'feature {modality_id} has not yet been implemented')
 
+
+@fanout_cache.memoize(typed=True)
+def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detail=False, parc_id=None, region_id=None):
+    
+    space_of_interest = bs.spaces[space_id]
+    if space_of_interest is None:
+        raise HTTPException(404, detail=f'space with id {space_id} cannot be found')
+
+    # select atlas by id
+    if modality_id not in feature_classes:
+        # modality_id not found in feature_classes
+        raise HTTPException(status_code=400,
+                            detail=f'{modality_id} is not a valid modality')
+
+    # fail fast if not in supported feature list
+    if feature_classes[modality_id] not in SUPPORTED_FEATURES:
+        raise HTTPException(
+            status_code=501,
+            detail=f'feature {modality_id} has not yet been implmented')
+
+    if not issubclass(
+            feature_classes[modality_id],
+            feature_export.SpatialFeature):
+        # modality_id is not a global feature, return empty array
+        return []
+
+    # select atlas by id
+    atlas = create_atlas(atlas_id)
+    if space_of_interest not in atlas.spaces:
+        raise HTTPException(401, detail=f'space {space_id} not in atlas {atlas}')
+
+    if parc_id:
+        if region_id is None:
+            raise HTTPException(status_code=400, detail='region is needed, if parc_id is provided')
+        atlas.select_parcellation(parc_id)
+        atlas.select_region(region_id)
+
+    try:
+        spatial_features=atlas.get_features(modality_id)        
+    except Exception:
+        raise HTTPException(401, detali=f'Could not get spatial features.')
+    
+    filtered_features= [f for f in spatial_features if f.space == space_of_interest]
+    shaped_features=None
+    if feature_classes[modality_id] == ieeg_export.IEEG_Electrode:
+        shaped_features=[{
+            'summary': {
+                '@id': hashlib.md5(str(feat).encode("utf-8")).hexdigest(),
+                'name': str(feat)
+            },
+            'get_detail': lambda ft: {
+                '__kg_id': ft.kg_id,
+                '__contact_points': {
+                    key: {
+                        'id': ft.contact_points[key].id,
+                        'coord': ft.contact_points[key].location,
+                        **({'inRoi': ft.contact_points[key].matches(atlas)} if parc_id is not None else {})
+                    } for key in ft.contact_points
+                }
+            },
+            'instance': feat
+        } for feat in filtered_features]
+    if shaped_features is None:
+        raise HTTPException(501, detail=f'{modality_id} not yet implemented')
+
+    if feature_id is not None:
+        shaped_features=[f for f in shaped_features if f['summary']['@id'] == feature_id]
+
+    return [{
+        **f['summary'],
+        **(f['get_detail'](f['instance']) if detail else {}),
+    } for f in shaped_features]
 
 def get_path_to_regional_map(query_id, roi, space_of_interest):
 
