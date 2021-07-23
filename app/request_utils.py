@@ -339,6 +339,13 @@ def get_regional_feature(
                 "@id": receptor_pr.name,
                 "name": receptor_pr.name,
                 "info": receptor_pr.info,
+                "origin_datainfos": [{
+                    'name': receptor_pr.name,
+                    'description': receptor_pr.info,
+                    'urls': [{
+                        'doi': receptor_pr.url
+                    }]
+                }]
             },
             'get_detail': lambda receptor_pr: { 
                 "__receptor_symbols": receptors_export.RECEPTOR_SYMBOLS,
