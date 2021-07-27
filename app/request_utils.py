@@ -241,7 +241,7 @@ SUPPORTED_FEATURES = [
     receptors_export.ReceptorDistribution,
     ebrainsquery_export.EbrainsRegionalDataset,
     ieeg_export.IEEG_Electrode,
-    ieeg_export.IEEG_ContactPoint]
+    ieeg_export.IEEG_Dataset]
 
 
 @fanout_cache.memoize(typed=True)
@@ -405,10 +405,16 @@ def get_global_features(atlas_id, parcellation_id, modality_id):
         status_code=204,
         detail=f'feature {modality_id} has not yet been implemented')
 
+def get_contact_pt_detail(contact_pt, atlas=None, parc_id=None):
+    return {
+        'id': contact_pt.id,
+        'coord': contact_pt.location,
+        **({'inRoi': contact_pt.matches(atlas)} if parc_id is not None and atlas is not None else {})
+    }
 
 @fanout_cache.memoize(typed=True)
 def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detail=False, parc_id=None, region_id=None):
-    
+
     space_of_interest = bs.spaces[space_id]
     if space_of_interest is None:
         raise HTTPException(404, detail=f'space with id {space_id} cannot be found')
@@ -453,16 +459,49 @@ def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detai
         shaped_features=[{
             'summary': {
                 '@id': hashlib.md5(str(feat).encode("utf-8")).hexdigest(),
-                'name': str(feat)
+                'name': str(feat),
+                'origin_datainfos': [{
+                    'urls': [{
+                        'doi': f'https://search.kg.ebrains.eu/instances/{feat.kg_id}'
+                    }]
+                }]
             },
             'get_detail': lambda ft: {
                 '__kg_id': ft.kg_id,
                 '__contact_points': {
-                    key: {
-                        'id': ft.contact_points[key].id,
-                        'coord': ft.contact_points[key].location,
-                        **({'inRoi': ft.contact_points[key].matches(atlas)} if parc_id is not None else {})
-                    } for key in ft.contact_points
+                    key: get_contact_pt_detail(
+                        ft.contact_points[key],
+                        atlas=atlas,
+                        parc_id=parc_id) for key in ft.contact_points
+                }
+            },
+            'instance': feat
+        } for feat in filtered_features]
+
+    if feature_classes[modality_id] == ieeg_export.IEEG_Dataset:
+        shaped_features=[{
+            'summary': {
+                '@id': hashlib.md5(str(feat).encode("utf-8")).hexdigest(),
+                'name': str(feat),
+                'origin_datainfos': [{
+                    'urls': [{
+                        'doi': f'https://search.kg.ebrains.eu/instances/{feat.kg_id}'
+                    }]
+                }]
+            },
+            'get_detail': lambda ft: {
+                '__kg_id': ft.kg_id,
+                '__electrodes': {
+                    electrode_id: {
+                        'id': ft.electrodes[subject_id][electrode_id].electrode_id,
+                        'subject_id': subject_id,
+                        '__contact_points': {
+                            cp_key: get_contact_pt_detail(
+                                ft.electrodes[subject_id][electrode_id].contact_points[cp_key],
+                                atlas=atlas,
+                                parc_id=parc_id) for cp_key in ft.electrodes[subject_id][electrode_id].contact_points},
+                        **({'inRoi': ft.electrodes[subject_id][electrode_id].matches(atlas)} if parc_id is not None else {}),
+                    } for subject_id in ft.electrodes for electrode_id in ft.electrodes[subject_id]
                 }
             },
             'instance': feat

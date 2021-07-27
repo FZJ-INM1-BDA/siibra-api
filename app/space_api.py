@@ -131,8 +131,7 @@ def get_single_spatial_feature(atlas_id: str, space_id: str, modality_id: str, r
     return got_features
 
 @router.get(ATLAS_PATH + '/{atlas_id:path}/spaces/{space_id:path}/features/{modality_id}/{feature_id}', tags=['spaces'])
-def get_single_spatial_feature(atlas_id: str, space_id: str, modality_id: str,feature_id: str, request: Request, parcellation_id: Optional[str]=None, region: Optional[str]=None):
-    print(atlas_id, space_id, modality_id, feature_id, parcellation_id, region)
+def get_single_spatial_feature_detail(atlas_id: str, space_id: str, modality_id: str,feature_id: str, request: Request, parcellation_id: Optional[str]=None, region: Optional[str]=None):
     got_features=get_spatial_features(atlas_id, space_id, modality_id, feature_id, parc_id=parcellation_id, region_id=region, detail=True)
     if len(got_features) == 0:
         raise HTTPException(404, detail=f'feature with id {feature_id} cannot be found')
