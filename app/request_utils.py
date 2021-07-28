@@ -408,8 +408,18 @@ def get_global_features(atlas_id, parcellation_id, modality_id):
 def get_contact_pt_detail(contact_pt, atlas=None, parc_id=None):
     return {
         'id': contact_pt.id,
-        'coord': contact_pt.location,
+        'location': contact_pt.location,
         **({'inRoi': contact_pt.matches(atlas)} if parc_id is not None and atlas is not None else {})
+    }
+
+def get_electrode_detail(electrode, atlas=None, parc_id=None):
+    return {
+        'electrode_id': electrode.electrode_id,
+        'subject_id': electrode.subject_id,
+        'contact_points': {
+            contact_pt_id: get_contact_pt_detail(electrode.contact_points[contact_pt_id], atlas, parc_id)
+            for contact_pt_id in electrode.contact_points},
+        **({'inRoi': electrode.matches(atlas)} if parc_id is not None and atlas is not None else {})
     }
 
 @fanout_cache.memoize(typed=True)
@@ -466,15 +476,9 @@ def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detai
                     }]
                 }]
             },
-            'get_detail': lambda ft: {
-                '__kg_id': ft.kg_id,
-                '__contact_points': {
-                    key: get_contact_pt_detail(
-                        ft.contact_points[key],
-                        atlas=atlas,
-                        parc_id=parc_id) for key in ft.contact_points
-                }
-            },
+            'get_detail': lambda ft: get_electrode_detail(ft,
+                atlas=atlas,
+                parc_id=parc_id),
             'instance': feat
         } for feat in filtered_features]
 
@@ -490,18 +494,15 @@ def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detai
                 }]
             },
             'get_detail': lambda ft: {
-                '__kg_id': ft.kg_id,
-                '__electrodes': {
-                    electrode_id: {
-                        'id': ft.electrodes[subject_id][electrode_id].electrode_id,
-                        'subject_id': subject_id,
-                        '__contact_points': {
-                            cp_key: get_contact_pt_detail(
-                                ft.electrodes[subject_id][electrode_id].contact_points[cp_key],
-                                atlas=atlas,
-                                parc_id=parc_id) for cp_key in ft.electrodes[subject_id][electrode_id].contact_points},
-                        **({'inRoi': ft.electrodes[subject_id][electrode_id].matches(atlas)} if parc_id is not None else {}),
-                    } for subject_id in ft.electrodes for electrode_id in ft.electrodes[subject_id]
+                'kg_id': ft.kg_id,
+                'electrodes': {
+                    subject_id: {
+                        electrode_id: get_electrode_detail(
+                            ft.electrodes[subject_id][electrode_id],
+                            atlas=atlas,
+                            parc_id=parc_id,
+                        ) for electrode_id in ft.electrodes[subject_id]
+                    } for subject_id in ft.electrodes
                 }
             },
             'instance': feat
