@@ -486,7 +486,8 @@ def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detai
         shaped_features=[{
             'summary': {
                 '@id': hashlib.md5(str(feat).encode("utf-8")).hexdigest(),
-                'name': str(feat),
+                'name': feat.name,
+                'description': feat.description,
                 'origin_datainfos': [{
                     'urls': [{
                         'doi': f'https://search.kg.ebrains.eu/instances/{feat.kg_id}'
