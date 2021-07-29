@@ -461,7 +461,7 @@ def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detai
     try:
         spatial_features=atlas.get_features(modality_id)        
     except Exception:
-        raise HTTPException(401, detali=f'Could not get spatial features.')
+        raise HTTPException(401, detail=f'Could not get spatial features.')
     
     filtered_features= [f for f in spatial_features if f.space == space_of_interest]
     shaped_features=None
