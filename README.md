@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="statuc/images/siibra-api.jpeg" width="600">
+    <img src="status/images/siibra-api.jpeg" width="600">
 </p>
 
 # siibra - API 
@@ -26,7 +26,7 @@ coming soon
 
 A list of all API endpoints and a playground to directly test it can be found here:
 
-[Swagger API](https://siibra-api.apps-dev.hbp.eu/v1_0/docs#/)
+[Swagger API](https://siibra-api-stable.apps.hbp.eu/v1_0/docs#/)
 
 ## Local Startup / Development
 
