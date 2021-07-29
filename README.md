@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="status/images/siibra-api.jpeg" width="600">
+    <img src="static/images/siibra-api.jpeg" width="600">
 </p>
 
 # siibra - API 
