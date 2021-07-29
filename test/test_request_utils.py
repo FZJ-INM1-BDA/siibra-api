@@ -26,6 +26,7 @@ class TestRequestUtils(unittest.TestCase):
     MNI152_SPACE_ID = 'minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2'
     FP1_RIGHT = 'Area Fp1 (FPole) right'
     IEEG_ELECTRODE_MODALITY = 'IEEG_Electrode'
+    IEEG_DATASET_MODALITY = 'IEEG_Dataset'
 
     def test_create_atlas(self):
         atlas = request_utils.create_atlas(self.ATLAS_ID)
@@ -54,11 +55,23 @@ class TestRequestUtils(unittest.TestCase):
         spaces = request_utils.get_spaces_for_parcellation(self.PARCELLATION_NAME)
         self.assertGreater(len(spaces), 0)
 
-    def test_get_spatial_features(self):
+    # disabled awaiting fix of ieeg_electrode_extractor and ieeg_contact_point extractor in siibra-python
+
+    # def test_get_spatial_features_ieeg_electrode(self):
+    #     features=request_utils.get_spatial_features(
+    #         self.ATLAS_ID,
+    #         self.MNI152_SPACE_ID,
+    #         self.IEEG_ELECTRODE_MODALITY,
+    #         parc_id=self.JULICH_BRAIN_29_ID,
+    #         region_id=self.FP1_RIGHT)
+
+    #     self.assertGreater(len(features), 0)
+
+    def test_get_spatial_features_ieeg_dataset(self):
         features=request_utils.get_spatial_features(
             self.ATLAS_ID,
             self.MNI152_SPACE_ID,
-            self.IEEG_ELECTRODE_MODALITY,
+            self.IEEG_DATASET_MODALITY,
             parc_id=self.JULICH_BRAIN_29_ID,
             region_id=self.FP1_RIGHT)
 
