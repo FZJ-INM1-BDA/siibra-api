@@ -91,7 +91,7 @@ Deployments resides in [docker-img.yml](../.github/workflows/docker-img.yml), `j
 - checkout project `siibra-api` with the command
 
   ```bash
-  oc project ${OKD_ENDPOINT}
+  oc project ${PROJECT_NAME}
   ```
 
 - check if deployment with name `siibra-api-branch-deploy-${DEPLOY_FLAVOUR}` exists
