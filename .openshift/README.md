@@ -44,8 +44,8 @@ The built docker image will then be pushed to `docker-registry.ebrains.eu` with 
 
 The login credentials are stored in github action secrets:
 
-- username: `secrets.EBRAINS_DOCKER_REG_USER`
-- access token: `secrets.EBRAINS_DOCKER_REG_TOKEN`
+- username: `{{ secrets.EBRAINS_DOCKER_REG_USER }}`
+- access token: `{{ secrets.EBRAINS_DOCKER_REG_TOKEN }}`
 
 > :warning: There are currently no mechanism to delete artefacts from `docker-registry.ebrains.eu`. One must periodically, manually delete untagged images to avoid filling of allotted diskspace.
 
@@ -68,8 +68,8 @@ This section outlines how the built image are deployed.
 | `PROJECT_NAME` | `siibra-api` |
 | `OKD_ENDPOINT` (prod) | `https://okd.hbp.eu:443` |
 | `OKD_ENDPOINT` (dev) | `https://okd-dev.hbp.eu:443` |
-| `OKD_SECRET` (prod) | `{{ secrets.OKD_PROD_SECRET }}` (stored in github action secrets) |
-| `OKD_SECRET` (dev) | `{{ secrets.OKD_DEV_SECRET }}` (stored in github action secrets) |
+| `OKD_SECRET` (prod) | `{{ secrets.OKD_PROD_SECRET }}` (generated once[1], stored in github action secrets) |
+| `OKD_SECRET` (dev) | `{{ secrets.OKD_DEV_SECRET }}` (generated once[1], stored in github action secrets) |
 
 
 ### Triggering deployment
@@ -105,6 +105,22 @@ Deployments resides in [docker-img.yml](../.github/workflows/docker-img.yml), `j
 
 ### [1] OKD service accounts
 
+In order to deploy on OKD clusters in CI/CD pipeline, it is ideal to create a service account. Openshift container platform maintains [a comprehensive guide](https://docs.openshift.com/container-platform/3.11/dev_guide/service_accounts.html) on service account. This section provides a step by step guide on creating the service account.
+
+> :info: Why not just use personal access token? 1/ it expires, 2/ it is invalidated when you logout, 3/ (to a less degree, since personal access token has a expiration), revoking personal access token has a greater impact on developer experience, and potentially breaks more things, if one reuses the same personally access token.
+
+#### Prereq
+
+- openshift cli installed (check via `which oc`)
+- login command (easiest method to obtain login command: login via web portal > portrait username (*top right*) > Copy Login Command )
+
+#### Configure a Service Account
+
+- login via terminal (paste login command from prereq)
+- select the desired project via `oc project ${PROJECT_NAME}`
+- create a new SA via: `oc create sa ${SERVICE_ACCOUNT_NAME}`
+- get a new token via: `oc sa get-token ${SERVICE_ACCOUNT_NAME}` (store this token securely, ideally in a password manager)
+- grant the SA ability to create deployments via: `oc policy add-role-to-user edit -z ${SERVICE_ACCOUNT_NAME}`
 
 
 ### [2] Deployment template
@@ -113,11 +129,19 @@ An [openshift template](./branch-deploy-template.yml) has been added to both pro
 
 This is done ahead of any deploys, is valid for all future deploys and rarely needs to be updated.
 
----
+> :warning: The process of adding/editing template is fragile and error prone. One should be vigilant and update the template as little as possible.
 
-// TODO The process of adding/editing template is fragile and error prone. We should figure out a long term solution, or be vigilant and update the template as little as possible
+The template is produced mainly by referencing Openshift container platform [template API](https://docs.openshift.com/container-platform/3.11/rest_api/template_openshift_io/template-template-openshift-io-v1.html).
 
----
+A number of sensitive variables are stored on the openshift clusters, and added to the container at runtime. They include:
+
+| variable name | from | description |
+| --- | --- | --- |
+| `REDIS_PASSWORD` | `okd_secret.siibra-redis.database-password` | password to redis |
+| `EBRAINS_IAM_CLIENT_ID` | `okd_configmap.hbp-oauth-config-map.HBP_CLIENTID` | Client ID for oauth with EBRAINS IAM service |
+| `EBRAINS_IAM_CLIENT_SECRET` | `okd_configmap.hbp-oauth-config-map.HBP_CLIENTSECRET` | Client secret for oauth with EBRAINS IAM service |
+| `EBRAINS_IAM_REFRESH_TOKEN` | `okd_configmap.hbp-oauth-config-map.REFRESH_TOKEN` | Refresh token used to generate valid access token for server to server communications. |
+| `SIIBRA_CONFIG_*` | `okd_configmap.siibra-config-overwrite.*` | Overwriting siibra config environment variables |
 
 ### [3] Deployment parameters
 
