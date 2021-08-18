@@ -9,6 +9,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        DEV_FLAG: 1
     ports:
       - "5000:5000"
     links:
