@@ -7,3 +7,4 @@ uvicorn[standard]
 aiofiles
 redis
 diskcache
+oauthlib
