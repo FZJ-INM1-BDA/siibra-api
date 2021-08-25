@@ -27,7 +27,7 @@ from .request_utils import create_atlas, get_spatial_features, split_id, find_sp
 from .request_utils import get_base_url_from_request, siibra_custom_json_encoder,origin_data_decoder
 from .atlas_api import ATLAS_PATH
 import siibra as sb
-from siibra.features import feature as feature_export, classes as feature_classes, modalities as feature_modalities
+from siibra.features import feature as feature_export, registry as feature_registry, modalities as feature_modalities
 
 # FastApi router to create rest endpoints
 router = APIRouter()
@@ -146,7 +146,7 @@ def router_get_spatial_features(atlas_id: str, space_id: str, request: Request):
                 atlas_id.replace('/', '%2F'),
                 space_id.replace('/', '%2F'),
                 quote(feature)
-            ) for feature in feature_modalities if issubclass(feature_classes[feature], feature_export.SpatialFeature)
+            ) for feature in feature_modalities if issubclass(feature_registry._classes[feature], feature_export.SpatialFeature)
         }]
     }
 

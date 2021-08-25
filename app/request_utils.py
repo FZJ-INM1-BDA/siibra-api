@@ -20,8 +20,10 @@ import nibabel as nib
 from fastapi import HTTPException, Request
 from .cache_redis import CacheRedis
 import anytree
-from siibra.features import feature as feature_export, classes as feature_classes, connectivity as connectivity_export, \
-    receptors as receptors_export, genes as genes_export, ebrainsquery as ebrainsquery_export, ieeg as ieeg_export
+from siibra.features import feature as feature_export, connectivity as connectivity_export, \
+    receptors as receptors_export, genes as genes_export, ebrainsquery as ebrainsquery_export, ieeg as ieeg_export, \
+    registry as feature_registry
+
 import hashlib
 import os
 from .diskcache import fanout_cache, CACHEDIR
@@ -254,19 +256,19 @@ def get_regional_feature(
         feature_id=None,
         gene=None):
     # select atlas by id
-    if modality_id not in feature_classes:
+    if modality_id not in feature_registry._classes:
         # modality_id not found in feature_classes
         raise HTTPException(status_code=400,
                             detail=f'{modality_id} is not a valid modality')
 
     # fail fast if not in supported feature list
-    if feature_classes[modality_id] not in SUPPORTED_FEATURES:
+    if feature_registry._classes[modality_id] not in SUPPORTED_FEATURES:
         raise HTTPException(
             status_code=501,
             detail=f'feature {modality_id} has not yet been implmented')
 
     if not issubclass(
-            feature_classes[modality_id],
+            feature_registry._classes[modality_id],
             feature_export.RegionalFeature):
         # modality_id is not a global feature, return empty array
         return []
@@ -296,7 +298,7 @@ def get_regional_feature(
             detail=f'Could not get features for region with id {region_id}')
 
     shaped_features = None
-    if feature_classes[modality_id] == ebrainsquery_export.EbrainsRegionalDataset:
+    if feature_registry._classes[modality_id] == ebrainsquery_export.EbrainsRegionalDataset:
         shaped_features=[{
             'summary': {
                 '@id': kg_rf_f.id,
@@ -305,7 +307,7 @@ def get_regional_feature(
             'get_detail': lambda kg_rf_f: { '__detail': kg_rf_f.detail },
             'instance': kg_rf_f,
         } for kg_rf_f in got_features]
-    if feature_classes[modality_id] == genes_export.GeneExpression:
+    if feature_registry._classes[modality_id] == genes_export.GeneExpression:
         shaped_features=[{
             'summary': {
                 '@id': hashlib.md5(str(gene_feat).encode("utf-8")).hexdigest(),
@@ -320,7 +322,7 @@ def get_regional_feature(
              },
              'instance': gene_feat,
         } for gene_feat in got_features]
-    if feature_classes[modality_id] == connectivity_export.ConnectivityProfile:
+    if feature_registry._classes[modality_id] == connectivity_export.ConnectivityProfile:
         shaped_features=[{
             'summary': {
                 "@id": conn_pr.src_name,
@@ -335,7 +337,7 @@ def get_regional_feature(
              },
              'instance': conn_pr,
         } for conn_pr in got_features]
-    if feature_classes[modality_id] == receptors_export.ReceptorDistribution:
+    if feature_registry._classes[modality_id] == receptors_export.ReceptorDistribution:
         shaped_features=[{
             'summary': {
                 "@id": receptor_pr.name,
@@ -377,13 +379,13 @@ def get_regional_feature(
 
 @fanout_cache.memoize(typed=True)
 def get_global_features(atlas_id, parcellation_id, modality_id):
-    if modality_id not in feature_classes:
+    if modality_id not in feature_registry._classes:
         # modality_id not found in feature_classes
         raise HTTPException(status_code=400,
                             detail=f'{modality_id} is not a valid modality')
 
     if not issubclass(
-            feature_classes[modality_id],
+            feature_registry._classes[modality_id],
             feature_export.GlobalFeature):
         # modality_id is not a global feature, return empty array
         return []
@@ -392,7 +394,7 @@ def get_global_features(atlas_id, parcellation_id, modality_id):
     # select atlas parcellation
     atlas.select_parcellation(parcellation_id)
     got_features = atlas.get_features(modality_id)
-    if feature_classes[modality_id] == connectivity_export.ConnectivityMatrix:
+    if feature_registry._classes[modality_id] == connectivity_export.ConnectivityMatrix:
         return [{
             '@id': f.src_name,
             'src_name': f.src_name,
@@ -430,19 +432,19 @@ def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detai
         raise HTTPException(404, detail=f'space with id {space_id} cannot be found')
 
     # select atlas by id
-    if modality_id not in feature_classes:
+    if modality_id not in feature_registry._classes:
         # modality_id not found in feature_classes
         raise HTTPException(status_code=400,
                             detail=f'{modality_id} is not a valid modality')
 
     # fail fast if not in supported feature list
-    if feature_classes[modality_id] not in SUPPORTED_FEATURES:
+    if feature_registry._classes[modality_id] not in SUPPORTED_FEATURES:
         raise HTTPException(
             status_code=501,
             detail=f'feature {modality_id} has not yet been implmented')
 
     if not issubclass(
-            feature_classes[modality_id],
+            feature_registry._classes[modality_id],
             feature_export.SpatialFeature):
         # modality_id is not a global feature, return empty array
         return []
@@ -465,7 +467,7 @@ def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detai
     
     filtered_features= [f for f in spatial_features if f.space == space_of_interest]
     shaped_features=None
-    if feature_classes[modality_id] == ieeg_export.IEEG_Electrode:
+    if feature_registry._classes[modality_id] == ieeg_export.IEEG_Electrode:
         shaped_features=[{
             'summary': {
                 '@id': hashlib.md5(str(feat).encode("utf-8")).hexdigest(),
@@ -482,7 +484,7 @@ def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detai
             'instance': feat
         } for feat in filtered_features]
 
-    if feature_classes[modality_id] == ieeg_export.IEEG_Dataset:
+    if feature_registry._classes[modality_id] == ieeg_export.IEEG_Dataset:
         shaped_features=[{
             'summary': {
                 '@id': hashlib.md5(str(feat).encode("utf-8")).hexdigest(),

@@ -20,7 +20,7 @@ from fastapi import APIRouter
 from fastapi.encoders import jsonable_encoder
 
 from siibra import features
-from siibra.features import feature as feature_export, classes as feature_classes
+from siibra.features import feature as feature_export
 
 # FastApi router to create rest endpoints
 router = APIRouter()
@@ -78,7 +78,7 @@ def get_all_available_modalities():
         return 'UnknownFeatureType'
     return [{
         'name': feature_name,
-        'type': get_feature_type(feature_classes[feature_name])
+        'type': get_feature_type(features.registry.classes[feature_name])
     } for feature_name in features.modalities]
 #
 #

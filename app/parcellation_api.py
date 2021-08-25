@@ -20,7 +20,7 @@ from fastapi import APIRouter, Request, HTTPException, Depends
 from starlette.responses import PlainTextResponse, FileResponse
 from fastapi.encoders import jsonable_encoder
 from siibra import spaces as siibra_spaces
-from siibra.features import feature as feature_export, classes as feature_classes, modalities as feature_modalities
+from siibra.features import feature as feature_export, registry as feature_registry, modalities as feature_modalities
 from siibra.ebrains import Authentication
 from .atlas_api import ATLAS_PATH
 from .request_utils import split_id, create_atlas, find_space_by_id, find_region_via_id, create_region_json_response
@@ -44,7 +44,7 @@ def preheat(id=None):
     public_token = get_public_token()
     auth.set_token(public_token)
     
-    EbrainsRegionalFeatureCls=feature_classes[feature_modalities.EbrainsRegionalDataset]
+    EbrainsRegionalFeatureCls=feature_registry._classes[feature_modalities.EbrainsRegionalDataset]
     if hasattr(EbrainsRegionalFeatureCls, 'preheat') and callable(EbrainsRegionalFeatureCls.preheat):
         EbrainsRegionalFeatureCls.preheat(id)
         logger.info('--end parcellation preheat--')
@@ -211,7 +211,7 @@ def get_all_features_for_region(
                         '/',
                         '%2F'),
                     m)} for m in feature_modalities if issubclass(
-                feature_classes[m],
+                feature_registry._classes[m],
                 feature_export.RegionalFeature)]}
 
     return jsonable_encoder(result)
@@ -458,7 +458,7 @@ def get_global_features_rest(
                         '/',
                         '%2F'),
                     m)} for m in feature_modalities if issubclass(
-                feature_classes[m],
+                feature_registry._classes[m],
                 feature_export.GlobalFeature)]}
 
     return jsonable_encoder(result)
