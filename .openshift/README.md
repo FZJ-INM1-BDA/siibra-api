@@ -145,7 +145,7 @@ A number of sensitive variables are stored on the openshift clusters, and added 
 
 ### [3] Deployment parameters
 
-Per [deployment template](./branch-deploy-template.html), a number of parameters may be required when creating new deployments.
+Per [deployment template](./branch-deploy-template.yml), a number of parameters may be required when creating new deployments.
 
 | name | required | desc | 
 | --- | --- | --- |
