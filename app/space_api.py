@@ -18,16 +18,15 @@ from typing import Optional
 from urllib.parse import quote
 
 import zipfile
+import siibra
 
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from starlette.responses import FileResponse, StreamingResponse
 
-from .request_utils import create_atlas, get_spatial_features, split_id, find_space_by_id, _get_file_from_nibabel, get_parcellations_for_space
+from .request_utils import get_spatial_features, split_id, _get_file_from_nibabel, get_parcellations_for_space
 from .request_utils import get_base_url_from_request, siibra_custom_json_encoder,origin_data_decoder
 from .atlas_api import ATLAS_PATH
-import siibra as sb
-from siibra.features import feature as feature_export, classes as feature_classes, modalities as feature_modalities
 
 # FastApi router to create rest endpoints
 router = APIRouter()
@@ -41,10 +40,9 @@ def get_all_spaces(atlas_id: str, request: Request):
     """
     Returns all spaces that are defined in the siibra client.
     """
-    atlas = create_atlas(atlas_id)
-    atlas_spaces = atlas.spaces
+    atlas = siibra.atlases[atlas_id]
     result = []
-    for space in atlas_spaces:
+    for space in atlas.spaces:
         result.append({
             'id': split_id(space.id),
             'name': space.name,
@@ -66,9 +64,9 @@ def get_template_by_space_id(atlas_id: str, space_id: str):
     """
     Returns all templates for a given space id.
     """
-    atlas = create_atlas(atlas_id)
-    space = find_space_by_id(atlas, space_id)
-    template = atlas.get_template(space)
+    atlas = siibra.atlases[atlas_id]
+    space = atlas.get_space(space_id)
+    template = atlas.get_template(space).fetch()
 
     # create file-object in memory
     # file_object = io.BytesIO()
@@ -84,9 +82,11 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):
     """
     Returns all parcellation maps for a given space id.
     """
-    atlas = create_atlas(atlas_id)
-    space = find_space_by_id(atlas, space_id)
-    valid_parcs = [p for p in sb.parcellations if p.supports_space(space)]
+    atlas = siibra.atlases[atlas_id]
+    space = atlas.get_space(space_id)
+    valid_parcs = [p for p in siibra.parcellations if p.supports_space(space)]
+
+    # TODO: valid_parcs empty for all spaces
 
     if len(valid_parcs) == 1:
         maps = [valid_parcs[0].get_map(space)]
@@ -94,7 +94,7 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):
         return FileResponse(filename, filename=filename)
     else:
         raise HTTPException(
-            status=501,
+            status_code=501,
             detail=f'space with id {space_id} has multiple parc, not yet implemented')
         maps = [p.get_map(space) for p in valid_parcs]
         files = []
@@ -127,36 +127,46 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):
 
 @router.get(ATLAS_PATH + '/{atlas_id:path}/spaces/{space_id:path}/features/{modality_id}', tags=['spaces'])
 def get_single_spatial_feature(atlas_id: str, space_id: str, modality_id: str, request: Request, parcellation_id: Optional[str]=None, region: Optional[str]=None):
-    got_features=get_spatial_features(atlas_id, space_id, modality_id,parc_id=parcellation_id, region_id=region)
+    got_features = get_spatial_features(atlas_id, space_id, modality_id, parc_id=parcellation_id, region_id=region)
     return got_features
+
 
 @router.get(ATLAS_PATH + '/{atlas_id:path}/spaces/{space_id:path}/features/{modality_id}/{feature_id}', tags=['spaces'])
 def get_single_spatial_feature_detail(atlas_id: str, space_id: str, modality_id: str,feature_id: str, request: Request, parcellation_id: Optional[str]=None, region: Optional[str]=None):
-    got_features=get_spatial_features(atlas_id, space_id, modality_id, feature_id, parc_id=parcellation_id, region_id=region, detail=True)
+    got_features = get_spatial_features(atlas_id, space_id, modality_id, feature_id, parc_id=parcellation_id, region_id=region, detail=True)
     if len(got_features) == 0:
         raise HTTPException(404, detail=f'feature with id {feature_id} cannot be found')
     return got_features[0]
 
+
 @router.get(ATLAS_PATH + '/{atlas_id:path}/spaces/{space_id:path}/features', tags=['spaces'])
 def router_get_spatial_features(atlas_id: str, space_id: str, request: Request):
+    atlas = siibra.atlases[atlas_id]
+    space = atlas.get_space(space_id)
+    # TODO: Getting all features with result takes to much time at the moment
+    # features = siibra.get_features(space, 'all')
+
     return {
         'features': [{
-            feature: '{}atlases/{}/spaces/{}/features/{}'.format(
+            feature.modality(): '{}atlases/{}/spaces/{}/features/{}'.format(
                 get_base_url_from_request(request),
                 atlas_id.replace('/', '%2F'),
                 space_id.replace('/', '%2F'),
-                quote(feature)
-            ) for feature in feature_modalities if issubclass(feature_classes[feature], feature_export.SpatialFeature)
+                quote(feature.modality())
+            ) for feature in siibra.features.modalities if issubclass(feature._FEATURETYPE, siibra.features.feature.SpatialFeature)
         }]
     }
+
 
 @router.get(ATLAS_PATH + '/{atlas_id:path}/spaces/{space_id:path}', tags=['spaces'])
 def get_one_space_by_id(atlas_id: str, space_id: str, request: Request):
     """
     Returns one space for given id.
     """
-    atlas = create_atlas(atlas_id)
-    space = find_space_by_id(atlas, space_id)
+    # atlas = create_atlas(atlas_id)
+    atlas = siibra.atlases[atlas_id]
+    # space = find_space_by_id(atlas, space_id)
+    space = atlas.get_space(space_id)
     if space:
         json_result = jsonable_encoder(
             space, custom_encoder=siibra_custom_json_encoder)

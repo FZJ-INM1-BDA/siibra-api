@@ -17,11 +17,11 @@ import os
 
 import requests
 import json
-from fastapi import FastAPI, Depends, Request, HTTPException
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+import siibra
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.security import HTTPBearer
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
-from siibra.ebrains import Authentication
 from fastapi_versioning import VersionedFastAPI
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -148,14 +148,13 @@ async def set_auth_header(request: Request, call_next):
     :param call_next: next middleware function
     :return: an altered response
     """
-    auth = Authentication.instance()
     bearer_token = request.headers.get('Authorization')
     try:
         if bearer_token:
-            auth.set_token(bearer_token.replace('Bearer ', ''))
+            siibra.set_ebrains_token(bearer_token.replace('Bearer ', ''))
         else:
             public_token = get_public_token()
-            auth.set_token(public_token)
+            siibra.set_ebrains_token(public_token)
         response = await call_next(request)
         return response
     except SiibraCustomException as err:
@@ -201,11 +200,13 @@ async def matomo_request_log(request: Request, call_next):
     response = await call_next(request)
     return response
 
+
 @app.get('/ready', include_in_schema=False)
 def get_ready():
     if not all([get_preheat_status()]):
         raise HTTPException(400, detail='Not yet ready.')
     return 'OK'
+
 
 @app.on_event('startup')
 async def on_startup():

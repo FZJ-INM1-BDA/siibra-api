@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from siibra import retrieval
+import siibra
 from diskcache import FanoutCache
 
-CACHEDIR = retrieval.CACHEDIR
+CACHEDIR = siibra.retrieval.CACHE.folder
 fanout_cache = FanoutCache(CACHEDIR)

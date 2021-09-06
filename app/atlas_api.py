@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import siibra
 from fastapi import APIRouter, Request, HTTPException
 from fastapi_versioning import version
-from siibra.atlas import REGISTRY
 from .request_utils import get_base_url_from_request
 
 # FastApi router to create rest endpoints
@@ -26,17 +26,15 @@ ATLAS_PATH = '/atlases'
 
 
 # region === atlases
-
 @router.get(ATLAS_PATH, tags=['atlases'])
 @version(1)
 def get_all_atlases(request: Request):
     """
     Get all atlases known by siibra.
     """
-    atlases = REGISTRY.items
     result = []
-    for a in atlases:
-        result.append(__atlas_to_result_object(a, request))
+    for atlas in siibra.atlases:
+        result.append(__atlas_to_result_object(atlas, request))
     return result
 
 
@@ -46,10 +44,9 @@ def get_atlas_by_id(atlas_id: str, request: Request):
     """
     Get more information for a specific atlas with links to further objects.
     """
-    atlases = REGISTRY.items
-    for a in atlases:
-        if a.id == atlas_id.replace('%2F', '/'):
-            return __atlas_to_result_object(a, request)
+    for atlas in siibra.atlases:
+        if atlas.id == atlas_id.replace('%2F', '/'):
+            return __atlas_to_result_object(atlas, request)
     raise HTTPException(
         status_code=404,
         detail='atlas with id: {} not found'.format(atlas_id))

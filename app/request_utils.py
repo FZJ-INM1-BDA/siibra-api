@@ -14,50 +14,48 @@
 # limitations under the License.
 from copy import copy
 
-import siibra as bs
+import siibra
 import json
 import nibabel as nib
 from fastapi import HTTPException, Request
 from .cache_redis import CacheRedis
 import anytree
-from siibra.features import feature as feature_export, classes as feature_classes, connectivity as connectivity_export, \
-    receptors as receptors_export, genes as genes_export, ebrainsquery as ebrainsquery_export, ieeg as ieeg_export
 import hashlib
 import os
 from .diskcache import fanout_cache, CACHEDIR
 from . import logger
-from siibra.volumesrc import VolumeSrc, NiftiVolume, NgVolume
-from siibra import commons as siibra_commons
+# TODO: Local or Remote NiftiVolume? NeuroglancerVolume = NgVolume?
+from siibra.volumes.volume import VolumeSrc, LocalNiftiVolume, NeuroglancerVolume
 
 cache_redis = CacheRedis.get_instance()
 
-
-def create_atlas(atlas_id=None):
-    if atlas_id is None:
-        raise HttpException(status_code=400, detail='atlas_id is required!')
-    if atlas_id not in bs.atlases:
-        raise HttpException(status_code=404,
-                            detail=f'atlas_id {atlas_id} not found!')
-    return copy(bs.atlases[atlas_id])
-
-
-def select_parcellation_by_id(atlas, parcellation_id):
-    atlas.select_parcellation(find_parcellation_by_id(parcellation_id))
+# TODO: Do some checks for valid atlas, parcellation, space ...
+# def create_atlas(atlas_id=None):
+#     if atlas_id is None:
+#         raise HttpException(status_code=400, detail='atlas_id is required!')
+#     if atlas_id not in bs.atlases:
+#         raise HttpException(status_code=404,
+#                             detail=f'atlas_id {atlas_id} not found!')
+#     return copy(bs.atlases[atlas_id])
 
 
-def find_parcellation_by_id(atlas, parcellation_id):
-    for parcellation in atlas.parcellations:
-        if parcellation.id == parcellation_id:
-            return parcellation
-    return {}
+# def select_parcellation_by_id(atlas, parcellation_id):
+#     atlas.select_parcellation(find_parcellation_by_id(parcellation_id))
 
 
-def find_space_by_id(atlas, space_id):
-    try:
-        found_space = bs.spaces[space_id]
-        return found_space if found_space in atlas.spaces else None
-    except IndexError:
-        return None
+# def find_parcellation_by_id(atlas, parcellation_id):
+#     for parcellation in atlas.parcellations:
+#         if parcellation.id == parcellation_id:
+#             return parcellation
+#     return {}
+
+
+# def find_space_by_id(atlas, space_id):
+#     try:
+#         found_space = bs.spaces[space_id]
+#         return found_space if found_space in atlas.spaces else None
+#     except IndexError:
+#         return None
 
 
 def create_region_json_response(region, space_id=None, atlas=None, detail=False):
@@ -91,10 +89,11 @@ def _create_region_json_object(region, space_id=None, atlas=None, detail=False):
     region_json['availableIn'] = get_available_spaces_for_region(region)
 
     if detail:
-        region_json['hasRegionalMap'] = region.has_regional_map(
-            bs.spaces[space_id],
-            bs.commons.MapType.CONTINUOUS) if space_id is not None else None
-
+        #TODO new way to check for regional map
+        # region_json['hasRegionalMap'] = region.has_regional_map(
+        #     siibra.spaces[space_id],
+        #     bs.commons.MapType.CONTINUOUS) if space_id is not None else None
+        region_json['hasRegionalMap'] = None
     return region_json
 
 
@@ -139,15 +138,13 @@ def _object_to_json(o):
     }
 
 
-def get_spaces_for_parcellation(parcellation: str):
-    return [_object_to_json(bs.spaces[s])
-            for s in bs.parcellations[parcellation].volume_src.keys()]
+def get_spaces_for_parcellation(parcellation):
+    return [space for space in siibra.spaces if parcellation.supports_space(space)]
 
 
 def get_parcellations_for_space(space):
-    space_instance = bs.spaces[space] if isinstance(space, str) else space
-    return [_object_to_json(
-        p) for p in bs.parcellations if p.supports_space(space_instance)]
+    return [{'id': parcellation.id, 'name': parcellation.name}
+            for parcellation in siibra.parcellations if parcellation.supports_space(space)]
 
 
 def get_base_url_from_request(request: Request):
@@ -164,15 +161,14 @@ def get_base_url_from_request(request: Request):
 
 def get_available_spaces_for_region(region):
     result = []
-    for s in bs.spaces:
-        if region.parcellation.supports_space(s):
-            result.append(_object_to_json(s))
+    for spaces in siibra.spaces:
+        if region.parcellation.supports_space(spaces):
+            result.append(_object_to_json(spaces))
     return result
 
 
 def get_region_props(space_id, atlas, region) -> list:
-    atlas.select_region(region)
-    space = find_space_by_id(atlas, space_id)
+    space = atlas.get_space(space_id)
     try:
         logger.info(f'Getting region props for: {region}')
         result_props = region.spatialprops(space, force=True)
@@ -236,12 +232,12 @@ def find_region_via_id(atlas, region_id):
 
 # allow for fast fails
 SUPPORTED_FEATURES = [
-    genes_export.GeneExpression,
-    connectivity_export.ConnectivityProfile,
-    receptors_export.ReceptorDistribution,
-    ebrainsquery_export.EbrainsRegionalDataset,
-    ieeg_export.IEEG_Electrode,
-    ieeg_export.IEEG_Dataset]
+    # siibra.features.genes.GeneExpression,
+    siibra.features.genes.AllenBrainAtlasQuery,
+    siibra.features.connectivity.ConnectivityProfileQuery,
+    siibra.features.receptors.ReceptorQuery,
+    siibra.features.ebrains.EbrainsRegionalFeatureQuery,
+    siibra.features.ieeg.IEEG_SessionQuery]
 
 
 @fanout_cache.memoize(typed=True)
@@ -254,49 +250,58 @@ def get_regional_feature(
         feature_id=None,
         gene=None):
     # select atlas by id
-    if modality_id not in feature_classes:
+    if not siibra.modalities.provides(modality_id):#feature_classes:
         # modality_id not found in feature_classes
         raise HTTPException(status_code=400,
                             detail=f'{modality_id} is not a valid modality')
 
     # fail fast if not in supported feature list
-    if feature_classes[modality_id] not in SUPPORTED_FEATURES:
-        raise HTTPException(
-            status_code=501,
-            detail=f'feature {modality_id} has not yet been implmented')
+    # if siibra.modalities[modality_id] not in SUPPORTED_FEATURES:
+    #     raise HTTPException(
+    #         status_code=501,
+    #         detail=f'feature {modality_id} has not yet been implemented')
 
-    if not issubclass(
-            feature_classes[modality_id],
-            feature_export.RegionalFeature):
-        # modality_id is not a global feature, return empty array
-        return []
+# TODO - check for subclass
+#     if not issubclass(
+#             feature_classes[modality_id],
+#             feature_export.RegionalFeature):
+#         # modality_id is not a global feature, return empty array
+#         return []
 
-    # select atlas by id
-    atlas = create_atlas(atlas_id)
-    # select atlas parcellation
-    try:
-        # select atlas parcellation
-        atlas.select_parcellation(parcellation_id)
-    except Exception:
-        raise HTTPException(
-            status_code=400,
-            detail='The requested parcellation is not supported by the selected atlas.')
-    regions = find_region_via_id(atlas, region_id)
+    atlas = siibra.atlases[atlas_id]
+    parcellation = atlas.get_parcellation(parcellation_id)
+    region = atlas.get_region(region_id, parcellation)
 
-    if len(regions) == 0:
-        raise HTTPException(status_code=404,
-                            detail=f'Region with id {region_id} not found!')
+    #TODO - Check for valid parcellation and valid region
+    # try:
+    #     # select atlas parcellation
+    #     atlas.select_parcellation(parcellation_id)
+    # except Exception:
+    #     raise HTTPException(
+    #         status_code=400,
+    #         detail='The requested parcellation is not supported by the selected atlas.')
+    # regions = find_region_via_id(atlas, region_id)
+    #
+    # if len(regions) == 0:
+    #     raise HTTPException(status_code=404,
+    #                         detail=f'Region with id {region_id} not found!')
 
-    atlas.select_region(regions[0])
-    try:
-        got_features = atlas.get_features(modality_id, gene=gene)
-    except Exception:
-        raise HTTPException(
-            status_code=404,
-            detail=f'Could not get features for region with id {region_id}')
+    # atlas.get_region(region_id)
+    # atlas.select_region(regions[0])
+    got_features = siibra.get_features(region, modality_id)
+    # TODO check for errors
+    # try:
+    #     got_features = atlas.get_features(modality_id, gene=gene)
+    # except Exception:
+    #     raise HTTPException(
+    #         status_code=404,
+    #         detail=f'Could not get features for region with id {region_id}')
+    print('*********GOT FEATURES********************')
+    print(got_features)
+    print('*********GOT FEATURES********************')
 
     shaped_features = None
-    if feature_classes[modality_id] == ebrainsquery_export.EbrainsRegionalDataset:
+    if siibra.features.modalities[modality_id] == siibra.features.ebrains.EbrainsRegionalFeatureQuery:
         shaped_features=[{
             'summary': {
                 '@id': kg_rf_f.id,
@@ -305,7 +310,7 @@ def get_regional_feature(
             'get_detail': lambda kg_rf_f: { '__detail': kg_rf_f.detail },
             'instance': kg_rf_f,
         } for kg_rf_f in got_features]
-    if feature_classes[modality_id] == genes_export.GeneExpression:
+    if siibra.features.modalities[modality_id] == siibra.features.genes.AllenBrainAtlasQuery:
         shaped_features=[{
             'summary': {
                 '@id': hashlib.md5(str(gene_feat).encode("utf-8")).hexdigest(),
@@ -320,7 +325,7 @@ def get_regional_feature(
              },
              'instance': gene_feat,
         } for gene_feat in got_features]
-    if feature_classes[modality_id] == connectivity_export.ConnectivityProfile:
+    if siibra.features.modalities[modality_id] == siibra.features.connectivity.ConnectivityProfileQuery:
         shaped_features=[{
             'summary': {
                 "@id": conn_pr.src_name,
@@ -335,7 +340,7 @@ def get_regional_feature(
              },
              'instance': conn_pr,
         } for conn_pr in got_features]
-    if feature_classes[modality_id] == receptors_export.ReceptorDistribution:
+    if siibra.features.modalities[modality_id] == siibra.features.receptors.ReceptorQuery:
         shaped_features=[{
             'summary': {
                 "@id": receptor_pr.name,
@@ -350,7 +355,7 @@ def get_regional_feature(
                 }]
             },
             'get_detail': lambda receptor_pr: { 
-                "__receptor_symbols": receptors_export.RECEPTOR_SYMBOLS,
+                "__receptor_symbols": siibra.features.receptors.RECEPTOR_SYMBOLS,
                 "__files": receptor_pr.files,
                 "__data": {
                     "__profiles": receptor_pr.profiles,
@@ -377,27 +382,29 @@ def get_regional_feature(
 
 @fanout_cache.memoize(typed=True)
 def get_global_features(atlas_id, parcellation_id, modality_id):
-    if modality_id not in feature_classes:
+    if modality_id not in siibra.features.modalities:
+    # if modality_id not in feature_classes:
         # modality_id not found in feature_classes
         raise HTTPException(status_code=400,
                             detail=f'{modality_id} is not a valid modality')
 
-    if not issubclass(
-            feature_classes[modality_id],
-            feature_export.GlobalFeature):
-        # modality_id is not a global feature, return empty array
-        return []
+    #TODO check if still needed
+    # if not issubclass(
+    #         feature_classes[modality_id],
+    #         feature_export.GlobalFeature):
+    #     # modality_id is not a global feature, return empty array
+    #     return []
 
-    atlas = create_atlas(atlas_id)
-    # select atlas parcellation
-    atlas.select_parcellation(parcellation_id)
-    got_features = atlas.get_features(modality_id)
-    if feature_classes[modality_id] == connectivity_export.ConnectivityMatrix:
+    atlas = siibra.atlases[atlas_id]
+    parcellation = atlas.get_parcellation(parcellation_id)
+
+    got_features = siibra.get_features(parcellation, modality_id)
+    if siibra.features.modalities[modality_id] == siibra.features.connectivity.ConnectivityMatrixQuery:
         return [{
-            '@id': f.src_name,
-            'src_name': f.src_name,
-            'src_info': f.src_info,
-            'column_names': f.column_names,
+            '@id': f.id,
+            'src_name': f.name,
+            'src_info': f.description,
+            # 'column_names': f.column_names, TODO: Where to get column names
             'matrix': f.matrix.tolist(),
         } for f in got_features]
     logger.info(f'feature {modality_id} has not yet been implemented')
@@ -405,12 +412,14 @@ def get_global_features(atlas_id, parcellation_id, modality_id):
         status_code=204,
         detail=f'feature {modality_id} has not yet been implemented')
 
+
 def get_contact_pt_detail(contact_pt, atlas=None, parc_id=None):
     return {
         'id': contact_pt.id,
         'location': contact_pt.location,
         **({'inRoi': contact_pt.matches(atlas)} if parc_id is not None and atlas is not None else {})
     }
+
 
 def get_electrode_detail(electrode, atlas=None, parc_id=None):
     return {
@@ -422,50 +431,59 @@ def get_electrode_detail(electrode, atlas=None, parc_id=None):
         **({'inRoi': electrode.matches(atlas)} if parc_id is not None and atlas is not None else {})
     }
 
+
 @fanout_cache.memoize(typed=True)
 def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detail=False, parc_id=None, region_id=None):
 
-    space_of_interest = bs.spaces[space_id]
+    space_of_interest = siibra.spaces[space_id]
     if space_of_interest is None:
         raise HTTPException(404, detail=f'space with id {space_id} cannot be found')
 
     # select atlas by id
-    if modality_id not in feature_classes:
+    if modality_id not in siibra.features.modalities:
+    # if modality_id not in feature_classes:
         # modality_id not found in feature_classes
         raise HTTPException(status_code=400,
                             detail=f'{modality_id} is not a valid modality')
 
+    # TODO: Check if this is still needed or can be replaced
     # fail fast if not in supported feature list
-    if feature_classes[modality_id] not in SUPPORTED_FEATURES:
-        raise HTTPException(
-            status_code=501,
-            detail=f'feature {modality_id} has not yet been implmented')
+    # if siibra.features.modalities[modality_id] not in SUPPORTED_FEATURES:
+    # if feature_classes[modality_id] not in SUPPORTED_FEATURES:
+    #     raise HTTPException(
+    #         status_code=501,
+    #         detail=f'feature {modality_id} has not yet been implmented')
 
+    # TODO: Why only spatial features
     if not issubclass(
-            feature_classes[modality_id],
-            feature_export.SpatialFeature):
+            # feature_classes[modality_id],
+            # feature_export.SpatialFeature):
+            siibra.features.modalities[modality_id]._FEATURETYPE,
+            siibra.features.feature.SpatialFeature):
         # modality_id is not a global feature, return empty array
         return []
 
     # select atlas by id
-    atlas = create_atlas(atlas_id)
+    atlas = siibra.atlases[atlas_id]
     if space_of_interest not in atlas.spaces:
-        raise HTTPException(401, detail=f'space {space_id} not in atlas {atlas}')
+        raise HTTPException(404, detail=f'space {space_id} not in atlas {atlas}')
 
+    #No Selection of parcellation and region is needed - TODO: How to provide parcellation/region
     if parc_id:
         if region_id is None:
             raise HTTPException(status_code=400, detail='region is needed, if parc_id is provided')
-        atlas.select_parcellation(parc_id)
-        atlas.select_region(region_id)
+        # atlas.select_parcellation(parc_id)
+        # atlas.select_region(region_id)
 
     try:
-        spatial_features=atlas.get_features(modality_id)        
+        # spatial_features=atlas.get_features(modality_id)
+        spatial_features = siibra.get_features(space_of_interest, modality_id)
     except Exception:
-        raise HTTPException(401, detail=f'Could not get spatial features.')
-    
-    filtered_features= [f for f in spatial_features if f.space == space_of_interest]
-    shaped_features=None
-    if feature_classes[modality_id] == ieeg_export.IEEG_Electrode:
+        raise HTTPException(404, detail=f'Could not get spatial features.')
+    #TODO: Result is empty, why?
+    shaped_features = None
+    if siibra.features.modalities[modality_id] == siibra.features.ieeg.IEEG_SessionQuery:
+    # if feature_classes[modality_id] == ieeg_export.IEEG_Electrode:
         shaped_features=[{
             'summary': {
                 '@id': hashlib.md5(str(feat).encode("utf-8")).hexdigest(),
@@ -482,32 +500,34 @@ def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detai
             'instance': feat
         } for feat in filtered_features]
 
-    if feature_classes[modality_id] == ieeg_export.IEEG_Dataset:
-        shaped_features=[{
-            'summary': {
-                '@id': hashlib.md5(str(feat).encode("utf-8")).hexdigest(),
-                'name': feat.name,
-                'description': feat.description,
-                'origin_datainfos': [{
-                    'urls': [{
-                        'doi': f'https://search.kg.ebrains.eu/instances/{feat.kg_id}'
-                    }]
-                }]
-            },
-            'get_detail': lambda ft: {
-                'kg_id': ft.kg_id,
-                'electrodes': {
-                    subject_id: {
-                        electrode_id: get_electrode_detail(
-                            ft.electrodes[subject_id][electrode_id],
-                            atlas=atlas,
-                            parc_id=parc_id,
-                        ) for electrode_id in ft.electrodes[subject_id]
-                    } for subject_id in ft.electrodes
-                }
-            },
-            'instance': feat
-        } for feat in filtered_features]
+    #TODO Check what to do with this Dataset
+    # if siibra.features.modalities[modality_id] == siibra.features.ieeg.IEEG_Dataset:
+    # # if feature_classes[modality_id] == ieeg_export.IEEG_Dataset:
+    #     shaped_features=[{
+    #         'summary': {
+    #             '@id': hashlib.md5(str(feat).encode("utf-8")).hexdigest(),
+    #             'name': feat.name,
+    #             'description': feat.description,
+    #             'origin_datainfos': [{
+    #                 'urls': [{
+    #                     'doi': f'https://search.kg.ebrains.eu/instances/{feat.kg_id}'
+    #                 }]
+    #             }]
+    #         },
+    #         'get_detail': lambda ft: {
+    #             'kg_id': ft.kg_id,
+    #             'electrodes': {
+    #                 subject_id: {
+    #                     electrode_id: get_electrode_detail(
+    #                         ft.electrodes[subject_id][electrode_id],
+    #                         atlas=atlas,
+    #                         parc_id=parc_id,
+    #                     ) for electrode_id in ft.electrodes[subject_id]
+    #                 } for subject_id in ft.electrodes
+    #             }
+    #         },
+    #         'instance': feat
+    #     } for feat in filtered_features]
     if shaped_features is None:
         raise HTTPException(501, detail=f'{modality_id} not yet implemented')
 
@@ -522,7 +542,7 @@ def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detai
 def get_path_to_regional_map(query_id, roi, space_of_interest):
 
     regional_map = roi.get_regional_map(
-        space_of_interest, siibra_commons.MapType.CONTINUOUS)
+        space_of_interest, siibra.commons.MapType.CONTINUOUS)
     if regional_map is None:
         raise HTTPException(
             status_code=404,
@@ -566,6 +586,6 @@ def origin_data_decoder(origin_data):
 
 siibra_custom_json_encoder = {
     VolumeSrc: vol_src_sans_space,
-    NiftiVolume: vol_src_sans_space,
-    NgVolume: vol_src_sans_space,
+    LocalNiftiVolume: vol_src_sans_space,
+    NeuroglancerVolume: vol_src_sans_space,
 }
