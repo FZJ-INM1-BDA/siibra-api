@@ -40,7 +40,6 @@ def get_all_spaces(atlas_id: str, request: Request):
     """
     Returns all spaces that are defined in the siibra client.
     """
-
     atlas = validate_and_return_atlas(atlas_id)
     result = []
     for space in atlas.spaces:
@@ -63,7 +62,7 @@ def get_all_spaces(atlas_id: str, request: Request):
 @router.get('/{atlas_id:path}/spaces/{space_id:path}/templates', tags=['spaces'])
 def get_template_by_space_id(atlas_id: str, space_id: str):
     """
-    Returns all templates for a given space id.
+    Returns a template for a given space id.
     """
     atlas = validate_and_return_atlas(atlas_id)
     space = validate_and_return_space(space_id)
@@ -82,11 +81,9 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):
     """
     Returns all parcellation maps for a given space id.
     """
-    atlas = siibra.atlases[atlas_id]
-    space = atlas.get_space(space_id)
+    validate_and_return_atlas(atlas_id)
+    space = validate_and_return_space(space_id)
     valid_parcs = [p for p in siibra.parcellations if p.supports_space(space)]
-
-    # TODO: valid_parcs empty for all spaces
 
     if len(valid_parcs) == 1:
         maps = [valid_parcs[0].get_map(space)]
@@ -126,13 +123,25 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):
 
 
 @router.get('/{atlas_id:path}/spaces/{space_id:path}/features/{modality_id}', tags=['spaces'])
-def get_single_spatial_feature(atlas_id: str, space_id: str, modality_id: str, request: Request, parcellation_id: Optional[str]=None, region: Optional[str]=None):
+def get_single_spatial_feature(
+        atlas_id: str, space_id: str, modality_id: str, request: Request,
+        parcellation_id: Optional[str] = None, region: Optional[str] = None):
+    """
+    Get more information for a single feature.
+    A parcellation id and region id can be provided optional to get more details.
+    """
     got_features = get_spatial_features(atlas_id, space_id, modality_id, parc_id=parcellation_id, region_id=region)
     return got_features
 
 
 @router.get('/{atlas_id:path}/spaces/{space_id:path}/features/{modality_id}/{feature_id}', tags=['spaces'])
-def get_single_spatial_feature_detail(atlas_id: str, space_id: str, modality_id: str,feature_id: str, request: Request, parcellation_id: Optional[str]=None, region: Optional[str]=None):
+def get_single_spatial_feature_detail(
+        atlas_id: str, space_id: str, modality_id: str, feature_id: str, request: Request,
+        parcellation_id: Optional[str] = None, region: Optional[str] = None):
+    """
+    Get a detailed view on a single spatial feature.
+    A parcellation id and region id can be provided optional to get more details.
+    """
     got_features = get_spatial_features(atlas_id, space_id, modality_id, feature_id, parc_id=parcellation_id, region_id=region, detail=True)
     if len(got_features) == 0:
         raise HTTPException(404, detail=f'feature with id {feature_id} cannot be found')
@@ -140,9 +149,12 @@ def get_single_spatial_feature_detail(atlas_id: str, space_id: str, modality_id:
 
 
 @router.get('/{atlas_id:path}/spaces/{space_id:path}/features', tags=['spaces'])
-def router_get_spatial_features(atlas_id: str, space_id: str, request: Request):
-    atlas = siibra.atlases[atlas_id]
-    space = atlas.get_space(space_id)
+def get_spatial_feature_names(atlas_id: str, space_id: str, request: Request):
+    """
+    Return all possible feature names and links to get more details
+    """
+    validate_and_return_atlas(atlas_id)
+    space = validate_and_return_space(space_id)
     # TODO: Getting all features with result takes to much time at the moment
     # features = siibra.get_features(space, 'all')
 
@@ -161,15 +173,14 @@ def router_get_spatial_features(atlas_id: str, space_id: str, request: Request):
 @router.get('/{atlas_id:path}/spaces/{space_id:path}', tags=['spaces'])
 def get_one_space_by_id(atlas_id: str, space_id: str, request: Request):
     """
-    Returns one space for given id.
+    Returns one space for given id, with links to further resources
     """
-    # atlas = create_atlas(atlas_id)
-    atlas = siibra.atlases[atlas_id]
-    # space = find_space_by_id(atlas, space_id)
-    space = atlas.get_space(space_id)
+    validate_and_return_atlas(atlas_id)
+    space = validate_and_return_space(space_id)
     if space:
         json_result = jsonable_encoder(
             space, custom_encoder=siibra_custom_json_encoder)
+        # TODO: Error on first call
         json_result['availableParcellations'] = get_parcellations_for_space(
             space)
         json_result['links'] = {
