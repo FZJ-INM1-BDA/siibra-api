@@ -439,10 +439,7 @@ def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detai
     if space_of_interest is None:
         raise HTTPException(404, detail=f'space with id {space_id} cannot be found')
 
-    # select atlas by id
     if modality_id not in siibra.features.modalities:
-    # if modality_id not in feature_classes:
-        # modality_id not found in feature_classes
         raise HTTPException(status_code=400,
                             detail=f'{modality_id} is not a valid modality')
 
@@ -468,7 +465,7 @@ def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detai
     if space_of_interest not in atlas.spaces:
         raise HTTPException(404, detail=f'space {space_id} not in atlas {atlas}')
 
-    #No Selection of parcellation and region is needed - TODO: How to provide parcellation/region
+    # TODO: No Selection of parcellation and region is needed - TODO: How to provide parcellation/region
     if parc_id:
         if region_id is None:
             raise HTTPException(status_code=400, detail='region is needed, if parc_id is provided')
@@ -481,6 +478,7 @@ def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detai
     except Exception:
         raise HTTPException(404, detail=f'Could not get spatial features.')
     #TODO: Result is empty, why?
+    filtered_features = [f for f in spatial_features if f.space == space_of_interest]
     shaped_features = None
     if siibra.features.modalities[modality_id] == siibra.features.ieeg.IEEG_SessionQuery:
     # if feature_classes[modality_id] == ieeg_export.IEEG_Electrode:
