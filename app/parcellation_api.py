@@ -25,6 +25,7 @@ from .request_utils import get_spaces_for_parcellation, get_base_url_from_reques
 from .request_utils import get_global_features, get_regional_feature, get_path_to_regional_map, origin_data_decoder
 from .request_utils import get_region_props
 from .diskcache import fanout_cache
+from .validation import validate_and_return_atlas, validate_and_return_parcellation
 from .ebrains_token import get_public_token
 from . import logger
 
@@ -147,12 +148,7 @@ def get_all_parcellations(atlas_id: str, request: Request):
     """
     Returns all parcellations that are defined in the siibra client for given atlas.
     """
-    if request.headers['accept'] == 'application/text':
-        python_code = 'from siibra.atlas import REGISTRY \n ' \
-                      'atlas = REGISTRY.MULTILEVEL_HUMAN_ATLAS \n ' \
-                      'parcellations = atlas.parcellations'
-        return PlainTextResponse(status_code=200, content=python_code)
-    atlas = siibra.atlases[atlas_id]
+    atlas = validate_and_return_atlas(atlas_id)
     parcellations = atlas.parcellations
     return [
         __parcellation_result_info(
@@ -170,8 +166,8 @@ def get_all_regions_for_parcellation_id(
     """
     Returns all regions for a given parcellation id.
     """
-    atlas = siibra.atlases[atlas_id]
-    parcellation = siibra.parcellations[parcellation_id]
+    atlas = validate_and_return_atlas(atlas_id)
+    parcellation = validate_and_return_parcellation(parcellation_id)
 
     result = []
     for region in parcellation.regiontree.children:
@@ -191,7 +187,7 @@ def get_all_features_for_region(
     Returns all regional features for a region.
     """
     # TODO check for valid atlas and parcellation
-    atlas = siibra.atlases[atlas_id]
+    atlas = validate_and_return_atlas(atlas_id)
 
     #TODO will be done in siibra-python
     #TODO Authentication error - Not working in the moment for the provided user
@@ -235,11 +231,12 @@ def get_regional_modality_by_id(
         raise HTTPException(
             status_code=404,
             detail=f'modality with id {modality_id} not found')
-    if len(regional_features) != 1:
-        raise HTTPException(
-            status_code=400,
-            detail=f'modality with id {modality_id} has multiple matches')
-    return regional_features[0]
+    # if len(regional_features) != 1:
+    #     raise HTTPException(
+    #         status_code=400,
+    #         detail=f'modality with id {modality_id} has multiple matches')
+    # return regional_features[0]
+    return regional_features
 
 
 # TODO - can maybe be removed
@@ -255,7 +252,6 @@ def get_feature_modality_for_region(
     """
     Returns one modality feature for a region.
     """
-
     regional_features = get_regional_feature(
         atlas_id, parcellation_id, region_id, modality, detail=False, gene=gene)
 

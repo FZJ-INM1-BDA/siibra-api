@@ -24,38 +24,11 @@ import hashlib
 import os
 from .diskcache import fanout_cache, CACHEDIR
 from . import logger
+from .validation import validate_and_return_atlas, validate_and_return_parcellation, validate_and_return_space
 # TODO: Local or Remote NiftiVolume? NeuroglancerVolume = NgVolume?
 from siibra.volumes.volume import VolumeSrc, LocalNiftiVolume, NeuroglancerVolume
 
 cache_redis = CacheRedis.get_instance()
-
-# TODO: Do some checks for valid atlas, parcellation, space ...
-# def create_atlas(atlas_id=None):
-#     if atlas_id is None:
-#         raise HttpException(status_code=400, detail='atlas_id is required!')
-#     if atlas_id not in bs.atlases:
-#         raise HttpException(status_code=404,
-#                             detail=f'atlas_id {atlas_id} not found!')
-#     return copy(bs.atlases[atlas_id])
-
-
-# def select_parcellation_by_id(atlas, parcellation_id):
-#     atlas.select_parcellation(find_parcellation_by_id(parcellation_id))
-
-
-# def find_parcellation_by_id(atlas, parcellation_id):
-#     for parcellation in atlas.parcellations:
-#         if parcellation.id == parcellation_id:
-#             return parcellation
-#     return {}
-
-
-# def find_space_by_id(atlas, space_id):
-#     try:
-#         found_space = bs.spaces[space_id]
-#         return found_space if found_space in atlas.spaces else None
-#     except IndexError:
-#         return None
 
 
 def create_region_json_response(region, space_id=None, atlas=None, detail=False):
@@ -249,7 +222,6 @@ def get_regional_feature(
         detail=True,
         feature_id=None,
         gene=None):
-    # select atlas by id
     if not siibra.modalities.provides(modality_id):#feature_classes:
         # modality_id not found in feature_classes
         raise HTTPException(status_code=400,
@@ -268,41 +240,26 @@ def get_regional_feature(
 #         # modality_id is not a global feature, return empty array
 #         return []
 
-    atlas = siibra.atlases[atlas_id]
+    atlas = validate_and_return_atlas(atlas_id)
     parcellation = atlas.get_parcellation(parcellation_id)
     region = atlas.get_region(region_id, parcellation)
 
-    #TODO - Check for valid parcellation and valid region
-    # try:
-    #     # select atlas parcellation
-    #     atlas.select_parcellation(parcellation_id)
-    # except Exception:
-    #     raise HTTPException(
-    #         status_code=400,
-    #         detail='The requested parcellation is not supported by the selected atlas.')
-    # regions = find_region_via_id(atlas, region_id)
-    #
-    # if len(regions) == 0:
+    # TODO: validate region
     #     raise HTTPException(status_code=404,
     #                         detail=f'Region with id {region_id} not found!')
-
-    # atlas.get_region(region_id)
-    # atlas.select_region(regions[0])
-    got_features = siibra.get_features(region, modality_id)
-    # TODO check for errors
-    # try:
-    #     got_features = atlas.get_features(modality_id, gene=gene)
-    # except Exception:
-    #     raise HTTPException(
-    #         status_code=404,
-    #         detail=f'Could not get features for region with id {region_id}')
+    try:
+        got_features = siibra.get_features(region, modality_id)
+    except:
+        raise HTTPException(
+                     status_code=500,
+                     detail=f'Could not get features for region with id {region_id}')
     print('*********GOT FEATURES********************')
     print(got_features)
     print('*********GOT FEATURES********************')
 
     shaped_features = None
     if siibra.features.modalities[modality_id] == siibra.features.ebrains.EbrainsRegionalFeatureQuery:
-        shaped_features=[{
+        shaped_features = [{
             'summary': {
                 '@id': kg_rf_f.id,
                 'src_name': kg_rf_f.name,
@@ -311,7 +268,7 @@ def get_regional_feature(
             'instance': kg_rf_f,
         } for kg_rf_f in got_features]
     if siibra.features.modalities[modality_id] == siibra.features.genes.AllenBrainAtlasQuery:
-        shaped_features=[{
+        shaped_features = [{
             'summary': {
                 '@id': hashlib.md5(str(gene_feat).encode("utf-8")).hexdigest(),
             },
@@ -326,22 +283,22 @@ def get_regional_feature(
              'instance': gene_feat,
         } for gene_feat in got_features]
     if siibra.features.modalities[modality_id] == siibra.features.connectivity.ConnectivityProfileQuery:
-        shaped_features=[{
+        shaped_features = [{
             'summary': {
-                "@id": conn_pr.src_name,
-                "src_name": conn_pr.src_name,
-                "src_info": conn_pr.src_info,
-                "kgSchema": conn_pr.kg_schema,
-                "kgId": conn_pr.kg_id,
+                "@id": conn_pr._matrix.id,
+                "src_name": conn_pr.name,
+                "src_info": conn_pr.description,
+                "kgSchema": conn_pr._matrix.type_id,
+                "kgId": conn_pr._matrix.id,
             },
             'get_detail': lambda conn_pr: { 
-                "__column_names": conn_pr.column_names,
-                "__profile": conn_pr.profile,
+                # "__column_names": conn_pr.column_names, TODO: where to get the names?
+                "__profile": conn_pr.profile.tolist(),
              },
              'instance': conn_pr,
         } for conn_pr in got_features]
     if siibra.features.modalities[modality_id] == siibra.features.receptors.ReceptorQuery:
-        shaped_features=[{
+        shaped_features = [{
             'summary': {
                 "@id": receptor_pr.name,
                 "name": receptor_pr.name,
