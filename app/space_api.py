@@ -26,7 +26,7 @@ from starlette.responses import FileResponse, StreamingResponse
 
 from .request_utils import get_spatial_features, split_id, _get_file_from_nibabel, get_parcellations_for_space
 from .request_utils import get_base_url_from_request, siibra_custom_json_encoder,origin_data_decoder
-from .atlas_api import ATLAS_PATH
+from .validation import validate_and_return_atlas, validate_and_return_space
 
 # FastApi router to create rest endpoints
 router = APIRouter()
@@ -35,12 +35,13 @@ router = APIRouter()
 # region === spaces
 
 
-@router.get(ATLAS_PATH + '/{atlas_id:path}/spaces', tags=['spaces'])
+@router.get('/{atlas_id:path}/spaces', tags=['spaces'])
 def get_all_spaces(atlas_id: str, request: Request):
     """
     Returns all spaces that are defined in the siibra client.
     """
-    atlas = siibra.atlases[atlas_id]
+
+    atlas = validate_and_return_atlas(atlas_id)
     result = []
     for space in atlas.spaces:
         result.append({
@@ -59,13 +60,13 @@ def get_all_spaces(atlas_id: str, request: Request):
     return jsonable_encoder(result)
 
 
-@router.get(ATLAS_PATH + '/{atlas_id:path}/spaces/{space_id:path}/templates', tags=['spaces'])
+@router.get('/{atlas_id:path}/spaces/{space_id:path}/templates', tags=['spaces'])
 def get_template_by_space_id(atlas_id: str, space_id: str):
     """
     Returns all templates for a given space id.
     """
-    atlas = siibra.atlases[atlas_id]
-    space = atlas.get_space(space_id)
+    atlas = validate_and_return_atlas(atlas_id)
+    space = validate_and_return_space(space_id)
     template = atlas.get_template(space).fetch()
 
     # create file-object in memory
@@ -75,8 +76,7 @@ def get_template_by_space_id(atlas_id: str, space_id: str):
     return FileResponse(filename, filename=filename)
 
 
-@router.get(ATLAS_PATH +
-            '/{atlas_id:path}/spaces/{space_id:path}/parcellation_maps', tags=['spaces'])
+@router.get('/{atlas_id:path}/spaces/{space_id:path}/parcellation_maps', tags=['spaces'])
 # add parcellations_map_id as optional param
 def get_parcellation_map_for_space(atlas_id: str, space_id: str):
     """
@@ -125,13 +125,13 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):
         detail='Maps for space with id: {} not found'.format(space_id))
 
 
-@router.get(ATLAS_PATH + '/{atlas_id:path}/spaces/{space_id:path}/features/{modality_id}', tags=['spaces'])
+@router.get('/{atlas_id:path}/spaces/{space_id:path}/features/{modality_id}', tags=['spaces'])
 def get_single_spatial_feature(atlas_id: str, space_id: str, modality_id: str, request: Request, parcellation_id: Optional[str]=None, region: Optional[str]=None):
     got_features = get_spatial_features(atlas_id, space_id, modality_id, parc_id=parcellation_id, region_id=region)
     return got_features
 
 
-@router.get(ATLAS_PATH + '/{atlas_id:path}/spaces/{space_id:path}/features/{modality_id}/{feature_id}', tags=['spaces'])
+@router.get('/{atlas_id:path}/spaces/{space_id:path}/features/{modality_id}/{feature_id}', tags=['spaces'])
 def get_single_spatial_feature_detail(atlas_id: str, space_id: str, modality_id: str,feature_id: str, request: Request, parcellation_id: Optional[str]=None, region: Optional[str]=None):
     got_features = get_spatial_features(atlas_id, space_id, modality_id, feature_id, parc_id=parcellation_id, region_id=region, detail=True)
     if len(got_features) == 0:
@@ -139,7 +139,7 @@ def get_single_spatial_feature_detail(atlas_id: str, space_id: str, modality_id:
     return got_features[0]
 
 
-@router.get(ATLAS_PATH + '/{atlas_id:path}/spaces/{space_id:path}/features', tags=['spaces'])
+@router.get('/{atlas_id:path}/spaces/{space_id:path}/features', tags=['spaces'])
 def router_get_spatial_features(atlas_id: str, space_id: str, request: Request):
     atlas = siibra.atlases[atlas_id]
     space = atlas.get_space(space_id)
@@ -158,7 +158,7 @@ def router_get_spatial_features(atlas_id: str, space_id: str, request: Request):
     }
 
 
-@router.get(ATLAS_PATH + '/{atlas_id:path}/spaces/{space_id:path}', tags=['spaces'])
+@router.get('/{atlas_id:path}/spaces/{space_id:path}', tags=['spaces'])
 def get_one_space_by_id(atlas_id: str, space_id: str, request: Request):
     """
     Returns one space for given id.

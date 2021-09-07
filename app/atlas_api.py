@@ -21,12 +21,9 @@ from .request_utils import get_base_url_from_request
 # FastApi router to create rest endpoints
 router = APIRouter()
 
-# Base URL for all endpoints
-ATLAS_PATH = '/atlases'
-
 
 # region === atlases
-@router.get(ATLAS_PATH, tags=['atlases'])
+@router.get('', tags=['atlases'])
 @version(1)
 def get_all_atlases(request: Request):
     """
@@ -38,7 +35,7 @@ def get_all_atlases(request: Request):
     return result
 
 
-@router.get(ATLAS_PATH + '/{atlas_id:path}', tags=['atlases'])
+@router.get('/{atlas_id:path}', tags=['atlases'])
 @version(1)
 def get_atlas_by_id(atlas_id: str, request: Request):
     """

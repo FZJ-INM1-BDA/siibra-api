@@ -20,7 +20,6 @@ from typing import Optional
 from fastapi import APIRouter, Request, HTTPException, Depends
 from starlette.responses import PlainTextResponse, FileResponse
 from fastapi.encoders import jsonable_encoder
-from .atlas_api import ATLAS_PATH
 from .request_utils import split_id, find_region_via_id, create_region_json_response
 from .request_utils import get_spaces_for_parcellation, get_base_url_from_request, siibra_custom_json_encoder
 from .request_utils import get_global_features, get_regional_feature, get_path_to_regional_map, origin_data_decoder
@@ -52,6 +51,7 @@ def preheat(id=None):
     # else:
     #     logger.info('--siibra-python does not suppport preheat. exiting--')
     # preheat_flag=True
+
 
 router = APIRouter()
 
@@ -142,7 +142,7 @@ def __parcellation_result_info(parcellation, atlas_id=None, request=None):
     return result_info
 
 
-@router.get(ATLAS_PATH + '/{atlas_id:path}/parcellations', tags=['parcellations'])
+@router.get('/{atlas_id:path}/parcellations', tags=['parcellations'])
 def get_all_parcellations(atlas_id: str, request: Request):
     """
     Returns all parcellations that are defined in the siibra client for given atlas.
@@ -161,8 +161,7 @@ def get_all_parcellations(atlas_id: str, request: Request):
             request) for parcellation in parcellations]
 
 
-@router.get(ATLAS_PATH +
-            '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions', tags=['parcellations'])
+@router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/regions', tags=['parcellations'])
 @fanout_cache.memoize(typed=True)
 def get_all_regions_for_parcellation_id(
         atlas_id: str,
@@ -181,8 +180,7 @@ def get_all_regions_for_parcellation_id(
     return result
 
 
-@router.get(ATLAS_PATH +
-            '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features',
+@router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features',
             tags=['parcellations'])
 def get_all_features_for_region(
         request: Request,
@@ -217,8 +215,7 @@ def get_all_features_for_region(
 
 
 # TODO - can maybe be removed
-@router.get(ATLAS_PATH +
-            '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality}/{modality_id:path}',
+@router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality}/{modality_id:path}',
             tags=['parcellations'])
 def get_regional_modality_by_id(
         request: Request,
@@ -246,8 +243,7 @@ def get_regional_modality_by_id(
 
 
 # TODO - can maybe be removed
-@router.get(ATLAS_PATH +
-            '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality}',
+@router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality}',
             tags=['parcellations'])
 def get_feature_modality_for_region(
         request: Request,
@@ -296,8 +292,7 @@ def parse_region_selection(
     return (region[0], space_of_interest)
 
 
-@router.get(ATLAS_PATH +
-            '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/regional_map/info',
+@router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/regional_map/info',
             tags=['parcellations'])
 @fanout_cache.memoize(typed=True)
 def get_regional_map_info(
@@ -327,8 +322,7 @@ def get_regional_map_info(
     }
 
 
-@router.get(ATLAS_PATH +
-            '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/regional_map/map',
+@router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/regional_map/map',
             tags=['parcellations'])
 @fanout_cache.memoize(typed=True)
 def get_regional_map_file(
@@ -347,8 +341,7 @@ def get_regional_map_file(
     return FileResponse(cached_fullpath, media_type='application/octet-stream')
 
 
-@router.get(ATLAS_PATH +
-            '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}',
+@router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}',
             tags=['parcellations'])
 def get_region_by_name(
         request: Request,
@@ -388,8 +381,7 @@ def get_region_by_name(
     return jsonable_encoder(region_json)
 
 
-@router.get(ATLAS_PATH +
-            '/{atlas_id:path}/parcellations/{parcellation_id:path}/features/{modality}/{modality_instance_name}',
+@router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/features/{modality}/{modality_instance_name}',
             tags=['parcellations'])
 def get_single_global_feature_detail(
         atlas_id: str,
@@ -416,8 +408,7 @@ def get_single_global_feature_detail(
                              detail=f'modality {modality} not yet implemented')
 
 
-@router.get(ATLAS_PATH +
-            '/{atlas_id:path}/parcellations/{parcellation_id:path}/features/{modality}',
+@router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/features/{modality}',
             tags=['parcellations'])
 def get_single_global_feature(
         atlas_id: str,
@@ -438,8 +429,7 @@ def get_single_global_feature(
                              detail=f'modality {modality} not yet implemented')
 
 
-@router.get(ATLAS_PATH +
-            '/{atlas_id:path}/parcellations/{parcellation_id:path}/features',
+@router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/features',
             tags=['parcellations'])
 def get_global_features_rest(
         atlas_id: str,
@@ -466,8 +456,7 @@ def get_global_features_rest(
     return jsonable_encoder(result)
 
 
-@router.get(ATLAS_PATH +
-            '/{atlas_id:path}/parcellations/{parcellation_id:path}',
+@router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}',
             tags=['parcellations'])
 def get_parcellation_by_id(
         atlas_id: str,

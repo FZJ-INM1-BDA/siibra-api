@@ -21,9 +21,6 @@ import siibra
 # FastApi router to create rest endpoints
 router = APIRouter()
 
-# Base URL for all endpoints
-ATLAS_PATH = '/atlases/{atlas_id}'
-
 
 class ModalityType(str, Enum):
     """

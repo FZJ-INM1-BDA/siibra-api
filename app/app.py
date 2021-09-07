@@ -58,6 +58,8 @@ tags_metadata = [
     },
 ]
 
+ATLAS_PATH = '/atlases'
+
 # Main fastAPI application
 app = FastAPI(
     title="Siibra API",
@@ -66,9 +68,9 @@ app = FastAPI(
     openapi_tags=tags_metadata
 )
 # Add a siibra router with further endpoints
-app.include_router(parcellation_router)
-app.include_router(space_router)
-app.include_router(atlas_router)
+app.include_router(parcellation_router, prefix=ATLAS_PATH)
+app.include_router(space_router, prefix=ATLAS_PATH)
+app.include_router(atlas_router, prefix=ATLAS_PATH)
 app.include_router(siibra_router)
 app.include_router(health_router)
 
@@ -148,6 +150,10 @@ async def set_auth_header(request: Request, call_next):
     :param call_next: next middleware function
     :return: an altered response
     """
+
+    path = request.scope['path']  # get the request route
+    print(f'path: {path}')
+
     bearer_token = request.headers.get('Authorization')
     try:
         if bearer_token:
