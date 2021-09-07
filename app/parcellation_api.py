@@ -25,7 +25,7 @@ from .request_utils import get_spaces_for_parcellation, get_base_url_from_reques
 from .request_utils import get_global_features, get_regional_feature, get_path_to_regional_map, origin_data_decoder
 from .request_utils import get_region_props
 from .diskcache import fanout_cache
-from .validation import validate_and_return_atlas, validate_and_return_parcellation
+from .validation import validate_and_return_atlas, validate_and_return_parcellation, validate_and_return_space
 from .ebrains_token import get_public_token
 from . import logger
 
@@ -268,24 +268,19 @@ def parse_region_selection(
             status_code=400,
             detail='space_id is required for this functionality')
 
-    space_of_interest = siibra.spaces[space_id]
-    if space_of_interest is None:
-        raise HTTPException(
-            status_code=400,
-            detail=f'space_id {space_id} did not match any spaces')
-
-    atlas = siibra.atlases[atlas_id]
+    space_of_interest = validate_and_return_space(space_id)
+    atlas = validate_and_return_atlas(atlas_id)
     parcellation = atlas.get_parcellation(parcellation_id)
     region = atlas.get_region(region_id, parcellation)
-    if len(region) == 0:
+    if region is None:
         raise HTTPException(
             status_code=404,
             detail=f'cannot find region with spec {region_id}')
-    if len(region) > 1:
-        raise HTTPException(
-            status_code=400,
-            detail=f'found multiple region withs pec {region_id}')
-    return (region[0], space_of_interest)
+    # if len(region) > 1:
+    #     raise HTTPException(
+    #         status_code=400,
+    #         detail=f'found multiple region withs pec {region_id}')
+    return region, space_of_interest
 
 
 @router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/regional_map/info',
@@ -331,9 +326,13 @@ def get_regional_map_file(
     """
     roi, space_of_interest = parse_region_selection(
         atlas_id, parcellation_id, region_id, space_id)
+    print(f'region: {roi}')
+    print(f'space: {space_of_interest}')
     query_id = f'{atlas_id}{parcellation_id}{roi.name}{space_id}'
+    print(f'queryId: {query_id}')
     cached_fullpath = get_path_to_regional_map(
         query_id, roi, space_of_interest)
+    print(f'cached path: {cached_fullpath}')
     return FileResponse(cached_fullpath, media_type='application/octet-stream')
 
 
