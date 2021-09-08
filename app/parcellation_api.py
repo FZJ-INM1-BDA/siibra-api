@@ -29,7 +29,7 @@ from .validation import validate_and_return_atlas, validate_and_return_parcellat
 from .ebrains_token import get_public_token
 from . import logger
 
-preheat_flag=False
+preheat_flag = False
 
 
 def get_preheat_status():
@@ -40,7 +40,7 @@ def get_preheat_status():
 def preheat(id=None):
     global preheat_flag
     logger.info('--start parcellation preheat--')
-    #TODO - check if preheat is still needed
+    # TODO - check if preheat is still needed
     # public_token = get_public_token()
     # siibra.set_ebrains_token(public_token)
     # # feature_class = siibra.modalities.keys()
@@ -127,10 +127,10 @@ def __parcellation_result_info(parcellation, atlas_id=None, request=None):
         result_info['volumeSrc'] = jsonable_encoder(
             volumeSrc, custom_encoder=siibra_custom_json_encoder)
     if hasattr(parcellation, 'origin_datainfos'):
-        original_infos=[]
+        original_infos = []
         for datainfo in parcellation.origin_datainfos:
             try:
-                original_info=origin_data_decoder(datainfo)
+                original_info = origin_data_decoder(datainfo)
                 original_infos.append(original_info)
             except RuntimeError:
                 continue
@@ -189,8 +189,8 @@ def get_all_features_for_region(
     # TODO check for valid atlas and parcellation
     atlas = validate_and_return_atlas(atlas_id)
 
-    #TODO will be done in siibra-python
-    #TODO Authentication error - Not working in the moment for the provided user
+    # TODO will be done in siibra-python
+    # TODO Authentication error - Not working in the moment for the provided user
     result = {
         'features': [
             {
@@ -211,8 +211,9 @@ def get_all_features_for_region(
 
 
 # TODO - can maybe be removed
-@router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality}/{modality_id:path}',
-            tags=['parcellations'])
+@router.get(
+    '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality}/{modality_id:path}',
+    tags=['parcellations'])
 def get_regional_modality_by_id(
         request: Request,
         atlas_id: str,
@@ -351,7 +352,7 @@ def get_region_by_name(
     parcellation = atlas.get_parcellation(parcellation_id)
     region = atlas.get_region(region_id, parcellation)
 
-    #TODO New Region not found error
+    # TODO New Region not found error
 
     # if len(region) == 0:
     #     raise HTTPException(status_code=404,
@@ -369,8 +370,10 @@ def get_region_by_name(
 
     region_json['links'] = {
         'features': f'{single_region_root_url}/features',
-        'regional_map_info': f'{single_region_root_url}/regional_map/info?space_id={space_id}' if region_json['hasRegionalMap'] else None,
-        'regional_map': f'{single_region_root_url}/regional_map/map?space_id={space_id}' if region_json['hasRegionalMap'] else None,
+        'regional_map_info': f'{single_region_root_url}/regional_map/info?space_id={space_id}' if region_json[
+            'hasRegionalMap'] else None,
+        'regional_map': f'{single_region_root_url}/regional_map/map?space_id={space_id}' if region_json[
+            'hasRegionalMap'] else None,
     }
 
     return jsonable_encoder(region_json)
@@ -438,7 +441,7 @@ def get_global_features_rest(
     result = {
         'features': [
             {
-                m: '{}atlases/{}/parcellations/{}/features/{}'.format(
+                m.modality(): '{}atlases/{}/parcellations/{}/features/{}'.format(
                     get_base_url_from_request(request),
                     atlas_id.replace(
                         '/',
@@ -446,7 +449,9 @@ def get_global_features_rest(
                     parcellation_id.replace(
                         '/',
                         '%2F'),
-                    m)} for m in siibra.get_features(parcellation, 'all')]}
+                    m.modality()
+                )} for m in siibra.features.modalities  # TODO siibra.get_features(parcellation, 'all') - too slow at the moment
+        ]}
 
     return jsonable_encoder(result)
 
@@ -474,6 +479,5 @@ def get_parcellation_by_id(
         raise HTTPException(
             status_code=404,
             detail='parcellation with id: {} not found'.format(parcellation_id))
-
 
 # endregion
