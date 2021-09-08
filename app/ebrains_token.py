@@ -30,7 +30,7 @@ _access_token = os.getenv('EBRAINS_IAM_ACCESS_TOKEN')
 class TokenWrapper:
     def __init__(
             self,
-            iam_url='https://services.humanbrainproject.eu/oidc',
+            iam_url='https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect',
             client_id=None,
             client_secret=None,
             refresh_token=None):
@@ -61,8 +61,7 @@ class TokenWrapper:
             url,
             headers={'content-type': 'application/x-www-form-urlencoded'},
             data={
-                'grant_type': 'refresh_token',
-                'refresh_token': self.refresh_token,
+                'grant_type': 'client_credentials',
                 'client_id': self.client_id,
                 'client_secret': self.client_secret
             })
