@@ -26,13 +26,13 @@ from fastapi_versioning import VersionedFastAPI
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from .siibra_api import router as siibra_router
-from .atlas_api import router as atlas_router
-from .space_api import router as space_router
-from .health import router as health_router
-from .parcellation_api import router as parcellation_router, preheat, get_preheat_status
-from .ebrains_token import get_public_token
-from .siibra_custom_exception import SiibraCustomException
+from app.core.siibra_api import router as siibra_router
+from app.core.atlas_api import router as atlas_router
+from app.core.space_api import router as space_router
+from app.service.health import router as health_router
+from app.core.parcellation_api import router as parcellation_router, preheat, get_preheat_status
+from app.configuration.ebrains_token import get_public_token
+from app.configuration.siibra_custom_exception import SiibraCustomException
 from . import logger
 
 

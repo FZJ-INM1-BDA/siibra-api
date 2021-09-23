@@ -18,8 +18,8 @@ import os
 import base64
 import json
 import time
-from . import logger
-from .siibra_custom_exception import SiibraCustomException
+from app import logger
+from app.configuration.siibra_custom_exception import SiibraCustomException
 
 _client_id = os.getenv('EBRAINS_IAM_CLIENT_ID')
 _client_secret = os.getenv('EBRAINS_IAM_CLIENT_SECRET')

@@ -12,19 +12,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from copy import copy
 
 import siibra
-import json
 import nibabel as nib
 from fastapi import HTTPException, Request
-from .cache_redis import CacheRedis
+from app.configuration.cache_redis import CacheRedis
 import anytree
 import hashlib
 import os
-from .diskcache import fanout_cache, CACHEDIR
-from . import logger
-from .validation import validate_and_return_atlas, validate_and_return_parcellation, validate_and_return_space
+from app.configuration.diskcache import fanout_cache, CACHEDIR
+from app import logger
+from app.service.validation import validate_and_return_atlas
 # TODO: Local or Remote NiftiVolume? NeuroglancerVolume = NgVolume?
 from siibra.volumes.volume import VolumeSrc, LocalNiftiVolume, NeuroglancerVolume
 

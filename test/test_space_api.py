@@ -1,13 +1,10 @@
 import json
-from unittest.mock import Mock, patch
 
 from fastapi.testclient import TestClient
 
 from app.app import app
 
 from siibra import region
-from app.request_utils import _get_file_from_nibabel
-from siibra import atlas
 
 client = TestClient(app)
 

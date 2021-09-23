@@ -16,7 +16,7 @@
 import siibra
 from fastapi import APIRouter, Request, HTTPException
 from fastapi_versioning import version
-from .request_utils import get_base_url_from_request
+from app.service.request_utils import get_base_url_from_request
 
 # FastApi router to create rest endpoints
 router = APIRouter()

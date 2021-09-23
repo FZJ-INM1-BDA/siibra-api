@@ -13,21 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import re
 import siibra
 from enum import Enum
 from typing import Optional
-from fastapi import APIRouter, Request, HTTPException, Depends
-from starlette.responses import PlainTextResponse, FileResponse
+from fastapi import APIRouter, Request, HTTPException
+from starlette.responses import FileResponse
 from fastapi.encoders import jsonable_encoder
-from .request_utils import split_id, find_region_via_id, create_region_json_response
-from .request_utils import get_spaces_for_parcellation, get_base_url_from_request, siibra_custom_json_encoder
-from .request_utils import get_global_features, get_regional_feature, get_path_to_regional_map, origin_data_decoder
-from .request_utils import get_region_props
-from .diskcache import fanout_cache
-from .validation import validate_and_return_atlas, validate_and_return_parcellation, validate_and_return_space
-from .ebrains_token import get_public_token
-from . import logger
+from app.service.request_utils import split_id, create_region_json_response
+from app.service.request_utils import get_spaces_for_parcellation, get_base_url_from_request, siibra_custom_json_encoder
+from app.service.request_utils import get_global_features, get_regional_feature, get_path_to_regional_map, origin_data_decoder
+from app.service.request_utils import get_region_props
+from app.configuration.diskcache import fanout_cache
+from app.service.validation import validate_and_return_atlas, validate_and_return_parcellation, validate_and_return_space
+from app import logger
 
 preheat_flag = False
 

@@ -1,8 +1,7 @@
 import unittest
-from unittest.mock import MagicMock
 from fastapi import HTTPException
 
-from app import request_utils
+from app.service import request_utils
 import mock
 
 
@@ -68,7 +67,7 @@ class TestRequestUtils(unittest.TestCase):
     #     self.assertGreater(len(features), 0)
 
     def test_get_spatial_features_ieeg_dataset(self):
-        features=request_utils.get_spatial_features(
+        features= request_utils.get_spatial_features(
             self.ATLAS_ID,
             self.MNI152_SPACE_ID,
             self.IEEG_DATASET_MODALITY,
@@ -107,7 +106,7 @@ class TestRequestUtils(unittest.TestCase):
         space_of_interest=sb.spaces['152']
         assert space_of_interest is not None
 
-        path_to_file=request_utils.get_path_to_regional_map('tmp_req_id', atlas.selected_region, space_of_interest)
+        path_to_file= request_utils.get_path_to_regional_map('tmp_req_id', atlas.selected_region, space_of_interest)
         assert path_to_file is not None
 
         import nibabel as nib

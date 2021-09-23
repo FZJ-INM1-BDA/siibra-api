@@ -24,9 +24,9 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from starlette.responses import FileResponse, StreamingResponse
 
-from .request_utils import get_spatial_features, split_id, _get_file_from_nibabel, get_parcellations_for_space
-from .request_utils import get_base_url_from_request, siibra_custom_json_encoder,origin_data_decoder
-from .validation import validate_and_return_atlas, validate_and_return_space
+from app.service.request_utils import get_spatial_features, split_id, _get_file_from_nibabel, get_parcellations_for_space
+from app.service.request_utils import get_base_url_from_request, siibra_custom_json_encoder,origin_data_decoder
+from app.service.validation import validate_and_return_atlas, validate_and_return_space
 
 # FastApi router to create rest endpoints
 router = APIRouter()
