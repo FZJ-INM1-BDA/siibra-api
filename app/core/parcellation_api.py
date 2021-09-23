@@ -43,14 +43,13 @@ def preheat(id=None):
     # siibra.set_ebrains_token(public_token)
     # # feature_class = siibra.modalities.keys()
     # # EbrainsRegionalFeatureCls=feature_classes[feature_modalities.EbrainsRegionalDataset]
-    # EbrainsRegionalFeatureCls=feature_classes[feature_modalities.EbrainsRegionalDataset]
+    # EbrainsRegionalFeatureCls=feature_registry._classes[feature_modalities.EbrainsRegionalDataset]
     # if hasattr(EbrainsRegionalFeatureCls, 'preheat') and callable(EbrainsRegionalFeatureCls.preheat):
     #     EbrainsRegionalFeatureCls.preheat(id)
     #     logger.info('--end parcellation preheat--')
     # else:
     #     logger.info('--siibra-python does not suppport preheat. exiting--')
     # preheat_flag=True
-
 
 router = APIRouter()
 
