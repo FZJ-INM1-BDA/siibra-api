@@ -4,7 +4,8 @@ from fastapi.testclient import TestClient
 
 from app.app import app
 
-from siibra import region
+import siibra
+# from siibra import region
 
 client = TestClient(app)
 
@@ -13,12 +14,12 @@ SPACE_ID = 'minds%2Fcore%2Freferencespace%2Fv1.0.0%2Fdafcffc5-4826-4bf1-8ff6-46b
 INVALID_SPACE_ID = 'INVALID_SPACE_ID'
 
 
-class MockRegionProps:
-    def __init__(self, region, space):
-        self.attrs = {'centroid_mm': [1,2,3], 'volume_mm': 4.0, 'surface_mm': 5.0, 'is_cortical': False}
-
-
-region.RegionProps = MockRegionProps
+# class MockRegionProps:
+#     def __init__(self, region, space):
+#         self.attrs = {'centroid_mm': [1,2,3], 'volume_mm': 4.0, 'surface_mm': 5.0, 'is_cortical': False}
+#
+#
+# region.RegionProps = MockRegionProps
 
 _get_file_from_nibabel = {}
 
