@@ -40,9 +40,10 @@ def get_gene_names():
     Return all genes (name, acronym) in siibra
     """
     # genes = features.genes.AllenBrainAtlasQuery.GENE_NAMES
-    genes = siibra.features.gene_names
-    return jsonable_encoder([{'name': genes[g], 'acronym': g}
-                            for g in genes.keys()])
+    genes = []
+    for gene in siibra.features.gene_names:
+        genes.append(gene)
+    return jsonable_encoder({'genes': genes})
 
 
 @router.get('/features', tags=['data'])
@@ -55,12 +56,11 @@ def get_all_available_modalities():
             return 'SpatialFeature'
         if issubclass(ft, siibra.features.feature.RegionalFeature):
             return 'RegionalFeature'
-        if issubclass(ft, siibra.features.feature.GlobalFeature):
-            return 'GlobalFeature'
+        if issubclass(ft, siibra.features.feature.ParcellationFeature):
+            return 'ParcellationFeature'
         return 'UnknownFeatureType'
     return [{
-        'name': feature_name,
+        'name': feature_name.modality(),
         'type': get_feature_type(feature_name._FEATURETYPE)
-        # 'type': get_feature_type(feature_classes[feature_name])
     } for feature_name in siibra.features.modalities]
 
