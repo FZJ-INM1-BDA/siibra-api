@@ -14,6 +14,7 @@ client = TestClient(app)
 async def test_home():
     async with AsyncClient(app=app, base_url="http://test") as ac:
         response = await ac.get("/")
+    # response = client.get("/")
     assert response.status_code == 200
     assert 'Siibra' in str(response.content)
 
