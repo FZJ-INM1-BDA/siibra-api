@@ -251,9 +251,6 @@ def get_regional_feature(
         raise HTTPException(
                      status_code=500,
                      detail=f'Could not get features for region with id {region_id}')
-    print('*********GOT FEATURES********************')
-    print(got_features)
-    print('*********GOT FEATURES********************')
 
     shaped_features = None
     if siibra.features.modalities[modality_id] == siibra.features.ebrains.EbrainsRegionalFeatureQuery:
