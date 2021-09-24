@@ -1,4 +1,6 @@
 import unittest
+
+import siibra
 from fastapi import HTTPException
 
 from app.service import request_utils
@@ -27,8 +29,8 @@ class TestRequestUtils(unittest.TestCase):
     IEEG_ELECTRODE_MODALITY = 'IEEG_Electrode'
     IEEG_DATASET_MODALITY = 'IEEG_Dataset'
 
-    def test_create_atlas(self):
-        atlas = request_utils.create_atlas(self.ATLAS_ID)
+    def test_get_human_atlas(self):
+        atlas = siibra.atlases['human']
         self.assertEqual(atlas.name, 'Multilevel Human Atlas')
 
     def test_get_regional_feature_with_wrong_modality(self):
