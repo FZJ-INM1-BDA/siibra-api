@@ -4,9 +4,12 @@
 
 # siibra - API 
 
+Copyright 2020-2021, Forschungszentrum Jülich GmbH
+
 *Authors: Big Data Analytics Group, Institute of Neuroscience and Medicine (INM-1), Forschungszentrum Jülich GmbH*
 
-Copyright 2020-2021, Forschungszentrum Jülich GmbH
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
 
 > :warning: **`siibra-api` is still at an experimental stage.** The API of the library is not
 stable, and the software is not yet fully tested. You are welcome to install and
