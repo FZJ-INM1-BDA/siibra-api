@@ -66,3 +66,21 @@ def validate_and_return_parcellation(parcellation_id):
             status_code=400,
             detail=f'parcellation_id: {parcellation_id} is not known'
         )
+
+
+def validate_and_return_region(region_id, parcellation):
+    """
+    Check if the given region id is valid and return a region object
+    If the region id is not valid, throw a HTTP 400 Exception
+
+    :param region_id: id that needs to be checked
+    :param parcellation: parcellation to search the region in
+    :return: siibra region object
+    """
+    try:
+        return parcellation.decode_region(region_id)
+    except:
+        raise HTTPException(
+            status_code=400,
+            detail=f'region: {region_id} is not known'
+        )

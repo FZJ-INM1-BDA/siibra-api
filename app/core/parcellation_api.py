@@ -24,7 +24,8 @@ from app.service.request_utils import get_spaces_for_parcellation, get_base_url_
 from app.service.request_utils import get_global_features, get_regional_feature, get_path_to_regional_map, origin_data_decoder
 from app.service.request_utils import get_region_props
 from app.configuration.diskcache import fanout_cache
-from app.service.validation import validate_and_return_atlas, validate_and_return_parcellation, validate_and_return_space
+from app.service.validation import validate_and_return_atlas, validate_and_return_parcellation, \
+    validate_and_return_space, validate_and_return_region
 from app import logger
 
 preheat_flag = False
@@ -185,6 +186,8 @@ def get_all_features_for_region(
     """
     # TODO check for valid atlas and parcellation
     atlas = validate_and_return_atlas(atlas_id)
+    parcellation = validate_and_return_parcellation(parcellation_id)
+    region = validate_and_return_region(region_id, parcellation)
 
     # TODO will be done in siibra-python
     # TODO Authentication error - Not working in the moment for the provided user
@@ -202,7 +205,7 @@ def get_all_features_for_region(
                     region_id.replace(
                         '/',
                         '%2F'),
-                    m)} for m in siibra.get_features(region_id, 'all')]}
+                    m)} for m in siibra.get_features(region, 'all')]}
 
     return jsonable_encoder(result)
 

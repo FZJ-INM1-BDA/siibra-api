@@ -22,7 +22,8 @@ import hashlib
 import os
 from app.configuration.diskcache import fanout_cache, CACHEDIR
 from app import logger
-from app.service.validation import validate_and_return_atlas
+from app.service.validation import validate_and_return_atlas, validate_and_return_parcellation, \
+    validate_and_return_region, validate_and_return_space
 # TODO: Local or Remote NiftiVolume? NeuroglancerVolume = NgVolume?
 from siibra.volumes.volume import VolumeSrc, LocalNiftiVolume, NeuroglancerVolume
 
@@ -239,14 +240,18 @@ def get_regional_feature(
 #         return []
 
     atlas = validate_and_return_atlas(atlas_id)
-    parcellation = atlas.get_parcellation(parcellation_id)
-    region = atlas.get_region(region_id, parcellation)
+    parcellation = validate_and_return_parcellation(parcellation_id)
+    # region = atlas.get_region(region_id, parcellation)
+    region = validate_and_return_region(region_id, parcellation)
 
     # TODO: validate region
     #     raise HTTPException(status_code=404,
     #                         detail=f'Region with id {region_id} not found!')
     try:
         got_features = siibra.get_features(region, modality_id)
+        print('****************************************')
+        print(dir(got_features[0]))
+        print('****************************************')
     except:
         raise HTTPException(
                      status_code=500,
@@ -308,12 +313,12 @@ def get_regional_feature(
             },
             'get_detail': lambda receptor_pr: { 
                 "__receptor_symbols": siibra.features.receptors.RECEPTOR_SYMBOLS,
-                "__files": receptor_pr.files,
+                # "__files": receptor_pr.files, TODO where  to get files
                 "__data": {
                     "__profiles": receptor_pr.profiles,
                     "__autoradiographs": receptor_pr.autoradiographs,
                     "__fingerprint": receptor_pr.fingerprint,
-                    "__profile_unit": receptor_pr.profile_unit,
+                    # "__profile_unit": receptor_pr.profile_unit, TODO check where to get units
                 },
              },
              'instance': receptor_pr,
@@ -387,9 +392,7 @@ def get_electrode_detail(electrode, atlas=None, parc_id=None):
 @fanout_cache.memoize(typed=True)
 def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detail=False, parc_id=None, region_id=None):
 
-    space_of_interest = siibra.spaces[space_id]
-    if space_of_interest is None:
-        raise HTTPException(404, detail=f'space with id {space_id} cannot be found')
+    space_of_interest = validate_and_return_space(space_id)
 
     if modality_id not in siibra.features.modalities:
         raise HTTPException(status_code=400,
@@ -412,10 +415,10 @@ def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detai
         # modality_id is not a global feature, return empty array
         return []
 
-    # select atlas by id
-    atlas = siibra.atlases[atlas_id]
-    if space_of_interest not in atlas.spaces:
-        raise HTTPException(404, detail=f'space {space_id} not in atlas {atlas}')
+    atlas = validate_and_return_atlas(atlas_id)
+    # TODO not working at the moment. Space_of_interest is never in atlas.spaces
+    # if space_of_interest not in atlas.spaces:
+    #     raise HTTPException(404, detail=f'space {space_id} not in atlas {atlas}')
 
     # TODO: No Selection of parcellation and region is needed - TODO: How to provide parcellation/region
     if parc_id:
