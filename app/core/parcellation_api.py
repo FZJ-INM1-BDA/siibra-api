@@ -67,16 +67,6 @@ class ModalityType(str, Enum):
 
 # region === parcellations
 
-# TODO instead of selecting, maybe check for a valid parcellation
-# def __check_and_select_parcellation(atlas, parcellation_id):
-#     try:
-#         # select atlas parcellation
-#         atlas.select_parcellation(parcellation_id, force=True)
-#     except Exception:
-#         raise HTTPException(
-#             status_code=400,
-#             detail='The requested parcellation is not supported by the selected atlas.')
-
 
 def __parcellation_result_info(parcellation, atlas_id=None, request=None):
     """
@@ -184,13 +174,10 @@ def get_all_features_for_region(
     """
     Returns all regional features for a region.
     """
-    # TODO check for valid atlas and parcellation
-    atlas = validate_and_return_atlas(atlas_id)
+    validate_and_return_atlas(atlas_id)
     parcellation = validate_and_return_parcellation(parcellation_id)
     region = validate_and_return_region(region_id, parcellation)
 
-    # TODO will be done in siibra-python
-    # TODO Authentication error - Not working in the moment for the provided user
     result = {
         'features': [
             {
@@ -270,9 +257,9 @@ def parse_region_selection(
             detail='space_id is required for this functionality')
 
     space_of_interest = validate_and_return_space(space_id)
-    atlas = validate_and_return_atlas(atlas_id)
-    parcellation = atlas.get_parcellation(parcellation_id)
-    region = atlas.get_region(region_id, parcellation)
+    validate_and_return_atlas(atlas_id)
+    parcellation = validate_and_return_parcellation(parcellation_id)
+    region = validate_and_return_region(region_id, parcellation)
     if region is None:
         raise HTTPException(
             status_code=404,
@@ -295,8 +282,9 @@ def get_regional_map_info(
     """
     Returns information about a regional map for given region name.
     """
-    atlas = siibra.atlases[atlas_id]
-    region = atlas.get_region(region_id, parcellation=parcellation_id)
+    validate_and_return_atlas(atlas_id)
+    parcellation = validate_and_return_parcellation(parcellation_id)
+    region = validate_and_return_region(region_id, parcellation)
     region.get_regional_map("mni152", siibra.MapType.CONTINUOUS)
 
     roi, space_of_interest = parse_region_selection(
@@ -348,9 +336,9 @@ def get_region_by_name(
     """
     Returns a specific region for a given id.
     """
-    atlas = siibra.atlases[atlas_id]
-    parcellation = atlas.get_parcellation(parcellation_id)
-    region = atlas.get_region(region_id, parcellation)
+    atlas = validate_and_return_atlas(atlas_id)
+    parcellation = validate_and_return_parcellation(parcellation_id)
+    region = validate_and_return_region(region_id, parcellation)
 
     # TODO New Region not found error
 
@@ -436,8 +424,8 @@ def get_global_features_rest(
     """
     Returns all global features for a parcellation.
     """
-    atlas = siibra.atlases[atlas_id]
-    parcellation = atlas.get_parcellation(parcellation_id)
+    validate_and_return_atlas(atlas_id)
+    validate_and_return_parcellation(parcellation_id)
     result = {
         'features': [
             {
@@ -465,7 +453,7 @@ def get_parcellation_by_id(
     """
     Returns one parcellation for given id.
     """
-    atlas = siibra.atlases[atlas_id]
+    atlas = validate_and_return_atlas(atlas_id)
     parcellations = atlas.parcellations
     result = {}
     for parcellation in parcellations:
