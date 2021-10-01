@@ -16,8 +16,8 @@ ARG DEV_FLAG
 ENV DEPLOY_ENVIRONMENT=${DEV_FLAG:+develop}
 # if DEPLOY_ENVIRONMENT is not yet set, set it to production
 ENV DEPLOY_ENVIRONMENT=${DEPLOY_ENVIRONMENT:-production}
-# if DEV_FLAG flag is set, set SIIBRA_CONFIG_GITLAB_PROJECT_TAG=develop
-#ENV SIIBRA_CONFIG_GITLAB_PROJECT_TAG=${DEV_FLAG:+develop}
+# if DEV_FLAG flag is set, set SIIBRA_CONFIG_GITLAB_PROJECT_TAG=master
+ENV SIIBRA_CONFIG_GITLAB_PROJECT_TAG=${DEV_FLAG:+master}
 
 RUN if [ "$DEPLOY_ENVIRONMENT" = "production" ]; \
   then python -m pip install -r requirements/prod.txt; \
