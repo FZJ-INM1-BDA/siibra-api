@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from copy import copy
+from typing import IO
 
 import siibra as bs
 import json
@@ -535,6 +536,7 @@ def get_path_to_regional_map(query_id, roi, space_of_interest):
     # cache fails, fetch from source
     def save_new_nii(cached_fullpath):
         import nibabel as nib
+        import numpy as np
         # fix regional_map if necessary
         regional_map.image.header.set_xyzt_units('mm', 'sec')
 
@@ -543,7 +545,21 @@ def get_path_to_regional_map(query_id, roi, space_of_interest):
 
         # num channel
         regional_map.image.header['dim'][5] = 1
-        nib.save(regional_map.image, cached_fullpath)
+
+        if regional_map.image.header.get_data_dtype() == np.float64:
+            fdata=regional_map.image.get_fdata()
+            new_data=fdata.astype(np.float32)
+            regional_map.image.set_data_dtype(np.float32)
+            
+            if regional_map.image.header['sizeof_hdr'] == 348:
+                new_image=nib.Nifti1Image(new_data, regional_map.image.affine, regional_map.image.header)
+            elif regional_map.image.header['sizeof_hdr'] == 540:
+                new_image=nib.Nifti2Image(new_data, regional_map.image.affine, regional_map.image.header)
+            else:
+                raise IOError('regional map has incorrect sizeof_hdr')
+            nib.save(new_image, cached_fullpath)
+        else:
+            nib.save(regional_map.image, cached_fullpath)
 
     return get_cached_file(cached_filename, save_new_nii)
 
