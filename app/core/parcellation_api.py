@@ -30,6 +30,16 @@ from app import logger
 
 preheat_flag = False
 
+parcellation_json_encoder = {
+    siibra.core.Parcellation: lambda parcellation: {
+        'id': split_id(parcellation.id),
+        'name': parcellation.name,
+        'availableSpaces': get_spaces_for_parcellation(parcellation),
+        'modality': parcellation.modality,
+        'version': parcellation.version,
+        '_dataset_specs': parcellation._dataset_specs,
+    }
+}
 
 def get_preheat_status():
     global preheat_flag
@@ -86,9 +96,6 @@ def __parcellation_result_info(parcellation, atlas_id=None, request=None):
     Create the response for a parcellation object
     """
     result_info = {
-        'id': split_id(parcellation.id),
-        'name': parcellation.name,
-        'availableSpaces': get_spaces_for_parcellation(parcellation),
         'links': {
             'self': {
                 'href': '{}atlases/{}/parcellations/{}'.format(get_base_url_from_request(request),
@@ -109,34 +116,12 @@ def __parcellation_result_info(parcellation, atlas_id=None, request=None):
                 atlas_id.replace('/', '%2F'),
                 parcellation.id.replace('/', '%2F')
             )
-        }
+        },
+        **jsonable_encoder(parcellation, custom_encoder={
+            **siibra_custom_json_encoder,
+            **parcellation_json_encoder
+        })
     }
-
-    if hasattr(parcellation, 'modality') and parcellation.modality:
-        result_info['modality'] = parcellation.modality
-
-    if hasattr(parcellation, 'version') and parcellation.version:
-        result_info['version'] = parcellation.version
-
-    if hasattr(parcellation, 'volume_src') and parcellation.volume_src:
-        volumeSrc = {
-            key.id: value for key, value in parcellation.volume_src.items()
-        }
-        result_info['volumeSrc'] = jsonable_encoder(
-            volumeSrc, custom_encoder=siibra_custom_json_encoder)
-    if hasattr(parcellation, 'origin_datainfos'):
-        original_infos = []
-        for datainfo in parcellation.origin_datainfos:
-            try:
-                original_info = origin_data_decoder(datainfo)
-                original_infos.append(original_info)
-            except RuntimeError:
-                continue
-
-        result_info['originDatainfos'] = original_infos
-
-    if hasattr(parcellation, 'deprecated'):
-        result_info['deprecated'] = parcellation.deprecated
 
     return result_info
 
