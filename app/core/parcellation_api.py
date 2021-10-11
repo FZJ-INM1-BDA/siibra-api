@@ -19,9 +19,10 @@ from typing import Optional
 from fastapi import APIRouter, Request, HTTPException
 from starlette.responses import FileResponse
 from fastapi.encoders import jsonable_encoder
+from urllib.parse import quote
 from app.service.request_utils import split_id, create_region_json_response
 from app.service.request_utils import get_spaces_for_parcellation, get_base_url_from_request, siibra_custom_json_encoder
-from app.service.request_utils import get_global_features, get_regional_feature, get_path_to_regional_map, origin_data_decoder
+from app.service.request_utils import get_global_features, get_regional_feature, get_path_to_regional_map
 from app.service.request_utils import get_region_props
 from app.configuration.diskcache import fanout_cache
 from app.service.validation import validate_and_return_atlas, validate_and_return_parcellation, \
@@ -335,7 +336,10 @@ def get_region_by_name(
     """
     atlas = siibra.atlases[atlas_id]
     parcellation = atlas.get_parcellation(parcellation_id)
-    region = atlas.get_region(region_id, parcellation)
+    try:
+        region = atlas.get_region(region_id, parcellation)
+    except ValueError:
+        raise HTTPException(404, 'Region spec {region_id} cannot be decoded')
 
     # TODO New Region not found error
 
@@ -349,9 +353,9 @@ def get_region_by_name(
 
     single_region_root_url = '{}atlases/{}/parcellations/{}/regions/{}'.format(
         get_base_url_from_request(request),
-        atlas_id.replace('/', '%2F'),
-        parcellation_id.replace('/', '%2F'),
-        region_id.replace('/', '%2F'))
+        quote(atlas_id),
+        quote(parcellation_id),
+        quote(region_id))
 
     region_json['links'] = {
         'features': f'{single_region_root_url}/features',

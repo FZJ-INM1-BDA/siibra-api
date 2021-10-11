@@ -55,16 +55,12 @@ def _create_region_json_object(region, space_id=None, atlas=None, detail=False):
     if hasattr(region, 'attrs'):
         region_json['rgb'] = region.attrs.get('rgb')
         region_json['id'] = region.attrs.get('fullId')
-    if detail and hasattr(region, 'origin_datainfos'):
-        region_json['originDatainfos'] = [origin_data_decoder(datainfo) for datainfo in region.origin_datainfos]
     region_json['availableIn'] = get_available_spaces_for_region(region)
 
     if detail:
-        #TODO new way to check for regional map
-        # region_json['hasRegionalMap'] = region.has_regional_map(
-        #     siibra.spaces[space_id],
-        #     bs.commons.MapType.CONTINUOUS) if space_id is not None else None
-        region_json['hasRegionalMap'] = None
+        region_json['hasRegionalMap'] = region.has_regional_map(
+            siibra.spaces[space_id],
+            siibra.commons.MapType.CONTINUOUS) if space_id is not None else None
     return region_json
 
 
