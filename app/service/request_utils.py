@@ -278,7 +278,7 @@ def get_regional_feature(
                 "kgId": conn_pr._matrix.id,
             },
             'get_detail': lambda conn_pr: { 
-                # "__column_names": conn_pr.column_names, TODO: where to get the names?
+                "__column_names": list(conn_pr.regionnames), #TODO: where to get the names?
                 "__profile": conn_pr.profile.tolist(),
              },
              'instance': conn_pr,
