@@ -299,10 +299,10 @@ def get_regional_feature(
             },
             'get_detail': lambda receptor_pr: { 
                 "__receptor_symbols": siibra.features.receptors.RECEPTOR_SYMBOLS,
-                # "__files": receptor_pr.files, TODO where  to get files
+                "__files": [], #receptor_pr.files, # TODO where  to get files
                 "__data": {
                     "__profiles": receptor_pr.profiles,
-                    "__autoradiographs": receptor_pr.autoradiographs,
+                    "__autoradiographs": {},
                     "__fingerprint": receptor_pr.fingerprint,
                     # "__profile_unit": receptor_pr.profile_unit, TODO check where to get units
                 },
@@ -388,7 +388,7 @@ def get_ieeg_session_detail(ieeg_session: siibra.features.ieeg.IEEG_Session, reg
         **({'inRoi': ieeg_session.match(region)} if region is not None else {})
     }
 
-# @fanout_cache.memoize(typed=True)
+@fanout_cache.memoize(typed=True)
 def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detail=False, parc_id=None, region_id=None):
 
     space_of_interest = validate_and_return_space(space_id)
@@ -418,8 +418,6 @@ def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detai
     parc=validate_and_return_parcellation(parc_id)
     roi=validate_and_return_region(region_id, parc)
 
-    print('----------rpoi', roi)
-        
     try:
         # spatial_features=atlas.get_features(modality_id)
         spatial_features = siibra.get_features(roi, modality_id, space=space_of_interest)
@@ -548,9 +546,22 @@ def origin_data_decoder(origin_data):
         'description': description,
         'urls': urls}
 
+def density_profile_encoder(density: siibra.features.receptors.DensityProfile):
+    return density.densities
+
+def receptor_profile_encoder(receptor: siibra.features.receptors.ReceptorDistribution):
+    return {
+        '__data': {
+            '__profiles': {
+                profile_key: receptor.profiles[profile_key]
+                for profile_key in receptor.profiles}
+        }
+    }
 
 siibra_custom_json_encoder = {
     VolumeSrc: vol_src_sans_space,
     LocalNiftiVolume: vol_src_sans_space,
     NeuroglancerVolume: vol_src_sans_space,
+    siibra.features.receptors.DensityProfile: density_profile_encoder,
+    siibra.features.receptors.ReceptorDistribution: receptor_profile_encoder,
 }

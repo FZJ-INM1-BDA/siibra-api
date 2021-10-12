@@ -197,8 +197,9 @@ def get_all_features_for_region(
 
 
 # TODO - can maybe be removed
+# negative: need to be able to fetch region specific feature. XG
 @router.get(
-    '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality}/{modality_id:path}',
+    '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality}/{feature_id:path}',
     tags=['parcellations'])
 def get_regional_modality_by_id(
         request: Request,
@@ -206,27 +207,27 @@ def get_regional_modality_by_id(
         parcellation_id: str,
         region_id: str,
         modality: str,
-        modality_id: str,
+        feature_id: str,
         gene: Optional[str] = None):
     """
-    Returns all features for a region. The returned feature is defined by the given modality type and modality id.
+    Returns a feature for a region, as defined by by the modality and feature ID
     """
     regional_features = get_regional_feature(
-        atlas_id, parcellation_id, region_id, modality, feature_id=modality_id, detail=True, gene=gene)
-
+        atlas_id, parcellation_id, region_id, modality, feature_id=feature_id, detail=True, gene=gene)
     if len(regional_features) == 0:
         raise HTTPException(
             status_code=404,
-            detail=f'modality with id {modality_id} not found')
-    # if len(regional_features) != 1:
-    #     raise HTTPException(
-    #         status_code=400,
-    #         detail=f'modality with id {modality_id} has multiple matches')
-    # return regional_features[0]
-    return regional_features
+            detail=f'modality with id {feature_id} not found')
+    if len(regional_features) != 1:
+        raise HTTPException(
+            status_code=400,
+            detail=f'modality with id {feature_id} has multiple matches')
+    return jsonable_encoder(regional_features[0],
+        custom_encoder=siibra_custom_json_encoder)
 
 
 # TODO - can maybe be removed
+# negative: need to be able to fetch region specific feature. XG
 @router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality}',
             tags=['parcellations'])
 def get_feature_modality_for_region(
@@ -237,7 +238,7 @@ def get_feature_modality_for_region(
         modality: str,
         gene: Optional[str] = None):
     """
-    Returns one modality feature for a region.
+    Returns list of the features for a region, as defined by the modality.
     """
     regional_features = get_regional_feature(
         atlas_id, parcellation_id, region_id, modality, detail=False, gene=gene)
