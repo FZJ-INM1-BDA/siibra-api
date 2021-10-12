@@ -81,11 +81,31 @@ class TestSingleRegion(unittest.TestCase):
 
 
     def test_get_one_region_for_parcellation_with_extra_data(self):
-        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}?space_id={}'.format(ATLAS_ID.replace('/', '%2F'), PARCELLATION_ID, REGION_BASAL, SPACE_ID))
+        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}?space_id={}'.format(
+            ATLAS_ID.replace('/', '%2F'),
+            PARCELLATION_ID,
+            HOC1_LEFT_REGION_NAME,
+            SPACE_ID))
         result_content = json.loads(response.content)
         assert response.status_code == 200
 
-        assert result_content['name'] == REGION_BASAL
+        assert result_content['name'] == HOC1_LEFT_REGION_NAME
+
+        # spatial props
+        props_components = result_content.get('props', {}).get('components', [])
+        assert type(props_components) == list
+        assert len(props_components) > 0
+        
+        assert type(props_components[0].get('centroid')) == list
+        assert len(props_components[0].get('centroid')) == 3
+        assert all([type(v) == float for v in props_components[0].get('centroid')])
+        assert type(props_components[0].get('volume')) == float
+
+        # _dataset_specs
+        _dataset_specs = result_content.get('_dataset_specs')
+        assert _dataset_specs is not None
+        assert type(_dataset_specs) == list
+        assert len(_dataset_specs) > 0
         # Add Assertion for extra data
 
 
