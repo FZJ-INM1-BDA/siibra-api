@@ -58,6 +58,11 @@ def _create_region_json_object(region, space_id=None, atlas=None, detail=False):
     region_json['availableIn'] = get_available_spaces_for_region(region)
 
     if detail:
+        region_json['_dataset_specs'] = [{
+            'name': ds.name,
+            'description': ds.description,
+            'urls': ds.urls
+        } for ds in region.datasets if type(ds) == siibra.features.ebrains.EbrainsDataset]
         region_json['hasRegionalMap'] = region.has_regional_map(
             siibra.spaces[space_id],
             siibra.commons.MapType.CONTINUOUS) if space_id is not None else None
@@ -138,7 +143,13 @@ def get_region_props(space_id, atlas, region) -> list:
     space = atlas.get_space(space_id)
     try:
         logger.info(f'Getting region props for: {region}')
-        result_props = region.spatialprops(space, force=True)
+        result_props = region.spatial_props(space)
+        result_props = {
+            'components': [{
+                'centroid': list(c['centroid']),
+                'volume': c['volume']
+            }for c in result_props['components']]
+        }
     except:
         logger.info(f'Could not get region properties for region: {region} and space: {space}')
         result_props = []
