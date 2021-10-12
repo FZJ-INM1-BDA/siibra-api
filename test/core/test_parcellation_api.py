@@ -170,6 +170,17 @@ class TestSingleRegionFeatures(unittest.TestCase):
         result_content = json.loads(response.content)
         assert response.status_code == 200
         assert len(result_content) > 0
+    
+    def test_result_receptor_detail(self):
+        receptor_dataset_id=r'Density%20measurements%20of%20different%20receptors%20for%20Area%20hOc1%20(V1%2C%2017%2C%20CalcS)%20%5Bhuman%2C%20v1.0%5D'
+        url='/v1_0/atlases/{}/parcellations/{}/regions/{}/features/ReceptorDistribution/{}'.format(
+            quote(ATLAS_ID),
+            # nb must not be quote()
+            PARCELLATION_ID,
+            quote(HOC1_LEFT_REGION_NAME),
+            receptor_dataset_id)
+        response = client.get(url)
+        assert response.status_code == 200
 
     def test_result_ieeg(self):
         url='/v1_0/atlases/{atlas_id}/spaces/{space_id}/features/IEEG_Session?parcellation_id={parc_id}&region={region_id}'.format(
