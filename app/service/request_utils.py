@@ -221,18 +221,12 @@ def get_regional_feature(
         raise HTTPException(status_code=400,
                             detail=f'{modality_id} is not a valid modality')
 
-    # fail fast if not in supported feature list
-    # if siibra.modalities[modality_id] not in SUPPORTED_FEATURES:
-    #     raise HTTPException(
-    #         status_code=501,
-    #         detail=f'feature {modality_id} has not yet been implemented')
-
-# TODO - check for subclass
-#     if not issubclass(
-#             feature_classes[modality_id],
-#             feature_export.RegionalFeature):
-#         # modality_id is not a global feature, return empty array
-#         return []
+    # TODO - check for subclass
+    #     if not issubclass(
+    #             feature_classes[modality_id],
+    #             feature_export.RegionalFeature):
+    #         # modality_id is not a global feature, return empty array
+    #         return []
 
     atlas = validate_and_return_atlas(atlas_id)
     parcellation = validate_and_return_parcellation(parcellation_id)
@@ -244,9 +238,6 @@ def get_regional_feature(
     #                         detail=f'Region with id {region_id} not found!')
     try:
         got_features = siibra.get_features(region, modality_id)
-        print('****************************************')
-        print(dir(got_features[0]))
-        print('****************************************')
     except:
         raise HTTPException(
                      status_code=500,
@@ -365,26 +356,39 @@ def get_global_features(atlas_id, parcellation_id, modality_id):
         detail=f'feature {modality_id} has not yet been implemented')
 
 
-def get_contact_pt_detail(contact_pt, atlas=None, parc_id=None):
+def get_contact_pt_detail(contact_pt: siibra.features.ieeg.IEEG_ContactPoint, region: siibra.core.Region, **kwargs):
     return {
         'id': contact_pt.id,
-        'location': contact_pt.location,
-        **({'inRoi': contact_pt.matches(atlas)} if parc_id is not None and atlas is not None else {})
+        'location': list(contact_pt.location),
+        **({'inRoi': contact_pt.match(region)} if region is not None else {})
     }
 
-
-def get_electrode_detail(electrode, atlas=None, parc_id=None):
+def get_electrode_detail(electrode: siibra.features.ieeg.IEEG_Electrode, region: siibra.core.Region, **kwargs):
     return {
         'electrode_id': electrode.electrode_id,
-        'subject_id': electrode.subject_id,
+        'subject_id': electrode.session.sub_id,
         'contact_points': {
-            contact_pt_id: get_contact_pt_detail(electrode.contact_points[contact_pt_id], atlas, parc_id)
-            for contact_pt_id in electrode.contact_points},
-        **({'inRoi': electrode.matches(atlas)} if parc_id is not None and atlas is not None else {})
+            contact_pt_id: get_contact_pt_detail(
+                electrode.contact_points[contact_pt_id],
+                region=region,
+                **kwargs)
+            for contact_pt_id in electrode.contact_points },
+        **({'inRoi': electrode.match(region)} if region is not None else {})
     }
 
+def get_ieeg_session_detail(ieeg_session: siibra.features.ieeg.IEEG_Session, region: siibra.core.Region, **kwargs):
+    
+    return {
+        'sub_id': ieeg_session.sub_id,
+        'electrodes': {
+            electrode_key: get_electrode_detail(ieeg_session.electrodes[electrode_key],
+                region=region,
+                **kwargs)
+            for electrode_key in ieeg_session.electrodes},
+        **({'inRoi': ieeg_session.match(region)} if region is not None else {})
+    }
 
-@fanout_cache.memoize(typed=True)
+# @fanout_cache.memoize(typed=True)
 def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detail=False, parc_id=None, region_id=None):
 
     space_of_interest = validate_and_return_space(space_id)
@@ -392,14 +396,6 @@ def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detai
     if modality_id not in siibra.features.modalities:
         raise HTTPException(status_code=400,
                             detail=f'{modality_id} is not a valid modality')
-
-    # TODO: Check if this is still needed or can be replaced
-    # fail fast if not in supported feature list
-    # if siibra.features.modalities[modality_id] not in SUPPORTED_FEATURES:
-    # if feature_classes[modality_id] not in SUPPORTED_FEATURES:
-    #     raise HTTPException(
-    #         status_code=501,
-    #         detail=f'feature {modality_id} has not yet been implmented')
 
     # TODO: Why only spatial features
     if not issubclass(
@@ -416,37 +412,41 @@ def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detai
     #     raise HTTPException(404, detail=f'space {space_id} not in atlas {atlas}')
 
     # TODO: No Selection of parcellation and region is needed - TODO: How to provide parcellation/region
-    if parc_id:
-        if region_id is None:
-            raise HTTPException(status_code=400, detail='region is needed, if parc_id is provided')
-        # atlas.select_parcellation(parc_id)
-        # atlas.select_region(region_id)
+    if parc_id is None:
+        raise HTTPException(status_code=400, detail='Parc id is needed')
+    
+    parc=validate_and_return_parcellation(parc_id)
+    roi=validate_and_return_region(region_id, parc)
 
+    print('----------rpoi', roi)
+        
     try:
         # spatial_features=atlas.get_features(modality_id)
-        spatial_features = siibra.get_features(space_of_interest, modality_id)
+        spatial_features = siibra.get_features(roi, modality_id, space=space_of_interest)
     except Exception:
         raise HTTPException(404, detail=f'Could not get spatial features.')
-    #TODO: Result is empty, why?
-    filtered_features = [f for f in spatial_features if f.space == space_of_interest]
+    
     shaped_features = None
     if siibra.features.modalities[modality_id] == siibra.features.ieeg.IEEG_SessionQuery:
     # if feature_classes[modality_id] == ieeg_export.IEEG_Electrode:
         shaped_features=[{
             'summary': {
                 '@id': hashlib.md5(str(feat).encode("utf-8")).hexdigest(),
-                'name': str(feat),
+                'name': f'{feat.dataset.name} sub:{feat.sub_id}',
+                'description': str(feat.dataset.description),
                 'origin_datainfos': [{
                     'urls': [{
-                        'doi': f'https://search.kg.ebrains.eu/instances/{feat.kg_id}'
+                        'doi': f'https://search.kg.ebrains.eu/instances/{feat.dataset.id}'
                     }]
                 }]
             },
-            'get_detail': lambda ft: get_electrode_detail(ft,
-                atlas=atlas,
-                parc_id=parc_id),
+            'get_detail': lambda ft: get_ieeg_session_detail(ft,
+                region=roi,
+                parcellation=parc,
+                space=space_of_interest,
+                atlas=atlas),
             'instance': feat
-        } for feat in filtered_features]
+        } for feat in spatial_features]
 
     #TODO Check what to do with this Dataset
     # if siibra.features.modalities[modality_id] == siibra.features.ieeg.IEEG_Dataset:
