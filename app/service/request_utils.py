@@ -569,6 +569,22 @@ def receptor_profile_encoder(receptor: siibra.features.receptors.ReceptorDistrib
         }
     }
 
+def region_encoder(region: siibra.core.Region, space: siibra.core.Space):
+    supprted_in_space = space in region.supported_spaces
+    return {
+        'name': region.name,
+        'labelIndex': list(region.labels)[0] if len(region.labels) == 1 and supprted_in_space else None,
+        'rgb': region.attrs.get('rgb') if hasattr(region, 'attrs') else None,
+        'id': region.attrs.get('fullId') if hasattr(region, 'attrs') else None,
+        'availableIn': [{
+            'id': space.id,
+            'name': space.name
+        } for space in region.supported_spaces ],
+        '_dataset_specs': [ ds for ds in region._dataset_specs if ds.get('@type') == 'fzj/tmp/volume_type/v0.0.1' ],
+        'children': [ region_encoder(child, space=space) 
+            for child in region.children if len(child.supported_spaces) == 0 or space in child.supported_spaces]
+    }
+
 siibra_custom_json_encoder = {
     VolumeSrc: vol_src_sans_space,
     LocalNiftiVolume: vol_src_sans_space,

@@ -20,7 +20,7 @@ from fastapi import APIRouter, Request, HTTPException
 from starlette.responses import FileResponse
 from fastapi.encoders import jsonable_encoder
 from urllib.parse import quote
-from app.service.request_utils import split_id, create_region_json_response
+from app.service.request_utils import region_encoder, split_id, create_region_json_response
 from app.service.request_utils import get_spaces_for_parcellation, get_base_url_from_request, siibra_custom_json_encoder
 from app.service.request_utils import get_global_features, get_regional_feature, get_path_to_regional_map
 from app.service.request_utils import get_region_props
@@ -150,14 +150,10 @@ def get_all_regions_for_parcellation_id(
     """
     Returns all regions for a given parcellation id.
     """
-    atlas = validate_and_return_atlas(atlas_id)
     parcellation = validate_and_return_parcellation(parcellation_id)
-
-    result = []
-    for region in parcellation.regiontree.children:
-        region_json = create_region_json_response(region, space_id, atlas)
-        result.append(region_json)
-    return result
+    space = validate_and_return_space(space_id)
+    
+    return [ region_encoder(region, space=space) for region in parcellation.regiontree.children ]
 
 
 @router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features',
