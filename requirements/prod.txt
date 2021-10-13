@@ -1,2 +1,2 @@
 -r common.txt
-siibra==0.3a0
+siibra==0.3a2
