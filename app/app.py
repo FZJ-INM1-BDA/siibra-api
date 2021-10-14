@@ -137,7 +137,7 @@ def home(request: Request):
             'download_sum_month': download_sum_month
         })
     else:
-        logger.warn('Could not retrieve pypi statistics')
+        logger.warning('Could not retrieve pypi statistics')
         raise HTTPException(status_code=500,
                             detail='Could not retrieve pypi statistics')
 
