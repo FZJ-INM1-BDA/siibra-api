@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from urllib.parse import quote
 import siibra
 import nibabel as nib
 from fastapi import HTTPException, Request
@@ -20,7 +21,7 @@ from app.configuration.cache_redis import CacheRedis
 import anytree
 import hashlib
 import os
-from app.configuration.diskcache import fanout_cache, CACHEDIR
+from app.configuration.diskcache import memoize, CACHEDIR
 from app import logger
 from app.service.validation import validate_and_return_atlas, validate_and_return_parcellation, \
     validate_and_return_region, validate_and_return_space
@@ -29,47 +30,7 @@ from siibra.volumes.volume import VolumeSrc, LocalNiftiVolume, NeuroglancerVolum
 
 cache_redis = CacheRedis.get_instance()
 
-
-def create_region_json_response(region, space_id=None, atlas=None, detail=False):
-    region_json = _create_region_json_object(region, space_id, atlas, detail)
-    _add_children_to_region(region_json, region, space_id, atlas)
-    return region_json
-
-
-def _add_children_to_region(region_json, region, space_id=None, atlas=None):
-    for child in region.children:
-        o = _create_region_json_object(child)
-        # if space_id is not None and atlas is not None:
-        #     get_region_props_tmp(space_id, atlas, o, child)
-        if child.children:
-            _add_children_to_region(o, child, space_id, atlas)
-        region_json['children'].append(o)
-
-
-def _create_region_json_object(region, space_id=None, atlas=None, detail=False):
-    region_json = {'name': region.name, 'children': []}
-    if hasattr(region, 'fullId'):
-        region_json['id'] = region.fullId
-    if len(region.labels) == 1:
-        region_json['labelIndex'] = list(region.labels)[0]
-    if hasattr(region, 'attrs'):
-        region_json['rgb'] = region.attrs.get('rgb')
-        region_json['id'] = region.attrs.get('fullId')
-    region_json['availableIn'] = get_available_spaces_for_region(region)
-
-    if detail:
-        region_json['_dataset_specs'] = [{
-            'name': ds.name,
-            'description': ds.description,
-            'urls': ds.urls
-        } for ds in region.datasets if type(ds) == siibra.features.ebrains.EbrainsDataset]
-        region_json['hasRegionalMap'] = region.has_regional_map(
-            siibra.spaces[space_id],
-            siibra.commons.MapType.CONTINUOUS) if space_id is not None else None
-    return region_json
-
-
-def _get_file_from_nibabel(nibabel_object, nifti_type, space):
+def get_file_from_nibabel(nibabel_object, nifti_type, space):
     filename = '{}-{}.nii'.format(nifti_type, space.name.replace(' ', '_'))
     # save nifti file in file-object
     nib.save(nibabel_object, filename)
@@ -218,7 +179,7 @@ SUPPORTED_FEATURES = [
     siibra.features.ieeg.IEEG_SessionQuery]
 
 
-@fanout_cache.memoize(typed=True)
+@memoize(typed=True)
 def get_regional_feature(
         atlas_id,
         parcellation_id,
@@ -334,7 +295,7 @@ def get_regional_feature(
     } for f in shaped_features ]
 
 
-@fanout_cache.memoize(typed=True)
+@memoize(typed=True)
 def get_global_features(atlas_id, parcellation_id, modality_id):
     if modality_id not in siibra.features.modalities:
     # if modality_id not in feature_classes:
@@ -399,7 +360,7 @@ def get_ieeg_session_detail(ieeg_session: siibra.features.ieeg.IEEG_Session, reg
         **({'inRoi': ieeg_session.match(region)} if region is not None else {})
     }
 
-@fanout_cache.memoize(typed=True)
+@memoize(typed=True)
 def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detail=False, parc_id=None, region_id=None):
 
     space_of_interest = validate_and_return_space(space_id)
@@ -541,6 +502,47 @@ def get_path_to_regional_map(query_id, roi, space_of_interest):
 
     return get_cached_file(cached_filename, save_new_nii)
 
+@memoize(typed=True)
+def get_region_by_name(
+    base_url: str,
+    atlas_id: str,
+    parcellation_id: str,
+    region_id: str,
+    space_id: str = None):
+    """
+    Returns a specific region for a given id.
+    """
+    atlas = siibra.atlases[atlas_id]
+    parcellation = atlas.get_parcellation(parcellation_id)
+    try:
+        region = atlas.get_region(region_id, parcellation)
+    except ValueError:
+        raise HTTPException(404, 'Region spec {region_id} cannot be decoded')
+
+    if space_id:
+        space = validate_and_return_space(space_id)
+        region_json = region_encoder(region, space=space)
+        region_json['props'] = get_region_props(space_id, atlas, region)
+        region_json['hasRegionalMap'] = region.has_regional_map(
+            space,
+            siibra.commons.MapType.CONTINUOUS)
+    else:
+        region_json = region_encoder(region)
+
+    single_region_root_url = '{}atlases/{}/parcellations/{}/regions/{}'.format(
+        base_url,
+        quote(atlas_id),
+        quote(parcellation_id),
+        quote(region_id))
+
+    region_json['links'] = {
+        'features': f'{single_region_root_url}/features',
+        'regional_map_info': f'{single_region_root_url}/regional_map/info?space_id={space_id}' if region_json.get('hasRegionalMap') else None,
+        'regional_map': f'{single_region_root_url}/regional_map/map?space_id={space_id}' if region_json.get('hasRegionalMap') else None,
+    }
+
+    return region_json
+
 
 # using a custom encoder is necessary to avoid cyclic reference
 def vol_src_sans_space(vol_src):
@@ -569,11 +571,23 @@ def receptor_profile_encoder(receptor: siibra.features.receptors.ReceptorDistrib
         }
     }
 
-def region_encoder(region: siibra.core.Region, space: siibra.core.Space):
-    supprted_in_space = space in region.supported_spaces
+
+def region_support_space(region: siibra.core.Region, space: siibra.core.Space):
+    if space is None:
+        raise ValueError('space is needed')
+    if space in region.supported_spaces:
+        return True
+    if any([ region_support_space(c, space) for c in region.children]):
+        return True
+    return False
+
+def region_encoder(region: siibra.core.Region, space: siibra.core.Space=None):
+    labels = region.labels
+    for c in region.children:
+        labels = labels - c.labels
     return {
         'name': region.name,
-        'labelIndex': list(region.labels)[0] if len(region.labels) == 1 and supprted_in_space else None,
+        'labelIndex': list(labels)[0] if len(labels) == 1 else None,
         'rgb': region.attrs.get('rgb') if hasattr(region, 'attrs') else None,
         'id': region.attrs.get('fullId') if hasattr(region, 'attrs') else None,
         'availableIn': [{
@@ -582,7 +596,7 @@ def region_encoder(region: siibra.core.Region, space: siibra.core.Space):
         } for space in region.supported_spaces ],
         '_dataset_specs': [ ds for ds in region._dataset_specs if ds.get('@type') == 'fzj/tmp/volume_type/v0.0.1' ],
         'children': [ region_encoder(child, space=space) 
-            for child in region.children if len(child.supported_spaces) == 0 or space in child.supported_spaces]
+            for child in region.children if space is None or len(child.supported_spaces) == 0 or region_support_space(child, space)]
     }
 
 siibra_custom_json_encoder = {

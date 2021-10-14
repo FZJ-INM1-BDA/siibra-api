@@ -34,6 +34,7 @@ from app.core.parcellation_api import router as parcellation_router, preheat, ge
 from app.configuration.ebrains_token import get_public_token
 from app.configuration.siibra_custom_exception import SiibraCustomException
 from . import logger
+from . import __version__
 
 
 security = HTTPBearer()
@@ -136,7 +137,7 @@ def home(request: Request):
             'download_sum_month': download_sum_month
         })
     else:
-        logger.warn('Could not retrieve pypi statistics')
+        logger.warning('Could not retrieve pypi statistics')
         raise HTTPException(status_code=500,
                             detail='Could not retrieve pypi statistics')
 
@@ -206,6 +207,11 @@ async def matomo_request_log(request: Request, call_next):
     response = await call_next(request)
     return response
 
+@app.middleware('http')
+async def add_version_header(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Siibra-Api-Version"] = __version__
+    return response
 
 @app.get('/ready', include_in_schema=False)
 def get_ready():
