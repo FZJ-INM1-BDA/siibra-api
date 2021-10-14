@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from urllib.parse import quote
 import siibra
 import nibabel as nib
 from fastapi import HTTPException, Request
@@ -501,6 +502,47 @@ def get_path_to_regional_map(query_id, roi, space_of_interest):
 
     return get_cached_file(cached_filename, save_new_nii)
 
+@memoize(typed=True)
+def get_region_by_name(
+    base_url: str,
+    atlas_id: str,
+    parcellation_id: str,
+    region_id: str,
+    space_id: str = None):
+    """
+    Returns a specific region for a given id.
+    """
+    atlas = siibra.atlases[atlas_id]
+    parcellation = atlas.get_parcellation(parcellation_id)
+    try:
+        region = atlas.get_region(region_id, parcellation)
+    except ValueError:
+        raise HTTPException(404, 'Region spec {region_id} cannot be decoded')
+
+    if space_id:
+        space = validate_and_return_space(space_id)
+        region_json = region_encoder(region, space=space)
+        region_json['props'] = get_region_props(space_id, atlas, region)
+        region_json['hasRegionalMap'] = region.has_regional_map(
+            space,
+            siibra.commons.MapType.CONTINUOUS)
+    else:
+        region_json = region_encoder(region)
+
+    single_region_root_url = '{}atlases/{}/parcellations/{}/regions/{}'.format(
+        base_url,
+        quote(atlas_id),
+        quote(parcellation_id),
+        quote(region_id))
+
+    region_json['links'] = {
+        'features': f'{single_region_root_url}/features',
+        'regional_map_info': f'{single_region_root_url}/regional_map/info?space_id={space_id}' if region_json.get('hasRegionalMap') else None,
+        'regional_map': f'{single_region_root_url}/regional_map/map?space_id={space_id}' if region_json.get('hasRegionalMap') else None,
+    }
+
+    return region_json
+
 
 # using a custom encoder is necessary to avoid cyclic reference
 def vol_src_sans_space(vol_src):
@@ -529,7 +571,7 @@ def receptor_profile_encoder(receptor: siibra.features.receptors.ReceptorDistrib
         }
     }
 
-@memoize()
+
 def region_support_space(region: siibra.core.Region, space: siibra.core.Space):
     if space is None:
         raise ValueError('space is needed')
@@ -539,7 +581,6 @@ def region_support_space(region: siibra.core.Region, space: siibra.core.Space):
         return True
     return False
 
-@memoize()
 def region_encoder(region: siibra.core.Region, space: siibra.core.Space=None):
     labels = region.labels
     for c in region.children:

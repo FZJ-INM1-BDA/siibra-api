@@ -19,11 +19,9 @@ from typing import Optional
 from fastapi import APIRouter, Request, HTTPException
 from starlette.responses import FileResponse
 from fastapi.encoders import jsonable_encoder
-from urllib.parse import quote
-from app.service.request_utils import region_encoder, split_id
+from app.service.request_utils import get_region_by_name, region_encoder, split_id
 from app.service.request_utils import get_spaces_for_parcellation, get_base_url_from_request, siibra_custom_json_encoder
 from app.service.request_utils import get_global_features, get_regional_feature, get_path_to_regional_map
-from app.service.request_utils import get_region_props
 from app.configuration.diskcache import memoize
 from app.service.validation import validate_and_return_atlas, validate_and_return_parcellation, \
     validate_and_return_space, validate_and_return_region
@@ -197,8 +195,8 @@ def get_all_features_for_region(
 @router.get(
     '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality}/{feature_id:path}',
     tags=['parcellations'])
+@memoize(typed=True)
 def get_regional_modality_by_id(
-        request: Request,
         atlas_id: str,
         parcellation_id: str,
         region_id: str,
@@ -226,8 +224,8 @@ def get_regional_modality_by_id(
 # negative: need to be able to fetch region specific feature. XG
 @router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality}',
             tags=['parcellations'])
+@memoize(typed=True)
 def get_feature_modality_for_region(
-        request: Request,
         atlas_id: str,
         parcellation_id: str,
         region_id: str,
@@ -322,7 +320,7 @@ def get_regional_map_file(
 
 @router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}',
             tags=['parcellations'])
-def get_region_by_name(
+def get_region_by_name_api(
         request: Request,
         atlas_id: str,
         parcellation_id: str,
@@ -331,35 +329,8 @@ def get_region_by_name(
     """
     Returns a specific region for a given id.
     """
-    atlas = siibra.atlases[atlas_id]
-    parcellation = atlas.get_parcellation(parcellation_id)
-    try:
-        region = atlas.get_region(region_id, parcellation)
-    except ValueError:
-        raise HTTPException(404, 'Region spec {region_id} cannot be decoded')
-
-    if space_id:
-        space = validate_and_return_space(space_id)
-        region_json = region_encoder(region, space=space)
-        region_json['props'] = get_region_props(space_id, atlas, region)
-    else:
-        region_json = region_encoder(region)
-
-    single_region_root_url = '{}atlases/{}/parcellations/{}/regions/{}'.format(
-        get_base_url_from_request(request),
-        quote(atlas_id),
-        quote(parcellation_id),
-        quote(region_id))
-
-    region_json['links'] = {
-        'features': f'{single_region_root_url}/features',
-        'regional_map_info': f'{single_region_root_url}/regional_map/info?space_id={space_id}' if region_json[
-            'hasRegionalMap'] else None,
-        'regional_map': f'{single_region_root_url}/regional_map/map?space_id={space_id}' if region_json[
-            'hasRegionalMap'] else None,
-    }
-
-    return jsonable_encoder(region_json)
+    base_url=get_base_url_from_request(request)
+    return get_region_by_name(base_url, atlas_id, parcellation_id, region_id, space_id)
 
 
 @router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/features/{modality}/{modality_instance_name}',
