@@ -21,7 +21,7 @@ INVALID_SPACE_ID = 'INVALID_SPACE_ID'
 #
 # region.RegionProps = MockRegionProps
 
-_get_file_from_nibabel = {}
+get_file_from_nibabel = {}
 
 
 def test_get_all_spaces():

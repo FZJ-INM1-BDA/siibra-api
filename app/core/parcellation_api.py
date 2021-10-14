@@ -20,11 +20,11 @@ from fastapi import APIRouter, Request, HTTPException
 from starlette.responses import FileResponse
 from fastapi.encoders import jsonable_encoder
 from urllib.parse import quote
-from app.service.request_utils import region_encoder, split_id, create_region_json_response
+from app.service.request_utils import region_encoder, split_id
 from app.service.request_utils import get_spaces_for_parcellation, get_base_url_from_request, siibra_custom_json_encoder
 from app.service.request_utils import get_global_features, get_regional_feature, get_path_to_regional_map
 from app.service.request_utils import get_region_props
-from app.configuration.diskcache import fanout_cache
+from app.configuration.diskcache import memoize
 from app.service.validation import validate_and_return_atlas, validate_and_return_parcellation, \
     validate_and_return_space, validate_and_return_region
 from app import logger
@@ -142,7 +142,7 @@ def get_all_parcellations(atlas_id: str, request: Request):
 
 
 @router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/regions', tags=['parcellations'])
-@fanout_cache.memoize(typed=True)
+@memoize(typed=True)
 def get_all_regions_for_parcellation_id(
         atlas_id: str,
         parcellation_id: str,
@@ -269,7 +269,7 @@ def parse_region_selection(
 
 @router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/regional_map/info',
             tags=['parcellations'])
-@fanout_cache.memoize(typed=True)
+@memoize(typed=True)
 def get_regional_map_info(
         atlas_id: str,
         parcellation_id: str,
@@ -299,7 +299,7 @@ def get_regional_map_info(
 
 @router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/regional_map/map',
             tags=['parcellations'])
-@fanout_cache.memoize(typed=True)
+@memoize(typed=True)
 def get_regional_map_file(
         atlas_id: str,
         parcellation_id: str,
@@ -338,15 +338,12 @@ def get_region_by_name(
     except ValueError:
         raise HTTPException(404, 'Region spec {region_id} cannot be decoded')
 
-    # TODO New Region not found error
-
-    # if len(region) == 0:
-    #     raise HTTPException(status_code=404,
-    #                         detail=f'region with spec {region_id} not found')
-    # r = region[0]
-    region_json = create_region_json_response(region, space_id, atlas, detail=True)
     if space_id:
+        space = validate_and_return_space(space_id)
+        region_json = region_encoder(region, space=space)
         region_json['props'] = get_region_props(space_id, atlas, region)
+    else:
+        region_json = region_encoder(region)
 
     single_region_root_url = '{}atlases/{}/parcellations/{}/regions/{}'.format(
         get_base_url_from_request(request),

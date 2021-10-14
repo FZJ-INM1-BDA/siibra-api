@@ -14,7 +14,21 @@
 # limitations under the License.
 
 import siibra
-from diskcache import FanoutCache
+import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 CACHEDIR = siibra.retrieval.CACHE.folder
-fanout_cache = FanoutCache(CACHEDIR)
+if os.environ.get('SIIBRA_API_DISABLE_CACHE'):
+    logger.warn('Not using caching')
+    def memoize(**kwargs):
+        def wrapper(func):
+            return func
+        return wrapper
+else:
+    from diskcache import FanoutCache
+    logger.warn('Using diskcahe.FanoutCache')
+    def memoize(**kwargs):
+        cache = FanoutCache(CACHEDIR)
+        return cache.memoize(**kwargs)

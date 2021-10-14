@@ -24,7 +24,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from starlette.responses import FileResponse, StreamingResponse
 
-from app.service.request_utils import get_spatial_features, split_id, _get_file_from_nibabel, get_parcellations_for_space
+from app.service.request_utils import get_spatial_features, split_id, get_file_from_nibabel, get_parcellations_for_space
 from app.service.request_utils import get_base_url_from_request, siibra_custom_json_encoder,origin_data_decoder
 from app.service.validation import validate_and_return_atlas, validate_and_return_space
 
@@ -70,7 +70,7 @@ def get_template_by_space_id(atlas_id: str, space_id: str):
 
     # create file-object in memory
     # file_object = io.BytesIO()
-    filename = _get_file_from_nibabel(template, 'template', space)
+    filename = get_file_from_nibabel(template, 'template', space)
 
     return FileResponse(filename, filename=filename)
 
@@ -87,7 +87,7 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):
 
     if len(valid_parcs) == 1:
         maps = [valid_parcs[0].get_map(space)]
-        filename = _get_file_from_nibabel(maps[0], 'maps', space)
+        filename = get_file_from_nibabel(maps[0], 'maps', space)
         return FileResponse(filename, filename=filename)
     else:
         raise HTTPException(
@@ -100,7 +100,7 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):
         label_index = 0
         for map in maps:
             files.append(
-                _get_file_from_nibabel(
+                get_file_from_nibabel(
                     map,
                     'map-{}'.format(label_index),
                     space))
