@@ -60,6 +60,7 @@ tags_metadata = [
 ]
 
 ATLAS_PATH = '/atlases'
+siibra_version_header='x-siibra-api-version'
 
 # Main fastAPI application
 app = FastAPI(
@@ -92,6 +93,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_methods=['GET'],
+    expose_headers=[siibra_version_header]
 )
 
 
@@ -210,7 +212,7 @@ async def matomo_request_log(request: Request, call_next):
 @app.middleware('http')
 async def add_version_header(request: Request, call_next):
     response = await call_next(request)
-    response.headers["X-Siibra-Api-Version"] = __version__
+    response.headers[siibra_version_header] = __version__
     return response
 
 @app.get('/ready', include_in_schema=False)
