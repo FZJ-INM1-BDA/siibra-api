@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from urllib.parse import quote
+from fastapi.encoders import jsonable_encoder
 import siibra
 import nibabel as nib
 from fastapi import HTTPException, Request
@@ -398,16 +399,13 @@ def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detai
     
     shaped_features = None
     if siibra.features.modalities[modality_id] == siibra.features.ieeg.IEEG_SessionQuery:
-    # if feature_classes[modality_id] == ieeg_export.IEEG_Electrode:
         shaped_features=[{
             'summary': {
                 '@id': hashlib.md5(str(feat).encode("utf-8")).hexdigest(),
                 'name': f'{feat.dataset.name} sub:{feat.sub_id}',
                 'description': str(feat.dataset.description),
                 'origin_datainfos': [{
-                    'urls': [{
-                        'doi': f'https://search.kg.ebrains.eu/instances/{feat.dataset.id}'
-                    }]
+                    'urls': feat.dataset.urls
                 }]
             },
             'get_detail': lambda ft: get_ieeg_session_detail(ft,
@@ -418,34 +416,6 @@ def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detai
             'instance': feat
         } for feat in spatial_features]
 
-    #TODO Check what to do with this Dataset
-    # if siibra.features.modalities[modality_id] == siibra.features.ieeg.IEEG_Dataset:
-    # # if feature_classes[modality_id] == ieeg_export.IEEG_Dataset:
-    #     shaped_features=[{
-    #         'summary': {
-    #             '@id': hashlib.md5(str(feat).encode("utf-8")).hexdigest(),
-    #             'name': feat.name,
-    #             'description': feat.description,
-    #             'origin_datainfos': [{
-    #                 'urls': [{
-    #                     'doi': f'https://search.kg.ebrains.eu/instances/{feat.kg_id}'
-    #                 }]
-    #             }]
-    #         },
-    #         'get_detail': lambda ft: {
-    #             'kg_id': ft.kg_id,
-    #             'electrodes': {
-    #                 subject_id: {
-    #                     electrode_id: get_electrode_detail(
-    #                         ft.electrodes[subject_id][electrode_id],
-    #                         atlas=atlas,
-    #                         parc_id=parc_id,
-    #                     ) for electrode_id in ft.electrodes[subject_id]
-    #                 } for subject_id in ft.electrodes
-    #             }
-    #         },
-    #         'instance': feat
-    #     } for feat in filtered_features]
     if shaped_features is None:
         raise HTTPException(501, detail=f'{modality_id} not yet implemented')
 
@@ -526,6 +496,9 @@ def get_region_by_name(
         region_json['hasRegionalMap'] = region.has_regional_map(
             space,
             siibra.commons.MapType.CONTINUOUS)
+        region_json['_dataset_specs'] = [spec for spec in region_json['_dataset_specs'] if spec.get('@type') != 'minds/core/dataset/v1.0.0']
+        for ds in [ ds for ds in region.datasets if type(ds) == siibra.core.datasets.EbrainsDataset ]:
+            region_json['_dataset_specs'].append( jsonable_encoder(ds, custom_encoder=siibra_custom_json_encoder) )
     else:
         region_json = region_encoder(region)
 
@@ -581,6 +554,8 @@ def region_support_space(region: siibra.core.Region, space: siibra.core.Space):
         return True
     return False
 
+WANTED_DATASET_SPECS = {'fzj/tmp/volume_type/v0.0.1', 'minds/core/dataset/v1.0.0' }
+
 def region_encoder(region: siibra.core.Region, space: siibra.core.Space=None):
     labels = region.labels
     for c in region.children:
@@ -594,9 +569,17 @@ def region_encoder(region: siibra.core.Region, space: siibra.core.Space=None):
             'id': space.id,
             'name': space.name
         } for space in region.supported_spaces ],
-        '_dataset_specs': [ ds for ds in region._dataset_specs if ds.get('@type') == 'fzj/tmp/volume_type/v0.0.1' ],
+        '_dataset_specs': [ ds for ds in region._dataset_specs if ds.get('@type') in WANTED_DATASET_SPECS ],
         'children': [ region_encoder(child, space=space) 
             for child in region.children if space is None or len(child.supported_spaces) == 0 or region_support_space(child, space)]
+    }
+
+def ebrains_dataset_encoder(ds: siibra.core.datasets.EbrainsDataset):
+    return {
+        '@type': ds.type_id,
+        'name': ds.name,
+        'description': ds.description,
+        'urls': ds.urls,
     }
 
 siibra_custom_json_encoder = {
@@ -605,4 +588,5 @@ siibra_custom_json_encoder = {
     NeuroglancerVolume: vol_src_sans_space,
     siibra.features.receptors.DensityProfile: density_profile_encoder,
     siibra.features.receptors.ReceptorDistribution: receptor_profile_encoder,
+    siibra.core.datasets.EbrainsDataset: ebrains_dataset_encoder,
 }

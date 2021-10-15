@@ -126,7 +126,24 @@ class TestSingleRegion(unittest.TestCase):
             PARCELLATION_ID,
             quote(REGION_AREA_3B_RIGHT)))
         assert response.status_code == 200
-        
+
+    def test_get_region_detail(self):
+
+        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}?space_id={}'.format(
+            quote(ATLAS_ID),
+            PARCELLATION_ID,
+            quote(REGION_AREA_3B_RIGHT),
+            quote(ICBM_152_SPACE_ID)
+        ))
+
+        region_json=json.loads(response.content)
+        assert region_json.get('_dataset_specs') is not None
+        assert type(region_json.get('_dataset_specs')) == list
+        info_datasets = [ds for ds in region_json.get('_dataset_specs') if ds.get('@type') == 'minds/core/dataset/v1.0.0']
+        assert len(info_datasets) > 0
+        assert all([ds.get('description') is not None and ds.get('name') is not None for ds in info_datasets])
+    
+
     # hasRegionalMap and other region map must be true
     def test_region_map(self):
 
