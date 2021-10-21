@@ -555,11 +555,24 @@ def region_support_space(region: siibra.core.Region, space: siibra.core.Space):
     return False
 
 WANTED_DATASET_SPECS = {'fzj/tmp/volume_type/v0.0.1', 'minds/core/dataset/v1.0.0' }
+FS_AVERAGE = siibra.spaces['fsaverage']
 
 def region_encoder(region: siibra.core.Region, space: siibra.core.Space=None):
+    
+    # since region_support_space always return False for fsaverage
+    # manual fix for fsaverage until it is fixed
+    def filter_fsaverage(r: siibra.core.Region):
+        return space is FS_AVERAGE
+
     labels = region.labels
-    for c in region.children:
-        labels = labels - c.labels
+
+    filtered_children = [child for child in region.children if space is None
+                            or filter_fsaverage(child) or len(child.supported_spaces) == 0
+                            or region_support_space(child, space)]
+    # temporary fix to fsaverage not returning labels
+    if space is not FS_AVERAGE or len(filtered_children) != 0:
+        for c in region.children:
+            labels = labels - c.labels
     return {
         'name': region.name,
         'labelIndex': list(labels)[0] if len(labels) == 1 else None,
@@ -570,8 +583,7 @@ def region_encoder(region: siibra.core.Region, space: siibra.core.Space=None):
             'name': space.name
         } for space in region.supported_spaces ],
         '_dataset_specs': [ ds for ds in region._dataset_specs if ds.get('@type') in WANTED_DATASET_SPECS ],
-        'children': [ region_encoder(child, space=space) 
-            for child in region.children if space is None or len(child.supported_spaces) == 0 or region_support_space(child, space)]
+        'children': [ region_encoder(child, space=space) for child in filtered_children]
     }
 
 def ebrains_dataset_encoder(ds: siibra.core.datasets.EbrainsDataset):

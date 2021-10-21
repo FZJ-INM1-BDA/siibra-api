@@ -22,6 +22,7 @@ SF_AMY_LEFT_NAME='SF (Amygdala) left '
 HOC1_REGION_ID = 'minds%2Fcore%2Fparcellationregion%2Fv1.0.0%2F5151ab8f-d8cb-4e67-a449-afe2a41fb007'
 INVALID_REGION_NAME = 'INVALID_REGION'
 SPACE_ID = 'minds%2Fcore%2Freferencespace%2Fv1.0.0%2Fdafcffc5-4826-4bf1-8ff6-46b8a31ff8e2'
+FS_AVERAGE_SPACE_ID='minds/core/referencespace/v1.0.0/tmp-fsaverage'
 VALID_MODALITY='EbrainsRegionalDataset'
 VALID_MODALITY_INSTANCE_ID='https%3A%2F%2Fnexus.humanbrainproject.org%2Fv0%2Fdata%2Fminds%2Fcore%2Fdataset%2Fv1.0.0%2F87c6dea7-bdf7-4049-9975-6a9925df393f'
 
@@ -66,6 +67,37 @@ def test_all_regions_for_parcellations_with_bad_request():
     result_content = json.loads(response.content)
     assert result_content['detail'] == f'parcellation_id: {INVALID_PARCELLATION_ID} is not known'
 
+
+class TestParcRegions(unittest.TestCase):
+
+    def test_regions_return_fine(self):
+        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions?space_id={}'.format(
+            quote(ATLAS_ID),
+            PARCELLATION_ID,
+            quote(FS_AVERAGE_SPACE_ID),
+        ))
+        assert response.status_code == 200
+
+    def test_regions_in_fsaverage(self):
+        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions?space_id={}'.format(
+            quote(ATLAS_ID),
+            PARCELLATION_ID,
+            quote(FS_AVERAGE_SPACE_ID),
+        ))
+        jresp=json.loads(response.content)
+
+        region_list=[]
+        def process_region(r):
+            region_list.append(r)
+            for c in r.get('children', []):
+                process_region(c)
+        
+        for r in jresp:
+            process_region(r)
+
+        hoc1_left = [r for r in region_list if r.get('name') == HOC1_LEFT_REGION_NAME]
+        assert len(hoc1_left) == 1
+        assert hoc1_left[0].get('labelIndex') is not None
 
 class TestSingleRegion(unittest.TestCase):
 
