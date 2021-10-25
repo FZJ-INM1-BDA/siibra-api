@@ -4,8 +4,6 @@ import json
 from .util import Session
 import os
 
-from test.core.test_parcellation_api import HOC1_LEFT_REGION_NAME
-
 MULTILEVEL_HUMAN_ATLAS_ID='juelich/iav/atlas/v1.0.0/1'
 
 ICBM_152_SPACE_ID = 'minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2'
