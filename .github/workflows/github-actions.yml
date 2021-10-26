@@ -21,11 +21,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: '3.7.10'
-      # to be discussed -- if/when to install siibra-python from src
-      # - name: Use develop branch of siibra-python
-      #   run: |
-      #     git clone -b develop https://github.com/FZJ-INM1-BDA/siibra-python.git
-      #     pip install ./siibra-python
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -33,7 +28,7 @@ jobs:
       - name: Install test dependecies
         run: pip install pytest pytest-asyncio httpx mock coverage pytest-cov
       - run: |
-          coverage run -m pytest
+          coverage run -m pytest --ignore=e2e
           coverage report
           coverage html
       - name: Archive code coverage html report
@@ -42,7 +37,3 @@ jobs:
           name: siibra-code-coverage-report
           path: htmlcov
 
-  dev-deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "Deploying to openshift"
