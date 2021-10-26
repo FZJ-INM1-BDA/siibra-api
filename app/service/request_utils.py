@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from urllib.parse import quote
+from fastapi.encoders import jsonable_encoder
 import siibra
 import nibabel as nib
 from fastapi import HTTPException, Request
@@ -20,7 +22,7 @@ from app.configuration.cache_redis import CacheRedis
 import anytree
 import hashlib
 import os
-from app.configuration.diskcache import fanout_cache, CACHEDIR
+from app.configuration.diskcache import memoize, CACHEDIR
 from app import logger
 from app.service.validation import validate_and_return_atlas, validate_and_return_parcellation, \
     validate_and_return_region, validate_and_return_space
@@ -29,47 +31,7 @@ from siibra.volumes.volume import VolumeSrc, LocalNiftiVolume, NeuroglancerVolum
 
 cache_redis = CacheRedis.get_instance()
 
-
-def create_region_json_response(region, space_id=None, atlas=None, detail=False):
-    region_json = _create_region_json_object(region, space_id, atlas, detail)
-    _add_children_to_region(region_json, region, space_id, atlas)
-    return region_json
-
-
-def _add_children_to_region(region_json, region, space_id=None, atlas=None):
-    for child in region.children:
-        o = _create_region_json_object(child)
-        # if space_id is not None and atlas is not None:
-        #     get_region_props_tmp(space_id, atlas, o, child)
-        if child.children:
-            _add_children_to_region(o, child, space_id, atlas)
-        region_json['children'].append(o)
-
-
-def _create_region_json_object(region, space_id=None, atlas=None, detail=False):
-    region_json = {'name': region.name, 'children': []}
-    if hasattr(region, 'rgb'):
-        region_json['rgb'] = region.rgb
-    if hasattr(region, 'fullId'):
-        region_json['id'] = region.fullId
-    if hasattr(region, 'labelIndex'):
-        region_json['labelIndex'] = region.labelIndex
-    if hasattr(region, 'attrs'):
-        region_json['volumeSrc'] = region.attrs.get('volumeSrc', {})
-    if detail and hasattr(region, 'origin_datainfos'):
-        region_json['originDatainfos'] = [origin_data_decoder(datainfo) for datainfo in region.origin_datainfos]
-    region_json['availableIn'] = get_available_spaces_for_region(region)
-
-    if detail:
-        #TODO new way to check for regional map
-        # region_json['hasRegionalMap'] = region.has_regional_map(
-        #     siibra.spaces[space_id],
-        #     bs.commons.MapType.CONTINUOUS) if space_id is not None else None
-        region_json['hasRegionalMap'] = None
-    return region_json
-
-
-def _get_file_from_nibabel(nibabel_object, nifti_type, space):
+def get_file_from_nibabel(nibabel_object, nifti_type, space):
     filename = '{}-{}.nii'.format(nifti_type, space.name.replace(' ', '_'))
     # save nifti file in file-object
     nib.save(nibabel_object, filename)
@@ -143,7 +105,13 @@ def get_region_props(space_id, atlas, region) -> list:
     space = atlas.get_space(space_id)
     try:
         logger.info(f'Getting region props for: {region}')
-        result_props = region.spatialprops(space, force=True)
+        result_props = region.spatial_props(space)
+        result_props = {
+            'components': [{
+                'centroid': list(c['centroid']),
+                'volume': c['volume']
+            }for c in result_props['components']]
+        }
     except:
         logger.info(f'Could not get region properties for region: {region} and space: {space}')
         result_props = []
@@ -212,7 +180,7 @@ SUPPORTED_FEATURES = [
     siibra.features.ieeg.IEEG_SessionQuery]
 
 
-@fanout_cache.memoize(typed=True)
+@memoize(typed=True)
 def get_regional_feature(
         atlas_id,
         parcellation_id,
@@ -226,18 +194,12 @@ def get_regional_feature(
         raise HTTPException(status_code=400,
                             detail=f'{modality_id} is not a valid modality')
 
-    # fail fast if not in supported feature list
-    # if siibra.modalities[modality_id] not in SUPPORTED_FEATURES:
-    #     raise HTTPException(
-    #         status_code=501,
-    #         detail=f'feature {modality_id} has not yet been implemented')
-
-# TODO - check for subclass
-#     if not issubclass(
-#             feature_classes[modality_id],
-#             feature_export.RegionalFeature):
-#         # modality_id is not a global feature, return empty array
-#         return []
+    # TODO - check for subclass
+    #     if not issubclass(
+    #             feature_classes[modality_id],
+    #             feature_export.RegionalFeature):
+    #         # modality_id is not a global feature, return empty array
+    #         return []
 
     atlas = validate_and_return_atlas(atlas_id)
     parcellation = validate_and_return_parcellation(parcellation_id)
@@ -249,9 +211,6 @@ def get_regional_feature(
     #                         detail=f'Region with id {region_id} not found!')
     try:
         got_features = siibra.get_features(region, modality_id)
-        print('****************************************')
-        print(dir(got_features[0]))
-        print('****************************************')
     except:
         raise HTTPException(
                      status_code=500,
@@ -292,7 +251,7 @@ def get_regional_feature(
                 "kgId": conn_pr._matrix.id,
             },
             'get_detail': lambda conn_pr: { 
-                # "__column_names": conn_pr.column_names, TODO: where to get the names?
+                "__column_names": list(conn_pr.regionnames), #TODO: where to get the names?
                 "__profile": conn_pr.profile.tolist(),
              },
              'instance': conn_pr,
@@ -313,10 +272,10 @@ def get_regional_feature(
             },
             'get_detail': lambda receptor_pr: { 
                 "__receptor_symbols": siibra.features.receptors.RECEPTOR_SYMBOLS,
-                # "__files": receptor_pr.files, TODO where  to get files
+                "__files": [], #receptor_pr.files, # TODO where  to get files
                 "__data": {
                     "__profiles": receptor_pr.profiles,
-                    "__autoradiographs": receptor_pr.autoradiographs,
+                    "__autoradiographs": {},
                     "__fingerprint": receptor_pr.fingerprint,
                     # "__profile_unit": receptor_pr.profile_unit, TODO check where to get units
                 },
@@ -337,7 +296,7 @@ def get_regional_feature(
     } for f in shaped_features ]
 
 
-@fanout_cache.memoize(typed=True)
+@memoize(typed=True)
 def get_global_features(atlas_id, parcellation_id, modality_id):
     if modality_id not in siibra.features.modalities:
     # if modality_id not in feature_classes:
@@ -370,26 +329,39 @@ def get_global_features(atlas_id, parcellation_id, modality_id):
         detail=f'feature {modality_id} has not yet been implemented')
 
 
-def get_contact_pt_detail(contact_pt, atlas=None, parc_id=None):
+def get_contact_pt_detail(contact_pt: siibra.features.ieeg.IEEG_ContactPoint, region: siibra.core.Region, **kwargs):
     return {
         'id': contact_pt.id,
-        'location': contact_pt.location,
-        **({'inRoi': contact_pt.matches(atlas)} if parc_id is not None and atlas is not None else {})
+        'location': list(contact_pt.location),
+        **({'inRoi': contact_pt.match(region)} if region is not None else {})
     }
 
-
-def get_electrode_detail(electrode, atlas=None, parc_id=None):
+def get_electrode_detail(electrode: siibra.features.ieeg.IEEG_Electrode, region: siibra.core.Region, **kwargs):
     return {
         'electrode_id': electrode.electrode_id,
-        'subject_id': electrode.subject_id,
+        'subject_id': electrode.session.sub_id,
         'contact_points': {
-            contact_pt_id: get_contact_pt_detail(electrode.contact_points[contact_pt_id], atlas, parc_id)
-            for contact_pt_id in electrode.contact_points},
-        **({'inRoi': electrode.matches(atlas)} if parc_id is not None and atlas is not None else {})
+            contact_pt_id: get_contact_pt_detail(
+                electrode.contact_points[contact_pt_id],
+                region=region,
+                **kwargs)
+            for contact_pt_id in electrode.contact_points },
+        **({'inRoi': electrode.match(region)} if region is not None else {})
     }
 
+def get_ieeg_session_detail(ieeg_session: siibra.features.ieeg.IEEG_Session, region: siibra.core.Region, **kwargs):
+    
+    return {
+        'sub_id': ieeg_session.sub_id,
+        'electrodes': {
+            electrode_key: get_electrode_detail(ieeg_session.electrodes[electrode_key],
+                region=region,
+                **kwargs)
+            for electrode_key in ieeg_session.electrodes},
+        **({'inRoi': ieeg_session.match(region)} if region is not None else {})
+    }
 
-@fanout_cache.memoize(typed=True)
+@memoize(typed=True)
 def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detail=False, parc_id=None, region_id=None):
 
     space_of_interest = validate_and_return_space(space_id)
@@ -397,14 +369,6 @@ def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detai
     if modality_id not in siibra.features.modalities:
         raise HTTPException(status_code=400,
                             detail=f'{modality_id} is not a valid modality')
-
-    # TODO: Check if this is still needed or can be replaced
-    # fail fast if not in supported feature list
-    # if siibra.features.modalities[modality_id] not in SUPPORTED_FEATURES:
-    # if feature_classes[modality_id] not in SUPPORTED_FEATURES:
-    #     raise HTTPException(
-    #         status_code=501,
-    #         detail=f'feature {modality_id} has not yet been implmented')
 
     # TODO: Why only spatial features
     if not issubclass(
@@ -421,66 +385,37 @@ def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detai
     #     raise HTTPException(404, detail=f'space {space_id} not in atlas {atlas}')
 
     # TODO: No Selection of parcellation and region is needed - TODO: How to provide parcellation/region
-    if parc_id:
-        if region_id is None:
-            raise HTTPException(status_code=400, detail='region is needed, if parc_id is provided')
-        # atlas.select_parcellation(parc_id)
-        # atlas.select_region(region_id)
+    if parc_id is None:
+        raise HTTPException(status_code=400, detail='Parc id is needed')
+    
+    parc=validate_and_return_parcellation(parc_id)
+    roi=validate_and_return_region(region_id, parc)
 
     try:
         # spatial_features=atlas.get_features(modality_id)
-        spatial_features = siibra.get_features(space_of_interest, modality_id)
+        spatial_features = siibra.get_features(roi, modality_id, space=space_of_interest)
     except Exception:
         raise HTTPException(404, detail=f'Could not get spatial features.')
-    #TODO: Result is empty, why?
-    filtered_features = [f for f in spatial_features if f.space == space_of_interest]
+    
     shaped_features = None
     if siibra.features.modalities[modality_id] == siibra.features.ieeg.IEEG_SessionQuery:
-    # if feature_classes[modality_id] == ieeg_export.IEEG_Electrode:
         shaped_features=[{
             'summary': {
                 '@id': hashlib.md5(str(feat).encode("utf-8")).hexdigest(),
-                'name': str(feat),
+                'name': f'{feat.dataset.name} sub:{feat.sub_id}',
+                'description': str(feat.dataset.description),
                 'origin_datainfos': [{
-                    'urls': [{
-                        'doi': f'https://search.kg.ebrains.eu/instances/{feat.kg_id}'
-                    }]
+                    'urls': feat.dataset.urls
                 }]
             },
-            'get_detail': lambda ft: get_electrode_detail(ft,
-                atlas=atlas,
-                parc_id=parc_id),
+            'get_detail': lambda ft: get_ieeg_session_detail(ft,
+                region=roi,
+                parcellation=parc,
+                space=space_of_interest,
+                atlas=atlas),
             'instance': feat
-        } for feat in filtered_features]
+        } for feat in spatial_features]
 
-    #TODO Check what to do with this Dataset
-    # if siibra.features.modalities[modality_id] == siibra.features.ieeg.IEEG_Dataset:
-    # # if feature_classes[modality_id] == ieeg_export.IEEG_Dataset:
-    #     shaped_features=[{
-    #         'summary': {
-    #             '@id': hashlib.md5(str(feat).encode("utf-8")).hexdigest(),
-    #             'name': feat.name,
-    #             'description': feat.description,
-    #             'origin_datainfos': [{
-    #                 'urls': [{
-    #                     'doi': f'https://search.kg.ebrains.eu/instances/{feat.kg_id}'
-    #                 }]
-    #             }]
-    #         },
-    #         'get_detail': lambda ft: {
-    #             'kg_id': ft.kg_id,
-    #             'electrodes': {
-    #                 subject_id: {
-    #                     electrode_id: get_electrode_detail(
-    #                         ft.electrodes[subject_id][electrode_id],
-    #                         atlas=atlas,
-    #                         parc_id=parc_id,
-    #                     ) for electrode_id in ft.electrodes[subject_id]
-    #                 } for subject_id in ft.electrodes
-    #             }
-    #         },
-    #         'instance': feat
-    #     } for feat in filtered_features]
     if shaped_features is None:
         raise HTTPException(501, detail=f'{modality_id} not yet implemented')
 
@@ -508,6 +443,8 @@ def get_path_to_regional_map(query_id, roi, space_of_interest):
     # cache fails, fetch from source
     def save_new_nii(cached_fullpath):
         import nibabel as nib
+        import numpy as np
+
         # fix regional_map if necessary
         regional_map.image.header.set_xyzt_units('mm', 'sec')
 
@@ -516,9 +453,68 @@ def get_path_to_regional_map(query_id, roi, space_of_interest):
 
         # num channel
         regional_map.image.header['dim'][5] = 1
-        nib.save(regional_map.image, cached_fullpath)
+
+        # cast type float64 to float32
+        if regional_map.image.header.get_data_dtype() == np.float64:
+            fdata=regional_map.image.get_fdata()
+            new_data=fdata.astype(np.float32)
+            regional_map.image.set_data_dtype(np.float32)
+
+            if regional_map.image.header['sizeof_hdr'] == 348:
+                new_image=nib.Nifti1Image(new_data, regional_map.image.affine, regional_map.image.header)
+            elif regional_map.image.header['sizeof_hdr'] == 540:
+                new_image=nib.Nifti2Image(new_data, regional_map.image.affine, regional_map.image.header)
+            else:
+                raise IOError('regional map has incorrect sizeof_hdr')
+            nib.save(new_image, cached_fullpath)
+        else:
+            nib.save(regional_map.image, cached_fullpath)
 
     return get_cached_file(cached_filename, save_new_nii)
+
+@memoize(typed=True)
+def get_region_by_name(
+    base_url: str,
+    atlas_id: str,
+    parcellation_id: str,
+    region_id: str,
+    space_id: str = None):
+    """
+    Returns a specific region for a given id.
+    """
+    atlas = siibra.atlases[atlas_id]
+    parcellation = atlas.get_parcellation(parcellation_id)
+    try:
+        region = atlas.get_region(region_id, parcellation)
+    except ValueError:
+        raise HTTPException(404, 'Region spec {region_id} cannot be decoded')
+
+    if space_id:
+        space = validate_and_return_space(space_id)
+        region_json = region_encoder(region, space=space)
+        region_json['props'] = get_region_props(space_id, atlas, region)
+        region_json['hasRegionalMap'] = region.has_regional_map(
+            space,
+            siibra.commons.MapType.CONTINUOUS)
+        region_json['_dataset_specs'] = [spec for spec in region_json['_dataset_specs'] if spec.get('@type') != 'minds/core/dataset/v1.0.0']
+        for ds in [ ds for ds in region.datasets if type(ds) == siibra.core.datasets.EbrainsDataset ]:
+            region_json['_dataset_specs'].append( jsonable_encoder(ds, custom_encoder=siibra_custom_json_encoder) )
+    else:
+        region_json = region_encoder(region)
+
+    single_region_root_url = '{}atlases/{}/parcellations/{}/regions/{}'.format(
+        base_url,
+        quote(atlas_id),
+        quote(parcellation_id),
+        quote(region_id))
+
+    region_json['links'] = {
+        'features': f'{single_region_root_url}/features',
+        'regional_map_info': f'{single_region_root_url}/regional_map/info?space_id={space_id}' if region_json.get('hasRegionalMap') else None,
+        'regional_map': f'{single_region_root_url}/regional_map/map?space_id={space_id}' if region_json.get('hasRegionalMap') else None,
+    }
+
+    return region_json
 
 
 # using a custom encoder is necessary to avoid cyclic reference
@@ -536,9 +532,73 @@ def origin_data_decoder(origin_data):
         'description': description,
         'urls': urls}
 
+def density_profile_encoder(density: siibra.features.receptors.DensityProfile):
+    return density.densities
+
+def receptor_profile_encoder(receptor: siibra.features.receptors.ReceptorDistribution):
+    return {
+        '__data': {
+            '__profiles': {
+                profile_key: receptor.profiles[profile_key]
+                for profile_key in receptor.profiles}
+        }
+    }
+
+
+def region_support_space(region: siibra.core.Region, space: siibra.core.Space):
+    if space is None:
+        raise ValueError('space is needed')
+    if space in region.supported_spaces:
+        return True
+    if any([ region_support_space(c, space) for c in region.children]):
+        return True
+    return False
+
+WANTED_DATASET_SPECS = {'fzj/tmp/volume_type/v0.0.1', 'minds/core/dataset/v1.0.0' }
+FS_AVERAGE = siibra.spaces['fsaverage']
+
+def region_encoder(region: siibra.core.Region, space: siibra.core.Space=None):
+    
+    # since region_support_space always return False for fsaverage
+    # manual fix for fsaverage until it is fixed
+    def filter_fsaverage(r: siibra.core.Region):
+        return space is FS_AVERAGE
+
+    labels = region.labels
+
+    filtered_children = [child for child in region.children if space is None
+                            or filter_fsaverage(child) or len(child.supported_spaces) == 0
+                            or region_support_space(child, space)]
+    # temporary fix to fsaverage not returning labels
+    if space is not FS_AVERAGE or len(filtered_children) != 0:
+        for c in region.children:
+            labels = labels - c.labels
+    return {
+        'name': region.name,
+        'labelIndex': list(labels)[0] if len(labels) == 1 else None,
+        'rgb': region.attrs.get('rgb') if hasattr(region, 'attrs') else None,
+        'id': region.attrs.get('fullId') if hasattr(region, 'attrs') else None,
+        'availableIn': [{
+            'id': space.id,
+            'name': space.name
+        } for space in region.supported_spaces ],
+        '_dataset_specs': [ ds for ds in region._dataset_specs if ds.get('@type') in WANTED_DATASET_SPECS ],
+        'children': [ region_encoder(child, space=space) for child in filtered_children]
+    }
+
+def ebrains_dataset_encoder(ds: siibra.core.datasets.EbrainsDataset):
+    return {
+        '@type': ds.type_id,
+        'name': ds.name,
+        'description': ds.description,
+        'urls': ds.urls,
+    }
 
 siibra_custom_json_encoder = {
     VolumeSrc: vol_src_sans_space,
     LocalNiftiVolume: vol_src_sans_space,
     NeuroglancerVolume: vol_src_sans_space,
+    siibra.features.receptors.DensityProfile: density_profile_encoder,
+    siibra.features.receptors.ReceptorDistribution: receptor_profile_encoder,
+    siibra.core.datasets.EbrainsDataset: ebrains_dataset_encoder,
 }
