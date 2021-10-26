@@ -317,40 +317,8 @@ def get_region_by_name_api(
     """
     Returns a specific region for a given id.
     """
-<<<<<<< HEAD
-    atlas = validate_and_return_atlas(atlas_id)
-    parcellation = validate_and_return_parcellation(parcellation_id)
-    region = validate_and_return_region(region_id, parcellation)
-
-    # TODO New Region not found error
-
-    # if len(region) == 0:
-    #     raise HTTPException(status_code=404,
-    #                         detail=f'region with spec {region_id} not found')
-    # r = region[0]
-    region_json = create_region_json_response(region, space_id, atlas, detail=True)
-    if space_id:
-        region_json['props'] = get_region_props(space_id, atlas, region)
-
-    single_region_root_url = '{}atlases/{}/parcellations/{}/regions/{}'.format(
-        get_base_url_from_request(request),
-        atlas_id.replace('/', '%2F'),
-        parcellation_id.replace('/', '%2F'),
-        region_id.replace('/', '%2F'))
-
-    region_json['links'] = {
-        'features': f'{single_region_root_url}/features',
-        'regional_map_info': f'{single_region_root_url}/regional_map/info?space_id={space_id}' if region_json[
-            'hasRegionalMap'] else None,
-        'regional_map': f'{single_region_root_url}/regional_map/map?space_id={space_id}' if region_json[
-            'hasRegionalMap'] else None,
-    }
-
-    return jsonable_encoder(region_json)
-=======
     base_url=get_base_url_from_request(request)
     return get_region_by_name(base_url, atlas_id, parcellation_id, region_id, space_id)
->>>>>>> 7f0abcffa513e6d82abdc09b3b0afec6fa172a10
 
 
 @router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/features/{modality}/{modality_instance_name}',
