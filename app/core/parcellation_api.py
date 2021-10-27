@@ -17,6 +17,8 @@ import siibra
 from enum import Enum
 from typing import Optional
 from fastapi import APIRouter, Request, HTTPException
+from siibra.core.datasets import EbrainsDataset
+from siibra.core.parcellation import Parcellation
 from starlette.responses import FileResponse
 from fastapi.encoders import jsonable_encoder
 from app.service.request_utils import get_region_by_name, region_encoder, split_id
@@ -30,11 +32,14 @@ from app import logger
 preheat_flag = False
 
 parcellation_json_encoder = {
-    siibra.core.Parcellation: lambda parcellation: {
+    Parcellation: lambda parcellation: {
         'id': split_id(parcellation.id),
         'name': parcellation.name,
         'availableSpaces': get_spaces_for_parcellation(parcellation),
         'modality': parcellation.modality,
+        'infos': [jsonable_encoder(info, custom_encoder=siibra_custom_json_encoder) for info in parcellation.infos if isinstance(info, EbrainsDataset)],
+        # if parcellation has no publications, raises AttributeError
+        # 'publications': [p for p in parcellation.publications],
         'version': parcellation.version,
         '_dataset_specs': parcellation._dataset_specs,
     }
@@ -90,25 +95,25 @@ def __parcellation_result_info(parcellation, atlas_id=None, request=None):
                 'href': '{}atlases/{}/parcellations/{}'.format(get_base_url_from_request(request),
                                                                atlas_id.replace('/', '%2F'),
                                                                parcellation.id.replace('/', '%2F'))
-            }
-        },
-        'regions': {
-            'href': '{}atlases/{}/parcellations/{}/regions'.format(
-                get_base_url_from_request(request),
-                atlas_id.replace('/', '%2F'),
-                parcellation.id.replace('/', '%2F')
-            )
-        },
-        'features': {
-            'href': '{}atlases/{}/parcellations/{}/features'.format(
-                get_base_url_from_request(request),
-                atlas_id.replace('/', '%2F'),
-                parcellation.id.replace('/', '%2F')
-            )
+            },
+            'regions': {
+                'href': '{}atlases/{}/parcellations/{}/regions'.format(
+                    get_base_url_from_request(request),
+                    atlas_id.replace('/', '%2F'),
+                    parcellation.id.replace('/', '%2F')
+                )
+            },
+            'features': {
+                'href': '{}atlases/{}/parcellations/{}/features'.format(
+                    get_base_url_from_request(request),
+                    atlas_id.replace('/', '%2F'),
+                    parcellation.id.replace('/', '%2F')
+                )
+            },
         },
         **jsonable_encoder(parcellation, custom_encoder={
-            **siibra_custom_json_encoder,
-            **parcellation_json_encoder
+            **parcellation_json_encoder,
+            **siibra_custom_json_encoder
         })
     }
 
@@ -408,18 +413,9 @@ def get_parcellation_by_id(
     Returns one parcellation for given id.
     """
     atlas = validate_and_return_atlas(atlas_id)
-    parcellations = atlas.parcellations
-    result = {}
-    for parcellation in parcellations:
-        if parcellation.id.find(parcellation_id) != -1:
-            result = __parcellation_result_info(
-                parcellation, atlas_id, request)
-    if result:
-        return jsonable_encoder(
-            result, custom_encoder=siibra_custom_json_encoder)
-    else:
-        raise HTTPException(
-            status_code=404,
-            detail='parcellation with id: {} not found'.format(parcellation_id))
-
-# endregion
+    parcellation = validate_and_return_parcellation(parcellation_id, atlas=atlas)
+    result = __parcellation_result_info(
+            parcellation, atlas_id, request)
+    
+    return jsonable_encoder(
+        result, custom_encoder=siibra_custom_json_encoder)

@@ -15,9 +15,9 @@
 
 import siibra
 from fastapi import HTTPException
+from siibra.core import Space, Parcellation, Region, Atlas
 
-
-def validate_and_return_atlas(atlas_id):
+def validate_and_return_atlas(atlas_id:str) -> Atlas:
     """
     Check if the given atlas id is valid and return an atlas object
     If the atlas id is not valid, throw a HTTP 400 Exception
@@ -34,7 +34,7 @@ def validate_and_return_atlas(atlas_id):
         )
 
 
-def validate_and_return_space(space_id):
+def validate_and_return_space(space_id:str, atlas:Atlas=None) -> Space:
     """
     Check if the given space id is valid and return a space object
     If the space id is not valid, throw a HTTP 400 Exception
@@ -43,7 +43,10 @@ def validate_and_return_space(space_id):
     :return: siibra space object
     """
     try:
-        return siibra.spaces[space_id]
+        if atlas is not None:
+            return atlas.spaces[space_id]
+        else:
+            return siibra.spaces[space_id]
     except:
         raise HTTPException(
             status_code=400,
@@ -51,7 +54,7 @@ def validate_and_return_space(space_id):
         )
 
 
-def validate_and_return_parcellation(parcellation_id):
+def validate_and_return_parcellation(parcellation_id:str, atlas:Atlas=None) -> Parcellation:
     """
     Check if the given parcellation id is valid and return a parcellation object
     If the parcellation id is not valid, throw a HTTP 400 Exception
@@ -60,7 +63,10 @@ def validate_and_return_parcellation(parcellation_id):
     :return: siibra parcellation object
     """
     try:
-        return siibra.parcellations[parcellation_id]
+        if atlas is not None:
+            return atlas.parcellations[parcellation_id]
+        else:
+            return siibra.parcellations[parcellation_id]
     except:
         raise HTTPException(
             status_code=400,
@@ -68,7 +74,7 @@ def validate_and_return_parcellation(parcellation_id):
         )
 
 
-def validate_and_return_region(region_id, parcellation):
+def validate_and_return_region(region_id: str, parcellation) -> Region:
     """
     Check if the given region id is valid and return a region object
     If the region id is not valid, throw a HTTP 400 Exception
