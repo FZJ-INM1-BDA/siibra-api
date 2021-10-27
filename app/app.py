@@ -35,7 +35,8 @@ from app.configuration.ebrains_token import get_public_token
 from app.configuration.siibra_custom_exception import SiibraCustomException
 from . import logger
 from . import __version__
-
+import logging
+siibra.logger.setLevel(logging.WARNING)
 
 security = HTTPBearer()
 
