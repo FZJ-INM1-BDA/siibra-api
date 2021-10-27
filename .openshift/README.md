@@ -142,6 +142,7 @@ A number of sensitive variables are stored on the openshift clusters, and added 
 | `EBRAINS_IAM_CLIENT_SECRET` | `okd_configmap.hbp-oauth-config-map.HBP_CLIENTSECRET` | Client secret for oauth with EBRAINS IAM service |
 | `EBRAINS_IAM_REFRESH_TOKEN` | `okd_configmap.hbp-oauth-config-map.REFRESH_TOKEN` | Refresh token used to generate valid access token for server to server communications. |
 | `SIIBRA_CONFIG_*` | `okd_configmap.siibra-config-overwrite.*` | Overwriting siibra config environment variables |
+| `SIIBRA_API_E2E_BASE_URL` | ` ` | |
 
 ### [3] Deployment parameters
 
