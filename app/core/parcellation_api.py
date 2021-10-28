@@ -144,7 +144,8 @@ def get_all_regions_for_parcellation_id(
     Returns all regions for a given parcellation id.
     """
     parcellation = validate_and_return_parcellation(parcellation_id)
-    space = validate_and_return_space(space_id)
+    if not space_id is None:
+        space = validate_and_return_space(space_id)
     
     return [ region_encoder(region, space=space) for region in parcellation.regiontree.children ]
 
