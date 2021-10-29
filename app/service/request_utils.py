@@ -13,13 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from urllib.parse import quote
-from fastapi.encoders import jsonable_encoder
 import siibra
 import nibabel as nib
 from fastapi import HTTPException, Request
 from app.configuration.cache_redis import CacheRedis
-import anytree
 import hashlib
 import os
 from app.configuration.diskcache import memoize, CACHEDIR
@@ -48,39 +45,6 @@ def get_cached_file(filename: str, fn: callable):
     return cached_full_path
 
 
-def split_id(kg_id: str):
-    """
-    Parameters:
-        - kg_id
-
-    Splitting the knowledge graph id into the schema and the id part.
-    Only the id part is needed as a path parameter.
-    """
-    split_id = kg_id.split('/')
-    return {
-        'kg': {
-            'kgSchema': '/'.join(split_id[0:-1]),
-            'kgId': split_id[-1]
-        }
-    }
-
-
-def _object_to_json(o):
-    return {
-        'id': o.id,
-        'name': o.name
-    }
-
-
-def get_spaces_for_parcellation(parcellation):
-    return [space for space in siibra.spaces if parcellation.supports_space(space)]
-
-
-def get_parcellations_for_space(space):
-    return [{'id': parcellation.id, 'name': parcellation.name}
-            for parcellation in siibra.parcellations if parcellation.supports_space(space)]
-
-
 def get_base_url_from_request(request: Request):
     proto_header = 'x-forwarded-proto'
     proto = 'http'
@@ -91,83 +55,6 @@ def get_base_url_from_request(request: Request):
         proto = request.headers.get(proto_header)
 
     return '{}://{}/{}/'.format(proto, host, api_version)
-
-
-def get_available_spaces_for_region(region):
-    result = []
-    for spaces in siibra.spaces:
-        if region.parcellation.supports_space(spaces):
-            result.append(_object_to_json(spaces))
-    return result
-
-
-def get_region_props(space_id, atlas, region) -> list:
-    space = atlas.get_space(space_id)
-    try:
-        logger.info(f'Getting region props for: {region}')
-        result_props = region.spatial_props(space)
-        result_props = {
-            'components': [{
-                'centroid': list(c['centroid']),
-                'volume': c['volume']
-            }for c in result_props['components']]
-        }
-    except:
-        logger.info(f'Could not get region properties for region: {region} and space: {space}')
-        result_props = []
-    return result_props
-
-
-# def get_region_props_tmp(space_id, atlas, region_json, region):
-#     logger.debug('Getting props for: {}'.format(str(region)))
-#     region_json['props'] = {}
-    # cache_value = cache_redis.get_value('{}_{}_{}_{}'.format(
-    #     str(atlas.id),
-    #     str(atlas.selected_parcellation.id),
-    #     str(find_space_by_id(atlas, space_id).id),
-    #     str(region)
-    # ))
-    # reg_props = region.spatialprops(find_space_by_id(atlas,space_id), force=True)
-    # print(reg_props)
-    # if cache_value == 'invalid' or cache_value == 'None' or cache_value is None:
-    #     region_json['props']['centroid_mm'] = ''
-    #     region_json['props']['volume_mm'] = ''
-    #     region_json['props']['surface_mm'] = ''
-    #     region_json['props']['is_cortical'] = ''
-    # else:
-    #     r_props = json.loads(cache_value)
-    #     region_json['props']['centroid_mm'] = r_props['centroid_mm']
-    #     region_json['props']['volume_mm'] = r_props['volume_mm']
-    #     region_json['props']['surface_mm'] = r_props['surface_mm']
-    #     region_json['props']['is_cortical'] = r_props['is_cortical']
-
-
-def find_region_via_id(atlas, region_id):
-    """
-    Pure binder function to find regions via id by:
-    - strict equality match (fullId.kgSchema + fullId.kgId)
-    - atlas.find_regions fuzzy search first
-    """
-
-    def match_node(node):
-        if node.attrs is None:
-            return False
-        if 'fullId' not in node.attrs:
-            return False
-
-        if node.attrs['fullId'] is None:
-            return False
-        full_id = node.attrs['fullId']
-        if 'kg' not in full_id:
-            return False
-        full_id_kg = full_id['kg']
-        return full_id_kg['kgSchema'] + '/' + full_id_kg['kgId'] == region_id
-
-    fuzzy_regions = atlas.find_regions(region_id)
-
-    region_tree = atlas.selected_parcellation.regiontree
-    strict_equal_id = anytree.search.findall(region_tree, match_node)
-    return [*strict_equal_id, *fuzzy_regions]
 
 
 # allow for fast fails
@@ -472,65 +359,12 @@ def get_path_to_regional_map(query_id, roi, space_of_interest):
 
     return get_cached_file(cached_filename, save_new_nii)
 
-@memoize(typed=True)
-def get_region_by_name(
-    base_url: str,
-    atlas_id: str,
-    parcellation_id: str,
-    region_id: str,
-    space_id: str = None):
-    """
-    Returns a specific region for a given id.
-    """
-    atlas = siibra.atlases[atlas_id]
-    parcellation = atlas.get_parcellation(parcellation_id)
-    try:
-        region = atlas.get_region(region_id, parcellation)
-    except ValueError:
-        raise HTTPException(404, 'Region spec {region_id} cannot be decoded')
-
-    if space_id:
-        space = validate_and_return_space(space_id)
-        region_json = region_encoder(region, space=space)
-        region_json['props'] = get_region_props(space_id, atlas, region)
-        region_json['hasRegionalMap'] = region.has_regional_map(
-            space,
-            siibra.commons.MapType.CONTINUOUS)
-        region_json['_dataset_specs'] = [spec for spec in region_json['_dataset_specs'] if spec.get('@type') != 'minds/core/dataset/v1.0.0']
-        for ds in [ ds for ds in region.datasets if type(ds) == siibra.core.datasets.EbrainsDataset ]:
-            region_json['_dataset_specs'].append( jsonable_encoder(ds, custom_encoder=siibra_custom_json_encoder) )
-    else:
-        region_json = region_encoder(region)
-
-    single_region_root_url = '{}atlases/{}/parcellations/{}/regions/{}'.format(
-        base_url,
-        quote(atlas_id),
-        quote(parcellation_id),
-        quote(region_id))
-
-    region_json['links'] = {
-        'features': f'{single_region_root_url}/features',
-        'regional_map_info': f'{single_region_root_url}/regional_map/info?space_id={space_id}' if region_json.get('hasRegionalMap') else None,
-        'regional_map': f'{single_region_root_url}/regional_map/map?space_id={space_id}' if region_json.get('hasRegionalMap') else None,
-    }
-
-    return region_json
-
-
 # using a custom encoder is necessary to avoid cyclic reference
 def vol_src_sans_space(vol_src):
     keys = ['id', 'name', 'url', 'volume_type', 'detail']
     return {
         key: getattr(vol_src, key) for key in keys
     }
-
-def origin_data_decoder(origin_data):
-    description=origin_data.description
-    name=origin_data.name
-    urls=origin_data.urls
-    return {'name': name,
-        'description': description,
-        'urls': urls}
 
 def density_profile_encoder(density: siibra.features.receptors.DensityProfile):
     return density.densities
@@ -544,61 +378,10 @@ def receptor_profile_encoder(receptor: siibra.features.receptors.ReceptorDistrib
         }
     }
 
-
-def region_support_space(region: siibra.core.Region, space: siibra.core.Space):
-    if space is None:
-        raise ValueError('space is needed')
-    if space in region.supported_spaces:
-        return True
-    if any([ region_support_space(c, space) for c in region.children]):
-        return True
-    return False
-
-WANTED_DATASET_SPECS = {'fzj/tmp/volume_type/v0.0.1', 'minds/core/dataset/v1.0.0' }
-FS_AVERAGE = siibra.spaces['fsaverage']
-
-def region_encoder(region: siibra.core.Region, space: siibra.core.Space=None):
-    
-    # since region_support_space always return False for fsaverage
-    # manual fix for fsaverage until it is fixed
-    def filter_fsaverage(r: siibra.core.Region):
-        return space is FS_AVERAGE
-
-    labels = region.labels
-
-    filtered_children = [child for child in region.children if space is None
-                            or filter_fsaverage(child) or len(child.supported_spaces) == 0
-                            or region_support_space(child, space)]
-    # temporary fix to fsaverage not returning labels
-    if space is not FS_AVERAGE or len(filtered_children) != 0:
-        for c in region.children:
-            labels = labels - c.labels
-    return {
-        'name': region.name,
-        'labelIndex': list(labels)[0] if len(labels) == 1 else None,
-        'rgb': region.attrs.get('rgb') if hasattr(region, 'attrs') else None,
-        'id': region.attrs.get('fullId') if hasattr(region, 'attrs') else None,
-        'availableIn': [{
-            'id': space.id,
-            'name': space.name
-        } for space in region.supported_spaces ],
-        '_dataset_specs': [ ds for ds in region._dataset_specs if ds.get('@type') in WANTED_DATASET_SPECS ],
-        'children': [ region_encoder(child, space=space) for child in filtered_children]
-    }
-
-def ebrains_dataset_encoder(ds: siibra.core.datasets.EbrainsDataset):
-    return {
-        '@type': ds.type_id,
-        'name': ds.name,
-        'description': ds.description,
-        'urls': ds.urls,
-    }
-
 siibra_custom_json_encoder = {
     VolumeSrc: vol_src_sans_space,
     LocalNiftiVolume: vol_src_sans_space,
     NeuroglancerVolume: vol_src_sans_space,
     siibra.features.receptors.DensityProfile: density_profile_encoder,
     siibra.features.receptors.ReceptorDistribution: receptor_profile_encoder,
-    siibra.core.datasets.EbrainsDataset: ebrains_dataset_encoder,
 }

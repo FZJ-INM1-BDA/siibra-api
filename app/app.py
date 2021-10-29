@@ -14,6 +14,8 @@
 # limitations under the License.
 
 import os
+from typing import Dict, Optional
+from typing_extensions import TypedDict
 
 import requests
 import json
@@ -25,17 +27,20 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi_versioning import VersionedFastAPI
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.openapi.utils import get_openapi
 
 from app.core.siibra_api import router as siibra_router
 from app.core.atlas_api import router as atlas_router
 from app.core.space_api import router as space_router
 from app.service.health import router as health_router
-from app.core.parcellation_api import router as parcellation_router, preheat, get_preheat_status
+from app.core.parcellation_api import router as parcellation_router
+from app.core.region_api import router as region_router
 from app.configuration.ebrains_token import get_public_token
 from app.configuration.siibra_custom_exception import SiibraCustomException
 from . import logger
 from . import __version__
 import logging
+import re
 siibra.logger.setLevel(logging.WARNING)
 
 security = HTTPBearer()
@@ -49,6 +54,10 @@ tags_metadata = [
     {
         "name": "parcellations",
         "description": "Parcellations related data, depending on selected atlas",
+    },
+    {
+        "name": "regions",
+        "description": "Regions related data, deepnds on selected atlas and parcellation.",
     },
     {
         "name": "spaces",
@@ -74,12 +83,102 @@ app = FastAPI(
 app.include_router(parcellation_router, prefix=ATLAS_PATH)
 app.include_router(space_router, prefix=ATLAS_PATH)
 app.include_router(atlas_router, prefix=ATLAS_PATH)
+app.include_router(region_router, prefix=ATLAS_PATH)
 app.include_router(siibra_router)
 app.include_router(health_router)
 
 
 # Versioning for all api endpoints
 app = VersionedFastAPI(app, default_api_version=1)
+
+def patch_code_samples():
+
+    fallback_lang = 'shell'
+
+    host_url = os.environ.get('HOSTURL', 'http://localhost:5000')
+    code_sample_key = 'x-code-samples'
+    code_sample_re = re.compile(r'^## code sample', re.M)
+    get_samples_re = re.compile(r'^```(.+)?\n(?:.*\n)+?^```$', re.M)
+    preceding_nl_re = re.compile(r'^\n*', re.M)
+    trailing_nl_re = re.compile(r'\n*$', re.M)
+    
+    # Customise open-api
+    def patch_openapi(target_app: FastAPI, target_path: str):
+        
+        def custom_openapi():
+            if target_app is None:
+                raise NotImplementedError(f'path for {target_path} not yet implemented')
+            if target_app.openapi_schema:
+                return target_app.openapi_schema
+            openapi_schema = get_openapi(
+                title='siibra-api',
+                routes=target_app.routes,
+                description='openapi for siibra-api',
+                version=__version__,
+                servers=[{
+                    'url': f'{target_path}'
+                }]
+            )
+
+            # patch the logo
+            openapi_schema['info']['x-logo'] = {
+                'url': 'https://raw.githubusercontent.com/FZJ-INM1-BDA/siibra-api/master/static/images/siibra-api.jpeg'
+            }
+
+            # extract summary, description and code sample from doc strings
+            for path_key in openapi_schema['paths']:
+                for method in openapi_schema['paths'][path_key]:
+                    description:str = openapi_schema['paths'][path_key][method].get('description')
+
+                    description = re.sub(preceding_nl_re, '', description)
+                    if description[0] == '#':
+                        summary, desc = description.split('\n',maxsplit=1)
+                        summary = re.sub(r'^(#\s)+',  '', summary)
+                        desc = re.sub(r'^\n*', '', desc, flags=re.M)
+                    else:
+                        summary = None
+                        desc = description
+                    split_desc = re.split(code_sample_re, desc)
+                    if len(split_desc) > 1:
+                        desc_body, code_snippit = split_desc
+                        for code_sample in get_samples_re.finditer(code_snippit):
+
+                            if code_sample_key not in openapi_schema['paths'][path_key][method]:
+                                openapi_schema['paths'][path_key][method][code_sample_key] = []
+
+                            lang, = code_sample.groups()
+                            md_code_sample = code_sample.group()
+                            md_code_sample = '\n'.join([line for line in md_code_sample.split('\n') if line[0:3] != '```'])
+                            openapi_schema['paths'][path_key][method][code_sample_key].append({
+                                'lang': lang or fallback_lang,
+                                'source': md_code_sample
+                            })
+
+                        # append curl... because why not?
+                        openapi_schema['paths'][path_key][method][code_sample_key].append({
+                            'lang': 'shell',
+                            'source': f'curl {host_url}{target_path}{path_key.replace("{", "${")}'
+                        })
+                    else:
+                        desc_body = desc
+
+                    desc_body = re.sub(trailing_nl_re, '', desc_body)
+                    openapi_schema['paths'][path_key][method]['description'] = desc_body
+                    if summary is not None:
+                        openapi_schema['paths'][path_key][method]['summary'] = summary
+                
+            target_app.openapi_schema = openapi_schema
+            return openapi_schema
+        
+        return custom_openapi
+
+    target_routes = ['/v1_0']
+    for route in [route for route in app.routes if route.path in target_routes]:
+        target_app: FastAPI = route.app
+        target_app.openapi = patch_openapi(target_app, route.path)
+
+patch_code_samples()
+
 
 # Template list, with every template in the project
 # can be rendered and returned
@@ -218,33 +317,9 @@ async def add_version_header(request: Request, call_next):
 
 @app.get('/ready', include_in_schema=False)
 def get_ready():
-    if not all([get_preheat_status()]):
-        raise HTTPException(400, detail='Not yet ready.')
     return 'OK'
 
 
 @app.on_event('startup')
 async def on_startup():
-    import asyncio
-    from signal import SIGINT, SIGTERM
-
-    async def run_async():
-        loop=asyncio.get_event_loop()
-
-        # TODO still doesn't work quite right, but ... hopefully getting closer?
-        def cleanup_on_termination():
-            logger.info(f'Terminating... Cancelling pending tasks...')
-            
-            loop.stop()
-            loop.close()
-
-        def run_preheat():
-            preheat()
-            pass
-
-        for sig in [SIGINT, SIGTERM]:
-            loop.add_signal_handler(sig, cleanup_on_termination)
-        
-        loop.run_in_executor(None, run_preheat)
-
-    asyncio.ensure_future(run_async())
+    pass

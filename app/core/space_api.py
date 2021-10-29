@@ -14,18 +14,19 @@
 # limitations under the License.
 
 import io
-from typing import Optional
+from typing import List, Optional
 from urllib.parse import quote
 
 import zipfile
 import siibra
+from siibra.core import Atlas, Space
+from siibra.core.json_encoder import JSONEncoder
 
 from fastapi import APIRouter, HTTPException, Request
-from fastapi.encoders import jsonable_encoder
 from starlette.responses import FileResponse, StreamingResponse
 
-from app.service.request_utils import get_spatial_features, split_id, get_file_from_nibabel, get_parcellations_for_space
-from app.service.request_utils import get_base_url_from_request, siibra_custom_json_encoder,origin_data_decoder
+from app.service.request_utils import get_spatial_features, get_file_from_nibabel
+from app.service.request_utils import get_base_url_from_request
 from app.service.validation import validate_and_return_atlas, validate_and_return_space
 
 # FastApi router to create rest endpoints
@@ -35,28 +36,27 @@ router = APIRouter()
 # region === spaces
 
 
-@router.get('/{atlas_id:path}/spaces', tags=['spaces'])
-def get_all_spaces(atlas_id: str, request: Request):
+@router.get('/{atlas_id:path}/spaces', tags=['spaces'], response_model=List[Space.typed_json_output])
+def get_all_spaces(atlas_id: str):
     """
-    Returns all spaces that are defined in the siibra client.
+    # Get all space specified by the atlas
+
+    Returns all spaces supported by the atlas specified by the atlas_id.
+
+    ## code sample
+
+    ```python
+    import siibra
+
+    atlas = siibra.atlases[f'{atlas_id}']
+    spaces = atlas.spaces
+    ```
     """
-    atlas = validate_and_return_atlas(atlas_id)
-    result = []
-    for space in atlas.spaces:
-        result.append({
-            'id': split_id(space.id),
-            'name': space.name,
-            'links': {
-                'self': {
-                    'href': '{}atlases/{}/spaces/{}'.format(
-                        get_base_url_from_request(request),
-                        atlas_id.replace('/', '%2F'),
-                        space.id.replace('/', '%2F')
-                    )
-                }
-            }
-        })
-    return jsonable_encoder(result)
+    try:
+        atlas: Atlas=siibra.atlases[atlas_id]
+        return [ JSONEncoder.encode(space, nested=True) for space in atlas.spaces]
+    except IndexError:
+        raise HTTPException(400, detail=f'atlas with id {atlas_id} not found.')
 
 
 @router.get('/{atlas_id:path}/spaces/{space_id:path}/templates', tags=['spaces'])
@@ -170,48 +170,27 @@ def get_spatial_feature_names(atlas_id: str, space_id: str, request: Request):
     }
 
 
-@router.get('/{atlas_id:path}/spaces/{space_id:path}', tags=['spaces'])
-def get_one_space_by_id(atlas_id: str, space_id: str, request: Request):
+@router.get('/{atlas_id:path}/spaces/{space_id:path}', tags=['spaces'], response_model=Space.typed_json_output)
+def get_one_space_by_id(atlas_id: str, space_id: str):
     """
-    Returns one space for given id, with links to further resources
+    # Get a specific reference space
+
+    Returns the reference space specified by space_id, restricted by atlas selected by atlas_id
+
+    ## code sample
+
+    ```python
+    import siibra
+
+    atlas = siibra.atlases[f'{atlas_id}']
+    space = atlas.spaces[f'{space_id}']
+    ```
     """
-    validate_and_return_atlas(atlas_id)
-    space = validate_and_return_space(space_id)
-    if space:
-        json_result = jsonable_encoder(
-            space, custom_encoder=siibra_custom_json_encoder)
-        # TODO: Error on first call
-        json_result['availableParcellations'] = get_parcellations_for_space(
-            space)
-        json_result['links'] = {
-            'templates': {
-                'href': '{}atlases/{}/spaces/{}/templates'.format(
-                    get_base_url_from_request(request),
-                    atlas_id.replace('/', '%2F'),
-                    space.id.replace('/', '%2F')
-                )
-            },
-            'parcellation_maps': {
-                'href': '{}atlases/{}/spaces/{}/parcellation_maps'.format(
-                    get_base_url_from_request(request),
-                    atlas_id.replace('/', '%2F'),
-                    space.id.replace('/', '%2F')
-                )
-            },
-            'features': {
-                'href': '{}atlases/{}/spaces/{}/features'.format(
-                    get_base_url_from_request(request),
-                    atlas_id.replace('/', '%2F'),
-                    space.id.replace('/', '%2F')
-                )
-            }
-        }
-        if hasattr(space, 'origin_datainfos'):
-            json_result['originDatainfos'] = [ origin_data_decoder(datainfo) for datainfo in space.origin_datainfos]
-        return json_result
-    else:
+    try:
+        atlas:Atlas = siibra.atlases[atlas_id]
+        space:Space = atlas.spaces[space_id]
+        return JSONEncoder.encode(space)
+    except IndexError:
         raise HTTPException(
             status_code=404,
-            detail='space with id: {} not found'.format(space_id))
-
-# endregion
+            detail='atlas with id: {} and/or space with {} not found'.format(atlas_id, space_id))
