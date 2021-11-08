@@ -13,36 +13,41 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import siibra
 from enum import Enum
+from pydantic import BaseModel
+import siibra
 from typing import List, Optional
-from fastapi import APIRouter, Request, HTTPException
-from siibra.core import Parcellation, Atlas, EbrainsDataset, Region, Space
+from fastapi import APIRouter, HTTPException
+
+from siibra.core import Parcellation, Atlas, Region, Space
 from siibra.core.json_encoder import JSONEncoder
-from fastapi.encoders import jsonable_encoder
-from app.service.request_utils import get_base_url_from_request
-from app.service.request_utils import get_global_features
+from siibra.features.connectivity import ConnectivityMatrix
+from siibra.features.feature import ParcellationFeature
+from siibra.core.jsonable import SiibraSerializable
+
 from app.configuration.diskcache import memoize
-from app.service.validation import validate_and_return_atlas, validate_and_return_parcellation
 from app import logger
+from .region_api import router as region_router
 
-router = APIRouter()
-
-
-class ModalityType(str, Enum):
-    """
-    A class for modality type, to provide selection options to swagger
-    """
-    ReceptorDistribution = 'ReceptorDistribution'
-    GeneExpression = 'GeneExpression'
-    ConnectivityProfile = 'ConnectivityProfile'
-    ConnectivityMatrix = 'ConnectivityMatrix'
+router = APIRouter(
+    prefix='/parcellations'
+)
 
 
+ParcellationFeatureEnum: Enum = Enum('ParcellationFeatureEnum', {
+    mod.modality(): mod.modality() for mod in siibra.features.modalities
+        if issubclass(mod._FEATURETYPE, ParcellationFeature)
+        and issubclass(mod._FEATURETYPE, SiibraSerializable)
+})
 
-@router.get('/{atlas_id:path}/parcellations',
-    tags=['parcellations'],
-    response_model=List[Parcellation.typed_json_output])
+
+router.include_router(region_router, prefix='/{parcellation_id:path}')
+
+
+@router.get('',
+            tags=['parcellations'],
+            response_model=List[Parcellation.SiibraSerializationSchema])
+@memoize(typed=True)
 def get_all_parcellations(atlas_id: str):
     """
     # Get all parcellations for an atlas
@@ -68,9 +73,9 @@ def get_all_parcellations(atlas_id: str):
         raise HTTPException(500, detail=f'something went wrong.')
 
 
-@router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/regions',
-    tags=['parcellations'],
-    response_model=List[Region.typed_json_output])
+@router.get('/{parcellation_id:path}/regions',
+            tags=['parcellations', 'regions'],
+            response_model=List[Region.SiibraSerializationSchema])
 @memoize(typed=True)
 def get_all_regions_for_parcellation_id(
         atlas_id: str,
@@ -106,88 +111,123 @@ def get_all_regions_for_parcellation_id(
 
 
 
-@router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/features/{modality}/{modality_instance_name}',
-            tags=['parcellations'])
+@router.get('/{parcellation_id:path}/features/{modality_id}/{feature_id}',
+            tags=['parcellations', 'features'],
+            response_model=ConnectivityMatrix.SiibraSerializationSchema)
+@memoize(typed=True)
 def get_single_global_feature_detail(
         atlas_id: str,
         parcellation_id: str,
-        modality: str,
-        modality_instance_name: str,
-        request: Request):
+        modality_id: ParcellationFeatureEnum,
+        feature_id: str):
     """
-    Returns a global feature for a specific modality id.
+    # Get detail of a parcellation feature by feature_id
+
+    Returns detailed information of a specific parcellation feature identified by feature_id.
+
+    ## code sample
+    ```python
+
+    import siibra
+    from siibra.core import Atlas, Parcellation
+
+    atlas: Atlas = siibra.atlases[f'{atlas_id}']
+    parcellation: Parcellation = atlas.parcellations[f'{parcellation_id}']
+    specific_feature, = [f for f in siibra.get_features(parcellation, f'{modality_id}') if f.id == f'{feature_id}']
+    ```
     """
     try:
-        fs = get_global_features(atlas_id, parcellation_id, modality)
-        found = [f for f in fs if f['src_name'] == modality_instance_name]
-        if len(found) == 0:
-            raise HTTPException(
-                status_code=404,
-                detail=f'modality with name {modality_instance_name} not found')
+        atlas: Atlas = siibra.atlases[atlas_id]
+        parcellation: Parcellation = atlas.parcellations[parcellation_id]
+        if siibra.features.modalities[modality_id].modality() not in [mod.value for mod in modality_id ]:
+            raise HTTPException(400, detail=f'modality_id {modality_id} not a parcellation modality_id')
 
-        return {
-            'result': found[0]
-        }
-    except NotImplementedError:
-        return HTTPException(status_code=501,
-                             detail=f'modality {modality} not yet implemented')
+        filtered_features = [f for f in siibra.get_features(parcellation, modality_id) if f.id == feature_id]
+        if not filtered_features:
+            raise HTTPException(404, detail=f'feature with id {feature_id} not found.')
+
+        return JSONEncoder.encode(filtered_features[0], nested=True, detail=True)
+    except IndexError as e:
+        raise HTTPException(400, detail=f'IndexError: {str(e)}')
 
 
-@router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/features/{modality}',
-            tags=['parcellations'])
+@router.get('/{parcellation_id:path}/features/{modality_id}',
+            tags=['parcellations', 'features'],
+            response_model=List[ConnectivityMatrix.SiibraSerializationSchema])
+@memoize(typed=True)
 def get_single_global_feature(
         atlas_id: str,
         parcellation_id: str,
-        modality: str,
-        request: Request):
+        modality_id: ParcellationFeatureEnum):
     """
-    Returns a global feature for a parcellation, filtered by given modality.
+    # Get all parcellation features of a specific type
+
+    Returns a list of parcellation features specified by modality_id.
+
+
+    ## code sample
+
+    ```python
+    import siibra
+    from siibra.core import Atlas, Parcellation
+
+    atlas: Atlas = siibra.atlases[f'{atlas_id}']
+    parcellation: Parcellation = atlas.parcellations[f'{parcellation_id}']
+    siibra.get_features(parcellation, f'{modality_id}')
+    ```
     """
+
     try:
-        fs = get_global_features(atlas_id, parcellation_id, modality)
-        return [{
-            'src_name': f['src_name'],
-            'src_info': f['src_info'],
-        } for f in fs]
-    except NotImplementedError:
-        return HTTPException(status_code=501,
-                             detail=f'modality {modality} not yet implemented')
+        atlas: Atlas = siibra.atlases[atlas_id]
+        parcellation: Parcellation = atlas.parcellations[parcellation_id]
+        if siibra.features.modalities[modality_id].modality() not in [enum.value for enum in ParcellationFeatureEnum]:
+            raise HTTPException(400, detail=f'modality_id {modality_id} not a parcellation modality')
 
+        return JSONEncoder.encode(siibra.get_features(parcellation, modality_id), nested=True, detail=False)
+    except IndexError as e:
+        raise HTTPException(400, detail=f'IndexError: {str(e)}')
+    
 
-@router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/features',
-            tags=['parcellations'])
-def get_global_features_rest(
+class NamedModel(BaseModel):
+    name: ParcellationFeatureEnum
+
+@router.get('/{parcellation_id:path}/features',
+            tags=['parcellations', 'features'],
+            response_model=List[NamedModel])
+@memoize(typed=True)
+def get_global_feature_names(
         atlas_id: str,
-        parcellation_id: str,
-        request: Request):
+        parcellation_id: str):
     """
     # Get all types of global features
 
-    Returns all available types of global features for a parcellation.
+    Returns all available types of parcellation features for a parcellation.
+
+    ## code sample
+
+    ```python
+    import siibra
+    from siibra.features.feature import ParcellationFeature
+
+    parcellation_feature_types = [mod for mod in siibra.features.modalities if issubclass(mod._FEATURETYPE, ParcellationFeature) ]
+    ```
     """
-    validate_and_return_atlas(atlas_id)
-    validate_and_return_parcellation(parcellation_id)
-    result = {
-        'features': [
-            {
-                m.modality(): '{}atlases/{}/parcellations/{}/features/{}'.format(
-                    get_base_url_from_request(request),
-                    atlas_id.replace(
-                        '/',
-                        '%2F'),
-                    parcellation_id.replace(
-                        '/',
-                        '%2F'),
-                    m.modality()
-                )} for m in siibra.features.modalities  # TODO siibra.get_features(parcellation, 'all') - too slow at the moment
-        ]}
-
-    return jsonable_encoder(result)
+    
+    try:
+        # only required for validation
+        _atlas:Atlas = siibra.atlases[atlas_id]
+        _parcellation:Parcellation = _atlas.parcellations[parcellation_id]
+        return [{
+            'name': mod.value
+        } for mod in ParcellationFeatureEnum ]
+    except IndexError as e:
+        raise HTTPException(400, detail=f'IndexError: {str(e)}')
 
 
-@router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}',
+@router.get('/{parcellation_id:path}',
             tags=['parcellations'],
-            response_model=Parcellation.typed_json_output)
+            response_model=Parcellation.SiibraSerializationSchema)
+@memoize(typed=True)
 def get_parcellation_by_id(
         atlas_id: str,
         parcellation_id: str):

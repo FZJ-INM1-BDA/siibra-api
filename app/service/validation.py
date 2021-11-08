@@ -13,80 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import siibra
-from fastapi import HTTPException
-from siibra.core import Space, Parcellation, Region, Atlas
 
-def validate_and_return_atlas(atlas_id:str) -> Atlas:
-    """
-    Check if the given atlas id is valid and return an atlas object
-    If the atlas id is not valid, throw a HTTP 400 Exception
+# fastapi response_class=FileResponse does not 
+file_response_openapi = {
+    200: {
+        'content': {
+            'application/octet-stream': {
+                'schema': {
+                    'type': 'string',
+                    'format': 'binary'
+                }
+            }
+        }
+    }
+}
 
-    :param atlas_id: id that needs to be checked
-    :return: siibra atlas object
-    """
-    try:
-        return siibra.atlases[atlas_id]
-    except:
-        raise HTTPException(
-            status_code=400,
-            detail=f'atlas_id: {atlas_id} is not known'
-        )
-
-
-def validate_and_return_space(space_id:str, atlas:Atlas=None) -> Space:
-    """
-    Check if the given space id is valid and return a space object
-    If the space id is not valid, throw a HTTP 400 Exception
-
-    :param space_id: id that needs to be checked
-    :return: siibra space object
-    """
-    try:
-        if atlas is not None:
-            return atlas.spaces[space_id]
-        else:
-            return siibra.spaces[space_id]
-    except:
-        raise HTTPException(
-            status_code=400,
-            detail=f'space_id: {space_id} is not known'
-        )
-
-
-def validate_and_return_parcellation(parcellation_id:str, atlas:Atlas=None) -> Parcellation:
-    """
-    Check if the given parcellation id is valid and return a parcellation object
-    If the parcellation id is not valid, throw a HTTP 400 Exception
-
-    :param parcellation_id: id that needs to be checked
-    :return: siibra parcellation object
-    """
-    try:
-        if atlas is not None:
-            return atlas.parcellations[parcellation_id]
-        else:
-            return siibra.parcellations[parcellation_id]
-    except:
-        raise HTTPException(
-            status_code=400,
-            detail=f'parcellation_id: {parcellation_id} is not known'
-        )
-
-
-def validate_and_return_region(region_id: str, parcellation) -> Region:
-    """
-    Check if the given region id is valid and return a region object
-    If the region id is not valid, throw a HTTP 400 Exception
-
-    :param region_id: id that needs to be checked
-    :param parcellation: parcellation to search the region in
-    :return: siibra region object
-    """
-    try:
-        return parcellation.decode_region(region_id)
-    except:
-        raise HTTPException(
-            status_code=400,
-            detail=f'region: {region_id} is not known'
-        )

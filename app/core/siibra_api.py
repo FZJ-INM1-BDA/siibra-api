@@ -13,54 +13,56 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from enum import Enum
+from typing import List
 from fastapi import APIRouter
 from fastapi.encoders import jsonable_encoder
+from pydantic.main import BaseModel
 import siibra
+from siibra.core.jsonable import SiibraSerializable
 
 # FastApi router to create rest endpoints
 router = APIRouter()
 
 
-class ModalityType(str, Enum):
-    """
-    A class for modality type, to provide selection options to swagger
-    """
-    ReceptorDistribution = 'ReceptorDistribution'
-    GeneExpression = 'GeneExpression'
-    ConnectivityProfile = 'ConnectivityProfile'
-    ConnectivityMatrix = 'ConnectivityMatrix'
-
-
-# region === features
-
-@router.get('/genes', tags=['data'])
+@router.get('/genes',
+            tags=['data'],
+            response_model=List[str])
 def get_gene_names():
     """
+    # Returns all gene names
+
     Return all genes (name, acronym) in siibra
+
+    ## code sample
+
+    ```python
+    import siibra
+    gene_names: List[str] = [name for name in siibra.features.gene_names]
+    ```
     """
-    # genes = features.genes.AllenBrainAtlasQuery.GENE_NAMES
-    genes = []
-    for gene in siibra.features.gene_names:
-        genes.append(gene)
-    return jsonable_encoder({'genes': genes})
+    return [ g for g in siibra.features.gene_names ]
 
 
-@router.get('/features', tags=['data'])
+class ModalitySchema(BaseModel):
+    name: str
+    supported: bool
+
+
+@router.get('/features',
+            tags=['data'],
+            response_model=List[ModalitySchema])
 def get_all_available_modalities():
     """
-    Return all possible modalities
-    """
-    def get_feature_type(ft):
-        if issubclass(ft, siibra.features.feature.SpatialFeature):
-            return 'SpatialFeature'
-        if issubclass(ft, siibra.features.feature.RegionalFeature):
-            return 'RegionalFeature'
-        if issubclass(ft, siibra.features.feature.ParcellationFeature):
-            return 'ParcellationFeature'
-        return 'UnknownFeatureType'
-    return [{
-        'name': feature_name.modality(),
-        'type': get_feature_type(feature_name._FEATURETYPE)
-    } for feature_name in siibra.features.modalities]
+    # List of all possible modalities
 
+    Return all possible modalities, and if they are supported in siibra-api.
+
+    ## code sample
+    ```python
+    import siibra
+
+    siibra.features.modalities
+    ```
+    """
+    return [ ModalitySchema(name=mod.modality(), supported=issubclass(mod._FEATURETYPE, SiibraSerializable))
+        for mod in siibra.features.modalities]

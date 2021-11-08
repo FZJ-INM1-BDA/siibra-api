@@ -1,136 +1,186 @@
-from typing import Optional
-from fastapi import APIRouter, Request, HTTPException
-from fastapi.encoders import jsonable_encoder
-from siibra.retrieval.requests import HttpRequest
+from enum import Enum
+import hashlib
+from typing import List, Optional, Union
+from siibra.core.jsonable import SiibraSerializable
+from siibra.features.connectivity import ConnectivityProfile
+from siibra.features.ebrains import EbrainsRegionalDataset
+from siibra.features.receptors import ReceptorDistribution
+
 from starlette.responses import FileResponse
-from app.service.validation import validate_and_return_atlas, validate_and_return_parcellation, \
-    validate_and_return_space, validate_and_return_region
-from app.service.request_utils import get_base_url_from_request, get_path_to_regional_map, get_regional_feature, siibra_custom_json_encoder
-from app.configuration.diskcache import memoize
+from fastapi import APIRouter, HTTPException
+
+from pydantic import BaseModel
 
 import siibra
 from siibra.core import Atlas, Parcellation, Space, Region
 from siibra.core.json_encoder import JSONEncoder
+from siibra.features.feature import RegionalFeature
+
+from app.service.validation import file_response_openapi
+from app.service.request_utils import get_cached_file_path, fix_nii_for_neuroglancer
+from app.configuration.diskcache import memoize
+
 from app import logger
 
-router = APIRouter()
 
-@router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features',
-            tags=['regions'])
+router = APIRouter(
+    prefix='/regions'
+)
+
+
+# Required for correct typing
+class ReceptorDistributionSchema(ReceptorDistribution.SiibraSerializationSchema): pass
+class EbrainsDatasetSchema(EbrainsRegionalDataset.SiibraSerializationSchema): pass
+ConnectivitySchema = ConnectivityProfile.SiibraSerializationSchema
+RegionalFeatureModel = Union[
+    ReceptorDistributionSchema,
+    EbrainsDatasetSchema,
+    ConnectivitySchema,
+]
+
+
+RegionalFeatureEnum = Enum('RegionalFeatureEnum', {
+    mod.modality(): mod.modality() for mod in siibra.features.modalities
+        if issubclass(mod._FEATURETYPE, RegionalFeature)
+        and issubclass(mod._FEATURETYPE, SiibraSerializable)
+})
+
+
+class RegionalFeatureName(BaseModel):
+    name: RegionalFeatureEnum
+
+
+@router.get('/{region_id:path}/features',
+            tags=['regions', 'features'],
+            response_model=List[RegionalFeatureName])
 def get_all_features_for_region(
-        request: Request,
         atlas_id: str,
         parcellation_id: str,
         region_id: str):
     """
-    Returns all regional features for a region.
+    # Get all types of regional features
+
+    Returns all available types of regional features.
+
+    ## code sample
+
+    ```python
+    import siibra
+    from siibra.features.feature import RegionalFeature
+
+    regional_feature_types = [mod for mod in siibra.features.modalities if issubclass(mod._FEATURETYPE, RegionalFeature) ]
+    ```
     """
     try:
         atlas: Atlas = siibra.atlases[atlas_id]
         parcellation: Parcellation = atlas.parcellations[parcellation_id]
-        region: Region = parcellation.decode_region(region_id)
-
-        return {
-        'features': [
-            {
-                feature_name: '{}atlases/{}/parcellations/{}/regions/{}/features/{}'.format(
-                    get_base_url_from_request(request),
-                    atlas_id.replace(
-                        '/',
-                        '%2F'),
-                    parcellation_id.replace(
-                        '/',
-                        '%2F'),
-                    region_id.replace(
-                        '/',
-                        '%2F'),
-                    feature_name
-                )
-            } for feature_name in siibra.get_features(region, 'all')]}
+        region: Region = parcellation.find_regions(region_id)[0]
+        
+        return [{
+            'name': mod.value
+        } for mod in RegionalFeatureEnum]
     except IndexError as e:
         raise HTTPException(401, detail=f'IndexError: {str(e)}')
     except Exception as e:
-        raise HttpRequest(500, detail=f'Uh oh, something went wrong. {str(e)}')
+        raise HTTPException(500, detail=f'Uh oh, something went wrong. {str(e)}')
 
 
-
-# TODO - can maybe be removed
-# negative: need to be able to fetch region specific feature. XG
-@router.get(
-    '/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality}/{feature_id:path}',
-    tags=['regions'])
+@router.get('/{region_id:path}/features/{modality_id}/{feature_id:path}',
+    tags=['regions', 'features'],
+    response_model=RegionalFeatureModel)
 @memoize(typed=True)
 def get_regional_modality_by_id(
         atlas_id: str,
         parcellation_id: str,
         region_id: str,
-        modality: str,
+        modality_id: RegionalFeatureEnum,
         feature_id: str,
         gene: Optional[str] = None):
     """
-    Returns a feature for a region, as defined by by the modality and feature ID
+    # Get details of a regional features of a specific feature_id
+
+    Returns details of a regional feature specified by the feature_id and the modality_id.
+
+
+    ## code sample
+
+    ```python
+    import siibra
+    from siibra.core import Atlas, Parcellation, Region
+
+    atlas: Atlas = siibra.atlases[f'{atlas_id}']
+    parcellation: Parcellation = atlas.parcellations[f'{parcellation_id}']
+    region: Region = parcellation.find_regions(f'{region_id}')[0]
+    features = siibra.get_features(region, f'{modality_id}')
+    feature = [f for f in features if f.id == feature_id][0]
+    ```
     """
-    regional_features = get_regional_feature(
-        atlas_id, parcellation_id, region_id, modality, feature_id=feature_id, detail=True, gene=gene)
-    if len(regional_features) == 0:
-        raise HTTPException(
-            status_code=404,
-            detail=f'modality with id {feature_id} not found')
-    if len(regional_features) != 1:
-        raise HTTPException(
-            status_code=400,
-            detail=f'modality with id {feature_id} has multiple matches')
-    return jsonable_encoder(regional_features[0],
-        custom_encoder=siibra_custom_json_encoder)
+    try:
+        atlas: Atlas = siibra.atlases[f'{atlas_id}']
+        parcellation: Parcellation = atlas.parcellations[f'{parcellation_id}']
+        region: Region = parcellation.find_regions(f'{region_id}')[0]
+        
+        if siibra.features.modalities[f'{modality_id}'] not in [mod for mod in siibra.features.modalities if issubclass(mod._FEATURETYPE, RegionalFeature) ]:
+            raise HTTPException(400, detail=f'modality_id {modality_id} not a regional modality')
+        
+        features = siibra.get_features(region, f'{modality_id}')
+        feature = [f for f in features if f.id == feature_id][0]
+        return JSONEncoder.encode(feature, nested=True, detail=True)
+    except IndexError as e:
+        raise HTTPException(400, detail=f'IndexError: {str(e)}')
 
 
-# TODO - can maybe be removed
-# negative: need to be able to fetch region specific feature. XG
-@router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/features/{modality}',
-            tags=['regions'])
+@router.get('/{region_id:path}/features/{modality_id}',
+            tags=['regions', 'features'],
+            response_model=List[RegionalFeatureModel])
 @memoize(typed=True)
 def get_feature_modality_for_region(
         atlas_id: str,
         parcellation_id: str,
         region_id: str,
-        modality: str,
+        modality_id: RegionalFeatureEnum,
         gene: Optional[str] = None):
     """
-    Returns list of the features for a region, as defined by the modality.
+    # Get all regional features of a specific type
+
+    Returns a list of all regional features of specified by the modality_id.
+
+
+    ## code sample
+
+    ```python
+    import siibra
+    from siibra.core import Atlas, Parcellation, Region
+
+    atlas: Atlas = siibra.atlases[f'{atlas_id}']
+    parcellation: Parcellation = atlas.parcellations[f'{parcellation_id}']
+    region: Region = parcellation.find_regions(f'{region_id}')[0]
+    features = siibra.get_features(region, f'{modality_id}')
+    ```
     """
-    regional_features = get_regional_feature(
-        atlas_id, parcellation_id, region_id, modality, detail=False, gene=gene)
 
-    return regional_features
-
-
-def parse_region_selection(
-        atlas_id: str,
-        parcellation_id: str,
-        region_id: str,
-        space_id: str):
-    if space_id is None:
-        raise HTTPException(
-            status_code=400,
-            detail='space_id is required for this functionality')
-
-    space_of_interest = validate_and_return_space(space_id)
-    validate_and_return_atlas(atlas_id)
-    parcellation = validate_and_return_parcellation(parcellation_id)
-    region = validate_and_return_region(region_id, parcellation)
-    if region is None:
-        raise HTTPException(
-            status_code=404,
-            detail=f'cannot find region with spec {region_id}')
-    # if len(region) > 1:
-    #     raise HTTPException(
-    #         status_code=400,
-    #         detail=f'found multiple region withs pec {region_id}')
-    return region, space_of_interest
+    try:
+        atlas: Atlas = siibra.atlases[f'{atlas_id}']
+        parcellation: Parcellation = atlas.parcellations[f'{parcellation_id}']
+        region: Region = parcellation.find_regions(f'{region_id}')[0]
+        
+        if siibra.features.modalities[f'{modality_id}'] not in [mod for mod in siibra.features.modalities if issubclass(mod._FEATURETYPE, RegionalFeature) ]:
+            raise HTTPException(400, detail=f'modality_id {modality_id} not a regional modality')
+        
+        features = siibra.get_features(region, f'{modality_id}')
+        return JSONEncoder.encode(features, nested=True, detail=False)
+    except IndexError as e:
+        raise HTTPException(400, detail=f'IndexError: {str(e)}')
 
 
-@router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/regional_map/info',
-            tags=['regions'])
+class MinMaxModel(BaseModel):
+    min: float
+    max: float
+
+
+@router.get('/{region_id:path}/regional_map/info',
+            tags=['regions'],
+            response_model=MinMaxModel)
 @memoize(typed=True)
 def get_regional_map_info(
         atlas_id: str,
@@ -140,28 +190,32 @@ def get_regional_map_info(
     """
     Returns information about a regional map for given region name.
     """
-    validate_and_return_atlas(atlas_id)
-    parcellation = validate_and_return_parcellation(parcellation_id)
-    region = validate_and_return_region(region_id, parcellation)
-    region.get_regional_map("mni152", siibra.MapType.CONTINUOUS)
+    atlas: Atlas = siibra.atlases[f'{atlas_id}']
+    parcellation: Parcellation = atlas.parcellations[f'{parcellation_id}']
+    space: Space = atlas.spaces[f'{space_id}']
+    region: Region = parcellation.find_regions(f'{region_id}')[0]
 
-    roi, space_of_interest = parse_region_selection(
-        atlas_id, parcellation_id, region_id, space_id)
-    query_id = f'{atlas_id}{parcellation_id}{roi.name}{space_id}'
-    cached_fullpath = get_path_to_regional_map(
-        query_id, roi, space_of_interest)
+    query_id = f'{atlas_id}{parcellation_id}{region.name}{space_id}'
+    cached_filename = str(hashlib.sha256(query_id.encode('utf-8')).hexdigest()) + '.nii.gz'
+
     import nibabel as nib
     import numpy as np
+    def get_nii_and_save(full_path):
+        regional_map = region.get_regional_map(space, siibra.commons.MapType.CONTINUOUS)
+        ng_fixed_nii = fix_nii_for_neuroglancer(regional_map.image)
+        nib.save(ng_fixed_nii, full_path)
+    cached_fullpath = get_cached_file_path(cached_filename, get_nii_and_save)
+        
     nii = nib.load(cached_fullpath)
-    data = nii.get_fdata()
     return {
-        'min': np.min(data),
-        'max': np.max(data),
+        'min': np.min(nii.dataobj),
+        'max': np.max(nii.dataobj),
     }
 
 
-@router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/regional_map/map',
-            tags=['regions'])
+@router.get('/{region_id:path}/regional_map/map',
+            tags=['regions'],
+            responses=file_response_openapi)
 @memoize(typed=True)
 def get_regional_map_file(
         atlas_id: str,
@@ -169,19 +223,48 @@ def get_regional_map_file(
         region_id: str,
         space_id: Optional[str] = None):
     """
-    Returns a regional map for given region name.
+    # Get the probalistic map of the region of interest
+
+    Get the probalistic map of the region of interest as a NiFTi .nii.gz file.
+
+    ## code sample
+    ```python
+    from siibra.core import Atlas, Space
+    import siibra
+    import nibabel as nib
+
+    atlas: Atlas = siibra.atlases[f'{atlas_id}']
+    parcellation: Parcellation = atlas.parcellations[f'{parcellation_id}']
+    space: Space = atlas.spaces[f'{space_id}']
+    region: Region = parcellation.find_regions(f'{region_id}')[0]
+    
+    regional_map = region.get_regional_map(space, siibra.commons.MapType.CONTINUOUS)
+    nib.save(regional_map.image, 'continuous.nii.gz')
+    ```
     """
-    roi, space_of_interest = parse_region_selection(
-        atlas_id, parcellation_id, region_id, space_id)
-    query_id = f'{atlas_id}{parcellation_id}{roi.name}{space_id}'
-    cached_fullpath = get_path_to_regional_map(
-        query_id, roi, space_of_interest)
-    return FileResponse(cached_fullpath, media_type='application/octet-stream')
+    try:
+        atlas: Atlas = siibra.atlases[f'{atlas_id}']
+        parcellation: Parcellation = atlas.parcellations[f'{parcellation_id}']
+        space: Space = atlas.spaces[f'{space_id}']
+        region: Region = parcellation.find_regions(f'{region_id}')[0]
+
+        query_id = f'{atlas_id}{parcellation_id}{region.name}{space_id}'
+        cached_filename = str(hashlib.sha256(query_id.encode('utf-8')).hexdigest()) + '.nii.gz'
+        def get_nii_and_save(full_path):
+            import nibabel as nib
+            regional_map = region.get_regional_map(space, siibra.commons.MapType.CONTINUOUS)
+            ng_fixed_nii = fix_nii_for_neuroglancer(regional_map.image)
+            nib.save(ng_fixed_nii, full_path)
+        cached_fullpath = get_cached_file_path(cached_filename, get_nii_and_save)
+        
+        return FileResponse(cached_fullpath, media_type='application/octet-stream')
+    except IndexError as e:
+        raise HTTPException(400, detail=f'IndexError: {str(e)}')
 
 
-@router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}',
+@router.get('/{region_id:path}',
             tags=['regions'],
-            response_model=Region.typed_json_output)
+            response_model=Region.SiibraSerializationSchema)
 def get_region_by_name_api(
         atlas_id: str,
         parcellation_id: str,

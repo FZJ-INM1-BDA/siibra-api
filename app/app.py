@@ -14,8 +14,6 @@
 # limitations under the License.
 
 import os
-from typing import Dict, Optional
-from typing_extensions import TypedDict
 
 import requests
 import json
@@ -24,17 +22,15 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.security import HTTPBearer
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi_versioning import VersionedFastAPI
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.utils import get_openapi
 
+from fastapi_versioning import VersionedFastAPI
+
 from app.core.siibra_api import router as siibra_router
 from app.core.atlas_api import router as atlas_router
-from app.core.space_api import router as space_router
 from app.service.health import router as health_router
-from app.core.parcellation_api import router as parcellation_router
-from app.core.region_api import router as region_router
 from app.configuration.ebrains_token import get_public_token
 from app.configuration.siibra_custom_exception import SiibraCustomException
 from . import logger
@@ -67,6 +63,10 @@ tags_metadata = [
         "name": "data",
         "description": "Further information like, genes, features, ...",
     },
+    {
+        "name": "features",
+        "description": "All feature related queries",
+    },
 ]
 
 ATLAS_PATH = '/atlases'
@@ -76,14 +76,11 @@ siibra_version_header='x-siibra-api-version'
 app = FastAPI(
     title="Siibra API",
     description="This is the REST api for siibra tools",
-    version="1.0",
+    version=__version__,
     openapi_tags=tags_metadata
 )
 # Add a siibra router with further endpoints
-app.include_router(parcellation_router, prefix=ATLAS_PATH)
-app.include_router(space_router, prefix=ATLAS_PATH)
-app.include_router(atlas_router, prefix=ATLAS_PATH)
-app.include_router(region_router, prefix=ATLAS_PATH)
+app.include_router(atlas_router)
 app.include_router(siibra_router)
 app.include_router(health_router)
 
@@ -129,6 +126,10 @@ def patch_code_samples():
             for path_key in openapi_schema['paths']:
                 for method in openapi_schema['paths'][path_key]:
                     description:str = openapi_schema['paths'][path_key][method].get('description')
+
+                    # if docstring is not provided, skip
+                    if not description:
+                        continue
 
                     description = re.sub(preceding_nl_re, '', description)
                     if description[0] == '#':

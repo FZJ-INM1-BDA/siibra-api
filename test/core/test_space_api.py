@@ -4,9 +4,6 @@ from fastapi.testclient import TestClient
 
 from app.app import app
 
-import siibra
-# from siibra import region
-
 client = TestClient(app)
 
 ATLAS_ID = 'juelich/iav/atlas/v1.0.0/1'
@@ -20,8 +17,6 @@ INVALID_SPACE_ID = 'INVALID_SPACE_ID'
 #
 #
 # region.RegionProps = MockRegionProps
-
-get_file_from_nibabel = {}
 
 
 def test_get_all_spaces():

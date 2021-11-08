@@ -35,20 +35,22 @@ class TestRequestUtils(unittest.TestCase):
         atlas = siibra.atlases['human']
         self.assertEqual(atlas.name, 'Multilevel Human Atlas')
 
-    def test_get_regional_feature_with_wrong_modality(self):
-        with self.assertRaises(HTTPException):
-            hits = request_utils.get_regional_feature(atlas_id=self.ATLAS_ID, parcellation_id=self.PARCELLATION_NAME, modality_id=self.MODALITY_INVALID, region_id=self.REGION_NAME_VALID)
 
-    def test_get_regional_feature_with_wrong_region(self):
+    # TODO move to e2e tests
+    # def test_get_regional_feature_with_wrong_modality(self):
+    #     with self.assertRaises(HTTPException):
+    #         hits = request_utils.get_regional_feature(atlas_id=self.ATLAS_ID, parcellation_id=self.PARCELLATION_NAME, modality_id=self.MODALITY_INVALID, region_id=self.REGION_NAME_VALID)
 
-        with self.assertRaises(HTTPException):
-            hits = request_utils.get_regional_feature(atlas_id=self.ATLAS_ID, parcellation_id=self.PARCELLATION_NAME, modality_id=self.MODALITY_VALID, region_id=self.REGION_NAME_INVALID)
+    # def test_get_regional_feature_with_wrong_region(self):
 
-    def test_get_regional_feature_with_valid_values(self):
+    #     with self.assertRaises(HTTPException):
+    #         hits = request_utils.get_regional_feature(atlas_id=self.ATLAS_ID, parcellation_id=self.PARCELLATION_NAME, modality_id=self.MODALITY_VALID, region_id=self.REGION_NAME_INVALID)
 
-        hits = request_utils.get_regional_feature(atlas_id=self.ATLAS_ID, parcellation_id=self.PARCELLATION_NAME, modality_id=self.MODALITY_VALID, region_id=self.REGION_NAME_VALID)
-        self.assertTrue(len(hits) != 0)
-        self.assertTrue(all([ hit['@id'] is not None for hit in hits]))
+    # def test_get_regional_feature_with_valid_values(self):
+
+    #     hits = request_utils.get_regional_feature(atlas_id=self.ATLAS_ID, parcellation_id=self.PARCELLATION_NAME, modality_id=self.MODALITY_VALID, region_id=self.REGION_NAME_VALID)
+    #     self.assertTrue(len(hits) != 0)
+    #     self.assertTrue(all([ hit['@id'] is not None for hit in hits]))
 
     def test_get_all_parcellations_for_space(self):
         pass
@@ -61,29 +63,6 @@ class TestRequestUtils(unittest.TestCase):
         # TODO error on function supports_space
         # spaces = request_utils.get_spaces_for_parcellation(self.PARCELLATION_NAME)
         # self.assertGreater(len(spaces), 0)
-
-    # disabled awaiting fix of ieeg_electrode_extractor and ieeg_contact_point extractor in siibra-python
-
-    # def test_get_spatial_features_ieeg_electrode(self):
-    #     features=request_utils.get_spatial_features(
-    #         self.ATLAS_ID,
-    #         self.MNI152_SPACE_ID,
-    #         self.IEEG_ELECTRODE_MODALITY,
-    #         parc_id=self.JULICH_BRAIN_29_ID,
-    #         region_id=self.FP1_RIGHT)
-
-    #     self.assertGreater(len(features), 0)
-
-    #TODO find error
-    # def test_get_spatial_features_ieeg_dataset(self):
-    #     features = request_utils.get_spatial_features(
-    #         self.ATLAS_ID,
-    #         self.MNI152_SPACE_ID,
-    #         self.IEEG_DATASET_MODALITY,
-    #         parc_id=self.JULICH_BRAIN_29_ID,
-    #         region_id=self.FP1_RIGHT)
-    #
-    #     self.assertGreater(len(features), 0)
 
     def test_base_url_without_redirect(self):
         self.request_mock.headers = {
@@ -105,26 +84,6 @@ class TestRequestUtils(unittest.TestCase):
 
         url = request_utils.get_base_url_from_request(self.request_mock)
         self.assertEqual(url, 'https://localhost/v1_0/')
-
-
-#TODO find error
-    # def test_get_path_to_regional_map(self):
-    #     atlas = siibra.atlases['human']
-    #     assert atlas is not None
-    #
-    #     region = atlas.get_region('hoc1 left')
-    #     assert region is not None
-    #
-    #     space_of_interest = siibra.spaces[self.SPACE_NAME]
-    #     assert space_of_interest is not None
-    #
-    #     path_to_file = request_utils.get_path_to_regional_map('tmp_req_id', region, space_of_interest)
-    #     assert path_to_file is not None
-    #
-    #     import nibabel as nib
-    #     nii = nib.load(path_to_file)
-    #     assert nii is not None
-
 
 if __name__ == '__main__':
     unittest.main()

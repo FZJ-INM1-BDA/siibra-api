@@ -22,11 +22,20 @@ from siibra.core.json_encoder import JSONEncoder
 from siibra.core import Atlas
 
 # FastApi router to create rest endpoints
-router = APIRouter()
+router = APIRouter(
+    prefix='/atlases'
+)
 
+from .parcellation_api import router as parcellation_router
+from .space_api import router as space_router
+
+router.include_router(space_router, prefix="/{atlas_id:path}")
+router.include_router(parcellation_router, prefix="/{atlas_id:path}")
 
 # region === atlases
-@router.get('', tags=['atlases'], response_model=List[Atlas.typed_json_output])
+@router.get('',
+            tags=['atlases'],
+            response_model=List[Atlas.SiibraSerializationSchema])
 @version(1)
 def get_all_atlases():
     """
@@ -45,7 +54,9 @@ def get_all_atlases():
     return [JSONEncoder.encode(atlas, nested=True) for atlas in siibra.atlases]
 
 
-@router.get('/{atlas_id:path}', tags=['atlases'], response_model=Atlas.typed_json_output)
+@router.get('/{atlas_id:path}',
+            tags=['atlases'],
+            response_model=Atlas.SiibraSerializationSchema)
 @version(1)
 def get_atlas_by_id(atlas_id: str):
     """
