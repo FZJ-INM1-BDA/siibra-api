@@ -35,7 +35,7 @@ def test_get_one_space():
     assert result_content['name'] == 'MNI152 2009c nonl asym'
     # TODO: Strange error. KeyError: 'name' when calling parcellation.supports_space
     # no error on second call
-    # assert len(result_content['availableParcellations']) > 0
+    assert len(result_content['availableParcellations']) > 0
 
 
 def test_get_invalid_space():

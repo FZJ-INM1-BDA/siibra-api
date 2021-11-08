@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Template
 metadata:
-  name: siibra-api-branch-deploy
+  name: siibra-api-branch-deploy-v2
   annotations:
     description: "Deploy branch of siibra-api"
     tags: "python,fastapi,siibra-api"
@@ -9,19 +9,19 @@ objects:
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
-    name: siibra-api-branch-deploy-${DEPLOY_FLAVOUR}
+    name: siibra-api-branch-deploy-v2-${DEPLOY_FLAVOUR}
     labels:
-      app: siibra-api-branch-deploy-${DEPLOY_FLAVOUR}
+      app: siibra-api-branch-deploy-v2-${DEPLOY_FLAVOUR}
   spec:
     replicas: 3
     revisionHistoryLimit: 10
     selector:
-      deploymentconfig: siibra-api-branch-deploy-${DEPLOY_FLAVOUR}
+      deploymentconfig: siibra-api-branch-deploy-v2-${DEPLOY_FLAVOUR}
     template:
       metadata:
         labels:
           app: siibra-api-branch-deploy
-          deploymentconfig: siibra-api-branch-deploy-${DEPLOY_FLAVOUR}
+          deploymentconfig: siibra-api-branch-deploy-v2-${DEPLOY_FLAVOUR}
       spec:
         containers:
         - env:
@@ -58,21 +58,21 @@ objects:
           # or use startupProbe (openshift 4.4+) to allow >600 sec container startup time
           livenessProbe:
             failureThreshold: 10
-            httpGet:
-              path: /
-              port: 5000
-              scheme: HTTP
-            initialDelaySeconds: 580
+            exec:
+              command:
+              - pytest
+              - ./e2e_tests/
+            initialDelaySeconds: 10
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 10
           readinessProbe:
             failureThreshold: 10
-            httpGet:
-              path: /
-              port: 5000
-              scheme: HTTP
-            initialDelaySeconds: 300
+            exec:
+              command:
+              - pytest
+              - ./e2e_tests/
+            initialDelaySeconds: 10
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 10
@@ -95,8 +95,8 @@ objects:
   kind: Service
   metadata:
     labels:
-      app: siibra-api-branch-deploy-${DEPLOY_FLAVOUR}
-    name: siibra-api-branch-deploy-${DEPLOY_FLAVOUR}
+      app: siibra-api-branch-deploy-v2-${DEPLOY_FLAVOUR}
+    name: siibra-api-branch-deploy-v2-${DEPLOY_FLAVOUR}
   spec:
     ports:
     - name: 5000-tcp
@@ -104,14 +104,14 @@ objects:
       protocol: TCP
       targetPort: 5000
     selector:
-      deploymentconfig: siibra-api-branch-deploy-${DEPLOY_FLAVOUR}
+      deploymentconfig: siibra-api-branch-deploy-v2-${DEPLOY_FLAVOUR}
     type: ClusterIP
 - apiVersion: v1
   kind: Route
   metadata:
     labels:
-      app: siibra-api-branch-deploy-${DEPLOY_FLAVOUR}
-    name: siibra-api-branch-deploy-${DEPLOY_FLAVOUR}
+      app: siibra-api-branch-deploy-v2-${DEPLOY_FLAVOUR}
+    name: siibra-api-branch-deploy-v2-${DEPLOY_FLAVOUR}
   spec:
     host: siibra-api-${DEPLOY_FLAVOUR}.apps${DEPLOY_SITE_POSTFIX}.hbp.eu
     port:
@@ -121,7 +121,7 @@ objects:
       termination: edge
     to:
       kind: Service
-      name: siibra-api-branch-deploy-${DEPLOY_FLAVOUR}
+      name: siibra-api-branch-deploy-v2-${DEPLOY_FLAVOUR}
       weight: 100
     wildcardPolicy: None
 
@@ -145,4 +145,4 @@ parameters:
   value: ''
 
 labels:
-  template: siibra-api-branch-deploy-template
+  template: siibra-api-branch-deploy-template-v2
