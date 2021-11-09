@@ -1,213 +1,159 @@
-import unittest
 from urllib.parse import quote, quote_plus
-import json
 from .util import Session
 import os
-
-MULTILEVEL_HUMAN_ATLAS_ID='juelich/iav/atlas/v1.0.0/1'
-
-ICBM_152_SPACE_ID = 'minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2'
-
-JULICH_BRAIN_V29_PARC_ID='minds/core/parcellationatlas/v1.0.0/94c1125b-b87e-45e4-901c-00daee7f2579-290'
-
-BASAL_REGION_NAME = 'basal forebrain'
-HOC1_LEFT_REGION_NAME = 'Area hOc1 (V1, 17, CalcS) left'
-HOC1_RIGHT_REGION_NAME = 'Area hOc1 (V1, 17, CalcS) right'
-SF_AMY_LEFT_REGION_NAME = 'SF (Amygdala) left '
-INVALID_REGION_NAME = 'foobar pizza'
-
-EBRAINS_REGIONAL_DATASET_MODALITY_NAME = 'EbrainsRegionalDataset'
+import pytest
 
 base_url=os.getenv('SIIBRA_API_E2E_BASE_URL', 'http://localhost:5000')
 client = Session(base_url=base_url)
 
-class TestSingleRegion(unittest.TestCase):
+FS_AVERAGE_SPACE_ID='minds/core/referencespace/v1.0.0/tmp-fsaverage'
+MULTILEVEL_HUMAN_ATLAS_ID='juelich/iav/atlas/v1.0.0/1'
+ICBM_152_SPACE_ID = 'minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2'
+JULICH_BRAIN_V29_PARC_ID='minds/core/parcellationatlas/v1.0.0/94c1125b-b87e-45e4-901c-00daee7f2579-290'
+HOC1_LEFT_REGION_NAME = 'Area hOc1 (V1, 17, CalcS) left'
+SF_AMY_LEFT_REGION_NAME = 'SF (Amygdala) left '
+INVALID_REGION_NAME = 'INVALID_REGION'
 
-    def test_get_one_region_for_parcellation_without_extra_data(self):
-        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}'.format(
-            quote(MULTILEVEL_HUMAN_ATLAS_ID),
-            # nb must not be quote()
-            quote_plus(JULICH_BRAIN_V29_PARC_ID),
-            quote(BASAL_REGION_NAME)))
-        result_content = json.loads(response.content)
-        assert response.status_code == 200
-        assert result_content['name'] == BASAL_REGION_NAME
+expected_hoc1_detail = {
+  "@id": "minds/core/parcellationregion/v1.0.0/5151ab8f-d8cb-4e67-a449-afe2a41fb007",
+  "@type": "minds/core/parcellationregion/v1.0.0",
+  "name": "Area hOc1 (V1, 17, CalcS) left",
+  "children": [],
+  "rgb": [
+    190,
+    132,
+    147
+  ],
+  'volumes': [{
+    '@id': 'fzj/tmp/volume_type/v0.0.1/Area-hOc1-lh-colin',
+    '@type': 'fzj/tmp/volume_type/v0.0.1',
+    'detail': {},
+    'id': 'fzj/tmp/volume_type/v0.0.1/Area-hOc1-lh-colin',
+    'name': 'Probabilistic map of Area hOc1 (V1, 17, CalcS)',
+    'type_id': 'fzj/tmp/volume_type/v0.0.1',
+    'url': 'https://neuroglancer.humanbrainproject.eu/precomputed/data-repo-ng-bot/20210616-julichbrain-v2.9.0-complete-mpm/PMs/Area-hOc1/4.2/Area-hOc1_l_N10_nlin2Stdcolin27_4.2_publicP_026bcbe494dc4bfe702f2b1cc927a7c1.nii.gz',
+    'volume_type': 'nii'
+  },{
+    '@id': 'fzj/tmp/volume_type/v0.0.1/Area-hOc1-lh-mni152',
+    '@type': 'fzj/tmp/volume_type/v0.0.1',
+    'detail': {},
+    'id': 'fzj/tmp/volume_type/v0.0.1/Area-hOc1-lh-mni152',
+    'name': 'Probabilistic map of Area hOc1 (V1, 17, CalcS)',
+    'type_id': 'fzj/tmp/volume_type/v0.0.1',
+    'url': 'https://neuroglancer.humanbrainproject.eu/precomputed/data-repo-ng-bot/20210616-julichbrain-v2.9.0-complete-mpm/PMs/Area-hOc1/4.2/Area-hOc1_l_N10_nlin2ICBM152asym2009c_4.2_publicP_026bcbe494dc4bfe702f2b1cc927a7c1.nii.gz',
+    'volume_type': 'nii'
+  }],
+  "infos": [
+    {
+      "@id": "5c669b77-c981-424a-858d-fe9f527dbc07",
+      "@type": "minds/core/dataset/v1.0.0",
+      "id": "5c669b77-c981-424a-858d-fe9f527dbc07",
+      "name": "Probabilistic cytoarchitectonic map of Area hOc1 (V1, 17, CalcS) (v2.4)",
+      "description": "This dataset contains the distinct architectonic Area hOc1 (V1, 17, CalcS) in the individual, single subject template of the MNI Colin 27 as well as the MNI ICBM 152 2009c nonlinear asymmetric reference space. As part of the Julich-Brain cytoarchitectonic atlas, the area was identified using cytoarchitectonic analysis on cell-body-stained histological sections of 10 human postmortem brains obtained from the body donor program of the University of Düsseldorf. The results of the cytoarchitectonic analysis were then mapped to both reference spaces, where each voxel was assigned the probability to belong to Area hOc1 (V1, 17, CalcS). The probability map of Area hOc1 (V1, 17, CalcS) are provided in the NifTi format for each brain reference space and hemisphere. The Julich-Brain atlas relies on a modular, flexible and adaptive framework containing workflows to create the probabilistic brain maps for these structures. Note that methodological improvements and integration of new brain structures may lead to small deviations in earlier released datasets.\n\nOther available data versions of Area hOc1 (V1, 17, CalcS):\nAmunts et al. (2018) [Data set, v2.2] [DOI: 10.25493/8VRA-X28](https://doi.org/10.25493%2F8VRA-X28)\n\nThe most probable delineation of Area hOc1 (V1, 17, CalcS) derived from the calculation of a maximum probability map of all currently released Julich-Brain brain structures can be found here:\nAmunts et al. (2019) [Data set, v1.13] [DOI: 10.25493/Q3ZS-NV6](https://doi.org/10.25493%2FQ3ZS-NV6)\nAmunts et al. (2019) [Data set, v1.18] [DOI: 10.25493/8EGG-ZAR](https://doi.org/10.25493%2F8EGG-ZAR)\nAmunts et al. (2020) [Data set, v2.2] [DOI: 10.25493/TAKY-64D](https://doi.org/10.25493%2FTAKY-64D)",
+      "urls": [
+        {
+          "cite": None,
+          "doi": "10.25493/MXJ6-6DH"
+        }
+      ]
+    }
+  ],
+  "label": 8,
+  'centroids': None,
+  'hasRegionalMap': None
+}
 
+hoc1_left_icbm = {
+  "centroids": [
+    {
+      "@id": "69a85b6ac4bfa2c5a890eab3cb706020",
+      "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+      "coordinateSpace": {
+        "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+        "@type": "minds/core/referencespace/v1.0.0",
+        "name": "MNI152 2009c nonl asym",
+        "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+        "type_id": "minds/core/referencespace/v1.0.0",
+        "volume_type": None,
+        "volumes": None,
+      },
+      'coordinates': [
+          {
+              '@id': '63711742e03a64fe97435bc56d0c488c',
+              '@type': 'https://openminds.ebrains.eu/core/dQuantitativeValue',
+              'unit': {'@id': 'id.link/mm'},
+              'value': -8.515510862347028
+          },{
+              '@id': '6ab0a050ff09225c680530b331afc9ce',
+              '@type': 'https://openminds.ebrains.eu/core/dQuantitativeValue',
+              'unit': {'@id': 'id.link/mm'},
+              'value': -82.38838819846315
+          },{
+              '@id': '8d45976364d722ae316ad7c3a923dec6',
+              '@type': 'https://openminds.ebrains.eu/core/dQuantitativeValue',
+              'unit': {'@id': 'id.link/mm'},
+              'value': 2.00540745659805
+          }
+      ],
+    }
+  ],
+  'hasRegionalMap': True
+}
 
-    def test_get_one_region_for_parcellation_with_extra_data(self):
-        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}?space_id={}'.format(
-            MULTILEVEL_HUMAN_ATLAS_ID.replace('/', '%2F'),
-            quote_plus(JULICH_BRAIN_V29_PARC_ID),
-            quote_plus(HOC1_LEFT_REGION_NAME),
-            quote_plus(ICBM_152_SPACE_ID)))
-        result_content = json.loads(response.content)
-        assert response.status_code == 200
+parameters = [
+    (
+        MULTILEVEL_HUMAN_ATLAS_ID,
+        None,
+        JULICH_BRAIN_V29_PARC_ID,
+        HOC1_LEFT_REGION_NAME,
+        {
+            'status_code': 200,
+            'json': expected_hoc1_detail
+        }
+    ),
+    (
+        MULTILEVEL_HUMAN_ATLAS_ID,
+        FS_AVERAGE_SPACE_ID,
+        JULICH_BRAIN_V29_PARC_ID,
+        HOC1_LEFT_REGION_NAME,
+        {
+            'status_code': 200,
+            'json': expected_hoc1_detail
+        }
+    ),
+    (
+        MULTILEVEL_HUMAN_ATLAS_ID,
+        ICBM_152_SPACE_ID,
+        JULICH_BRAIN_V29_PARC_ID,
+        HOC1_LEFT_REGION_NAME,
+        {
+            'status_code': 200,
+            'json': {**expected_hoc1_detail, **hoc1_left_icbm}
+        }
+    ),
+    (
+        MULTILEVEL_HUMAN_ATLAS_ID,
+        ICBM_152_SPACE_ID,
+        JULICH_BRAIN_V29_PARC_ID,
+        INVALID_REGION_NAME,
+        {
+            'status_code': 404
+        }
+    )
+]
 
-        assert result_content['name'] == HOC1_LEFT_REGION_NAME
+@pytest.mark.parametrize('atlas_id,space_id,parc_id,region_id,expected_response', parameters)
+def test_single_known_region(atlas_id,space_id,parc_id,region_id,expected_response):
 
-        # spatial props
-        props_components = result_content.get('props', {}).get('components', [])
-        assert type(props_components) == list
-        assert len(props_components) > 0
-        
-        assert type(props_components[0].get('centroid')) == list
-        assert len(props_components[0].get('centroid')) == 3
-        assert all([type(v) == float for v in props_components[0].get('centroid')])
-        assert type(props_components[0].get('volume')) == float
-
-        # _dataset_specs
-        _dataset_specs = result_content.get('_dataset_specs')
-        assert _dataset_specs is not None
-        assert type(_dataset_specs) == list
-        assert len(_dataset_specs) > 0
-        # Add Assertion for extra data
-
-
-    def test_get_region_for_space_with_invalid_region_name(self):
-
-        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}'.format(
-            quote(MULTILEVEL_HUMAN_ATLAS_ID),
-            quote_plus(JULICH_BRAIN_V29_PARC_ID),
-            quote(INVALID_REGION_NAME)))
-
-        assert response.status_code == 404
-
-
-    def test_get_region_with_correct_name(self):
-        
-        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}'.format(
-            quote(MULTILEVEL_HUMAN_ATLAS_ID),
-            quote_plus(JULICH_BRAIN_V29_PARC_ID),
-            quote(HOC1_LEFT_REGION_NAME)))
-        assert response.status_code == 200
-
-    def test_get_region_detail(self):
-
-        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}?space_id={}'.format(
-            quote(MULTILEVEL_HUMAN_ATLAS_ID),
-            quote_plus(JULICH_BRAIN_V29_PARC_ID),
-            quote(HOC1_LEFT_REGION_NAME),
-            quote(ICBM_152_SPACE_ID)
-        ))
-
-        region_json=json.loads(response.content)
-        assert region_json.get('_dataset_specs') is not None
-        assert type(region_json.get('_dataset_specs')) == list
-        info_datasets = [ds for ds in region_json.get('_dataset_specs') if ds.get('@type') == 'minds/core/dataset/v1.0.0']
-        assert len(info_datasets) > 0
-        assert all([ds.get('description') is not None and ds.get('name') is not None for ds in info_datasets])
+    response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}{}'.format(
+        quote(atlas_id),
+        quote_plus(parc_id),
+        quote(region_id),
+        f'?space_id={quote(space_id)}' if space_id else ''))
     
-
-#     # hasRegionalMap and other region map must be true
-    def test_region_map(self):
-
-        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}?space_id={}'.format(
-            quote(MULTILEVEL_HUMAN_ATLAS_ID),
-            quote_plus(JULICH_BRAIN_V29_PARC_ID),
-            quote(HOC1_LEFT_REGION_NAME),
-            quote(ICBM_152_SPACE_ID),
-        ))
-        jresp=json.loads(response.content)
-        assert jresp.get('hasRegionalMap') is True
-
-        info_url=jresp.get('links', {}).get('regional_map_info')
-        map_url=jresp.get('links', {}).get('regional_map')
-        assert info_url is not None
-        assert map_url is not None
-
-        # region map info
-        
-        if info_url is not None:
-            response = client.get(info_url, ignore_base_url=True)
-            assert response.status_code == 200
-            info=json.loads(response.content)
-            assert info.get('min') is not None
-            assert info.get('max') is not None
-
-        # region map
-        if map_url is not None:
-            response = client.get(map_url, ignore_base_url=True)
-            assert response.status_code == 200
-
-class TestSingleRegionFeatures(unittest.TestCase):
-
-    def test_regional_modality_by_id(self):
-        url = '/v1_0/atlases/{}/parcellations/{}/regions/{}/features/{}'.format(
-            quote_plus(MULTILEVEL_HUMAN_ATLAS_ID),
-            quote_plus(JULICH_BRAIN_V29_PARC_ID),
-            BASAL_REGION_NAME,
-            EBRAINS_REGIONAL_DATASET_MODALITY_NAME)
-        response = client.get(url)
-    
-        assert response.status_code == 200
-
-    def test_noresult_receptor(self):
-        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}/features/ReceptorDistribution'.format(
-            quote(MULTILEVEL_HUMAN_ATLAS_ID),
-            # nb must not be quote()
-            quote_plus(JULICH_BRAIN_V29_PARC_ID),
-            quote(SF_AMY_LEFT_REGION_NAME)))
-        result_content = json.loads(response.content)
-        assert response.status_code == 200
-        assert len(result_content) == 0
-
-    def test_result_receptor(self):
-        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}/features/ReceptorDistribution'.format(
-            quote(MULTILEVEL_HUMAN_ATLAS_ID),
-            quote_plus(JULICH_BRAIN_V29_PARC_ID),
-            quote(HOC1_LEFT_REGION_NAME)))
-        result_content = json.loads(response.content)
-        assert response.status_code == 200
-        assert len(result_content) > 0
-    
-    def test_result_receptor_detail(self):
-        receptor_dataset_id=r'Density%20measurements%20of%20different%20receptors%20for%20Area%20hOc1%20(V1%2C%2017%2C%20CalcS)%20%5Bhuman%2C%20v1.0%5D'
-        url='/v1_0/atlases/{}/parcellations/{}/regions/{}/features/ReceptorDistribution/{}'.format(
-            quote(MULTILEVEL_HUMAN_ATLAS_ID),
-            quote_plus(JULICH_BRAIN_V29_PARC_ID),
-            quote(HOC1_LEFT_REGION_NAME),
-            receptor_dataset_id)
-        response = client.get(url)
-        assert response.status_code == 200
-
-    def test_result_ieeg(self):
-        url='/v1_0/atlases/{atlas_id}/spaces/{space_id}/features/IEEG_Session?parcellation_id={parc_id}&region={region_id}'.format(
-            atlas_id=quote_plus(MULTILEVEL_HUMAN_ATLAS_ID),
-            space_id=quote_plus(ICBM_152_SPACE_ID),
-            parc_id=quote_plus(JULICH_BRAIN_V29_PARC_ID),
-            region_id=quote_plus(HOC1_RIGHT_REGION_NAME),
-        )
-        response=client.get(url)
-        result_content = json.loads(response.content)
-        assert response.status_code == 200
-        assert len(result_content) > 0
-        
-
-    def test_no_result_ieeg(self):
-        url='/v1_0/atlases/{atlas_id}/spaces/{space_id}/features/IEEG_Session?parcellation_id={parc_id}&region={region_id}'.format(
-            atlas_id=quote_plus(MULTILEVEL_HUMAN_ATLAS_ID),
-            space_id=quote_plus(ICBM_152_SPACE_ID),
-            parc_id=quote_plus(JULICH_BRAIN_V29_PARC_ID),
-            region_id=quote_plus(HOC1_LEFT_REGION_NAME),
-        )
-        response=client.get(url)
-        result_content = json.loads(response.content)
-        assert response.status_code == 200
-        # hoc1 left should have no ieeg result
-        assert len(result_content) == 0
-
-    def test_rest_connectivity(self):
-        conn_id='e428cb6b-0110-4205-94ac-533ca5de6bb5'
-        url='/v1_0/atlases/{atlas_id}/parcellations/{parcellation_id}/regions/{region_spec}/features/ConnectivityProfile/{conn_id}'.format(
-            atlas_id=quote_plus(MULTILEVEL_HUMAN_ATLAS_ID),
-            parcellation_id=quote_plus(JULICH_BRAIN_V29_PARC_ID),
-            region_spec=quote_plus(HOC1_LEFT_REGION_NAME),
-            conn_id=conn_id
-        )
-        response=client.get(url)
-        assert response.status_code == 200
-        response_json=json.loads(response.content)
-        column_names=response_json.get('__column_names')
-        assert column_names is not None
-        assert type(column_names) == list
-        assert len(column_names) > 0
+    assert expected_response.get('status_code') == response.status_code
+    if expected_response.get('status_code') == 200:
+        import json
+        # import unittest
+        # case = unittest()
+        assert expected_response.get('json') == json.loads(response.content)

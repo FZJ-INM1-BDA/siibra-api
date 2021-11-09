@@ -67,7 +67,7 @@ def get_all_parcellations(atlas_id: str):
         atlas:Atlas = siibra.atlases[atlas_id]
         return [ JSONEncoder.encode(parc, nested=True) for parc in atlas.parcellations]
     except IndexError:
-        raise HTTPException(400, detail=f'atlas with id {atlas_id} not found.')
+        raise HTTPException(404, detail=f'atlas with id {atlas_id} not found.')
     except Exception as e:
         logger.error('Error:', str(e))
         raise HTTPException(500, detail=f'something went wrong.')
@@ -101,10 +101,14 @@ def get_all_regions_for_parcellation_id(
         atlas:Atlas = siibra.atlases[atlas_id]
         parcellation:Parcellation = atlas.parcellations[parcellation_id]
         space:Space = atlas.spaces[space_id] if space_id is not None else None
-        parc = JSONEncoder.encode(parcellation, space=space, nested=True, detail=True)
+        # polyfill for https://github.com/FZJ-INM1-BDA/siibra-python/issues/98
+        if space == siibra.spaces['fsaverage']:
+            space = None
+        parc = JSONEncoder.encode(parcellation, space=space, include_regions=True, nested=True, detail=True)
         return parc.get('regions')
-    except IndexError:
-        raise HTTPException(400, detail=f'atlas with id {atlas_id} and/or parcellation with id {parcellation_id} not found.')
+    except IndexError as e:
+        print('uhoh', e, atlas_id, parcellation_id)
+        raise HTTPException(404, detail=f'atlas with id {atlas_id} and/or parcellation with id {parcellation_id} not found.')
     except Exception as e:
         logger.error('Error:', str(e))
         raise HTTPException(500, detail=f'something went wrong.')
@@ -140,7 +144,7 @@ def get_single_global_feature_detail(
         atlas: Atlas = siibra.atlases[atlas_id]
         parcellation: Parcellation = atlas.parcellations[parcellation_id]
         if siibra.features.modalities[modality_id].modality() not in [mod.value for mod in modality_id ]:
-            raise HTTPException(400, detail=f'modality_id {modality_id} not a parcellation modality_id')
+            raise HTTPException(404, detail=f'modality_id {modality_id} not a parcellation modality_id')
 
         filtered_features = [f for f in siibra.get_features(parcellation, modality_id) if f.id == feature_id]
         if not filtered_features:
@@ -148,7 +152,7 @@ def get_single_global_feature_detail(
 
         return JSONEncoder.encode(filtered_features[0], nested=True, detail=True)
     except IndexError as e:
-        raise HTTPException(400, detail=f'IndexError: {str(e)}')
+        raise HTTPException(404, detail=f'IndexError: {str(e)}')
 
 
 @router.get('/{parcellation_id:path}/features/{modality_id}',
@@ -181,11 +185,11 @@ def get_single_global_feature(
         atlas: Atlas = siibra.atlases[atlas_id]
         parcellation: Parcellation = atlas.parcellations[parcellation_id]
         if siibra.features.modalities[modality_id].modality() not in [enum.value for enum in ParcellationFeatureEnum]:
-            raise HTTPException(400, detail=f'modality_id {modality_id} not a parcellation modality')
+            raise HTTPException(404, detail=f'modality_id {modality_id} not a parcellation modality')
 
         return JSONEncoder.encode(siibra.get_features(parcellation, modality_id), nested=True, detail=False)
     except IndexError as e:
-        raise HTTPException(400, detail=f'IndexError: {str(e)}')
+        raise HTTPException(404, detail=f'IndexError: {str(e)}')
     
 
 class NamedModel(BaseModel):
@@ -221,7 +225,7 @@ def get_global_feature_names(
             'name': mod.value
         } for mod in ParcellationFeatureEnum ]
     except IndexError as e:
-        raise HTTPException(400, detail=f'IndexError: {str(e)}')
+        raise HTTPException(404, detail=f'IndexError: {str(e)}')
 
 
 @router.get('/{parcellation_id:path}',
@@ -248,9 +252,9 @@ def get_parcellation_by_id(
     try:
         atlas:Atlas = siibra.atlases[atlas_id]
         parcellation:Parcellation = atlas.parcellations[parcellation_id]
-        return JSONEncoder.encode(parcellation, nested=True, detail=False)
+        return JSONEncoder.encode(parcellation, nested=True, detail=True)
     except IndexError:
-        raise HTTPException(400, detail=f'atlas with id {atlas_id} and/or parcellation with id {parcellation_id} not found.')
+        raise HTTPException(404, detail=f'atlas with id {atlas_id} and/or parcellation with id {parcellation_id} not found.')
     except Exception as e:
         logger.error('Error:', str(e))
         raise HTTPException(500, detail=f'something went wrong.')

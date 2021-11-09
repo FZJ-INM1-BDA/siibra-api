@@ -1,0 +1,303 @@
+[
+  {
+    "@id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/30875a7c-ae78-46fc-9a6b-33d52c0c2643",
+    "@type": "minds/core/dataset/v1.0.0",
+    "id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/30875a7c-ae78-46fc-9a6b-33d52c0c2643",
+    "name": "Probabilistic cytoarchitectonic map of Area hOc1 (V1, 17, CalcS) (v4.2)",
+    "description": "This dataset contains the distinct architectonic Area hOc1 (V1, 17, CalcS) in the individual, single subject template of the MNI Colin 27 as well as the MNI ICBM 152 2009c nonlinear asymmetric reference space. As part of the Julich-Brain cytoarchitectonic atlas, the area was identified using cytoarchitectonic analysis on cell-body-stained histological sections of 10 human postmortem brains obtained from the body donor program of the University of Düsseldorf. The results of the cytoarchitectonic analysis were then mapped to both reference spaces, where each voxel was assigned the probability to belong to Area hOc1 (V1, 17, CalcS). The probability map of Area hOc1 (V1, 17, CalcS) are provided in the NifTi format for each brain reference space and hemisphere. The Julich-Brain atlas relies on a modular, flexible and adaptive framework containing workflows to create the probabilistic brain maps for these structures. Note that methodological improvements and integration of new brain structures may lead to small deviations in earlier released datasets.\n\nOther available data versions of Area hOc1 (V1, 17, CalcS):\nAmunts et al. (2018) [Data set, v2.2] [DOI: 10.25493/8VRA-X28](https://doi.org/10.25493%2F8VRA-X28)\nAmunts et al. (2019) [Data set, v2.4] [DOI: 10.25493/MXJ6-6DH](https://doi.org/10.25493%2FMXJ6-6DH)\nAmunts et al. (2020) [Data set, v4.0] [DOI: 10.25493/K96X-PJ5](https://doi.org/10.25493%2FK96X-PJ5)\n\nThe most probable delineation of Area hOc1 (V1, 17, CalcS) derived from the calculation of a maximum probability map of all currently released Julich-Brain brain structures can be found here:\nAmunts et al. (2019) [Data set, v1.13] [DOI: 10.25493/Q3ZS-NV6](https://doi.org/10.25493%2FQ3ZS-NV6)\nAmunts et al. (2019) [Data set, v1.18] [DOI: 10.25493/8EGG-ZAR](https://doi.org/10.25493%2F8EGG-ZAR)\nAmunts et al. (2020) [Data set, v2.2] [DOI: 10.25493/TAKY-64D](https://doi.org/10.25493%2FTAKY-64D)\nAmunts et al. (2020) [Data set, v2.4] [DOI: 10.25493/A7Y0-NX9](https://doi.org/10.25493%2FA7Y0-NX9)\nAmunts et al. (2020) [Data set, v2.5] [DOI: 10.25493/8JKE-M53](https://doi.org/10.25493/8JKE-M53)\nAmunts et al. (2021) [Data set, v2.6] [DOI: 10.25493/KJQN-AM0](https://doi.org/10.25493%2FKJQN-AM0)\nAmunts et al. (2021) [Data set, v2.9] [DOI: 10.25493/VSMK-H94](https://doi.org/10.25493/VSMK-H94)",
+    "urls": [
+      {
+        "cite": null,
+        "doi": "10.25493/BG4B-30V"
+      }
+    ],
+    "fingerprint": null,
+    "profiles": null,
+    "autoradiographs": null,
+    "receptor_symbols": null
+  },
+  {
+    "@id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/3c722c10-9b76-4e64-9d4d-99d8eeb91471",
+    "@type": "minds/core/dataset/v1.0.0",
+    "id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/3c722c10-9b76-4e64-9d4d-99d8eeb91471",
+    "name": "Probabilistic cytoarchitectonic map of Area hOc1 (V1, 17, CalcS) (v2.2)",
+    "description": "This dataset contains the distinct probabilistic cytoarchitectonic map of Area hOc1 (V1, 17, CalcS) in the individual, single subject template of the MNI Colin 27 reference space. As part of the Julich-Brain cytoarchitectonic atlas, the area was identified using cytoarchitectonic analysis on cell-body-stained histological sections of 10 human postmortem brains obtained from the body donor program of the University of Düsseldorf. The results of the cytoarchitectonic analysis were then mapped to the reference space, where each voxel was assigned the probability to belong to Area hOc1 (V1, 17, CalcS). The probability map of Area hOc1 (V1, 17, CalcS) is provided in NifTi format for each hemisphere in the reference space. The Julich-Brain atlas relies on a modular, flexible and adaptive framework containing workflows to create the probabilistic brain maps for these structures. Note that methodological improvements and updated probability estimates for new brain structures may in some cases lead to measurable but negligible deviations of existing probability maps, as compared to earlier released datasets.  \n\nOther available data versions of Area hOc1 (V1, 17, CalcS):\nAmunts et al. (2019) [Data set, v2.4] [DOI: 0.25493/MXJ6-6DH](https://doi.org/10.25493%2FMXJ6-6DH)\n\nThe most probable delineation of Area hOc1 (V1, 17, CalcS) derived from the calculation of a maximum probability map of all currently released Julich-Brain brain structures can be found here:\nAmunts et al. (2019) [Data set, v1.13] [DOI: 10.25493/Q3ZS-NV6](https://doi.org/10.25493%2FQ3ZS-NV6)\nAmunts et al. (2019) [Data set, v1.18] [DOI: 10.25493/8EGG-ZAR](https://doi.org/10.25493%2F8EGG-ZAR)\nAmunts et al. (2020) [Data set, v2.2] [DOI: 10.25493/TAKY-64D](https://doi.org/10.25493%2FTAKY-64D)",
+    "urls": [
+      {
+        "cite": null,
+        "doi": "10.25493/8VRA-X28"
+      }
+    ],
+    "fingerprint": null,
+    "profiles": null,
+    "autoradiographs": null,
+    "receptor_symbols": null
+  },
+  {
+    "@id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/fd303d56-e1aa-46a2-9d0c-7e5215aeb7ca",
+    "@type": "minds/core/dataset/v1.0.0",
+    "id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/fd303d56-e1aa-46a2-9d0c-7e5215aeb7ca",
+    "name": "Whole-brain parcellation of the Julich-Brain Cytoarchitectonic Atlas (v1.13)",
+    "description": "This dataset contains the whole-brain parcellation of the Julich-Brain Cytoarchitectonic Atlas ([Amunts and Zilles, 2015](https://www.sciencedirect.com/science/article/pii/S0896627315010727?via%3Dihub)) in the MNI Colin 27 reference space. The parcellation is derived from the individual probability maps (PMs) of the cytoarchitectonic regions released in the Julich-Brain Cytoarchitectonic Atlas, that are further combined into a Maximum Probability Map (MPM). The MPM is calculated by considering for each voxel the probability of all cytoarchitectonic areas released in the atlas, and determining the most probable assignment ([Eickhoff 2005](https://www.sciencedirect.com/science/article/abs/pii/S105381190400792X?via%3Dihub)). Note that methodological improvements and integration of new brain structures may lead to small deviations in earlier released datasets.",
+    "urls": [],
+    "fingerprint": null,
+    "profiles": null,
+    "autoradiographs": null,
+    "receptor_symbols": null
+  },
+  {
+    "@id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/696d6062-3b86-498f-9ca6-e4d67b433396",
+    "@type": "minds/core/dataset/v1.0.0",
+    "id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/696d6062-3b86-498f-9ca6-e4d67b433396",
+    "name": "Ultrahigh resolution 3D cytoarchitectonic map of Area hOc1 (V1, 17, CalcS) created by a Deep-Learning assisted workflow",
+    "description": "This dataset contains automatically created cytoarchitectonic maps of Area hOc1 (V1, 17, CalcS) in the BigBrain dataset [Amunts et al. 2013]. The mappings were created using Deep Convolutional Neural networks based on the idea presented in Spitzer et al. 2017 and Spitzer et al. 2018, which were trained on delineations on every 120th section created using the semi-automatic method presented in Schleicher et al. 1999. Mappings are available on every section. Their quality was observed by a trained neuroscientist to exclude sections with low quality results from further processing. Automatic mappings were then transformed to the 3D reconstructed BigBrain space using transformations used in Amunts et al. 2013, which were provided by Claude Lepage (McGill). Individual sections were used to assemble a 3D volume of the area, low quality results were replaced by interpolations between nearest neighboring sections. The volume was then smoothed using an 11³ median filter and largest connected components were identified to remove false positive results of the classification algorithm.\nThe dataset consists of a single HDF5 file containing the volume in RAS dimension ordering and 20 micron isotropic resolution in the dataset “volume” and affine transformation matrix in the dataset “affine”. An additional dataset “interpolation_info” contains a vector with an integer value for each section which indicates if a section was interpolated due to low quality results (value 2) or not (value 1).\nDue to the large size of the volume, it’s recommended to view the data online using the provided viewer link.\n",
+    "urls": [
+      {
+        "cite": null,
+        "doi": "10.25493/DGEZ-Q93"
+      }
+    ],
+    "fingerprint": null,
+    "profiles": null,
+    "autoradiographs": null,
+    "receptor_symbols": null
+  },
+  {
+    "@id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/5c669b77-c981-424a-858d-fe9f527dbc07",
+    "@type": "minds/core/dataset/v1.0.0",
+    "id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/5c669b77-c981-424a-858d-fe9f527dbc07",
+    "name": "Probabilistic cytoarchitectonic map of Area hOc1 (V1, 17, CalcS) (v2.4)",
+    "description": "This dataset contains the distinct architectonic Area hOc1 (V1, 17, CalcS) in the individual, single subject template of the MNI Colin 27 as well as the MNI ICBM 152 2009c nonlinear asymmetric reference space. As part of the Julich-Brain cytoarchitectonic atlas, the area was identified using cytoarchitectonic analysis on cell-body-stained histological sections of 10 human postmortem brains obtained from the body donor program of the University of Düsseldorf. The results of the cytoarchitectonic analysis were then mapped to both reference spaces, where each voxel was assigned the probability to belong to Area hOc1 (V1, 17, CalcS). The probability map of Area hOc1 (V1, 17, CalcS) are provided in the NifTi format for each brain reference space and hemisphere. The Julich-Brain atlas relies on a modular, flexible and adaptive framework containing workflows to create the probabilistic brain maps for these structures. Note that methodological improvements and integration of new brain structures may lead to small deviations in earlier released datasets.\n\nOther available data versions of Area hOc1 (V1, 17, CalcS):\nAmunts et al. (2018) [Data set, v2.2] [DOI: 10.25493/8VRA-X28](https://doi.org/10.25493%2F8VRA-X28)\n\nThe most probable delineation of Area hOc1 (V1, 17, CalcS) derived from the calculation of a maximum probability map of all currently released Julich-Brain brain structures can be found here:\nAmunts et al. (2019) [Data set, v1.13] [DOI: 10.25493/Q3ZS-NV6](https://doi.org/10.25493%2FQ3ZS-NV6)\nAmunts et al. (2019) [Data set, v1.18] [DOI: 10.25493/8EGG-ZAR](https://doi.org/10.25493%2F8EGG-ZAR)\nAmunts et al. (2020) [Data set, v2.2] [DOI: 10.25493/TAKY-64D](https://doi.org/10.25493%2FTAKY-64D)",
+    "urls": [
+      {
+        "cite": null,
+        "doi": "10.25493/MXJ6-6DH"
+      }
+    ],
+    "fingerprint": null,
+    "profiles": null,
+    "autoradiographs": null,
+    "receptor_symbols": null
+  },
+  {
+    "@id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/3fde2768-e845-4fc3-a425-61e2c1fb6db7",
+    "@type": "minds/core/dataset/v1.0.0",
+    "id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/3fde2768-e845-4fc3-a425-61e2c1fb6db7",
+    "name": "Whole-brain parcellation of the Julich-Brain Cytoarchitectonic Atlas (v2.2)",
+    "description": "This dataset contains the whole-brain parcellation of the Julich-Brain Cytoarchitectonic Atlas in the MNI Colin 27 as well as the MNI ICBM 152 2009c nonlinear asymmetric reference space ([Evans et al., 2012](https://www.sciencedirect.com/science/article/pii/S1053811912000419?via%3Dihub)). The parcellation is derived from the individual probability maps (PMs) of the cytoarchitectonic regions released in the Julich-Brain Cytoarchitectonic Atlas, that are further combined into a Maximum Probability Map (MPM). The MPM is calculated by considering for each voxel the probability of all cytoarchitectonic areas released in the atlas, and determining the most probable assignment ([Eickhoff 2005](https://www.sciencedirect.com/science/article/pii/S105381190400792X?via%3Dihub)). Gap maps complement cortical maps to achieve full cortical coverage. Note that methodological improvements and integration of new brain structures may lead to small deviations in earlier released datasets.",
+    "urls": [
+      {
+        "cite": null,
+        "doi": "10.25493/TAKY-64D"
+      }
+    ],
+    "fingerprint": null,
+    "profiles": null,
+    "autoradiographs": null,
+    "receptor_symbols": null
+  },
+  {
+    "@id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/a8932c7e-063c-4131-ab96-996d843998e9",
+    "@type": "minds/core/dataset/v1.0.0",
+    "id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/a8932c7e-063c-4131-ab96-996d843998e9",
+    "name": "Whole-brain parcellation of the Julich-Brain Cytoarchitectonic Atlas (v2.9)",
+    "description": "This dataset contains the whole-brain parcellation of the Julich-Brain Cytoarchitectonic Atlas ([Amunts et al., 2020](https://www.science.org/doi/10.1126/science.abb4588)) in the MNI Colin 27 as well as the MNI ICBM 152 2009c nonlinear asymmetric reference space ([Evans et al., 2012](https://www.sciencedirect.com/science/article/pii/S1053811912000419?via%3Dihub)). The parcellation is derived from the individual probability maps (PMs) of the cytoarchitectonic regions released in the Julich-Brain Cytoarchitectonic Atlas, that are further combined into a Maximum Probability Map (MPM). The MPM is calculated by considering for each voxel the probability of all cytoarchitectonic areas released in the atlas, and determining the most probable assignment ([Eickhoff, 2005](https://www.sciencedirect.com/science/article/pii/S105381190400792X?via%3Dihub)). Gap maps complement cortical maps to achieve full cortical coverage. ",
+    "urls": [
+      {
+        "cite": null,
+        "doi": "10.25493/VSMK-H94"
+      }
+    ],
+    "fingerprint": null,
+    "profiles": null,
+    "autoradiographs": null,
+    "receptor_symbols": null
+  },
+  {
+    "@id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/78801754-16c1-4df2-9b2e-1b10c28a10c2",
+    "@type": "minds/core/dataset/v1.0.0",
+    "id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/78801754-16c1-4df2-9b2e-1b10c28a10c2",
+    "name": "Filter Activations of Convolutional Neuronal Networks Used in Cytoarchitectonic Brain Mapping",
+    "description": "We studied the internal structure of two specific Convolutional Neural Networks (CNNs) which were trained to segment the primary (hOc1, V1) and secondary visual cortex (hOc2, V2) in microscopic scans of brain tissue sections with a resolution of 1 micrometer. All tissue sections correspond to those of the BigBrain dataset ([Amunts et al., 2013](https://science.sciencemag.org/content/340/6139/1472)). To analyze the internal feature representations learned by the model, 5184 filter activations from the batch-normalized output of each Rectified Linear Unit (ReLU) of the CNNs were calculated for section number 1021 of the histological stack. We described and analyzed these filter activations to better understand the internal feature representations of the trained networks. This enables a direct comparison with the underlying histology and a direct assessment of cytoarchitectonic features reflected inside the networks.\n\n\n\n\n**Additional information:** \nThe corresponding reference delineations were published in:\nKiwitz et al. (2019) [DOI: 10.25493/3GSV-T4A](https://kg.ebrains.eu/search/instances/Dataset/87c6dea7-bdf7-4049-9975-6a9925df393f)\nKiwitz et al. (2019) [DOI: 10.25493/8MKD-D77](https://kg.ebrains.eu/search/instances/Dataset/02b56db7-a083-44f3-91dc-72bb67f3fd0a)",
+    "urls": [
+      {
+        "cite": null,
+        "doi": "10.25493/Z6NG-4MU"
+      }
+    ],
+    "fingerprint": null,
+    "profiles": null,
+    "autoradiographs": null,
+    "receptor_symbols": null
+  },
+  {
+    "@id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/2eaa3dc6-a21b-41c1-b703-bf06f82adf25",
+    "@type": "minds/core/dataset/v1.0.0",
+    "id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/2eaa3dc6-a21b-41c1-b703-bf06f82adf25",
+    "name": "Whole-brain parcellation of the Julich-Brain Cytoarchitectonic Atlas (v2.6)",
+    "description": "This dataset contains the whole-brain parcellation of the Julich-Brain Cytoarchitectonic Atlas in the MNI ICBM 152 2009c nonlinear asymmetric reference space ([Evans et al., 2012](https://www.sciencedirect.com/science/article/pii/S1053811912000419?via%3Dihub)). The parcellation is derived from the individual probability maps (PMs) of the cytoarchitectonic regions released in the Julich-Brain Cytoarchitectonic Atlas, that are further combined into a Maximum Probability Map (MPM). The MPM is calculated by considering for each voxel the probability of all cytoarchitectonic areas released in the atlas, and determining the most probable assignment ([Eickhoff 2005](https://www.sciencedirect.com/science/article/pii/S105381190400792X?via%3Dihub)). Gap maps complement cortical maps to achieve full cortical coverage. ",
+    "urls": [
+      {
+        "cite": null,
+        "doi": "10.25493/KJQN-AM0"
+      }
+    ],
+    "fingerprint": null,
+    "profiles": null,
+    "autoradiographs": null,
+    "receptor_symbols": null
+  },
+  {
+    "@id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/ef48c5e9-6b3c-4d5a-a9a9-e678fe10bdf6",
+    "@type": "minds/core/dataset/v1.0.0",
+    "id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/ef48c5e9-6b3c-4d5a-a9a9-e678fe10bdf6",
+    "name": "Whole-brain parcellation of the Julich-Brain Cytoarchitectonic Atlas (v2.5)",
+    "description": "This dataset contains the whole-brain parcellation of the Julich-Brain Cytoarchitectonic Atlas in the MNI Colin 27 as well as the MNI ICBM 152 2009c nonlinear asymmetric reference space ([Evans et al., 2012](https://www.sciencedirect.com/science/article/pii/S1053811912000419?via%3Dihub)). The parcellation is derived from the individual probability maps (PMs) of the cytoarchitectonic regions released in the Julich-Brain Cytoarchitectonic Atlas, that are further combined into a Maximum Probability Map (MPM). The MPM is calculated by considering for each voxel the probability of all cytoarchitectonic areas released in the atlas, and determining the most probable assignment ([Eickhoff 2005](https://www.sciencedirect.com/science/article/pii/S105381190400792X?via%3Dihub)). Gap maps complement cortical maps to achieve full cortical coverage. ",
+    "urls": [
+      {
+        "cite": null,
+        "doi": "10.25493/8JKE-M53"
+      }
+    ],
+    "fingerprint": null,
+    "profiles": null,
+    "autoradiographs": null,
+    "receptor_symbols": null
+  },
+  {
+    "@id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/87c6dea7-bdf7-4049-9975-6a9925df393f",
+    "@type": "minds/core/dataset/v1.0.0",
+    "id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/87c6dea7-bdf7-4049-9975-6a9925df393f",
+    "name": "Reference delineations of Area hOc1 (V1, 17, CalcS) in individual sections of the BigBrain",
+    "description": "This dataset contains cytoarchitectonic maps of Area hOc1 (V1, 17, CalcS) in the BigBrain dataset [Amunts et al. 2013]. The mappings were created using the semi-automatic method presented in Schleicher et al. 1999, based on coronal histological sections on 1 micron resolution. Mappings are available on every 60th section of the visual system. They were then transformed to the sections of the 3D reconstructed BigBrain space using the transformations used in Amunts et al. 2013, which were provided by Claude Lepage (McGill).\n\nFor this brain area, a highly detailed 3D map has been computed based on automatic delineations in every histological section from a novel Deep Learning algorithm. This dataset can be accessed here:\n[Ultrahigh resolution 3D cytoarchitectonic map of Area hOc1 (V1, 17, CalcS) created by a Deep-Learning assisted workflow](https://kg.humanbrainproject.eu/instances/Dataset/696d6062-3b86-498f-9ca6-e4d67b433396)\n\nThis ultrahigh resolution 3D cytoarchitectonic map of Area hOc1 (V1, 17, CalcS) can be explored in the HBP interactive Atlas Viewer.  ",
+    "urls": [
+      {
+        "cite": null,
+        "doi": "10.25493/3GSV-T4A"
+      }
+    ],
+    "fingerprint": null,
+    "profiles": null,
+    "autoradiographs": null,
+    "receptor_symbols": null
+  },
+  {
+    "@id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/e715e1f7-2079-45c4-a67f-f76b102acfce",
+    "@type": "minds/core/dataset/v1.0.0",
+    "id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/e715e1f7-2079-45c4-a67f-f76b102acfce",
+    "name": "Density measurements of different receptors for Area hOc1 (V1, 17, CalcS) [human, v1.0]",
+    "description": "This dataset contains the densities (in fmol/mg protein) of receptors for classical neurotransmitters in Area hOc1 (V1, 17, CalcS) obtained by means of quantitative _in vitro_ autoradiography. The receptor densities are visualized as _fingerprints_ (**fp**), which provide the mean density and standard deviation for each of the analyzed receptor types, averaged across samples. \n\nOverview of available measurements [ **receptor** \\| **_neurotransmitter_** \\| _labeling agent_ ]:\n**AMPA** \\| **_glutamate_** \\| _[<sup>3</sup>H]AMPA_\n**kainate** \\| **_glutamate_** \\| _[<sup>3</sup>H]kainate_\n**NMDA** \\| **_glutamate_** \\| _[<sup>3</sup>H]MK-801_\n**GABA<sub>A</sub>** \\| **_GABA_** \\| _[<sup>3</sup>H]muscimol_\n**GABA<sub>B</sub>** \\| **_GABA_** \\| _[<sup>3</sup>H]CGP54626_\n**GABA<sub>A</sub>/BZ** \\| **_GABA_** \\| _[<sup>3</sup>H]flumazenil_\n**muscarinic M<sub>1</sub>** \\| **_acetylcholine_** \\| _[<sup>3</sup>H]pirenzepine_\n**muscarinic M<sub>2</sub>** \\| **_acetylcholine_** \\| _[<sup>3</sup>H]oxotremorine-M_\n**muscarinic M<sub>3</sub>** \\| **_acetylcholine_** \\| _[<sup>3</sup>H]4-DAMP_\n**nicotinic &#945<sub>4</sub>&#946<sub>2</sub>** \\| **_acetylcholine_** \\| _[<sup>3</sup>H]epibatidine_\n**&#945<sub>1</sub>** \\| **_noradrenalin/norepinephrine_** \\| _[<sup>3</sup>H]prazosin_\n**&#945<sub>2</sub>** \\| **_noradrenalin/norepinephrine_** \\| _[<sup>3</sup>H]UK-14,304_\n**5-HT<sub>1A</sub>** \\| **_serotonin_** \\| _[<sup>3</sup>H]8-OH-DPAT_\n**5-HT<sub>2</sub>** \\| **_serotonin_** \\| _[<sup>3</sup>H]ketanserin_\n**D<sub>1</sub>** \\| **_dopamine_** \\| _[<sup>3</sup>H]SCH23390_\n\nFor exemplary samples, we also provide laminar _profiles_ (**pr**)  and/or color-coded laminar _autoradiography_ images (**ar**). The density profiles provide, for a single tissue sample, an exemplary density distribution for a single receptor from the pial surface to the border between layer VI and the white matter. The autoradiography images show an exemplary density distribution of a single receptor for one laminar cross-section in a single tissue sample. \n\nInformation on the used tissue samples and corresponding subjects for the receptor fingerprints, profiles and autoradiographs as well as a list of analyzed receptors accompanies the provided dataset.\n\n**For methodological details, see:**\nZilles, K. et al. (2002). Quantitative analysis of cyto- and receptorarchitecture of the human brain, pp. 573-602. In: Brain Mapping: The Methods, 2nd edition (A.W. Toga and J.C. Mazziotta, eds.). San Diego, Academic Press.\n\nPalomero-Gallagher N, Zilles K. (2018) Cyto- and receptorarchitectonic mapping of the human brain. In: Handbook of Clinical Neurology 150: 355-387",
+    "urls": [
+      {
+        "cite": null,
+        "doi": "10.25493/P8SD-JMH"
+      }
+    ],
+    "fingerprint": null,
+    "profiles": null,
+    "autoradiographs": null,
+    "receptor_symbols": null
+  },
+  {
+    "@id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/ab191c17-8cd8-4622-aaac-eee11b2fa670",
+    "@type": "minds/core/dataset/v1.0.0",
+    "id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/ab191c17-8cd8-4622-aaac-eee11b2fa670",
+    "name": "Julich-Brain Atlas - whole-brain collections of cytoarchitectonic probabilistic maps (v2.9)",
+    "description": "This dataset provides a complete collection of all probability maps of the Julich-Brain Cytoarchitectonic Atlas ([Amunts et al., 2020](https://www.science.org/doi/10.1126/science.abb4588)) in the MNI Colin 27 as well as the MNI ICBM 152 2009c nonlinear asymmetric reference space ([Evans et al., 2012](https://www.sciencedirect.com/science/article/pii/S1053811912000419?via%3Dihub)). Each probabilistic map is defined by histological analysis of ten individual postmortem brains. Thus they are capturing human intersubject variability and therefore describe how likely a particular structure is found at each voxel position of the reference spaces. Details for each particular probabilistic map can be found in associated journal publications. \nThe probability maps were combined into four-dimensional NIfTI files, one per reference space. This way, the entire Julich-Brain Atlas is offered in a bundled format and still retains the probability information of the individual probability maps. Each NIfTI file is accompanied by a text file, which provides the mapping of the index in the fourth dimension to the respective brain region. ",
+    "urls": [
+      {
+        "cite": null,
+        "doi": "10.25493/46HK-XMM"
+      }
+    ],
+    "fingerprint": null,
+    "profiles": null,
+    "autoradiographs": null,
+    "receptor_symbols": null
+  },
+  {
+    "@id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/8956bb67-3ff3-40a2-960a-13232cc936c6",
+    "@type": "minds/core/dataset/v1.0.0",
+    "id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/8956bb67-3ff3-40a2-960a-13232cc936c6",
+    "name": "Density measurements of different receptors for Area 9 [human, v1.0]",
+    "description": "This dataset contains the densities (in fmol/mg protein) of receptors for classical neurotransmitters in Area 9 obtained by means of quantitative _in vitro_ autoradiography. The receptor densities are visualized as _fingerprints_ (**fp**), which provide the mean density and standard deviation for each of the analyzed receptor types, averaged across samples. \n\nOverview of available measurements [ **receptor** \\| **_neurotransmitter_** \\| _labeling agent_ ]:\n**AMPA** \\| **_glutamate_** \\| _[<sup>3</sup>H]AMPA_\n**kainate** \\| **_glutamate_** \\| _[<sup>3</sup>H]kainate_\n**NMDA** \\| **_glutamate_** \\| _[<sup>3</sup>H]MK-801_\n**mGluR2/3** \\| **_glutamate_** \\| _[<sup>3</sup>H]LY341495_\n**GABA<sub>A</sub>** \\| **_GABA_** \\| _[<sup>3</sup>H]muscimol_\n**GABA<sub>B</sub>** \\| **_GABA_** \\| _[<sup>3</sup>H]CGP54626_\n**GABA<sub>A</sub>/BZ** \\| **_GABA_** \\| _[<sup>3</sup>H]flumazenil_\n**muscarinic M<sub>1</sub>** \\| **_acetylcholine_** \\| _[<sup>3</sup>H]pirenzepine_\n**muscarinic M<sub>2</sub>** \\| **_acetylcholine_** \\| _[<sup>3</sup>H]oxotremorine-M_\n**muscarinic M<sub>3</sub>** \\| **_acetylcholine_** \\| _[<sup>3</sup>H]4-DAMP_\n**nicotinic &#945<sub>4</sub>&#946<sub>2</sub>** \\| **_acetylcholine_** \\| _[<sup>3</sup>H]epibatidine_\n**&#945<sub>1</sub>** \\| **_noradrenalin/norepinephrine_** \\| _[<sup>3</sup>H]prazosin_\n**&#945<sub>2</sub>** \\| **_noradrenalin/norepinephrine_** \\| _[<sup>3</sup>H]UK-14,304_\n**5-HT<sub>1A</sub>** \\| **_serotonin_** \\| _[<sup>3</sup>H]8-OH-DPAT_\n**5-HT<sub>2</sub>** \\| **_serotonin_** \\| _[<sup>3</sup>H]ketanserin_\n**D<sub>1</sub>** \\| **_dopamine_** \\| _[<sup>3</sup>H]SCH23390_\n\nInformation on the used tissue samples and corresponding subjects for the receptor fingerprints, profiles and autoradiographs as well as a list of analyzed receptors accompanies the provided dataset.\n\n**For methodological details, see:**\nZilles, K. et al. (2002). Quantitative analysis of cyto- and receptorarchitecture of the human brain, pp. 573-602. In: Brain Mapping: The Methods, 2nd edition (A.W. Toga and J.C. Mazziotta, eds.). San Diego, Academic Press.\n\nPalomero-Gallagher N, Zilles K. (2018) Cyto- and receptorarchitectonic mapping of the human brain. In: Handbook of Clinical Neurology 150: 355-387",
+    "urls": [
+      {
+        "cite": null,
+        "doi": "10.25493/97BA-87Y"
+      }
+    ],
+    "fingerprint": null,
+    "profiles": null,
+    "autoradiographs": null,
+    "receptor_symbols": null
+  },
+  {
+    "@id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/dc037942-23e5-4f38-a941-a3e392cd9e0a",
+    "@type": "minds/core/dataset/v1.0.0",
+    "id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/dc037942-23e5-4f38-a941-a3e392cd9e0a",
+    "name": "Structure-phenotype associations for Julich-Brain Cytoarchitectonic Atlas regions",
+    "description": "Our aim in this project was to characterize the behavioral profile of brain regions defined in the Julich-Brain Cytoarchitectonic Atlas by mapping interindividual variability in local structure as measured with grey matter volume (GMV) to interindividual variability in psychometric data. From a large cohort of healthy individuals [Nooner et al. 2012](https://doi.org/10.3389/fnins.2012.00152), we selected a subgroup of 466 participants with good quality preprocessed T1-weighted MR-scans, using CAT12 toolbox [http://www.neuro.uni-jena.de/cat/](http://www.neuro.uni-jena.de/cat/), and available scores in a broad range of psychometric measures covering multiple cognitive domains (such as attention, episodic memory), personality and emotion scores. The preprocessed individual GMV maps, their corresponding psychometric scores and the regions of the Julich-Brain Cytoarchitectonic Atlas are then entered into the pyJUSBB tool [https://github.com/shahrzadkh/pyJUSBB/](https://github.com/shahrzadkh/pyJUSBB/), where non-parametric partial correlations between variability in average GMV in each of the brain regions and each of the 48 behavioral scores are assessed and ranked to create the behavioral profile of each region. The stability of each association is demonstrated as 95% Bootstrap confidence interval (10000 times). ",
+    "urls": [
+      {
+        "cite": null,
+        "doi": "10.25493/65R0-E9U"
+      }
+    ],
+    "fingerprint": null,
+    "profiles": null,
+    "autoradiographs": null,
+    "receptor_symbols": null
+  },
+  {
+    "@id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/4ac9f0bc-560d-47e0-8916-7b24da9bb0ce",
+    "@type": "minds/core/dataset/v1.0.0",
+    "id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/4ac9f0bc-560d-47e0-8916-7b24da9bb0ce",
+    "name": "Whole-brain parcellation of the Julich-Brain Cytoarchitectonic Atlas (v1.18)",
+    "description": "This dataset contains the whole-brain parcellation of the Julich-Brain Cytoarchitectonic Atlas ([Amunts and Zilles, 2015](https://www.sciencedirect.com/science/article/pii/S0896627315010727?via%3Dihub)) in the MNI Colin 27 as well as the MNI ICBM 152 2009c nonlinear asymmetric reference space. The parcellation is derived from the individual probability maps (PMs) of the cytoarchitectonic regions released in the Julich-Brain Cytoarchitectonic Atlas, that are further combined into a Maximum Probability Map (MPM). The MPM is calculated by considering for each voxel the probability of all cytoarchitectonic areas released in the atlas, and determining the most probable assignment ([Eickhoff 2005](https://www.sciencedirect.com/science/article/abs/pii/S105381190400792X?via%3Dihub)). Note that methodological improvements and integration of new brain structures may lead to small deviations in earlier released datasets.",
+    "urls": [
+      {
+        "cite": null,
+        "doi": "10.25493/8EGG-ZAR"
+      }
+    ],
+    "fingerprint": null,
+    "profiles": null,
+    "autoradiographs": null,
+    "receptor_symbols": null
+  },
+  {
+    "@id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/5249afa7-5e04-4ffd-8039-c3a9231f717c",
+    "@type": "minds/core/dataset/v1.0.0",
+    "id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/5249afa7-5e04-4ffd-8039-c3a9231f717c",
+    "name": "Whole-brain parcellation of the Julich-Brain Cytoarchitectonic Atlas (v2.4)",
+    "description": "This dataset contains the whole-brain parcellation of the Julich-Brain Cytoarchitectonic Atlas in the MNI Colin 27 as well as the MNI ICBM 152 2009c nonlinear asymmetric reference space ([Evans et al., 2012](https://www.sciencedirect.com/science/article/pii/S1053811912000419?via%3Dihub)). The parcellation is derived from the individual probability maps (PMs) of the cytoarchitectonic regions released in the Julich-Brain Cytoarchitectonic Atlas, that are further combined into a Maximum Probability Map (MPM). The MPM is calculated by considering for each voxel the probability of all cytoarchitectonic areas released in the atlas, and determining the most probable assignment ([Eickhoff 2005](https://www.sciencedirect.com/science/article/pii/S105381190400792X?via%3Dihub)). Gap maps complement cortical maps to achieve full cortical coverage. The table “Julich-Brain\\_shrinkage\\_corrected\\_individual\\_volumes” contains shrinkage corrected individual volumes and hemispheric and gender specific coefficients of variations of all Julich-Brain areas. Note that methodological improvements and integration of new brain structures may lead to small deviations in earlier released datasets.",
+    "urls": [
+      {
+        "cite": null,
+        "doi": "10.25493/A7Y0-NX9"
+      }
+    ],
+    "fingerprint": null,
+    "profiles": null,
+    "autoradiographs": null,
+    "receptor_symbols": null
+  },
+  {
+    "@id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/0993926f-5093-4a16-b535-e4eae18e3975",
+    "@type": "minds/core/dataset/v1.0.0",
+    "id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/0993926f-5093-4a16-b535-e4eae18e3975",
+    "name": "Probabilistic cytoarchitectonic map of Area hOc1 (V1, 17, CalcS) (v4.0)",
+    "description": "This dataset contains the distinct architectonic Area hOc1 (V1, 17, CalcS) in the individual, single subject template of the MNI Colin 27 as well as the MNI ICBM 152 2009c nonlinear asymmetric reference space. As part of the Julich-Brain cytoarchitectonic atlas, the area was identified using cytoarchitectonic analysis on cell-body-stained histological sections of 10 human postmortem brains obtained from the body donor program of the University of Düsseldorf. The results of the cytoarchitectonic analysis were then mapped to both reference spaces, where each voxel was assigned the probability to belong to Area hOc1 (V1, 17, CalcS). The probability map of Area hOc1 (V1, 17, CalcS) are provided in the NifTi format for each brain reference space and hemisphere. The Julich-Brain atlas relies on a modular, flexible and adaptive framework containing workflows to create the probabilistic brain maps for these structures. Note that methodological improvements and integration of new brain structures may lead to small deviations in earlier released datasets.\n\nOther available data versions of Area hOc1 (V1, 17, CalcS):\nAmunts et al. (2018) [Data set, v2.2] [DOI: 10.25493/8VRA-X28](https://doi.org/10.25493%2F8VRA-X28)\nAmunts et al. (2019) [Data set, v2.4] [DOI: 10.25493/MXJ6-6DH](https://doi.org/10.25493%2FMXJ6-6DH)\n\nThe most probable delineation of Area hOc1 (V1, 17, CalcS) derived from the calculation of a maximum probability map of all currently released Julich-Brain brain structures can be found here:\nAmunts et al. (2019) [Data set, v1.13] [DOI: 10.25493/Q3ZS-NV6](https://doi.org/10.25493%2FQ3ZS-NV6)\nAmunts et al. (2019) [Data set, v1.18] [DOI: 10.25493/8EGG-ZAR](https://doi.org/10.25493%2F8EGG-ZAR)\nAmunts et al. (2020) [Data set, v2.2] [DOI: 10.25493/TAKY-64D](https://doi.org/10.25493%2FTAKY-64D)\nAmunts et al. (2020) [Data set, v2.4] [DOI: 10.25493/A7Y0-NX9](https://doi.org/10.25493%2FA7Y0-NX9)\nAmunts et al. (2020) [Data set, v2.5] [DOI: 10.25493/8JKE-M53](https://doi.org/10.25493/8JKE-M53)",
+    "urls": [
+      {
+        "cite": null,
+        "doi": "10.25493/K96X-PJ5"
+      }
+    ],
+    "fingerprint": null,
+    "profiles": null,
+    "autoradiographs": null,
+    "receptor_symbols": null
+  }
+]

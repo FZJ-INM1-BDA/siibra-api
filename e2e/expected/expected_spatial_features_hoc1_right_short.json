@@ -1,0 +1,44 @@
+[
+  {
+    "@id": "ca952092-3013-4151-abcc-99a156fe7c83",
+    "@type": "ieeg/session/v0.0.1",
+    "id": "ca952092-3013-4151-abcc-99a156fe7c83",
+    "name": "Human Intracranial EEG Database (HID) [cohort I]",
+    "description": "The Human Intracranial Database (HID) is a collection of stereotactic electroencephalography (sEEG) data in epileptic patients, performing eight behavioral tasks. The behavioral tasks were used as functional localizers: short and classic task paradigms designed to activate large-scale neural networks involved in language processing (LEC1 and LEC2), verbal and visuo-spatial working memory (MVEB and MVIS), visual attention (VISU), motor behavior (MOTO), high-level visual (MCSE) and auditory perception (AUDI). Furthermore, patients were also recorded during resting state (REST) and a series of tests designed to evaluate wheather specific types of actions can generate artefacts (ARFA). The sEEG data were obtained via several sEEG depth-electrodes (linear arrays with up to 20 contacts) that were implanted in each patient in a stereotactic surgery. Coordinates of the sEEG electrode contacts are provided in the individual brain space of each patient as well as in a reference brain space (MNI icbm 152). Semantically sEEG electrode contacts were linked to brain areas of the MarsAtlas, but can be positioned on the individual anatomy for checking purposes.",
+    "urls": [
+      {
+        "cite": null,
+        "doi": "10.25493/KFWB-ACH"
+      }
+    ],
+    "detail": null
+  },
+  {
+    "@id": "ca952092-3013-4151-abcc-99a156fe7c83",
+    "@type": "ieeg/session/v0.0.1",
+    "id": "ca952092-3013-4151-abcc-99a156fe7c83",
+    "name": "Human Intracranial EEG Database (HID) [cohort I]",
+    "description": "The Human Intracranial Database (HID) is a collection of stereotactic electroencephalography (sEEG) data in epileptic patients, performing eight behavioral tasks. The behavioral tasks were used as functional localizers: short and classic task paradigms designed to activate large-scale neural networks involved in language processing (LEC1 and LEC2), verbal and visuo-spatial working memory (MVEB and MVIS), visual attention (VISU), motor behavior (MOTO), high-level visual (MCSE) and auditory perception (AUDI). Furthermore, patients were also recorded during resting state (REST) and a series of tests designed to evaluate wheather specific types of actions can generate artefacts (ARFA). The sEEG data were obtained via several sEEG depth-electrodes (linear arrays with up to 20 contacts) that were implanted in each patient in a stereotactic surgery. Coordinates of the sEEG electrode contacts are provided in the individual brain space of each patient as well as in a reference brain space (MNI icbm 152). Semantically sEEG electrode contacts were linked to brain areas of the MarsAtlas, but can be positioned on the individual anatomy for checking purposes.",
+    "urls": [
+      {
+        "cite": null,
+        "doi": "10.25493/KFWB-ACH"
+      }
+    ],
+    "detail": null
+  },
+  {
+    "@id": "ca952092-3013-4151-abcc-99a156fe7c83",
+    "@type": "ieeg/session/v0.0.1",
+    "id": "ca952092-3013-4151-abcc-99a156fe7c83",
+    "name": "Human Intracranial EEG Database (HID) [cohort I]",
+    "description": "The Human Intracranial Database (HID) is a collection of stereotactic electroencephalography (sEEG) data in epileptic patients, performing eight behavioral tasks. The behavioral tasks were used as functional localizers: short and classic task paradigms designed to activate large-scale neural networks involved in language processing (LEC1 and LEC2), verbal and visuo-spatial working memory (MVEB and MVIS), visual attention (VISU), motor behavior (MOTO), high-level visual (MCSE) and auditory perception (AUDI). Furthermore, patients were also recorded during resting state (REST) and a series of tests designed to evaluate wheather specific types of actions can generate artefacts (ARFA). The sEEG data were obtained via several sEEG depth-electrodes (linear arrays with up to 20 contacts) that were implanted in each patient in a stereotactic surgery. Coordinates of the sEEG electrode contacts are provided in the individual brain space of each patient as well as in a reference brain space (MNI icbm 152). Semantically sEEG electrode contacts were linked to brain areas of the MarsAtlas, but can be positioned on the individual anatomy for checking purposes.",
+    "urls": [
+      {
+        "cite": null,
+        "doi": "10.25493/KFWB-ACH"
+      }
+    ],
+    "detail": null
+  }
+]

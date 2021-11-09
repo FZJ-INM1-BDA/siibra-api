@@ -14,6 +14,7 @@ jobs:
       EBRAINS_IAM_CLIENT_SECRET: ${{ secrets.EBRAINS_IAM_CLIENT_SECRET }}
       EBRAINS_IAM_REFRESH_TOKEN: ${{ secrets.EBRAINS_IAM_REFRESH_TOKEN }}
       SIIBRA_CONFIG_GITLAB_PROJECT_TAG: master
+      SIIBRA_CI: true
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2

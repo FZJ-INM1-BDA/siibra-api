@@ -66,7 +66,7 @@ def get_all_spaces(atlas_id: str):
         atlas: Atlas=siibra.atlases[atlas_id]
         return [ JSONEncoder.encode(space, nested=True) for space in atlas.spaces]
     except IndexError:
-        raise HTTPException(400, detail=f'atlas with id {atlas_id} not found.')
+        raise HTTPException(404, detail=f'atlas with id {atlas_id} not found.')
 
 
 @router.get('/{space_id:path}/templates',
@@ -104,7 +104,7 @@ def get_template_by_space_id(
         return cached_full_path
 
     except IndexError as e:
-        raise HTTPException(400, detail=f'IndexError: {str(e)}')
+        raise HTTPException(404, detail=f'IndexError: {str(e)}')
     except RuntimeError as e:
         # siibra-python raises sometimes
         raise HTTPException(500, detail=f'RuntimeError: {str(e)}')
@@ -154,7 +154,7 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):
         full_path =  get_cached_file_path(cached_filename, callback)
         return FileResponse(full_path, media_type='application/octet-stream')
     except IndexError as e:
-        raise HTTPException(400, detail=f'IndexError: {str(e)}')
+        raise HTTPException(404, detail=f'IndexError: {str(e)}')
 
     # TODO get all parc maps, NYI
     # maps = [p.get_map(space) for p in valid_parcs]
@@ -225,12 +225,13 @@ def get_single_spatial_feature(
     ```
     """
     try:
+        modality_id = modality_id.name
         atlas:Atlas = siibra.atlases[atlas_id]
         space:Space = atlas.spaces[space_id]
 
         if parcellation_id or region_id:
             parcellation:Parcellation = atlas.parcellations[parcellation_id] if parcellation_id else None
-            region:Region = parcellation.find_regions(region_id)[0] if parcellation_id else atlas.get_region(region_id)
+            region:Region = parcellation.find_regions(region_id)[0] if parcellation_id else atlas.get_region(region_id) if region_id else None
             roi = region or parcellation
             features = [f for f in siibra.get_features(roi, modality_id) if f.space == space]
         else:
@@ -241,7 +242,7 @@ def get_single_spatial_feature(
         return JSONEncoder.encode(features, nested=True, detail=False)
 
     except IndexError as e:
-        raise HTTPException(400, detail=f'IndexError: {str(e)}')
+        raise HTTPException(404, detail=f'IndexError: {str(e)}')
     except AssertionError as e:
         raise HTTPException(400, detail=f'AssertionError: {str(e)}')
 
@@ -284,9 +285,10 @@ def get_single_spatial_feature_detail(
     ```
     """
     try:
+        modality_id = modality_id.name
         atlas:Atlas = siibra.atlases[atlas_id]
         space:Space = atlas.spaces[space_id]
-
+        roi = None
         if parcellation_id or region_id:
             parcellation:Parcellation = atlas.parcellations[parcellation_id] if parcellation_id else None
             region:Region = parcellation.find_regions(region_id)[0] if parcellation_id else atlas.get_region(region_id)
@@ -297,10 +299,11 @@ def get_single_spatial_feature_detail(
             assert len(queries) == 1, f'modality_id query should be unique, but got {len(queries)} responses'
             query = queries[0]
             features = [f for f in query.features if f.space == space]
-        feature = [f for f in features if f.id == feature_id][0]
-        return JSONEncoder.encode(feature, nested=True, detail=True)
+        feature = [f for f in features if (f.dataset.id if hasattr(f, 'dataset') else f.id) == feature_id][0]
+        return JSONEncoder.encode(feature, region=roi, nested=True, detail=True)
+
     except IndexError as e:
-        raise HTTPException(400, detail=f'IndexError: {str(e)}')
+        raise HTTPException(404, detail=f'IndexError: {str(e)}')
     except AssertionError as e:
         raise HTTPException(400, detail=f'AssertionError: {str(e)}')
 
@@ -338,7 +341,7 @@ def get_spatial_feature_names(
             'name': mod.value
         } for mod in SpatialFeatureEnum ]
     except IndexError as e:
-        raise HTTPException(400, detail=f'IndexError: {str(e)}')
+        raise HTTPException(404, detail=f'IndexError: {str(e)}')
 
 
 @router.get('/{space_id:path}',
@@ -364,7 +367,7 @@ def get_one_space_by_id(
     try:
         atlas:Atlas = siibra.atlases[atlas_id]
         space:Space = atlas.spaces[space_id]
-        return JSONEncoder.encode(space)
+        return JSONEncoder.encode(space, nested=True)
     except IndexError:
         raise HTTPException(
             status_code=404,

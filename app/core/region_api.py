@@ -116,18 +116,19 @@ def get_regional_modality_by_id(
     ```
     """
     try:
+        modality_id = modality_id.name
         atlas: Atlas = siibra.atlases[f'{atlas_id}']
         parcellation: Parcellation = atlas.parcellations[f'{parcellation_id}']
         region: Region = parcellation.find_regions(f'{region_id}')[0]
         
         if siibra.features.modalities[f'{modality_id}'] not in [mod for mod in siibra.features.modalities if issubclass(mod._FEATURETYPE, RegionalFeature) ]:
-            raise HTTPException(400, detail=f'modality_id {modality_id} not a regional modality')
+            raise HTTPException(404, detail=f'modality_id {modality_id} not a regional modality')
         
         features = siibra.get_features(region, f'{modality_id}')
         feature = [f for f in features if f.id == feature_id][0]
         return JSONEncoder.encode(feature, nested=True, detail=True)
     except IndexError as e:
-        raise HTTPException(400, detail=f'IndexError: {str(e)}')
+        raise HTTPException(404, detail=f'IndexError: {str(e)}')
 
 
 @router.get('/{region_id:path}/features/{modality_id}',
@@ -160,17 +161,18 @@ def get_feature_modality_for_region(
     """
 
     try:
+        modality_id = modality_id.name
         atlas: Atlas = siibra.atlases[f'{atlas_id}']
         parcellation: Parcellation = atlas.parcellations[f'{parcellation_id}']
         region: Region = parcellation.find_regions(f'{region_id}')[0]
         
         if siibra.features.modalities[f'{modality_id}'] not in [mod for mod in siibra.features.modalities if issubclass(mod._FEATURETYPE, RegionalFeature) ]:
-            raise HTTPException(400, detail=f'modality_id {modality_id} not a regional modality')
+            raise HTTPException(404, detail=f'modality_id {modality_id} not a regional modality')
         
         features = siibra.get_features(region, f'{modality_id}')
         return JSONEncoder.encode(features, nested=True, detail=False)
     except IndexError as e:
-        raise HTTPException(400, detail=f'IndexError: {str(e)}')
+        raise HTTPException(404, detail=f'IndexError: {str(e)}')
 
 
 class MinMaxModel(BaseModel):
@@ -259,7 +261,7 @@ def get_regional_map_file(
         
         return FileResponse(cached_fullpath, media_type='application/octet-stream')
     except IndexError as e:
-        raise HTTPException(400, detail=f'IndexError: {str(e)}')
+        raise HTTPException(404, detail=f'IndexError: {str(e)}')
 
 
 @router.get('/{region_id:path}',
@@ -284,17 +286,20 @@ def get_region_by_name_api(
 
     atlas: Atlas = siibra.atlases[f'{atlas_id}']
     parcellation: Parcellation = atlas.parcellations[f'{parcellation_id}']
-    region = parcellation.decode_region(f'{region_id}')
+    region = parcellation.find_regions(f'{region_id}')[0]
     ```
     """
     try:
         atlas:Atlas = siibra.atlases[atlas_id]
         parcellation:Parcellation = atlas.parcellations[parcellation_id]
-        region: Region = parcellation.decode_region(region_id)
+        region: Region = parcellation.find_regions(region_id)[0]
         space: Space = atlas.spaces[space_id] if space_id is not None else None
+        # polyfill for https://github.com/FZJ-INM1-BDA/siibra-python/issues/98
+        if space == siibra.spaces['fsaverage']:
+            space = None
         return JSONEncoder.encode(region, nested=True, space=space, detail=True)
     except IndexError as e:
-        raise HTTPException(400, detail=f'Index Error: {str(e)}')
+        raise HTTPException(404, detail=f'Index Error: {str(e)}')
     except Exception as e:
         logger.error('Error:', str(e))
         raise HTTPException(500, detail=f'Error. {str(e)}')

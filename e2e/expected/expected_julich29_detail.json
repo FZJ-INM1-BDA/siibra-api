@@ -1,0 +1,480 @@
+{
+  "@id": "minds/core/parcellationatlas/v1.0.0/94c1125b-b87e-45e4-901c-00daee7f2579-290",
+  "@type": "minds/core/parcellationatlas/v1.0.0",
+  "id": "minds/core/parcellationatlas/v1.0.0/94c1125b-b87e-45e4-901c-00daee7f2579-290",
+  "type_id": "minds/core/parcellationatlas/v1.0.0",
+  "name": "Julich-Brain Cytoarchitectonic Maps 2.9",
+  "modality": "cytoarchitecture",
+  "infos": [
+    {
+      "@id": "5fd499af7a15936ef8bcea41d231e04b",
+      "@type": "fzj/tmp/simpleOriginInfo/v0.0.1",
+      "name": "Whole-brain parcellation of the Julich-Brain Cytoarchitectonic Atlas (v2.9)",
+      "id": "5fd499af7a15936ef8bcea41d231e04b",
+      "url": null,
+      "volume_type": null,
+      "type_id": null,
+      "detail": null
+    },
+    {
+      "@id": "a8932c7e-063c-4131-ab96-996d843998e9",
+      "@type": "minds/core/dataset/v1.0.0",
+      "name": "Whole-brain parcellation of the Julich-Brain Cytoarchitectonic Atlas (v2.9)",
+      "id": "a8932c7e-063c-4131-ab96-996d843998e9",
+      "url": null,
+      "volume_type": null,
+      "type_id": null,
+      "detail": null
+    },
+    {
+      "@id": "fzj/tmp/volume_type/v0.0.1/julichbrain-v290-fsaverage-colin-cleaned-lh",
+      "@type": "fzj/tmp/volume_type/v0.0.1",
+      "name": "colin-cleaned",
+      "id": "fzj/tmp/volume_type/v0.0.1/julichbrain-v290-fsaverage-colin-cleaned-lh",
+      "url": "https://neuroglancer.humanbrainproject.eu/precomputed/data-repo-ng-bot/20210628_julichBrainV290_freesurfer_update2/gii/2021_06_28/GapMapPublicMPMAtlas_l_N10_nlin2StdColin27_29_fsaverage_cleaned.gii",
+      "volume_type": "threesurfer/gii-label",
+      "type_id": "fzj/tmp/volume_type/v0.0.1",
+      "detail": {
+        "threesurfer/gii-label": {}
+      }
+    },
+    {
+      "@id": "fzj/tmp/volume_type/v0.0.1/julichbrain-v290-fsaverage-colin-cleaned-rh",
+      "@type": "fzj/tmp/volume_type/v0.0.1",
+      "name": "colin-cleaned",
+      "id": "fzj/tmp/volume_type/v0.0.1/julichbrain-v290-fsaverage-colin-cleaned-rh",
+      "url": "https://neuroglancer.humanbrainproject.eu/precomputed/data-repo-ng-bot/20210628_julichBrainV290_freesurfer_update2/gii/2021_06_28/GapMapPublicMPMAtlas_r_N10_nlin2StdColin27_29_fsaverage_cleaned.gii",
+      "volume_type": "threesurfer/gii-label",
+      "type_id": "fzj/tmp/volume_type/v0.0.1",
+      "detail": {
+        "threesurfer/gii-label": {}
+      }
+    },
+    {
+      "@id": "fzj/tmp/volume_type/v0.0.1/julichbrain-v290-fsaverage6-colin-cleaned-lh",
+      "@type": "fzj/tmp/volume_type/v0.0.1",
+      "name": "colin-cleaned",
+      "id": "fzj/tmp/volume_type/v0.0.1/julichbrain-v290-fsaverage6-colin-cleaned-lh",
+      "url": "https://neuroglancer.humanbrainproject.eu/precomputed/data-repo-ng-bot/20210628_julichBrainV290_freesurfer_update2/gii/2021_06_28/GapMapPublicMPMAtlas_l_N10_nlin2StdColin27_29_fsaverage6_cleaned.gii",
+      "volume_type": "threesurfer/gii-label",
+      "type_id": "fzj/tmp/volume_type/v0.0.1",
+      "detail": {
+        "threesurfer/gii-label": {}
+      }
+    },
+    {
+      "@id": "fzj/tmp/volume_type/v0.0.1/julichbrain-v290-fsaverage6-colin-cleaned-rh",
+      "@type": "fzj/tmp/volume_type/v0.0.1",
+      "name": "colin-cleaned",
+      "id": "fzj/tmp/volume_type/v0.0.1/julichbrain-v290-fsaverage6-colin-cleaned-rh",
+      "url": "https://neuroglancer.humanbrainproject.eu/precomputed/data-repo-ng-bot/20210628_julichBrainV290_freesurfer_update2/gii/2021_06_28/GapMapPublicMPMAtlas_r_N10_nlin2StdColin27_29_fsaverage6_cleaned.gii",
+      "volume_type": "threesurfer/gii-label",
+      "type_id": "fzj/tmp/volume_type/v0.0.1",
+      "detail": {
+        "threesurfer/gii-label": {}
+      }
+    },
+    {
+      "@id": "fzj/tmp/volume_type/v0.0.1/julichbrain-v290-fsaverage6-colin-cleaned-lh",
+      "@type": "fzj/tmp/volume_type/v0.0.1",
+      "name": "colin-cleaned",
+      "id": "fzj/tmp/volume_type/v0.0.1/julichbrain-v290-fsaverage6-colin-cleaned-lh",
+      "url": "https://neuroglancer.humanbrainproject.eu/precomputed/data-repo-ng-bot/20210628_julichBrainV290_freesurfer_update2/gii/2021_06_28/GapMapPublicMPMAtlas_l_N10_nlin2StdColin27_29_hcp32k_cleaned.gii",
+      "volume_type": "threesurfer/gii-label",
+      "type_id": "fzj/tmp/volume_type/v0.0.1",
+      "detail": {
+        "threesurfer/gii-label": {}
+      }
+    },
+    {
+      "@id": "fzj/tmp/volume_type/v0.0.1/julichbrain-v290-fsaverage6-colin-cleaned-rh",
+      "@type": "fzj/tmp/volume_type/v0.0.1",
+      "name": "colin-cleaned",
+      "id": "fzj/tmp/volume_type/v0.0.1/julichbrain-v290-fsaverage6-colin-cleaned-rh",
+      "url": "https://neuroglancer.humanbrainproject.eu/precomputed/data-repo-ng-bot/20210628_julichBrainV290_freesurfer_update2/gii/2021_06_28/GapMapPublicMPMAtlas_r_N10_nlin2StdColin27_29_hcp32k_cleaned.gii",
+      "volume_type": "threesurfer/gii-label",
+      "type_id": "fzj/tmp/volume_type/v0.0.1",
+      "detail": {
+        "threesurfer/gii-label": {}
+      }
+    }
+  ],
+  "regions": null,
+  "spaces": [
+    {
+      "@id": "minds/core/referencespace/v1.0.0/a1655b99-82f1-420f-a3c2-fe80fd4c8588",
+      "@type": "minds/core/referencespace/v1.0.0",
+      "name": "Big Brain",
+      "id": "minds/core/referencespace/v1.0.0/a1655b99-82f1-420f-a3c2-fe80fd4c8588",
+      "type_id": "minds/core/referencespace/v1.0.0",
+      "volume_type": "histology",
+      "volumes": [
+        {
+          "@id": "fzj/tmp/volume_type/v0.0.1/bigbrain20um",
+          "@type": "fzj/tmp/volume_type/v0.0.1",
+          "name": "bigbrain20um",
+          "id": "fzj/tmp/volume_type/v0.0.1/bigbrain20um",
+          "url": "https://neuroglancer.humanbrainproject.eu/precomputed/BigBrainRelease.2015/8bit",
+          "volume_type": "neuroglancer/precomputed",
+          "type_id": "fzj/tmp/volume_type/v0.0.1",
+          "detail": {
+            "neuroglancer/precomputed": {
+              "transform": [
+                [
+                  1,
+                  0,
+                  0,
+                  -70677184
+                ],
+                [
+                  0,
+                  1,
+                  0,
+                  -70010000
+                ],
+                [
+                  0,
+                  0,
+                  1,
+                  -58788284
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  1
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+      "@type": "minds/core/referencespace/v1.0.0",
+      "name": "MNI152 2009c nonl asym",
+      "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+      "type_id": "minds/core/referencespace/v1.0.0",
+      "volume_type": "mri",
+      "volumes": [
+        {
+          "@id": "fzj/tmp/volume_type/v0.0.1/icbm152_2009c_nonlin_asym/nifti",
+          "@type": "fzj/tmp/volume_type/v0.0.1",
+          "name": "icbm152_2009c_nonlin_asym/nifti",
+          "id": "fzj/tmp/volume_type/v0.0.1/icbm152_2009c_nonlin_asym/nifti",
+          "url": "http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/mni_icbm152_nlin_asym_09c_nifti.zip",
+          "volume_type": "nii",
+          "type_id": "fzj/tmp/volume_type/v0.0.1",
+          "detail": {}
+        },
+        {
+          "@id": "fzj/tmp/volume_type/v0.0.1/icbm152_2009c_nonlin_asym/ng_precomp",
+          "@type": "fzj/tmp/volume_type/v0.0.1",
+          "name": "icbm152_2009c_nonlin_asym",
+          "id": "fzj/tmp/volume_type/v0.0.1/icbm152_2009c_nonlin_asym/ng_precomp",
+          "url": "https://neuroglancer.humanbrainproject.eu/precomputed/Fiber_Bundle/mni_icbm152_t1_tal_nlin_asym_09c_masked",
+          "volume_type": "neuroglancer/precomputed",
+          "type_id": "fzj/tmp/volume_type/v0.0.1",
+          "detail": {
+            "neuroglancer/precomputed": {
+              "transform": [
+                [
+                  1,
+                  0,
+                  0,
+                  -96500000
+                ],
+                [
+                  0,
+                  1,
+                  0,
+                  -132500000
+                ],
+                [
+                  0,
+                  0,
+                  1,
+                  -78500000
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  1
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "@id": "minds/core/referencespace/v1.0.0/7f39f7be-445b-47c0-9791-e971c0b6d992",
+      "@type": "minds/core/referencespace/v1.0.0",
+      "name": "MNI Colin 27",
+      "id": "minds/core/referencespace/v1.0.0/7f39f7be-445b-47c0-9791-e971c0b6d992",
+      "type_id": "minds/core/referencespace/v1.0.0",
+      "volume_type": "mri",
+      "volumes": [
+        {
+          "@id": "fzj/tmp/volume_type/v0.0.1/colin27/nifti",
+          "@type": "fzj/tmp/volume_type/v0.0.1",
+          "name": "colin27/nifti",
+          "id": "fzj/tmp/volume_type/v0.0.1/colin27/nifti",
+          "url": "http://packages.bic.mni.mcgill.ca/mni-models/colin27/mni_colin27_1998_nifti.zip",
+          "volume_type": "nii",
+          "type_id": "fzj/tmp/volume_type/v0.0.1",
+          "detail": {}
+        },
+        {
+          "@id": "fzj/tmp/volume_type/v0.0.1/colin27/ng_precomp",
+          "@type": "fzj/tmp/volume_type/v0.0.1",
+          "name": "colin27",
+          "id": "fzj/tmp/volume_type/v0.0.1/colin27/ng_precomp",
+          "url": "https://neuroglancer.humanbrainproject.eu/precomputed/JuBrain/v2.2c/colin27_seg",
+          "volume_type": "neuroglancer/precomputed",
+          "type_id": "fzj/tmp/volume_type/v0.0.1",
+          "detail": {
+            "neuroglancer/precomputed": {
+              "transform": [
+                [
+                  1,
+                  0,
+                  0,
+                  -75500000
+                ],
+                [
+                  0,
+                  1,
+                  0,
+                  -111500000
+                ],
+                [
+                  0,
+                  0,
+                  1,
+                  -67500000
+                ],
+                [
+                  0,
+                  0,
+                  0,
+                  1
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "volumes": [
+    {
+      "@id": "fzj/tmp/volume_type/v0.0.1/collect",
+      "@type": "fzj/tmp/volume_type/v0.0.1",
+      "name": "detailed maps",
+      "id": "fzj/tmp/volume_type/v0.0.1/collect",
+      "url": null,
+      "volume_type": "detailed maps",
+      "type_id": "fzj/tmp/volume_type/v0.0.1",
+      "detail": {}
+    },
+    {
+      "@id": "fzj/tmp/volume_type/v0.0.1/julichbrain-colin27-lh-nii",
+      "@type": "fzj/tmp/volume_type/v0.0.1",
+      "name": "colin27-lh-nii",
+      "id": "fzj/tmp/volume_type/v0.0.1/julichbrain-colin27-lh-nii",
+      "url": "https://neuroglancer.humanbrainproject.eu/precomputed/data-repo-ng-bot/20210714-julichbrain_v290_correctaffine/hbp-d000007_julichbrain-cytoatlas_dev/MPMs/29.0/GapMapPublicMPMAtlas_l_N10_nlin2StdColin27_29_publicDOI_7f7bae194464eb71431c9916614d5f89.nii.gz",
+      "volume_type": "nii",
+      "type_id": "fzj/tmp/volume_type/v0.0.1",
+      "detail": {}
+    },
+    {
+      "@id": "fzj/tmp/volume_type/v0.0.1/julichbrain-colin27-lh-precomputed",
+      "@type": "fzj/tmp/volume_type/v0.0.1",
+      "name": "colin27-lh-precomputed",
+      "id": "fzj/tmp/volume_type/v0.0.1/julichbrain-colin27-lh-precomputed",
+      "url": "https://neuroglancer.humanbrainproject.eu/precomputed/data-repo-ng-bot/20210616-julichbrain-v2.9.0-complete-mpm/precomputed/GapMapPublicMPMAtlas_l_N10_nlin2StdColin27_29_publicDOI_7f7bae194464eb71431c9916614d5f89",
+      "volume_type": "neuroglancer/precomputed",
+      "type_id": "fzj/tmp/volume_type/v0.0.1",
+      "detail": {
+        "neuroglancer/precomputed": {
+          "transform": [
+            [
+              1,
+              0,
+              0,
+              -128500000
+            ],
+            [
+              0,
+              1,
+              0,
+              -148500000
+            ],
+            [
+              0,
+              0,
+              1,
+              -110500000
+            ],
+            [
+              0,
+              0,
+              0,
+              1
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "@id": "fzj/tmp/volume_type/v0.0.1/julichbrain-colin27-rh-nii",
+      "@type": "fzj/tmp/volume_type/v0.0.1",
+      "name": "colin27-rh-nii",
+      "id": "fzj/tmp/volume_type/v0.0.1/julichbrain-colin27-rh-nii",
+      "url": "https://neuroglancer.humanbrainproject.eu/precomputed/data-repo-ng-bot/20210714-julichbrain_v290_correctaffine/hbp-d000007_julichbrain-cytoatlas_dev/MPMs/29.0/GapMapPublicMPMAtlas_r_N10_nlin2StdColin27_29_publicDOI_883290e4569b289d35e78decdbc5deb7.nii.gz",
+      "volume_type": "nii",
+      "type_id": "fzj/tmp/volume_type/v0.0.1",
+      "detail": {}
+    },
+    {
+      "@id": "fzj/tmp/volume_type/v0.0.1/julichbrain-colin27-rh-precomputed",
+      "@type": "fzj/tmp/volume_type/v0.0.1",
+      "name": "colin27-rh-precomputed",
+      "id": "fzj/tmp/volume_type/v0.0.1/julichbrain-colin27-rh-precomputed",
+      "url": "https://neuroglancer.humanbrainproject.eu/precomputed/data-repo-ng-bot/20210616-julichbrain-v2.9.0-complete-mpm/precomputed/GapMapPublicMPMAtlas_r_N10_nlin2StdColin27_29_publicDOI_883290e4569b289d35e78decdbc5deb7",
+      "volume_type": "neuroglancer/precomputed",
+      "type_id": "fzj/tmp/volume_type/v0.0.1",
+      "detail": {
+        "neuroglancer/precomputed": {
+          "transform": [
+            [
+              1,
+              0,
+              0,
+              -128500000
+            ],
+            [
+              0,
+              1,
+              0,
+              -148500000
+            ],
+            [
+              0,
+              0,
+              1,
+              -110500000
+            ],
+            [
+              0,
+              0,
+              0,
+              1
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "@id": "fzj/tmp/volume_type/v0.0.1/julichbrain-mni152-lh-nii",
+      "@type": "fzj/tmp/volume_type/v0.0.1",
+      "name": "mni152-lh-nii",
+      "id": "fzj/tmp/volume_type/v0.0.1/julichbrain-mni152-lh-nii",
+      "url": "https://neuroglancer.humanbrainproject.eu/precomputed/data-repo-ng-bot/20210714-julichbrain_v290_correctaffine/hbp-d000007_julichbrain-cytoatlas_dev/MPMs/29.0/GapMapPublicMPMAtlas_l_N10_nlin2StdICBM152asym2009c_29_publicDOI_b1bcc0b5a127f5a917f0d8b0e869be5d.nii.gz",
+      "volume_type": "nii",
+      "type_id": "fzj/tmp/volume_type/v0.0.1",
+      "detail": {}
+    },
+    {
+      "@id": "fzj/tmp/volume_type/v0.0.1/julichbrain-mni152-lh-precomputed",
+      "@type": "fzj/tmp/volume_type/v0.0.1",
+      "name": "mni152-lh-precomputed",
+      "id": "fzj/tmp/volume_type/v0.0.1/julichbrain-mni152-lh-precomputed",
+      "url": "https://neuroglancer.humanbrainproject.eu/precomputed/data-repo-ng-bot/20210616-julichbrain-v2.9.0-complete-mpm/precomputed/GapMapPublicMPMAtlas_l_N10_nlin2StdICBM152asym2009c_29_publicDOI_77fea6ffe6f914b6d98fe88e85ff5b1b",
+      "volume_type": "neuroglancer/precomputed",
+      "type_id": "fzj/tmp/volume_type/v0.0.1",
+      "detail": {
+        "neuroglancer/precomputed": {
+          "transform": [
+            [
+              1,
+              0,
+              0,
+              -96500000
+            ],
+            [
+              0,
+              1,
+              0,
+              -132500000
+            ],
+            [
+              0,
+              0,
+              1,
+              -78500000
+            ],
+            [
+              0,
+              0,
+              0,
+              1
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "@id": "fzj/tmp/volume_type/v0.0.1/julichbrain-mni152-rh-nii",
+      "@type": "fzj/tmp/volume_type/v0.0.1",
+      "name": "mni152-rh-nii",
+      "id": "fzj/tmp/volume_type/v0.0.1/julichbrain-mni152-rh-nii",
+      "url": "https://neuroglancer.humanbrainproject.eu/precomputed/data-repo-ng-bot/20210714-julichbrain_v290_correctaffine/hbp-d000007_julichbrain-cytoatlas_dev/MPMs/29.0/GapMapPublicMPMAtlas_r_N10_nlin2StdICBM152asym2009c_29_publicDOI_57517b0a8dedb2ef53a661d40404e206.nii.gz",
+      "volume_type": "nii",
+      "type_id": "fzj/tmp/volume_type/v0.0.1",
+      "detail": {}
+    },
+    {
+      "@id": "fzj/tmp/volume_type/v0.0.1/julichbrain-mni152-rh-precomputed",
+      "@type": "fzj/tmp/volume_type/v0.0.1",
+      "name": "mni152-rh-precomputed",
+      "id": "fzj/tmp/volume_type/v0.0.1/julichbrain-mni152-rh-precomputed",
+      "url": "https://neuroglancer.humanbrainproject.eu/precomputed/data-repo-ng-bot/20210616-julichbrain-v2.9.0-complete-mpm/precomputed/GapMapPublicMPMAtlas_r_N10_nlin2StdICBM152asym2009c_29_publicDOI_2b6e644a161af7477fb4328bcd490756",
+      "volume_type": "neuroglancer/precomputed",
+      "type_id": "fzj/tmp/volume_type/v0.0.1",
+      "detail": {
+        "neuroglancer/precomputed": {
+          "transform": [
+            [
+              1,
+              0,
+              0,
+              -96500000
+            ],
+            [
+              0,
+              1,
+              0,
+              -132500000
+            ],
+            [
+              0,
+              0,
+              1,
+              -78500000
+            ],
+            [
+              0,
+              0,
+              0,
+              1
+            ]
+          ]
+        }
+      }
+    }
+  ]
+}

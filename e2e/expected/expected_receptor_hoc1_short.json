@@ -1,0 +1,19 @@
+[
+  {
+    "@id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/e715e1f7-2079-45c4-a67f-f76b102acfce",
+    "@type": "minds/core/dataset/v1.0.0",
+    "id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/e715e1f7-2079-45c4-a67f-f76b102acfce",
+    "name": "Density measurements of different receptors for Area hOc1 (V1, 17, CalcS) [human, v1.0]",
+    "description": "This dataset contains the densities (in fmol/mg protein) of receptors for classical neurotransmitters in Area hOc1 (V1, 17, CalcS) obtained by means of quantitative _in vitro_ autoradiography. The receptor densities are visualized as _fingerprints_ (**fp**), which provide the mean density and standard deviation for each of the analyzed receptor types, averaged across samples. \n\nOverview of available measurements [ **receptor** \\| **_neurotransmitter_** \\| _labeling agent_ ]:\n**AMPA** \\| **_glutamate_** \\| _[<sup>3</sup>H]AMPA_\n**kainate** \\| **_glutamate_** \\| _[<sup>3</sup>H]kainate_\n**NMDA** \\| **_glutamate_** \\| _[<sup>3</sup>H]MK-801_\n**GABA<sub>A</sub>** \\| **_GABA_** \\| _[<sup>3</sup>H]muscimol_\n**GABA<sub>B</sub>** \\| **_GABA_** \\| _[<sup>3</sup>H]CGP54626_\n**GABA<sub>A</sub>/BZ** \\| **_GABA_** \\| _[<sup>3</sup>H]flumazenil_\n**muscarinic M<sub>1</sub>** \\| **_acetylcholine_** \\| _[<sup>3</sup>H]pirenzepine_\n**muscarinic M<sub>2</sub>** \\| **_acetylcholine_** \\| _[<sup>3</sup>H]oxotremorine-M_\n**muscarinic M<sub>3</sub>** \\| **_acetylcholine_** \\| _[<sup>3</sup>H]4-DAMP_\n**nicotinic &#945<sub>4</sub>&#946<sub>2</sub>** \\| **_acetylcholine_** \\| _[<sup>3</sup>H]epibatidine_\n**&#945<sub>1</sub>** \\| **_noradrenalin/norepinephrine_** \\| _[<sup>3</sup>H]prazosin_\n**&#945<sub>2</sub>** \\| **_noradrenalin/norepinephrine_** \\| _[<sup>3</sup>H]UK-14,304_\n**5-HT<sub>1A</sub>** \\| **_serotonin_** \\| _[<sup>3</sup>H]8-OH-DPAT_\n**5-HT<sub>2</sub>** \\| **_serotonin_** \\| _[<sup>3</sup>H]ketanserin_\n**D<sub>1</sub>** \\| **_dopamine_** \\| _[<sup>3</sup>H]SCH23390_\n\nFor exemplary samples, we also provide laminar _profiles_ (**pr**)  and/or color-coded laminar _autoradiography_ images (**ar**). The density profiles provide, for a single tissue sample, an exemplary density distribution for a single receptor from the pial surface to the border between layer VI and the white matter. The autoradiography images show an exemplary density distribution of a single receptor for one laminar cross-section in a single tissue sample. \n\nInformation on the used tissue samples and corresponding subjects for the receptor fingerprints, profiles and autoradiographs as well as a list of analyzed receptors accompanies the provided dataset.\n\n**For methodological details, see:**\nZilles, K. et al. (2002). Quantitative analysis of cyto- and receptorarchitecture of the human brain, pp. 573-602. In: Brain Mapping: The Methods, 2nd edition (A.W. Toga and J.C. Mazziotta, eds.). San Diego, Academic Press.\n\nPalomero-Gallagher N, Zilles K. (2018) Cyto- and receptorarchitectonic mapping of the human brain. In: Handbook of Clinical Neurology 150: 355-387",
+    "urls": [
+      {
+        "cite": null,
+        "doi": "10.25493/P8SD-JMH"
+      }
+    ],
+    "fingerprint": null,
+    "profiles": null,
+    "autoradiographs": null,
+    "receptor_symbols": null
+  }
+]

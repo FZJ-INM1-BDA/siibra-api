@@ -1,0 +1,17 @@
+{
+  "@id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/3c722c10-9b76-4e64-9d4d-99d8eeb91471",
+  "@type": "minds/core/dataset/v1.0.0",
+  "id": "https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/3c722c10-9b76-4e64-9d4d-99d8eeb91471",
+  "name": "Probabilistic cytoarchitectonic map of Area hOc1 (V1, 17, CalcS) (v2.2)",
+  "description": "This dataset contains the distinct probabilistic cytoarchitectonic map of Area hOc1 (V1, 17, CalcS) in the individual, single subject template of the MNI Colin 27 reference space. As part of the Julich-Brain cytoarchitectonic atlas, the area was identified using cytoarchitectonic analysis on cell-body-stained histological sections of 10 human postmortem brains obtained from the body donor program of the University of Düsseldorf. The results of the cytoarchitectonic analysis were then mapped to the reference space, where each voxel was assigned the probability to belong to Area hOc1 (V1, 17, CalcS). The probability map of Area hOc1 (V1, 17, CalcS) is provided in NifTi format for each hemisphere in the reference space. The Julich-Brain atlas relies on a modular, flexible and adaptive framework containing workflows to create the probabilistic brain maps for these structures. Note that methodological improvements and updated probability estimates for new brain structures may in some cases lead to measurable but negligible deviations of existing probability maps, as compared to earlier released datasets.  \n\nOther available data versions of Area hOc1 (V1, 17, CalcS):\nAmunts et al. (2019) [Data set, v2.4] [DOI: 0.25493/MXJ6-6DH](https://doi.org/10.25493%2FMXJ6-6DH)\n\nThe most probable delineation of Area hOc1 (V1, 17, CalcS) derived from the calculation of a maximum probability map of all currently released Julich-Brain brain structures can be found here:\nAmunts et al. (2019) [Data set, v1.13] [DOI: 10.25493/Q3ZS-NV6](https://doi.org/10.25493%2FQ3ZS-NV6)\nAmunts et al. (2019) [Data set, v1.18] [DOI: 10.25493/8EGG-ZAR](https://doi.org/10.25493%2F8EGG-ZAR)\nAmunts et al. (2020) [Data set, v2.2] [DOI: 10.25493/TAKY-64D](https://doi.org/10.25493%2FTAKY-64D)",
+  "urls": [
+    {
+      "cite": null,
+      "doi": "10.25493/8VRA-X28"
+    }
+  ],
+  "fingerprint": null,
+  "profiles": null,
+  "autoradiographs": null,
+  "receptor_symbols": null
+}

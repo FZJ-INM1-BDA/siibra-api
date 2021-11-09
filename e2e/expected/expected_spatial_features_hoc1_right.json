@@ -1,0 +1,2694 @@
+{
+  "@id": "ca952092-3013-4151-abcc-99a156fe7c83",
+  "@type": "ieeg/session/v0.0.1",
+  "id": "ca952092-3013-4151-abcc-99a156fe7c83",
+  "name": "Human Intracranial EEG Database (HID) [cohort I]",
+  "description": "The Human Intracranial Database (HID) is a collection of stereotactic electroencephalography (sEEG) data in epileptic patients, performing eight behavioral tasks. The behavioral tasks were used as functional localizers: short and classic task paradigms designed to activate large-scale neural networks involved in language processing (LEC1 and LEC2), verbal and visuo-spatial working memory (MVEB and MVIS), visual attention (VISU), motor behavior (MOTO), high-level visual (MCSE) and auditory perception (AUDI). Furthermore, patients were also recorded during resting state (REST) and a series of tests designed to evaluate wheather specific types of actions can generate artefacts (ARFA). The sEEG data were obtained via several sEEG depth-electrodes (linear arrays with up to 20 contacts) that were implanted in each patient in a stereotactic surgery. Coordinates of the sEEG electrode contacts are provided in the individual brain space of each patient as well as in a reference brain space (MNI icbm 152). Semantically sEEG electrode contacts were linked to brain areas of the MarsAtlas, but can be positioned on the individual anatomy for checking purposes.",
+  "urls": [
+    {
+      "cite": null,
+      "doi": "10.25493/KFWB-ACH"
+    }
+  ],
+  "detail": {
+    "sub_id": "HID-Sub-018",
+    "electrodes": {
+      "A": {
+        "electrode_id": "A",
+        "subject_id": "HID-Sub-018",
+        "contact_points": {
+          "1": {
+            "id": "1",
+            "location": {
+              "@id": "7833d46bcebb37b72ad5c0b99be83b5b",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "2": {
+            "id": "2",
+            "location": {
+              "@id": "832082d6820e2d5885a44986c938dac3",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "3": {
+            "id": "3",
+            "location": {
+              "@id": "d7751b3956decd05361a5c754586b7e2",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "4": {
+            "id": "4",
+            "location": {
+              "@id": "499680838da82c066a744fd656c56b24",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "5": {
+            "id": "5",
+            "location": {
+              "@id": "d2b8f5f42d2f83e2a5b8eaba4477997a",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "6": {
+            "id": "6",
+            "location": {
+              "@id": "920512495c1fa5493da663b4f588f780",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "7": {
+            "id": "7",
+            "location": {
+              "@id": "090afffe184cc070b84d26a92968e82c",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "8": {
+            "id": "8",
+            "location": {
+              "@id": "c000914717ae950db7eda696b2d323f6",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "9": {
+            "id": "9",
+            "location": {
+              "@id": "ef2a48eef0e6718a71305c3f06d234e1",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "10": {
+            "id": "10",
+            "location": {
+              "@id": "10ca95a04f616ade4c81291dee2d31c0",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "11": {
+            "id": "11",
+            "location": {
+              "@id": "245dd570f0f752f93047dc929a73f37e",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "12": {
+            "id": "12",
+            "location": {
+              "@id": "19b03b2e5868c55bb366ffd9335aa0c8",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          }
+        },
+        "in_roi": false
+      },
+      "B": {
+        "electrode_id": "B",
+        "subject_id": "HID-Sub-018",
+        "contact_points": {
+          "1": {
+            "id": "1",
+            "location": {
+              "@id": "7a9955fe1fea99ee920308557ec8b6d5",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "2": {
+            "id": "2",
+            "location": {
+              "@id": "c7f751396e54aad5ba016a4f2ae3ab34",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "3": {
+            "id": "3",
+            "location": {
+              "@id": "04e283dfa186bba21956d7c0ee910ea9",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "4": {
+            "id": "4",
+            "location": {
+              "@id": "02564085cdcd1aaf3a72199cc9b0dd14",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "5": {
+            "id": "5",
+            "location": {
+              "@id": "88abf9241ebf182696036cf0df415373",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "6": {
+            "id": "6",
+            "location": {
+              "@id": "29bd490c30271f6bdf4b9a94ab6d4a89",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "7": {
+            "id": "7",
+            "location": {
+              "@id": "9d5890098d1fa3c3180a863cc59909d0",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "8": {
+            "id": "8",
+            "location": {
+              "@id": "8c72c7dab11c4397420281016444aa7a",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "9": {
+            "id": "9",
+            "location": {
+              "@id": "1174568aa9cbfc1670f1cc8c414349e4",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "10": {
+            "id": "10",
+            "location": {
+              "@id": "1193804cba0d7ee9befef6211ec70bf6",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "11": {
+            "id": "11",
+            "location": {
+              "@id": "1c5983008208c87bb2d47f099b2bf35e",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "12": {
+            "id": "12",
+            "location": {
+              "@id": "af6f414861e19a374c773926a3d8daf1",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          }
+        },
+        "in_roi": false
+      },
+      "C": {
+        "electrode_id": "C",
+        "subject_id": "HID-Sub-018",
+        "contact_points": {
+          "1": {
+            "id": "1",
+            "location": {
+              "@id": "2fec89c89e91d8c061cc5ce85bc4df97",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "2": {
+            "id": "2",
+            "location": {
+              "@id": "3a6904fa34b91a7f80b0722acd235b64",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "3": {
+            "id": "3",
+            "location": {
+              "@id": "8f5b76a83f24f15c8699d76dc91effda",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "4": {
+            "id": "4",
+            "location": {
+              "@id": "ee85c5fada4bba250cba7397edb5a01e",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "5": {
+            "id": "5",
+            "location": {
+              "@id": "ceb8d442c2b18c8d6af7fc34e16a1cd9",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "6": {
+            "id": "6",
+            "location": {
+              "@id": "a3e894ac51b9c370b0fe1d91af642803",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "7": {
+            "id": "7",
+            "location": {
+              "@id": "e85dfa6388663e7ed343f39aca71d56e",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "8": {
+            "id": "8",
+            "location": {
+              "@id": "4b2efb6c9e26c13bf74778636b597ee3",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "9": {
+            "id": "9",
+            "location": {
+              "@id": "403c33c04ecde69a8a4114fbd1892460",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "10": {
+            "id": "10",
+            "location": {
+              "@id": "c0360329b0d0e29c3d8ccdb5c2aef9ca",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "11": {
+            "id": "11",
+            "location": {
+              "@id": "4e671a219d6ec625055b5f92d903c596",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "12": {
+            "id": "12",
+            "location": {
+              "@id": "1c8df19dd789afb6f22ab030f46a449f",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          }
+        },
+        "in_roi": false
+      },
+      "D": {
+        "electrode_id": "D",
+        "subject_id": "HID-Sub-018",
+        "contact_points": {
+          "1": {
+            "id": "1",
+            "location": {
+              "@id": "c3872e7632f4c035897bb73609732f06",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "2": {
+            "id": "2",
+            "location": {
+              "@id": "8f42ab40eddfa04ddb76c943911be5ca",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "3": {
+            "id": "3",
+            "location": {
+              "@id": "18be9eeebd47e581924d3346642f7a6e",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "4": {
+            "id": "4",
+            "location": {
+              "@id": "b1a80aca4766d73cd0840396d7b31813",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "5": {
+            "id": "5",
+            "location": {
+              "@id": "f713d5c33d2ae1e2ff0c3c8a6f8b3b76",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "6": {
+            "id": "6",
+            "location": {
+              "@id": "7729582cc71f6eb62fea1d9a5d9770fc",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "7": {
+            "id": "7",
+            "location": {
+              "@id": "1896b23fea763fde0b1c539b7d10445e",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "8": {
+            "id": "8",
+            "location": {
+              "@id": "a533ffca63cbfebfd35288a17821e4b0",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "9": {
+            "id": "9",
+            "location": {
+              "@id": "d23b08d3d0e26b017f9a97f192abf5de",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "10": {
+            "id": "10",
+            "location": {
+              "@id": "31d886f12e69d059a62c2cf97ffe2af8",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "11": {
+            "id": "11",
+            "location": {
+              "@id": "ec514b6c91c1fb5dc7796336dd04750a",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "12": {
+            "id": "12",
+            "location": {
+              "@id": "2d20f09217198b928ccac78f0253ccb2",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          }
+        },
+        "in_roi": false
+      },
+      "E": {
+        "electrode_id": "E",
+        "subject_id": "HID-Sub-018",
+        "contact_points": {
+          "1": {
+            "id": "1",
+            "location": {
+              "@id": "3b062025af6e8f5a1a496ea2b1984e65",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "2": {
+            "id": "2",
+            "location": {
+              "@id": "b7adf1ea432fa631ccc8bb412d519dc7",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "3": {
+            "id": "3",
+            "location": {
+              "@id": "ed02e9bc495ecbb2bff9a4a130b63cd7",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "4": {
+            "id": "4",
+            "location": {
+              "@id": "242ca615512743da8c79f2dcda214dce",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "5": {
+            "id": "5",
+            "location": {
+              "@id": "7a32e44283f7324ed02ab32b84f67738",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "6": {
+            "id": "6",
+            "location": {
+              "@id": "098b059fa4457f36651c420acf056af8",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "7": {
+            "id": "7",
+            "location": {
+              "@id": "da369ab1c49af9e73cba4d92d27b8bd8",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "8": {
+            "id": "8",
+            "location": {
+              "@id": "c60dc0d621ab6fe8fd138366cf408991",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "9": {
+            "id": "9",
+            "location": {
+              "@id": "d8ff10c42ee4d86f411bf188d610a80e",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "10": {
+            "id": "10",
+            "location": {
+              "@id": "a52126832db4958eb60c6db968ac1ccd",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "11": {
+            "id": "11",
+            "location": {
+              "@id": "bcbacf4fe7141a1ae99b42b9ae0f3959",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "12": {
+            "id": "12",
+            "location": {
+              "@id": "543d0548c6065085bcc672f28af9a2fc",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "13": {
+            "id": "13",
+            "location": {
+              "@id": "d343e3a68a4e5c4f6f00e501aa18c6e4",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "14": {
+            "id": "14",
+            "location": {
+              "@id": "1410911b775a4e024ddbfc0d661aa850",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "15": {
+            "id": "15",
+            "location": {
+              "@id": "8dbbbd59bc7107c35f0c9b41cf6e0dfd",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          }
+        },
+        "in_roi": false
+      },
+      "G": {
+        "electrode_id": "G",
+        "subject_id": "HID-Sub-018",
+        "contact_points": {
+          "1": {
+            "id": "1",
+            "location": {
+              "@id": "263a4726bc8697755233a92aae8e40cf",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "2": {
+            "id": "2",
+            "location": {
+              "@id": "76ce79c7b33ef70b25ce50ea856ff933",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "3": {
+            "id": "3",
+            "location": {
+              "@id": "28a4b28a1ceb7575ffb352f3d8b91cfd",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "4": {
+            "id": "4",
+            "location": {
+              "@id": "cbfb26e57ad950bc9073eab2beca885e",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "5": {
+            "id": "5",
+            "location": {
+              "@id": "26cec30b7176400cc0af58ab6695b529",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "6": {
+            "id": "6",
+            "location": {
+              "@id": "98139ba59942e882ecf8ec6683dffcaf",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "7": {
+            "id": "7",
+            "location": {
+              "@id": "462690d20a4e4eff17b9b2a7e3f81f80",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "8": {
+            "id": "8",
+            "location": {
+              "@id": "8c08d3a3c8a21c31d42ccca69ab71aa2",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "9": {
+            "id": "9",
+            "location": {
+              "@id": "d09e40866120aab8db02a17b9121c37c",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "10": {
+            "id": "10",
+            "location": {
+              "@id": "42c197399dc2a9424fff8c9683e0e6f7",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "11": {
+            "id": "11",
+            "location": {
+              "@id": "f87a519a749812f6e21af747a9a6bee6",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "12": {
+            "id": "12",
+            "location": {
+              "@id": "61cc53ce6702a032b371cb8408106c81",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "13": {
+            "id": "13",
+            "location": {
+              "@id": "265e579def0a23b7f883431fb2504b29",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "14": {
+            "id": "14",
+            "location": {
+              "@id": "65a07621f78e9103c7bbf015ae52a5fe",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "15": {
+            "id": "15",
+            "location": {
+              "@id": "a2e41308f080e81f890f2bcad638126e",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          }
+        },
+        "in_roi": false
+      },
+      "J": {
+        "electrode_id": "J",
+        "subject_id": "HID-Sub-018",
+        "contact_points": {
+          "1": {
+            "id": "1",
+            "location": {
+              "@id": "6f5450de910c040bc1de28bcef486685",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "2": {
+            "id": "2",
+            "location": {
+              "@id": "ba5d013ef4534150447bfd8755a25a68",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "3": {
+            "id": "3",
+            "location": {
+              "@id": "1460e44fcfb0edae90ac0654901f73d8",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "4": {
+            "id": "4",
+            "location": {
+              "@id": "493682bffa0548f1d789332580bf95b0",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "5": {
+            "id": "5",
+            "location": {
+              "@id": "a6fdc727d479f427132753868e2c4391",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "6": {
+            "id": "6",
+            "location": {
+              "@id": "4dc02093079e2c73541aa766455ae291",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "7": {
+            "id": "7",
+            "location": {
+              "@id": "143900ea4110c821bda059f66d8e708e",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "8": {
+            "id": "8",
+            "location": {
+              "@id": "40406f79c83f4eca8d6025931c057d45",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          }
+        },
+        "in_roi": false
+      },
+      "L": {
+        "electrode_id": "L",
+        "subject_id": "HID-Sub-018",
+        "contact_points": {
+          "1": {
+            "id": "1",
+            "location": {
+              "@id": "78ba2e57fe23de5b763c59648bb3dd43",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "2": {
+            "id": "2",
+            "location": {
+              "@id": "690eeef047a98a1d3f651578881a897b",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "3": {
+            "id": "3",
+            "location": {
+              "@id": "86f7d88d6aa641d528298a2209e6c3ec",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "4": {
+            "id": "4",
+            "location": {
+              "@id": "1f855f673859bbf36a99e49b5e7aa7a8",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "5": {
+            "id": "5",
+            "location": {
+              "@id": "15fb92c583127d1e0fe711a05212ed92",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "6": {
+            "id": "6",
+            "location": {
+              "@id": "a3a70e8ba4176d845e991ddf2ad46f68",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "7": {
+            "id": "7",
+            "location": {
+              "@id": "9fbc474012fb0bb5f2a5f461a8672201",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "8": {
+            "id": "8",
+            "location": {
+              "@id": "239de5aa9bd0969e3c42decdab18978b",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "9": {
+            "id": "9",
+            "location": {
+              "@id": "643041bb563ea468f629c9a1284d98d0",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "10": {
+            "id": "10",
+            "location": {
+              "@id": "5493c213584e915c9aa70f688b78ddd9",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "11": {
+            "id": "11",
+            "location": {
+              "@id": "ca3822db4a4a1323bb61bda0bd98de3a",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "12": {
+            "id": "12",
+            "location": {
+              "@id": "6f30ee54823a075d84d97eeae929cd40",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          }
+        },
+        "in_roi": false
+      },
+      "N": {
+        "electrode_id": "N",
+        "subject_id": "HID-Sub-018",
+        "contact_points": {
+          "1": {
+            "id": "1",
+            "location": {
+              "@id": "68783080b70783ed066277f69d32afb2",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "2": {
+            "id": "2",
+            "location": {
+              "@id": "2ebe4f9da9965219477f04a99c490353",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "3": {
+            "id": "3",
+            "location": {
+              "@id": "430a4d60b7fbb1db71827c68234547cd",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "4": {
+            "id": "4",
+            "location": {
+              "@id": "77d3a15f029e91cdc59b452a22f7f239",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "5": {
+            "id": "5",
+            "location": {
+              "@id": "1277b3b7a77bbc7a57faab9a468ef771",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "6": {
+            "id": "6",
+            "location": {
+              "@id": "abeaed034c91723eb9f20c9121351f90",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "7": {
+            "id": "7",
+            "location": {
+              "@id": "c58fabcfe915ca59c702633de2957514",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "8": {
+            "id": "8",
+            "location": {
+              "@id": "697934ceeafb9de44aec44b4de41d597",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "9": {
+            "id": "9",
+            "location": {
+              "@id": "32158f943be42d459330abac11ac0c95",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "10": {
+            "id": "10",
+            "location": {
+              "@id": "184a42084bbd6bec49fd4b2731539f24",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          }
+        },
+        "in_roi": false
+      },
+      "Q": {
+        "electrode_id": "Q",
+        "subject_id": "HID-Sub-018",
+        "contact_points": {
+          "1": {
+            "id": "1",
+            "location": {
+              "@id": "b2c7c2f3dea6167436cf44b33b09ae71",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "2": {
+            "id": "2",
+            "location": {
+              "@id": "0f41df35dd647460df8ad8f670032c8d",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "3": {
+            "id": "3",
+            "location": {
+              "@id": "6eaccdee260861c4e51e450afa6d729f",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "4": {
+            "id": "4",
+            "location": {
+              "@id": "1ab6dee1d499eb63f518f6bd44a6ff69",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "5": {
+            "id": "5",
+            "location": {
+              "@id": "948bb0b003c956b5929fc1e8cd3119b3",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "6": {
+            "id": "6",
+            "location": {
+              "@id": "ba5c5363aab86f1699aac40ee8e24a4f",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "7": {
+            "id": "7",
+            "location": {
+              "@id": "c56e71aee0aef8965c4b4d0158dcac4d",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "8": {
+            "id": "8",
+            "location": {
+              "@id": "a5d3318f59595c590ea07dd9cf86de8b",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "9": {
+            "id": "9",
+            "location": {
+              "@id": "e56cec38f2c34d9f69495a062e8e22b2",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "10": {
+            "id": "10",
+            "location": {
+              "@id": "47677ae0fe675193395b74a5222cfd29",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "11": {
+            "id": "11",
+            "location": {
+              "@id": "f70199f8128144938ee0e02f1d91028d",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "12": {
+            "id": "12",
+            "location": {
+              "@id": "847c669c643d76c6539cc3eed73afb7c",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          }
+        },
+        "in_roi": false
+      },
+      "T": {
+        "electrode_id": "T",
+        "subject_id": "HID-Sub-018",
+        "contact_points": {
+          "1": {
+            "id": "1",
+            "location": {
+              "@id": "3c321d5de13f1d632a507032683a2fc1",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "2": {
+            "id": "2",
+            "location": {
+              "@id": "5c9977f9ff0ac4263f99ec56bcd97bae",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "3": {
+            "id": "3",
+            "location": {
+              "@id": "db4f54f41e3d46e5e24d3bd7ed48b51a",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "4": {
+            "id": "4",
+            "location": {
+              "@id": "fef6065c8951f72e40488a80a053e17e",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "5": {
+            "id": "5",
+            "location": {
+              "@id": "2f110044cde9ace9034545b6c292cd51",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "6": {
+            "id": "6",
+            "location": {
+              "@id": "71568fef4c9e77cb03e297eecd57cd89",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "7": {
+            "id": "7",
+            "location": {
+              "@id": "d1ee5e4ab4bb54edd6102a78214b71b5",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "8": {
+            "id": "8",
+            "location": {
+              "@id": "14d1d3f46e499b59beb2778cecf34812",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          }
+        },
+        "in_roi": false
+      },
+      "V": {
+        "electrode_id": "V",
+        "subject_id": "HID-Sub-018",
+        "contact_points": {
+          "1": {
+            "id": "1",
+            "location": {
+              "@id": "b44a0ad98c5a17f89593021007677496",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": true
+          },
+          "2": {
+            "id": "2",
+            "location": {
+              "@id": "3e4236d719cd8fb409ffd8391e2a3359",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": true
+          },
+          "3": {
+            "id": "3",
+            "location": {
+              "@id": "22d642e181eaaa742a57d1a4a7dcc37c",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": true
+          },
+          "4": {
+            "id": "4",
+            "location": {
+              "@id": "a05492a4fa9dffd82c7331fc4a41be5a",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": true
+          },
+          "5": {
+            "id": "5",
+            "location": {
+              "@id": "864082aade985fc6c6d14d7250637253",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "6": {
+            "id": "6",
+            "location": {
+              "@id": "f78e3d7a46183b901dd38408ffe4936b",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "7": {
+            "id": "7",
+            "location": {
+              "@id": "c78f5400490b3d5489b59d0247d6abeb",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "8": {
+            "id": "8",
+            "location": {
+              "@id": "ace5ead8073036aa43bed715a4ddc1f8",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "9": {
+            "id": "9",
+            "location": {
+              "@id": "2fef2a4c2a1ab1cf71cf02364d02898a",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "10": {
+            "id": "10",
+            "location": {
+              "@id": "8d134d6a48848157a24397e8c59cf635",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "11": {
+            "id": "11",
+            "location": {
+              "@id": "f3002514bdbafbb3e5c9a9a586ecf85d",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "12": {
+            "id": "12",
+            "location": {
+              "@id": "0db8a6cd5cd2023d8703cb930a413254",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          }
+        },
+        "in_roi": true
+      },
+      "W": {
+        "electrode_id": "W",
+        "subject_id": "HID-Sub-018",
+        "contact_points": {
+          "1": {
+            "id": "1",
+            "location": {
+              "@id": "4cdbf9ff1979f662293792784ec865f8",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "2": {
+            "id": "2",
+            "location": {
+              "@id": "42468ae83700e4c2d948b880b9de674e",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "3": {
+            "id": "3",
+            "location": {
+              "@id": "c0cb5c74e339d0a34921629b10b285cd",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "4": {
+            "id": "4",
+            "location": {
+              "@id": "5c6a252be5e6e700f73c4cb19af3d68a",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "5": {
+            "id": "5",
+            "location": {
+              "@id": "e4e45a0bf915af5bd7bd0a2bb2aa3066",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "6": {
+            "id": "6",
+            "location": {
+              "@id": "7ee5a9b63214a0a528b33fb0752065a5",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "7": {
+            "id": "7",
+            "location": {
+              "@id": "e4141374634edb6c5cdac8580ca57618",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "8": {
+            "id": "8",
+            "location": {
+              "@id": "9bf5cc677f0f75de630a2b5f242ebc88",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "9": {
+            "id": "9",
+            "location": {
+              "@id": "a3f7737e096f41e05d84606ed7bb3cf7",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "10": {
+            "id": "10",
+            "location": {
+              "@id": "8037716a65fb2785054a6dd6c9d40e6e",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "11": {
+            "id": "11",
+            "location": {
+              "@id": "14d5dde656a072b97187f0a2ee3291a7",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          },
+          "12": {
+            "id": "12",
+            "location": {
+              "@id": "3e9bed99489a4bad929d7728632a8d65",
+              "@type": "https://openminds.ebrains.eu/sands/CoordinatePoint",
+              "coordinateSpace": {
+                "@id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "@type": "minds/core/referencespace/v1.0.0",
+                "name": "MNI152 2009c nonl asym",
+                "id": "minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2",
+                "type_id": "minds/core/referencespace/v1.0.0",
+                "volume_type": null,
+                "volumes": null
+              }
+            },
+            "in_roi": false
+          }
+        },
+        "in_roi": false
+      }
+    },
+    "in_roi": true
+  }
+}

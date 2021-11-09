@@ -1,0 +1,16 @@
+[
+  {
+    "@id": "b08a7dbc-7c75-4ce7-905b-690b2b1e8957",
+    "@type": "siibra/spatial-feature/v0.0.1",
+    "id": "b08a7dbc-7c75-4ce7-905b-690b2b1e8957",
+    "name": "Fiber structures of a human hippocampus based on joint DMRI, 3D-PLI, and TPFM acquisitions",
+    "description": "The collected datasets provide real multimodal, multiscale structural connectivity insights into the human hippocampus. One post mortem hippocampus was scanned with Anatomical and Diffusion MRI (dMRI) [1], 3D Polarized Light Imaging (3D-PLI) [2], and Two-Photon Fluorescence Microscopy (TPFM) [3] using protocols specifically developed during SGA1 and SGA2, rendering joint tissue imaging possible. MRI scanning was performed with a 11.7 T Preclinical MRI system (gradients: 760 mT/m, slew rate: 9500 T/m/s) yielding T1-w and T2-w maps at 200 µm and dMRI-based maps at 300 µm resolution. During tissue sectioning (60 µm thickness) blockface (en-face) images were acquired from the surface of the frozen brain block, serving as reference for data integration/co-alignment. 530 brain sections were scanned with 3D-PLI. HPC-based image analysis provided transmittance, retardation, and fiber orientation maps at 1.3 µm in-plane resolution. TPFM was finally applied to selected brain sections utilizing autofluorescence properties of the fibrous tissue which appears after PBS washing (MAGIC protocol). The TPFM measurements provide a resolution of 0.44 µm x 0.44 µm x 1 µm. \n</br>\n<br/>\n[1] Beaujoin J, Palomero-Gallagher N, Boumezbeur F, Axer M, Bernard J, Poupon F, Schmitz D, Mangin JF, et al. (2018), **Post-mortem inference of the human hippocampal connectivity and microstructure using ultra-high field diffusion MRI at 11.7 T.** Brain Struct Funct 223:2157-2179.\n[DOI: 10.1007/s00429-018-1617-1](https://www.ncbi.nlm.nih.gov/pubmed/29387938)\n\n[2] Zeineh, M.M., Palomero-Gallagher, N., Axer, M., Gräβel, D., Goubran, M., Wree, A., Woods, R., Amunts, K., and Zilles, K. (2017). **Direct Visualization and Mapping of the Spatial Course of Fiber Tracts at Microscopic Resolution in the Human Hippocampus.** Cerebral Cortex 27, 1779-1794.\n[DOI: 10.1093/cercor/bhw010](https://www.ncbi.nlm.nih.gov/pubmed/?term=Cerebral+Cortex+27%2C+1779-1794.)\n\n[3] Costantini I, Menzel M, Silvestri L, Schubert N, Axer M, Amunts K, Pavone FS (2017). **Polarized Light Imaging and Two-Photon Fluorescence Microscopy correlative approach for 3D reconstruction of the orientation of myelinated fibers.** Optics in the Life Sciences Congress, Optical Society of America, San Diego, California.\n[DOI: 10.1364/BRAIN.2017.BrW4B.5](https://www.osapublishing.org/abstract.cfm?uri=BRAIN-2017-BrW4B.5)",
+    "urls": [
+      {
+        "cite": null,
+        "doi": "10.25493/JQ30-E08"
+      }
+    ],
+    "volumes": null
+  }
+]
