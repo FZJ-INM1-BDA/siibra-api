@@ -45,11 +45,7 @@ def get_all_atlases():
 
     ## code sample
 
-    ```python
-    import siibra
-
-    atlases = [atlas for atlas in siibra.atlases]
-    ```
+    python:get_all_atlases.py
     """
     return [JSONEncoder.encode(atlas, nested=True) for atlas in siibra.atlases]
 
@@ -66,11 +62,7 @@ def get_atlas_by_id(atlas_id: str):
 
     ## code sample
 
-    ```python
-    import siibra
-
-    atlas = siibra.atlases[f'{atlas_id}']
-    ```
+    python:get_a_single_atlas.py
     """
 
     try:

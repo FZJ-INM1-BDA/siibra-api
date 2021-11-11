@@ -1,4 +1,3 @@
-from fastapi import testclient
 import requests
 import os
 

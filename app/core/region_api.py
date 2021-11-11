@@ -63,13 +63,7 @@ def get_all_features_for_region(
     Returns all available types of regional features.
 
     ## code sample
-
-    ```python
-    import siibra
-    from siibra.features.feature import RegionalFeature
-
-    regional_feature_types = [mod for mod in siibra.features.modalities if issubclass(mod._FEATURETYPE, RegionalFeature) ]
-    ```
+    python:get_all_feature_names_for_a_region.py
     """
     try:
         atlas: Atlas = siibra.atlases[atlas_id]
@@ -230,19 +224,7 @@ def get_regional_map_file(
     Get the probalistic map of the region of interest as a NiFTi .nii.gz file.
 
     ## code sample
-    ```python
-    from siibra.core import Atlas, Space
-    import siibra
-    import nibabel as nib
-
-    atlas: Atlas = siibra.atlases[f'{atlas_id}']
-    parcellation: Parcellation = atlas.parcellations[f'{parcellation_id}']
-    space: Space = atlas.spaces[f'{space_id}']
-    region: Region = parcellation.find_regions(f'{region_id}')[0]
-    
-    regional_map = region.get_regional_map(space, siibra.commons.MapType.CONTINUOUS)
-    nib.save(regional_map.image, 'continuous.nii.gz')
-    ```
+    python:get_a_specific_map_of_one_region.py
     """
     try:
         atlas: Atlas = siibra.atlases[f'{atlas_id}']
@@ -279,15 +261,7 @@ def get_region_by_name_api(
     If space_id is present as query param, space specific data will also be fetched.
 
     ## code sample
-
-    ```python
-    import siibra
-    from siibra.core import Parcellation, Atlas
-
-    atlas: Atlas = siibra.atlases[f'{atlas_id}']
-    parcellation: Parcellation = atlas.parcellations[f'{parcellation_id}']
-    region = parcellation.find_regions(f'{region_id}')[0]
-    ```
+    python:get_one_region_with_further_details_for_one_parcellation.py
     """
     try:
         atlas:Atlas = siibra.atlases[atlas_id]

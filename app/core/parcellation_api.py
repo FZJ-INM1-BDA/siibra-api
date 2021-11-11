@@ -55,13 +55,7 @@ def get_all_parcellations(atlas_id: str):
     Returns all parcellations that are defined in the siibra client for given atlas.
 
     ## code sample
-
-    ```python
-    import siibra
-
-    atlas = siibra.atlases[f'{atlas_id}']
-    parcellations = atlas.parcellations
-    ```
+    python:get_all_parcellations_for_a_single_atlas.py
     """
     try:
         atlas:Atlas = siibra.atlases[atlas_id]
@@ -87,15 +81,7 @@ def get_all_regions_for_parcellation_id(
     Returns all regions for a given parcellation id. If space_id is present, only show regions that supports 
 
     ## code sample
-
-    ```python
-    import siibra
-    from siibra.core import Parcellation, Atlas, Region
-
-    atlas: Atlas = siibra.atlases[f'{atlas_id}']
-    parcellation: Parcellation = atlas.parcellations[f'{parcellation_id}']
-    regions: Region = parcellation.regiontree
-    ```
+    python:get_all_regions_for_one_parcellation.py
     """
     try:
         atlas:Atlas = siibra.atlases[atlas_id]
@@ -208,13 +194,7 @@ def get_global_feature_names(
     Returns all available types of parcellation features for a parcellation.
 
     ## code sample
-
-    ```python
-    import siibra
-    from siibra.features.feature import ParcellationFeature
-
-    parcellation_feature_types = [mod for mod in siibra.features.modalities if issubclass(mod._FEATURETYPE, ParcellationFeature) ]
-    ```
+    python:get_all_feature_names_for_one_parcellation.py
     """
     
     try:
@@ -241,13 +221,7 @@ def get_parcellation_by_id(
     Returns one parcellation by the specified parcellation_id and atlas_id.
 
     ## code sample
-
-    ```python
-    import siibra
-
-    atlas = siibra.atlases[f'{atlas_id}']
-    parcellation = atlas.parcellations[f'{parcellation_id}']
-    ```
+    python:get_one_parcellation_for_a_single_atlas.py
     """
     try:
         atlas:Atlas = siibra.atlases[atlas_id]

@@ -94,14 +94,37 @@ def patch_code_samples():
 
     host_url = os.environ.get('HOSTURL', 'http://localhost:5000')
     code_sample_key = 'x-code-samples'
+    siibra_code_snippet_key = 'x-siibra-code-snippet-id'
     code_sample_re = re.compile(r'^## code sample', re.M)
     get_samples_re = re.compile(r'^```(.+)?\n(?:.*\n)+?^```$', re.M)
+
+    supported_langs=['python']
+    get_snippet_re = re.compile(f'^({"|".join(supported_langs)}):(.+)$', re.M)
     preceding_nl_re = re.compile(r'^\n*', re.M)
     trailing_nl_re = re.compile(r'\n*$', re.M)
     
     # Customise open-api
     def patch_openapi(target_app: FastAPI, target_path: str):
         
+        def get_siibra_python_snippet(file_path: str):
+            
+            try:
+                import sys, os
+
+                # siibra_snippets are packaged as data_files
+                # read from sys.prefix
+                # https://docs.python.org/3.6/distutils/setupscript.html#distutils-additional-files
+                path_to_snippets = os.path.join(sys.prefix, 'siibra_snippets', file_path)                
+                try:
+                    with open(path_to_snippets, 'r') as fp:
+                        return fp.read()
+                except FileNotFoundError:
+                    logger.warn(f'code_snippet file not found, skipping {file_path}')
+
+            except ModuleNotFoundError:
+                logger.warn(f'code_snippet module not found. Skipping code snippet generation')
+
+
         def custom_openapi():
             if target_app is None:
                 raise NotImplementedError(f'path for {target_path} not yet implemented')
@@ -142,11 +165,24 @@ def patch_code_samples():
                     split_desc = re.split(code_sample_re, desc)
                     if len(split_desc) > 1:
                         desc_body, code_snippit = split_desc
+
+                        if code_sample_key not in openapi_schema['paths'][path_key][method]:
+                            openapi_schema['paths'][path_key][method][code_sample_key] = []
+
+                        for c_match in get_snippet_re.finditer(code_snippit):
+                            lang, file_path = c_match.groups()
+
+                            src_code = get_siibra_python_snippet(file_path)
+                            if src_code:
+                                openapi_schema['paths'][path_key][method][code_sample_key].append({
+                                    'lang': lang or fallback_lang,
+                                    'source': src_code
+                                })
+
+                            # add custom header to inform siibra-python of api's capability
+                            openapi_schema['paths'][path_key][method][siibra_code_snippet_key] = file_path
+
                         for code_sample in get_samples_re.finditer(code_snippit):
-
-                            if code_sample_key not in openapi_schema['paths'][path_key][method]:
-                                openapi_schema['paths'][path_key][method][code_sample_key] = []
-
                             lang, = code_sample.groups()
                             md_code_sample = code_sample.group()
                             md_code_sample = '\n'.join([line for line in md_code_sample.split('\n') if line[0:3] != '```'])

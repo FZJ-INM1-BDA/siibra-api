@@ -54,13 +54,7 @@ def get_all_spaces(atlas_id: str):
     Returns all spaces supported by the atlas specified by the atlas_id.
 
     ## code sample
-
-    ```python
-    import siibra
-
-    atlas = siibra.atlases[f'{atlas_id}']
-    spaces = atlas.spaces
-    ```
+    python:get_all_spaces_for_a_single_atlas.py
     """
     try:
         atlas: Atlas=siibra.atlases[atlas_id]
@@ -81,16 +75,7 @@ def get_template_by_space_id(
     Get the image volume of the reference template as a NiFTi .nii.gz file.
 
     ## code sample
-    ```python
-    from siibra.core import Atlas, Space
-    import siibra
-    import nibabel as nib
-
-    atlas: Atlas = siibra.atlases[f'{atlas_id}']
-    space: Space = atlas.spaces[f'{space_id}']
-    nii = space.get_template()
-    nib.save(nii, 'template.nii.gz')
-    ```
+    python:get_templates_for_one_space.py
     """
     try:
         atlas: Atlas = siibra.atlases[atlas_id]
@@ -325,12 +310,7 @@ def get_spatial_feature_names(
 
     ## code sample
 
-    ```python
-    import siibra
-    from siibra.features.feature import SpatialFeature
-
-    parcellation_feature_types = [mod for mod in siibra.features.modalities if issubclass(mod._FEATURETYPE, SpatialFeature) ]
-    ```
+    python:get_all_feature_names_for_one_space.py
     """
     
     try:
