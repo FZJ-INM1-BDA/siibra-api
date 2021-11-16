@@ -35,7 +35,7 @@ parcellation_json_encoder = {
     Parcellation: lambda parcellation: {
         'id': split_id(parcellation.id),
         'name': parcellation.name,
-        'availableSpaces': get_spaces_for_parcellation(parcellation),
+        'availableSpaces': jsonable_encoder(get_spaces_for_parcellation(parcellation), custom_encoder=siibra_custom_json_encoder),
         'modality': parcellation.modality,
         'infos': [jsonable_encoder(info, custom_encoder=siibra_custom_json_encoder) for info in parcellation.infos if isinstance(info, EbrainsDataset)],
         # if parcellation has no publications, raises AttributeError

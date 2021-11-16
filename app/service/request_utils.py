@@ -28,6 +28,7 @@ from app.service.validation import validate_and_return_atlas, validate_and_retur
     validate_and_return_region, validate_and_return_space
 # TODO: Local or Remote NiftiVolume? NeuroglancerVolume = NgVolume?
 from siibra.volumes.volume import VolumeSrc, LocalNiftiVolume, NeuroglancerVolume
+from siibra.core import Space
 
 cache_redis = CacheRedis.get_instance()
 
@@ -594,7 +595,14 @@ def ebrains_dataset_encoder(ds: siibra.core.datasets.EbrainsDataset):
         'urls': ds.urls,
     }
 
+def space_encoder(space: Space):
+    return {
+        key: space.__dict__[key] for key in space.__dict__ if key != 'atlases'
+    }
+    
+
 siibra_custom_json_encoder = {
+    Space: space_encoder,
     VolumeSrc: vol_src_sans_space,
     LocalNiftiVolume: vol_src_sans_space,
     NeuroglancerVolume: vol_src_sans_space,
