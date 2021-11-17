@@ -546,10 +546,14 @@ def receptor_profile_encoder(receptor: siibra.features.receptors.ReceptorDistrib
     }
 
 
+# see https://github.com/FZJ-INM1-BDA/siibra-python/issues/137
+def get_old_supported_space(region):
+    return list({v.space for v in region.volumes})
+
 def region_support_space(region: siibra.core.Region, space: siibra.core.Space):
     if space is None:
         raise ValueError('space is needed')
-    if space in region.supported_spaces:
+    if space in get_old_supported_space(region):
         return True
     if any([ region_support_space(c, space) for c in region.children]):
         return True
@@ -567,9 +571,6 @@ def region_encoder(region: siibra.core.Region, space: siibra.core.Space=None):
 
     labels = region.labels
 
-    # see https://github.com/FZJ-INM1-BDA/siibra-python/issues/137
-    def get_old_supported_space(region):
-        return list({v.space for v in region.volumes})
     filtered_children = [child for child in region.children if space is None
                             or filter_fsaverage(child) or len(get_old_supported_space(child)) == 0
                             or region_support_space(child, space)]
@@ -585,7 +586,7 @@ def region_encoder(region: siibra.core.Region, space: siibra.core.Space=None):
         'availableIn': [{
             'id': space.id,
             'name': space.name
-        } for space in region.supported_spaces ],
+        } for space in get_old_supported_space(region) ],
         '_dataset_specs': [ ds for ds in region._dataset_specs if ds.get('@type') in WANTED_DATASET_SPECS ],
         'children': [ region_encoder(child, space=space) for child in filtered_children]
     }
