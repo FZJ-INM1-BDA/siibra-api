@@ -567,8 +567,11 @@ def region_encoder(region: siibra.core.Region, space: siibra.core.Space=None):
 
     labels = region.labels
 
+    # see https://github.com/FZJ-INM1-BDA/siibra-python/issues/137
+    def get_old_supported_space(region):
+        return list({v.space for v in region.volumes})
     filtered_children = [child for child in region.children if space is None
-                            or filter_fsaverage(child) or len(child.supported_spaces) == 0
+                            or filter_fsaverage(child) or len(get_old_supported_space(child)) == 0
                             or region_support_space(child, space)]
     # temporary fix to fsaverage not returning labels
     if space is not FS_AVERAGE or len(filtered_children) != 0:
