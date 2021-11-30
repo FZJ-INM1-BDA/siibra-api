@@ -28,6 +28,8 @@ from app.service.request_utils import get_spatial_features, split_id, get_file_f
 from app.service.request_utils import get_base_url_from_request, siibra_custom_json_encoder,origin_data_decoder
 from app.service.validation import validate_and_return_atlas, validate_and_return_space
 
+from app import logger
+
 # FastApi router to create rest endpoints
 router = APIRouter()
 
@@ -130,6 +132,7 @@ def get_single_spatial_feature(
     Get more information for a single feature.
     A parcellation id and region id can be provided optional to get more details.
     """
+    logger.debug(f'api endpoint: get_single_spatial_feature, {atlas_id}, {space_id}, {modality_id}, {parcellation_id}, {region}')
     got_features = get_spatial_features(atlas_id, space_id, modality_id, parc_id=parcellation_id, region_id=region)
     return got_features
 

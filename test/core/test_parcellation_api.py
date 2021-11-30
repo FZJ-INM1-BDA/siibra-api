@@ -6,6 +6,10 @@ from app.app import app
 import unittest
 from urllib.parse import quote, quote_plus
 
+from app import logger
+import logging
+logger.setLevel(logging.DEBUG)
+
 client = TestClient(app)
 
 ICBM_152_SPACE_ID='minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2'
