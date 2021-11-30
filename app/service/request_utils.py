@@ -486,7 +486,7 @@ def get_region_by_name(
     atlas = siibra.atlases[atlas_id]
     parcellation = atlas.get_parcellation(parcellation_id)
     try:
-        region = atlas.get_region(region_id, parcellation)
+        region = validate_and_return_region(region_id, parcellation)
     except ValueError:
         raise HTTPException(404, 'Region spec {region_id} cannot be decoded')
 

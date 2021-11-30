@@ -223,28 +223,3 @@ def get_ready():
     return 'OK'
 
 
-@app.on_event('startup')
-async def on_startup():
-    import asyncio
-    from signal import SIGINT, SIGTERM
-
-    async def run_async():
-        loop=asyncio.get_event_loop()
-
-        # TODO still doesn't work quite right, but ... hopefully getting closer?
-        def cleanup_on_termination():
-            logger.info(f'Terminating... Cancelling pending tasks...')
-            
-            loop.stop()
-            loop.close()
-
-        def run_preheat():
-            preheat()
-            pass
-
-        for sig in [SIGINT, SIGTERM]:
-            loop.add_signal_handler(sig, cleanup_on_termination)
-        
-        loop.run_in_executor(None, run_preheat)
-
-    asyncio.ensure_future(run_async())
