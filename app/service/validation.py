@@ -90,6 +90,6 @@ def validate_and_return_region(region_id: str, parcellation: Parcellation) -> Re
         return parcellation.find_regions(region_id)[0]
     except:
         raise HTTPException(
-            status_code=400,
+            status_code=404,
             detail=f'region: {region_id} is not known'
         )
