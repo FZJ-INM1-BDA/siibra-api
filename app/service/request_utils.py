@@ -365,8 +365,6 @@ def get_ieeg_session_detail(ieeg_session: siibra.features.ieeg.IEEG_Session, reg
 @memoize(typed=True)
 def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detail=False, parc_id=None, region_id=None):
 
-    space_of_interest = validate_and_return_space(space_id)
-
     if modality_id not in siibra.features.modalities:
         raise HTTPException(status_code=400,
                             detail=f'{modality_id} is not a valid modality')
@@ -381,6 +379,8 @@ def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detai
         return []
 
     atlas = validate_and_return_atlas(atlas_id)
+    space_of_interest = validate_and_return_space(space_id, atlas)
+
     # TODO not working at the moment. Space_of_interest is never in atlas.spaces
     # if space_of_interest not in atlas.spaces:
     #     raise HTTPException(404, detail=f'space {space_id} not in atlas {atlas}')
@@ -389,7 +389,7 @@ def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detai
     if parc_id is None:
         raise HTTPException(status_code=400, detail='Parc id is needed')
     
-    parc=validate_and_return_parcellation(parc_id)
+    parc=validate_and_return_parcellation(parc_id, atlas)
     roi=validate_and_return_region(region_id, parc)
 
     try:
