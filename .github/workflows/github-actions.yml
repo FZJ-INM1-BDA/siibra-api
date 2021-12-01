@@ -33,7 +33,7 @@ jobs:
       - name: Install test dependecies
         run: pip install pytest pytest-asyncio httpx mock coverage pytest-cov
       - run: |
-          coverage run -m pytest
+          coverage run -m pytest -vvv
           coverage report
           coverage html
       - name: Archive code coverage html report
