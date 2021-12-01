@@ -9,6 +9,8 @@ from urllib.parse import quote, quote_plus
 from app import logger
 import logging
 logger.setLevel(logging.DEBUG)
+from siibra import logger
+logger.setLevel(logging.DEBUG)
 
 client = TestClient(app)
 
