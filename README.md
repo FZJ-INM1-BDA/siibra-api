@@ -23,11 +23,9 @@ The main goal is to abstract the python functionalities in a way that they can b
 
 ## Documentation
 
-coming soon
+The documentation of the api and all endpoints is done by swagger.
 
-## Usage examples
-
-A list of all API endpoints and a playground to directly test it can be found here:
+In addition to the documentation of each API endpoint, a playground is provided for direct testing.
 
 [Swagger API](https://siibra-api-stable.apps.hbp.eu/v1_0/docs#/)
 
