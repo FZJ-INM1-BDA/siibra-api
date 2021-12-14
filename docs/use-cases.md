@@ -1,71 +1,75 @@
-# Use Cases for the brainscapes api and client
+# Examples
 
-This use cases should show what can be done with the HTTP Api and how the same result can be achieved using the python client.
+## 01_atlases_and_parcellations
+### 000_accessing_atlases
 
-A more detailed documentation of the python client can be found her [braincapes documentation](https://jugit.fz-juelich.de/v.marcenko/brainscapes).
+_It is possible to get all known atlases. 
+The response data contains links to get further information for each atlas._
 
-## Base URL for all requests
-
-- URL: https://brainscapes.apps-dev.hbp.eu/api
-
-## Parcellations
-
-Return a list of all known parcellations in the brainscapes client.
-
-
-- URL: [/parcellations](https://brainscapes.apps-dev.hbp.eu/api/parcellations)
-- Response schema:
-
+**Swagger**
 ```
-{
-  "type": "array",
-  "items": {
-    "type": "object",
-    "properties": {
-      "id": { "type": "string" },
-      "name": { "type": "string" }
-    },
-    "required": ["id", "name"]
-  }
-}
+https://siibra-api-stable.apps.hbp.eu/v1_0/docs#/atlases/get_all_atlases_atlases_get
 ```
 
-- Response Example:
-
-```javascript
-[
-  {
-    "id": "minds/core/parcellationatlas/v1.0.0/94c1125b-b87e-45e4-901c-00daee7f2579",
-    "name": "Julich-Brain Probabilistic Cytoarchitectonic Atlas"
-  },
-  {
-    "id": "juelich/iav/atlas/v1.0.0/5",
-    "name": "Probabilistic Long White Matter Bundle Atlas"
-  },
-]
-
+**Rest Call**
 ```
-- Python:
-
-```python
-atlas = REGISTRY.MULTILEVEL_HUMAN_ATLAS
-parcellations = atlas.parcellations
+https://siibra-api-stable.apps.hbp.eu/v1_0/atlases
 ```
 
-## Spaces
+**Curl**
+```
+curl -X 'GET' 'https://siibra-api-stable.apps.hbp.eu/v1_0/atlases' -H 'accept: application/json'
+```
 
-## Regions
+_It is also possible to get one single atlas by providing an atlas ID. For example the **Multilevel Human Atlas**._
 
-## Maps
+**Swagger**
+```
+https://siibra-api-stable.apps.hbp.eu/v1_0/docs#/atlases/get_atlas_by_id_atlases__atlas_id__get
+```
 
-## Templates
+**Rest Call**
+```
+https://siibra-api-stable.apps.hbp.eu/v1_0/atlases/juelich%2Fiav%2Fatlas%2Fv1.0.0%2F1
+```
 
-## Spatial props
+**Curl**
+```
+curl -X 'GET' 'https://siibra-api-stable.apps.hbp.eu/v1_0/atlases/juelich%2Fiav%2Fatlas%2Fv1.0.0%2F1' -H 'accept: application/json'
+```
 
-## Receptor Data
+### 001_accessing_parcellations
 
-### fingerprint
+_All parcellations for **Multilevel Human Atlas**._
+```
+https://siibra-api-stable.apps.hbp.eu/v1_0/atlases/juelich%2Fiav%2Fatlas%2Fv1.0.0%2F1/parcellations
+```
 
-### profiles
+_**Julich-Brain Cytoarchitectonic Maps 2.9**_
+```
+https://siibra-api-stable.apps.hbp.eu/v1_0/atlases/juelich%2Fiav%2Fatlas%2Fv1.0.0%2F1/parcellations/minds%2Fcore%2Fparcellationatlas%2Fv1.0.0%2F94c1125b-b87e-45e4-901c-00daee7f2579-290
+```
 
-### autoradiographs
+### 002_explore_region_hierarchy
+### 003_find_regions
+### 004_brain_region_metadata
+### 005_brain_region_spatialprops
+
+## 02
+### 001
+### 002
+### 003
+### 004
+
+## 03
+### 001
+### 002
+### 003
+### 004
+
+## 04
+...
+
+## 05
+### 001
+### 002
