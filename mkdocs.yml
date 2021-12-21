@@ -1,0 +1,25 @@
+site_name: Siibra-Api User Documentation
+
+theme:
+  name: 'material'
+
+extra_css:
+  - extra.css
+
+docs_dir: docs
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - footnotes
+  - mdx_truly_sane_lists
+
+plugins:
+  - search
+
+pages:
+  - Home: 'index.md'
+#  - System requirements: 'requirements.md'
+  - User documentation: 'use-cases.md'
+#  - Release notes:
+#      - v1.0.0: 'releases/v1.0.0.md'

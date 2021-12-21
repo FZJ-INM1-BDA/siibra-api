@@ -13,3 +13,4 @@ venv/*
 .env
 tmp
 *.sh
+docs/_*
