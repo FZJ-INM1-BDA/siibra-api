@@ -25,6 +25,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi_versioning import VersionedFastAPI
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.responses import Response
 
 from app.core.siibra_api import router as siibra_router
 from app.core.atlas_api import router as atlas_router
@@ -210,6 +211,46 @@ async def matomo_request_log(request: Request, call_next):
     response = await call_next(request)
     return response
 
+from app.configuration.cache_redis import CacheRedis
+
+async def read_bytes(generator) -> bytes:
+    body = b""
+    async for data in generator:
+        body += data
+    return body
+
+
+@app.middleware("http")
+async def cache_response(request: Request, call_next):
+    
+    redis = CacheRedis.get_instance()
+    
+    cache_key = f"[{__version__}] {request.url.path}"
+    bypass_cache = request.headers.get("x-bypass-fast-api-cache")
+    cached_value = redis.get_value(cache_key) if not bypass_cache else None
+    if cached_value:
+        return Response(
+            cached_value,
+            headers={
+                "content-type": "application/json",
+                "x-fastapi-cache": "hit",
+            }
+        )
+    
+    response = await call_next(request)
+
+    # only cache json responses
+    if response.headers.get("content-type") == "application/json":
+        content = await read_bytes(response.body_iterator)
+        redis.set_value(cache_key, content)
+        return Response(
+            content,
+            headers=response.headers
+        )
+    else:
+        return response
+
+
 @app.middleware('http')
 async def add_version_header(request: Request, call_next):
     response = await call_next(request)
@@ -221,30 +262,3 @@ def get_ready():
     if not all([get_preheat_status()]):
         raise HTTPException(400, detail='Not yet ready.')
     return 'OK'
-
-
-@app.on_event('startup')
-async def on_startup():
-    import asyncio
-    from signal import SIGINT, SIGTERM
-
-    async def run_async():
-        loop=asyncio.get_event_loop()
-
-        # TODO still doesn't work quite right, but ... hopefully getting closer?
-        def cleanup_on_termination():
-            logger.info(f'Terminating... Cancelling pending tasks...')
-            
-            loop.stop()
-            loop.close()
-
-        def run_preheat():
-            preheat()
-            pass
-
-        for sig in [SIGINT, SIGTERM]:
-            loop.add_signal_handler(sig, cleanup_on_termination)
-        
-        loop.run_in_executor(None, run_preheat)
-
-    asyncio.ensure_future(run_async())
