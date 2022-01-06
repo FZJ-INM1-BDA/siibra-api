@@ -9,7 +9,6 @@ jobs:
       EBRAINS_IAM_CLIENT_ID: ${{ secrets.EBRAINS_IAM_CLIENT_ID }}
       EBRAINS_IAM_CLIENT_SECRET: ${{ secrets.EBRAINS_IAM_CLIENT_SECRET }}
       EBRAINS_IAM_REFRESH_TOKEN: ${{ secrets.EBRAINS_IAM_REFRESH_TOKEN }}
-      SIIBRA_CONFIG_GITLAB_PROJECT_TAG: master
 
       # automatically set by github action
       # only included here for clarity (if user would like to run tests locally)
@@ -43,6 +42,9 @@ jobs:
           else
             echo "fallback... using dev requirement"
             pip install -r requirements/dev.txt
+
+            echo "fallback... set SIIBRA_CONFIG_GITLAB_PROJECT_TAG=master"
+            echo "SIIBRA_CONFIG_GITLAB_PROJECT_TAG=master" >> $GITHUB_ENV
           fi
       - name: Install test dependecies
         run: pip install pytest pytest-asyncio httpx mock coverage pytest-cov
