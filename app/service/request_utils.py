@@ -389,13 +389,14 @@ def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detai
     if parc_id is None:
         raise HTTPException(status_code=400, detail='Parc id is needed')
     
-    parc=validate_and_return_parcellation(parc_id)
+    parc=validate_and_return_parcellation(parc_id, atlas)
     roi=validate_and_return_region(region_id, parc)
 
     try:
         # spatial_features=atlas.get_features(modality_id)
         spatial_features = siibra.get_features(roi, modality_id, space=space_of_interest)
-    except Exception:
+    except Exception as e:
+        logger.warn(e)
         raise HTTPException(404, detail=f'Could not get spatial features.')
     
     shaped_features = None
