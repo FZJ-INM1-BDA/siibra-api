@@ -260,7 +260,7 @@ class TestSingleRegionFeatures(unittest.TestCase):
         )
         response=client.get(url)
         result_content = json.loads(response.content)
-        assert response.status_code == 200
+        assert response.status_code == 200, f"Response expect to be 200: {response.content}"
         assert len(result_content) > 0
         
 
@@ -273,7 +273,7 @@ class TestSingleRegionFeatures(unittest.TestCase):
         )
         response=client.get(url)
         result_content = json.loads(response.content)
-        assert response.status_code == 200
+        assert response.status_code == 200, f"Response expect to be 200: {response.content}"
         # hoc1 left should have no ieeg result
         assert len(result_content) == 0
 
