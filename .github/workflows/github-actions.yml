@@ -56,7 +56,3 @@ jobs:
           name: siibra-code-coverage-report
           path: htmlcov
 
-  dev-deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "Deploying to openshift"
