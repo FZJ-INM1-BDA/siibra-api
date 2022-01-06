@@ -19,7 +19,8 @@ import os
 _host = os.getenv("SIIBRA_REDIS_SERVICE_HOST") or "siibra-redis"
 _password = os.getenv('REDIS_PASSWORD')
 _port = os.getenv("SIIBRA_REDIS_SERVICE_PORT") or 6379
-
+# do not use in ci
+_is_ci = os.getenv("CI") is not None
 
 class CacheRedis:
     __instance = None
@@ -53,11 +54,15 @@ class CacheRedis:
         self.__r = redis.Redis(host=_host, port=_port, password=_password)
 
     def get_value(self, key):
+        if _is_ci:
+            return None
         if not self.is_connected:
             self.renew_connection()
         return self.__r.get(key)
         
     def set_value(self, key, value):
+        if _is_ci:
+            return None
         if not self.is_connected:
             self.renew_connection()
         return self.__r.set(key, value)

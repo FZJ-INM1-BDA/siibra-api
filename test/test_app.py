@@ -128,15 +128,16 @@ async def test_cache_response_hit_cache(get_value_returns,expect_cache_hit_heade
             else:
                 assert resp.body.decode("utf-8") == '{"hello": "world"}'
 
-test_cache_miss_params = ("call_next_raises_flag,call_next_returns,media_type,set_value_called", [
-    (True,None,None,False),
-    (False,{"fooz": "barz"},"application/json",True),
-    (False,{"hello": "world"}, "text/plain", False),
+test_cache_miss_params = ("call_next_raises_flag,call_next_status,call_next_returns,media_type,set_value_called", [
+    (True,None,None,None,False),
+    (False,200,{"fooz": "barz"},"application/json",True),
+    (False,404,{"fooz": "barz"},"application/json",False),
+    (False,200,{"hello": "world"}, "text/plain", False),
 ])
 
 @pytest.mark.parametrize(*test_cache_miss_params)
 @pytest.mark.asyncio
-async def test_cache_response_miss(call_next_raises_flag,call_next_returns,media_type,set_value_called):
+async def test_cache_response_miss(call_next_raises_flag,call_next_status,call_next_returns,media_type,set_value_called):
     with patch.object(CacheRedis, 'get_instance', return_value=mock_redis):
         with patch.object(mock_redis, 'get_value', return_value=None):
             with patch.object(mock_redis, 'set_value') as set_value_handle:
@@ -150,7 +151,8 @@ async def test_cache_response_miss(call_next_raises_flag,call_next_returns,media
                 else:
                     call_next.return_value = StreamingResponse(
                         generate_json(call_next_returns),
-                        media_type=media_type
+                        media_type=media_type,
+                        status_code=call_next_status
                     )
                 try:
                     await cache_response(request, call_next)

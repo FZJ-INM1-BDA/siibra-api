@@ -240,7 +240,8 @@ async def cache_response(request: Request, call_next):
     response = await call_next(request)
 
     # only cache json responses
-    if response.headers.get("content-type") == "application/json":
+    # do not cache error responses
+    if not response.status_code >= 400 and response.headers.get("content-type") == "application/json":
         content = await read_bytes(response.body_iterator)
         redis.set_value(cache_key, content)
         return Response(
