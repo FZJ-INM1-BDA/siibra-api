@@ -1,3 +1,4 @@
+from _pytest.mark import param
 import pytest
 from httpx import AsyncClient
 from fastapi.testclient import TestClient
@@ -46,11 +47,11 @@ class AsyncMock(MagicMock):
         return super(AsyncMock, self).__call__(*args, **kwargs)
 
 
-def get_request_obj(method="get", query_string=None, hdr=[]):
+def get_request_obj(path="/", method="get", query_string=None, hdr=[]):
     return Request(scope={
         "type": "http",
         "method": method,
-        "path": "/",
+        "path": path,
         "query_string": query_string,
         "headers": hdr
     })
@@ -122,10 +123,12 @@ async def test_cache_response_hit_cache(hdr,get_value_returns,expect_cache_hit_h
             )
             resp = await cache_response(request, call_next)
 
-            # expect CORS to be set on all requests, regardless cache hit or miss
-            assert resp.headers.get("access-control-allow-origin")
-            assert siibra_version_header in resp.headers.get("access-control-expose-headers")
-            assert resp.headers.get(siibra_version_header)
+            # expect CORS to be set on all requests, as long as origin header is set
+            # regardless cache hit or miss
+            if request.headers.get("origin"):
+                assert resp.headers.get("access-control-allow-origin")
+                assert siibra_version_header in resp.headers.get("access-control-expose-headers")
+                assert resp.headers.get(siibra_version_header)
 
             if expect_call_next_called:
                 call_next.assert_called_once()
@@ -179,3 +182,29 @@ async def test_cache_response_miss(call_next_raises_flag,call_next_status,call_n
                     set_value_handle.assert_called_once_with(f"[{__version__}] /", bytes(json.dumps(call_next_returns), "utf-8"))
                 else:
                     set_value_handle.assert_not_called()
+
+
+test_cache_key_param = ("path,queryparam,expected_key", [
+    ("/foo", b"?hello=world", f"[{__version__}] /foo?hello=world")
+])
+
+@pytest.mark.parametrize(*test_cache_key_param)
+@pytest.mark.asyncio
+async def test_cache_key(path,queryparam,expected_key):
+    with patch.object(CacheRedis, 'get_instance', return_value=mock_redis):
+        with patch.object(mock_redis, 'get_value', return_value=None) as get_value_handle:
+            with patch.object(mock_redis, 'set_value') as set_value_handle:
+                request= get_request_obj(
+                    path=path,
+                    query_string=queryparam,
+                )
+
+                call_next = AsyncMock()
+                call_next.return_value = StreamingResponse(
+                    generate_json({"foo": "bar"}),
+                    media_type="application/json",
+                )
+                await cache_response(request, call_next)
+
+                get_value_handle.assert_called_once_with(expected_key)
+                set_value_handle.assert_called_once_with(expected_key, b'{"foo": "bar"}')

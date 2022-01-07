@@ -225,7 +225,7 @@ async def cache_response(request: Request, call_next):
 
     redis = CacheRedis.get_instance()
 
-    cache_key = f"[{__version__}] {request.url.path}"
+    cache_key = f"[{__version__}] {request.url.path}{str(request.url.query)}"
 
     # bypass cache read if:
     # - method is not GET
