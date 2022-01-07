@@ -392,6 +392,8 @@ def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detai
     parc=validate_and_return_parcellation(parc_id, atlas)
     roi=validate_and_return_region(region_id, parc)
 
+    logger.debug(f'get_spatial_features: {str(atlas)}, {str(space_of_interest)}, {str(parc)}, {str(roi)}')
+
     try:
         # spatial_features=atlas.get_features(modality_id)
         spatial_features = siibra.get_features(roi, modality_id, space=space_of_interest)
@@ -487,7 +489,7 @@ def get_region_by_name(
     atlas = siibra.atlases[atlas_id]
     parcellation = atlas.get_parcellation(parcellation_id)
     try:
-        region = atlas.get_region(region_id, parcellation)
+        region = validate_and_return_region(region_id, parcellation)
     except ValueError:
         raise HTTPException(404, 'Region spec {region_id} cannot be decoded')
 

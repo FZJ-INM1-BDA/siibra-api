@@ -222,9 +222,9 @@ async def read_bytes(generator) -> bytes:
 
 @app.middleware("http")
 async def cache_response(request: Request, call_next):
-    
+
     redis = CacheRedis.get_instance()
-    
+
     cache_key = f"[{__version__}] {request.url.path}"
     bypass_cache = request.headers.get("x-bypass-fast-api-cache")
     cached_value = redis.get_value(cache_key) if not bypass_cache else None
@@ -236,7 +236,7 @@ async def cache_response(request: Request, call_next):
                 "x-fastapi-cache": "hit",
             }
         )
-    
+
     response = await call_next(request)
 
     # only cache json responses
@@ -261,3 +261,5 @@ async def add_version_header(request: Request, call_next):
 @app.get('/ready', include_in_schema=False)
 def get_ready():
     return 'OK'
+
+

@@ -74,19 +74,22 @@ def validate_and_return_parcellation(parcellation_id:str, atlas:Atlas=None) -> P
         )
 
 
-def validate_and_return_region(region_id: str, parcellation) -> Region:
+def validate_and_return_region(region_id: str, parcellation: Parcellation) -> Region:
     """
     Check if the given region id is valid and return a region object
     If the region id is not valid, throw a HTTP 400 Exception
+    Parcellation.find_regions is used rather than decode_region, as region name 
+    can sometimes be ambiguous. find_regions on the other hand, rank the result
+    based on closeness score.
 
     :param region_id: id that needs to be checked
     :param parcellation: parcellation to search the region in
     :return: siibra region object
     """
     try:
-        return parcellation.decode_region(region_id)
+        return parcellation.find_regions(region_id)[0]
     except:
         raise HTTPException(
-            status_code=400,
+            status_code=404,
             detail=f'region: {region_id} is not known'
         )

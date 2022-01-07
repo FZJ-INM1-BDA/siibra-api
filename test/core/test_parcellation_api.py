@@ -6,6 +6,12 @@ from app.app import app
 import unittest
 from urllib.parse import quote, quote_plus
 
+from app import logger
+import logging
+logger.setLevel(logging.DEBUG)
+from siibra import logger
+logger.setLevel(logging.DEBUG)
+
 client = TestClient(app)
 
 ICBM_152_SPACE_ID='minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2'
@@ -260,7 +266,7 @@ class TestSingleRegionFeatures(unittest.TestCase):
         )
         response=client.get(url)
         result_content = json.loads(response.content)
-        assert response.status_code == 200, f"Response expect to be 200: {response.content}"
+        assert response.status_code == 200, response.content
         assert len(result_content) > 0
         
 
@@ -273,7 +279,7 @@ class TestSingleRegionFeatures(unittest.TestCase):
         )
         response=client.get(url)
         result_content = json.loads(response.content)
-        assert response.status_code == 200, f"Response expect to be 200: {response.content}"
+        assert response.status_code == 200, response.content
         # hoc1 left should have no ieeg result
         assert len(result_content) == 0
 
