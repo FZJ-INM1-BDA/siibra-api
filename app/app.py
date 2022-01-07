@@ -226,14 +226,36 @@ async def cache_response(request: Request, call_next):
     redis = CacheRedis.get_instance()
 
     cache_key = f"[{__version__}] {request.url.path}"
-    bypass_cache = request.headers.get("x-bypass-fast-api-cache")
-    cached_value = redis.get_value(cache_key) if not bypass_cache else None
+
+    # bypass cache read if:
+    # - method is not GET
+    # - x-bypass-fast-api-cache is present
+    # - (NYI) if auth token is set 
+    bypass_cache_read = request.method.upper() != "GET" or request.headers.get("x-bypass-fast-api-cache")
+
+    # bypass cache set if:
+    # - method is not GET
+    # - (NYI) if auth token is set
+    bypass_cache_set = request.method.upper() != "GET"
+
+    cached_value = redis.get_value(cache_key) if not bypass_cache_read else None
     if cached_value:
+
+        # starlette seems to normalize header to lower case
+        # so .get("origin") also works if the request has "Origin: http://..."
+        has_origin = request.headers.get("origin")
+        extra_headers = {
+            "access-control-allow-origin": "*",
+            "access-control-expose-headers": f"{siibra_version_header}",
+            siibra_version_header: __version__,
+        } if has_origin else {}
+        
         return Response(
             cached_value,
             headers={
                 "content-type": "application/json",
                 "x-fastapi-cache": "hit",
+                **extra_headers,
             }
         )
 
@@ -241,7 +263,7 @@ async def cache_response(request: Request, call_next):
 
     # only cache json responses
     # do not cache error responses
-    if not response.status_code >= 400 and response.headers.get("content-type") == "application/json":
+    if not bypass_cache_set and not response.status_code >= 400 and response.headers.get("content-type") == "application/json":
         content = await read_bytes(response.body_iterator)
         redis.set_value(cache_key, content)
         return Response(

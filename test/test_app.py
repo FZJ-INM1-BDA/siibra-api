@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 from starlette.requests import Request
 
 from starlette.responses import StreamingResponse
-from app.app import app, cache_response, __version__
+from app.app import app, cache_response, __version__, siibra_version_header
 from app.configuration.cache_redis import CacheRedis
 
 client = TestClient(app)
@@ -46,11 +46,12 @@ class AsyncMock(MagicMock):
         return super(AsyncMock, self).__call__(*args, **kwargs)
 
 
-def get_request_obj(hdr=[]):
+def get_request_obj(method="get", query_string=None, hdr=[]):
     return Request(scope={
         "type": "http",
-        "method": "get",
+        "method": method,
         "path": "/",
+        "query_string": query_string,
         "headers": hdr
     })
 
@@ -73,17 +74,22 @@ async def test_cache_response_get_instance_called():
         await cache_response(request, call_next)
         patched_get_instance.assert_called()
 
-test_header_params = ("hdr,called", [
-    ([], True),
-    ([(b"x-bypass-fast-api-cache", b"true")], False)
+test_header_params = ("method,hdr,called", [
+    ("get",[], True),
+    ("post",[], False),
+    ("delete",[], False),
+    ("put",[], False),
+    ("option",[], False),
+    ("range",[], False),
+    ("get",[(b"x-bypass-fast-api-cache", b"true")], False)
 ])
 
 @pytest.mark.parametrize(*test_header_params)
 @pytest.mark.asyncio
-async def test_cache_response_bypass_header(hdr,called):
+async def test_cache_response_bypass_header(method,hdr,called):
     with patch.object(CacheRedis, 'get_instance', return_value=mock_redis):
         with patch.object(mock_redis, 'get_value') as get_value_mock:
-            request= get_request_obj(hdr=hdr)
+            request= get_request_obj(method=method,hdr=hdr)
             call_next = AsyncMock()
             call_next.return_value = StreamingResponse(
                 generate_json({"foo": "bar"}),
@@ -95,24 +101,32 @@ async def test_cache_response_bypass_header(hdr,called):
             else:
                 get_value_mock.assert_not_called()
 
-test_cache_hit_params = ("get_value_returns,expect_cache_hit_header,expect_call_next_called", [
-    ('{"foo": "bar"}', True, False),
-    (None, False, True)
+
+test_cache_hit_params = ("hdr,get_value_returns,expect_cache_hit_header,expect_call_next_called", [
+    ([
+        (b"origin", b"http://localhost:3000"),
+    ], '{"foo": "bar"}', True, False),
+    ([], None, False, True)
 ])
 
 @pytest.mark.parametrize(*test_cache_hit_params)
 @pytest.mark.asyncio
-async def test_cache_response_hit_cache(get_value_returns,expect_cache_hit_header,expect_call_next_called):
+async def test_cache_response_hit_cache(hdr,get_value_returns,expect_cache_hit_header,expect_call_next_called):
     with patch.object(CacheRedis, 'get_instance', return_value=mock_redis):
         with patch.object(mock_redis, 'get_value', return_value=get_value_returns):
-            request= get_request_obj(hdr=[])
+            request= get_request_obj(hdr=hdr)
             call_next = AsyncMock()
             call_next.return_value = StreamingResponse(
                 generate_json({"hello": "world"}),
                 media_type="application/json"
             )
             resp = await cache_response(request, call_next)
-            
+
+            # expect CORS to be set on all requests, regardless cache hit or miss
+            assert resp.headers.get("access-control-allow-origin")
+            assert siibra_version_header in resp.headers.get("access-control-expose-headers")
+            assert resp.headers.get(siibra_version_header)
+
             if expect_call_next_called:
                 call_next.assert_called_once()
             else:
