@@ -398,7 +398,7 @@ def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detai
         # spatial_features=atlas.get_features(modality_id)
         spatial_features = siibra.get_features(roi, modality_id, space=space_of_interest)
     except Exception as e:
-        print('Error', e)
+        logger.warn(e, str(space_of_interest), space_id)
         raise HTTPException(404, detail=f'Could not get spatial features.')
     
     shaped_features = None

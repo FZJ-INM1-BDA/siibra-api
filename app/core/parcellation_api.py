@@ -45,26 +45,6 @@ parcellation_json_encoder = {
     }
 }
 
-def get_preheat_status():
-    global preheat_flag
-    return preheat_flag
-
-
-def preheat(id=None):
-    global preheat_flag
-    logger.info('--start parcellation preheat--')
-    # TODO - check if preheat is still needed
-    # public_token = get_public_token()
-    # siibra.set_ebrains_token(public_token)
-    # # feature_class = siibra.modalities.keys()
-    # # EbrainsRegionalFeatureCls=feature_classes[feature_modalities.EbrainsRegionalDataset]
-    # EbrainsRegionalFeatureCls=feature_registry._classes[feature_modalities.EbrainsRegionalDataset]
-    # if hasattr(EbrainsRegionalFeatureCls, 'preheat') and callable(EbrainsRegionalFeatureCls.preheat):
-    #     EbrainsRegionalFeatureCls.preheat(id)
-    #     logger.info('--end parcellation preheat--')
-    # else:
-    #     logger.info('--siibra-python does not suppport preheat. exiting--')
-    # preheat_flag=True
 
 router = APIRouter()
 
