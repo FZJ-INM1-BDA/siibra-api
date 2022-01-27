@@ -18,21 +18,9 @@ from fastapi import APIRouter
 from fastapi.encoders import jsonable_encoder
 import siibra
 
-# FastApi router to create rest endpoints
+
 router = APIRouter()
 
-
-class ModalityType(str, Enum):
-    """
-    A class for modality type, to provide selection options to swagger
-    """
-    ReceptorDistribution = 'ReceptorDistribution'
-    GeneExpression = 'GeneExpression'
-    ConnectivityProfile = 'ConnectivityProfile'
-    ConnectivityMatrix = 'ConnectivityMatrix'
-
-
-# region === features
 
 @router.get('/genes', tags=['data'])
 def get_gene_names():

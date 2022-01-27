@@ -31,13 +31,17 @@ from app.service.validation import validate_and_return_atlas, validate_and_retur
 from app import logger
 
 # FastApi router to create rest endpoints
-router = APIRouter()
+
+SPACE_PREFIX = "/spaces"
+TAGS = ["spaces"]
+
+router = APIRouter(prefix=SPACE_PREFIX)
 
 
 # region === spaces
 
 
-@router.get('/{atlas_id:path}/spaces', tags=['spaces'])
+@router.get("", tags=TAGS)
 def get_all_spaces(atlas_id: str, request: Request):
     """
     Returns all spaces that are defined in the siibra client.
@@ -61,7 +65,7 @@ def get_all_spaces(atlas_id: str, request: Request):
     return jsonable_encoder(result)
 
 
-@router.get('/{atlas_id:path}/spaces/{space_id:path}/templates', tags=['spaces'])
+@router.get('/{space_id:path}/templates', tags=TAGS)
 def get_template_by_space_id(atlas_id: str, space_id: str):
     """
     Returns a template for a given space id.
@@ -77,7 +81,7 @@ def get_template_by_space_id(atlas_id: str, space_id: str):
     return FileResponse(filename, filename=filename)
 
 
-@router.get('/{atlas_id:path}/spaces/{space_id:path}/parcellation_maps', tags=['spaces'])
+@router.get('/{space_id:path}/parcellation_maps', tags=TAGS)
 # add parcellations_map_id as optional param
 def get_parcellation_map_for_space(atlas_id: str, space_id: str):
     """
@@ -124,7 +128,7 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):
         detail='Maps for space with id: {} not found'.format(space_id))
 
 
-@router.get('/{atlas_id:path}/spaces/{space_id:path}/features/{modality_id}', tags=['spaces'])
+@router.get('/{space_id:path}/features/{modality_id}', tags=TAGS)
 def get_single_spatial_feature(
         atlas_id: str, space_id: str, modality_id: str, request: Request,
         parcellation_id: Optional[str] = None, region: Optional[str] = None):
@@ -137,7 +141,7 @@ def get_single_spatial_feature(
     return got_features
 
 
-@router.get('/{atlas_id:path}/spaces/{space_id:path}/features/{modality_id}/{feature_id}', tags=['spaces'])
+@router.get('/{space_id:path}/features/{modality_id}/{feature_id}', tags=TAGS)
 def get_single_spatial_feature_detail(
         atlas_id: str, space_id: str, modality_id: str, feature_id: str, request: Request,
         parcellation_id: Optional[str] = None, region: Optional[str] = None):
@@ -151,7 +155,7 @@ def get_single_spatial_feature_detail(
     return got_features[0]
 
 
-@router.get('/{atlas_id:path}/spaces/{space_id:path}/features', tags=['spaces'])
+@router.get('/{space_id:path}/features', tags=TAGS)
 def get_spatial_feature_names(atlas_id: str, space_id: str, request: Request):
     """
     Return all possible feature names and links to get more details
@@ -173,7 +177,7 @@ def get_spatial_feature_names(atlas_id: str, space_id: str, request: Request):
     }
 
 
-@router.get('/{atlas_id:path}/spaces/{space_id:path}', tags=['spaces'])
+@router.get('/{space_id:path}', tags=TAGS)
 def get_one_space_by_id(atlas_id: str, space_id: str, request: Request):
     """
     Returns one space for given id, with links to further resources
@@ -217,4 +221,3 @@ def get_one_space_by_id(atlas_id: str, space_id: str, request: Request):
             status_code=404,
             detail='space with id: {} not found'.format(space_id))
 
-# endregion

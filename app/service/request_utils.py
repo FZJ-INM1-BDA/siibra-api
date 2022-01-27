@@ -175,7 +175,7 @@ def find_region_via_id(atlas, region_id):
 SUPPORTED_FEATURES = [
     # siibra.features.genes.GeneExpression,
     siibra.features.genes.AllenBrainAtlasQuery,
-    siibra.features.connectivity.ConnectivityProfileQuery,
+    # siibra.features.connectivity.ConnectivityProfileQuery,
     siibra.features.receptors.ReceptorQuery,
     siibra.features.ebrains.EbrainsRegionalFeatureQuery,
     siibra.features.ieeg.IEEG_SessionQuery]
