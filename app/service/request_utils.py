@@ -29,6 +29,9 @@ from app.service.validation import validate_and_return_atlas, validate_and_retur
 # TODO: Local or Remote NiftiVolume? NeuroglancerVolume = NgVolume?
 from siibra.volumes.volume import VolumeSrc, LocalNiftiVolume, NeuroglancerVolume
 from siibra.core import Space
+import zlib
+import base64
+import numpy as np
 
 cache_redis = CacheRedis.get_instance()
 
@@ -276,7 +279,16 @@ def get_regional_feature(
                 "__files": [], #receptor_pr.files, # TODO where  to get files
                 "__data": {
                     "__profiles": receptor_pr.profiles,
-                    "__autoradiographs": {},
+                    "__autoradiographs": {
+                        key: {
+                            "content_type": "application/octet-stream",
+                            "content_encoding": "gzip; base64",
+                            "x-width": np.transpose(value, axes=[1,0,2]).shape[0],
+                            "x-height": np.transpose(value, axes=[1,0,2]).shape[1],
+                            "x-channel": np.transpose(value, axes=[1,0,2]).shape[2],
+                            "content":  base64.b64encode(zlib.compress(np.transpose(value, axes=[1,0,2]).tobytes(order="F"))),
+                        } for key, value in receptor_pr.autoradiographs.items()
+                    },
                     "__fingerprint": receptor_pr.fingerprint,
                     # "__profile_unit": receptor_pr.profile_unit, TODO check where to get units
                 },
