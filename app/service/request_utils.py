@@ -178,10 +178,11 @@ def find_region_via_id(atlas, region_id):
 SUPPORTED_FEATURES = [
     # siibra.features.genes.GeneExpression,
     siibra.features.genes.AllenBrainAtlasQuery,
-    siibra.features.connectivity.ConnectivityProfileQuery,
+    # siibra.features.connectivity.ConnectivityProfileQuery,
     siibra.features.receptors.ReceptorQuery,
     siibra.features.ebrains.EbrainsRegionalFeatureQuery,
-    siibra.features.ieeg.IEEG_SessionQuery]
+    siibra.features.ieeg.IEEG_SessionQuery,
+    siibra.features.cells.RegionalCellDensityExtractor]
 
 
 @memoize(typed=True)
@@ -245,7 +246,7 @@ def get_regional_feature(
              },
              'instance': gene_feat,
         } for gene_feat in got_features]
-    if siibra.features.modalities[modality_id] == siibra.features.connectivity.ConnectivityProfileQuery:
+    if siibra.features.modalities[modality_id] == siibra.features.connectivity.FunctionalConnectivity:
         shaped_features = [{
             'summary': {
                 "@id": conn_pr._matrix.id,
@@ -295,6 +296,25 @@ def get_regional_feature(
              },
              'instance': receptor_pr,
         } for receptor_pr in got_features]
+    if siibra.features.modalities[modality_id] == siibra.features.cells.RegionalCellDensityExtractor:
+        shaped_features = [{
+            'summary': {
+                "@id": '...',
+                'regionspec': conn_pr.regionspec,
+                'species': conn_pr.species,
+                'cells': conn_pr.cells.to_dict(),
+                'section': conn_pr.section,
+                'patch': conn_pr.patch
+            },
+            'get_detail': lambda conn_pr: {
+                'regionspec': conn_pr.regionspec,
+                'species': conn_pr.species,
+                'cells': conn_pr.cells.to_dict(),
+                'section': conn_pr.section,
+                'patch': conn_pr.patch
+            },
+            'instance': conn_pr,
+        } for conn_pr in got_features]
 
     if shaped_features is None:
         raise HTTPException(
