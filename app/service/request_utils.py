@@ -23,7 +23,6 @@ from app.configuration.diskcache import CACHEDIR
 
 # TODO: Local or Remote NiftiVolume? NeuroglancerVolume = NgVolume?
 
-
 cache_redis = CacheRedis.get_instance()
 
 def get_file_from_nibabel(nibabel_object, nifti_type, space):
