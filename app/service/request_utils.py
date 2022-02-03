@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import List, Tuple
 from urllib.parse import quote
 from fastapi.encoders import jsonable_encoder
 import siibra
@@ -28,7 +29,9 @@ from app.service.validation import validate_and_return_atlas, validate_and_retur
     validate_and_return_region, validate_and_return_space
 # TODO: Local or Remote NiftiVolume? NeuroglancerVolume = NgVolume?
 from siibra.volumes.volume import VolumeSrc, LocalNiftiVolume, NeuroglancerVolume
-from siibra.core import Space
+from siibra.core import Space, BoundingBox
+from siibra.features import FeatureQuery
+from siibra.features.voi import VolumeOfInterest
 import zlib
 import base64
 import numpy as np
@@ -178,7 +181,7 @@ def find_region_via_id(atlas, region_id):
 SUPPORTED_FEATURES = [
     # siibra.features.genes.GeneExpression,
     siibra.features.genes.AllenBrainAtlasQuery,
-    # siibra.features.connectivity.ConnectivityProfileQuery,
+    siibra.features.connectivity.ConnectivityProfileQuery,
     siibra.features.receptors.ReceptorQuery,
     siibra.features.ebrains.EbrainsRegionalFeatureQuery,
     siibra.features.ieeg.IEEG_SessionQuery,
@@ -246,7 +249,7 @@ def get_regional_feature(
              },
              'instance': gene_feat,
         } for gene_feat in got_features]
-    if siibra.features.modalities[modality_id] == siibra.features.connectivity.FunctionalConnectivity:
+    if siibra.features.modalities[modality_id] == siibra.features.connectivity.ConnectivityProfileQuery:
         shaped_features = [{
             'summary': {
                 "@id": conn_pr._matrix.id,
@@ -393,6 +396,44 @@ def get_ieeg_session_detail(ieeg_session: siibra.features.ieeg.IEEG_Session, reg
             for electrode_key in ieeg_session.electrodes},
         **({'inRoi': ieeg_session.match(region)} if region is not None else {})
     }
+
+
+def get_all_vois():
+    queries = FeatureQuery.queries("volume")
+    features: List[VolumeOfInterest] = [feat for query in queries for feat in query.features]
+    return features
+
+all_voi_features = get_all_vois()
+
+def get_voi(atlas_id: str, space_id: str, boundingbox: Tuple[Tuple[float, float, float], Tuple[float, float, float]]):
+    atlas = validate_and_return_atlas(atlas_id)
+    space = validate_and_return_space(space_id, atlas)
+    bbox = BoundingBox(boundingbox[0], boundingbox[1], space)
+
+    def serialize_point(point):
+        return [p for p in point]
+    
+    def serialize_voi(voi: VolumeOfInterest):
+        return {
+            "@id": voi.id,
+            "name": voi.name,
+            "description": voi.description,
+            "url": voi.urls,
+            "location":{
+                "space": {
+                    "@id": voi.location.space.id
+                },
+                "center": serialize_point(voi.location.center),
+                "minpoint": serialize_point(voi.location.minpoint),
+                "maxpoint": serialize_point(voi.location.maxpoint),
+            },
+            "volumes": [vol_src_sans_space(vol) for vol in voi.volumes]
+        }
+    return [serialize_voi(feat)
+        for feat in all_voi_features
+        if feat.location.space is space
+        and bbox.intersection(feat.location)]
+
 
 @memoize(typed=True)
 def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detail=False, parc_id=None, region_id=None):

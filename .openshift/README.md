@@ -30,6 +30,7 @@ The built image will be tagged with one of the three tags depending on the trigg
 
 | tag | trigger condition |
 | --- | --- |
+| next | push to `next` branch |
 | latest | push to `master` branch |
 | rc | release name include the string `rc` |
 | stable | all other releases |
@@ -78,7 +79,7 @@ Deployments resides in [docker-img.yml](../.github/workflows/docker-img.yml), `j
 
 - determine if targeting prod or dev cluster.
 
-  - If the trigger is update of `master` branch, target dev cluster
+  - If the trigger is update of `master` or `next` branch, target dev cluster
 
   - If the trigger is release, target prod cluster
 
