@@ -47,7 +47,7 @@ def get_all_parcellations(atlas_id: str):
     try:
         atlas = atlases[atlas_id]
     except Exception:
-        return HTTPException(
+        raise HTTPException(
             status_code=404,
             detail=f"atlas with id: {atlas_id} not found."
         )
@@ -103,7 +103,7 @@ def get_single_global_feature_detail(
             'result': found[0]
         }
     except NotImplementedError:
-        return HTTPException(status_code=501,
+        raise HTTPException(status_code=501,
                              detail=f'modality {modality} not yet implemented')
 
 
@@ -119,12 +119,9 @@ def get_single_global_feature(
     """
     try:
         fs = get_global_features(atlas_id, parcellation_id, modality)
-        return [{
-            'src_name': f['src_name'],
-            'src_info': f['src_info'],
-        } for f in fs]
+        return fs
     except NotImplementedError:
-        return HTTPException(status_code=501,
+        raise HTTPException(status_code=501,
                              detail=f'modality {modality} not yet implemented')
 
 
@@ -142,7 +139,7 @@ def get_global_features_rest(
     result = {
         'features': [
             {
-                m.modality(): '{}atlases/{}/parcellations/{}/features/{}'.format(
+                m: '{}atlases/{}/parcellations/{}/features/{}'.format(
                     get_base_url_from_request(request),
                     atlas_id.replace(
                         '/',
@@ -150,7 +147,7 @@ def get_global_features_rest(
                     parcellation_id.replace(
                         '/',
                         '%2F'),
-                    m.modality()
+                    m
                 )} for m in siibra.features.modalities  # TODO siibra.get_features(parcellation, 'all') - too slow at the moment
         ]}
 
@@ -171,7 +168,7 @@ def get_parcellation_by_id(
         parcellation = atlas.parcellations[parcellation_id]
         return parcellation.to_model().dict()
     except IndexError as e:
-        return HTTPException(
+        raise HTTPException(
             status_code=404,
             detail=f"atlas_id {atlas_id} parcellation_id {parcellation_id} not found. {str(e)}"
         )

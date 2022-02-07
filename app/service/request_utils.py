@@ -305,29 +305,32 @@ def get_global_features(atlas_id, parcellation_id, modality_id):
         raise HTTPException(status_code=400,
                             detail=f'{modality_id} is not a valid modality')
 
-    #TODO check if still needed
-    # if not issubclass(
-    #         feature_classes[modality_id],
-    #         feature_export.GlobalFeature):
-    #     # modality_id is not a global feature, return empty array
-    #     return []
+    atlas = validate_and_return_atlas(atlas_id)
+    parcellation = validate_and_return_parcellation(parcellation_id, atlas)
 
-    atlas = siibra.atlases[atlas_id]
-    parcellation = atlas.get_parcellation(parcellation_id)
-
-    got_features = siibra.get_features(parcellation, modality_id)
-    if siibra.features.modalities[modality_id] == siibra.features.connectivity.ConnectivityMatrixQuery:
+    try:
+        got_features = siibra.get_features(parcellation, modality_id)
         return [{
             '@id': f.id,
-            'src_name': f.name,
-            'src_info': f.description,
-            # 'column_names': f.column_names, TODO: Where to get column names
-            'matrix': f.matrix.tolist(),
+            'name': str(f)
         } for f in got_features]
-    logger.info(f'feature {modality_id} has not yet been implemented')
-    raise HTTPException(
-        status_code=204,
-        detail=f'feature {modality_id} has not yet been implemented')
+    except:
+        raise HTTPException(
+            status_code=500,
+            detail=f'Something went wrong while getting feature: {modality_id}.'
+        )
+    # if siibra.features.modalities[modality_id] == siibra.features.connectivity.ConnectivityMatrixQuery:
+    #     return [{
+    #         '@id': f.id,
+    #         'src_name': f.name,
+    #         'src_info': f.description,
+    #         # 'column_names': f.column_names, TODO: Where to get column names
+    #         'matrix': f.matrix.tolist(),
+    #     } for f in got_features]
+    # logger.info(f'feature {modality_id} has not yet been implemented')
+    # raise HTTPException(
+    #     status_code=204,
+    #     detail=f'feature {modality_id} has not yet been implemented')
 
 
 def get_contact_pt_detail(contact_pt: siibra.features.ieeg.IEEG_ContactPoint, region: siibra.core.Region, **kwargs):
