@@ -51,7 +51,7 @@ def get_atlas_by_id(atlas_id: str):
         atlas = atlases[atlas_id]
         return atlas.to_model().dict()
     except:
-        return HTTPException(
+        raise HTTPException(
             status_code=404,
             detail=f"atlas with id: {atlas_id} not found."
         )
