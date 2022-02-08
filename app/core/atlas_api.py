@@ -20,6 +20,9 @@ from fastapi_versioning import version
 
 from app.core.parcellation_api import router as parcellation_router
 from app.core.space_api import router as space_router
+from app.service.validation import (
+    validate_and_return_atlas,
+)
 
 from siibra.core import Atlas
 from siibra import atlases
@@ -47,11 +50,4 @@ def get_atlas_by_id(atlas_id: str):
     """
     Get more information for a specific atlas with links to further objects.
     """
-    try:
-        atlas = atlases[atlas_id]
-        return atlas.to_model().dict()
-    except:
-        raise HTTPException(
-            status_code=404,
-            detail=f"atlas with id: {atlas_id} not found."
-        )
+    return validate_and_return_atlas(atlas_id).to_model()
