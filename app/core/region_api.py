@@ -45,7 +45,7 @@ UnionRegionalFeatureModels = Union[
 def get_all_regions_from_atlas_parc_space(
     atlas_id: str,
     parcellation_id: str,
-    space_id: Optional[str]):
+    space_id: Optional[str] = None):
     """
     Returns all regions for a given parcellation id.
     """
@@ -75,7 +75,7 @@ def get_all_features_for_region(
             status_code=400,
             detail=f"space {str(space)} is not supported by region {str(region)}"
         )
-    
+
     return_list = []
     for modality, query_list in [(modality, FeatureQuery._implementations[modality]) for modality in modalities]:
         if all(issubclass(query._FEATURETYPE, RegionalFeature) for query in query_list):
@@ -111,7 +111,7 @@ def get_regional_modality_by_id(
             status_code=400,
             detail=f"space {str(space)} is not supported by region {str(region)}"
         )
-    
+
     features = siibra.get_features(region, modality=modality_id)
     filtered_features = [feature for feature in features if feature.to_model(detail=False).id == feature_id]
     try:
@@ -147,7 +147,7 @@ def get_feature_modality_for_region(
             status_code=400,
             detail=f"space {str(space)} is not supported by region {str(region)}"
         )
-    
+
     features = siibra.get_features(region, modality=modality_id)
     return [feature.to_model(detail=False) for feature in features]
 
@@ -163,7 +163,7 @@ def regional_map_route_decorator():
             parcellation_id: str,
             space_id: Optional[str],
             region_id: str):
-            
+
             atlas = validate_and_return_atlas(atlas_id)
             parcellation = validate_and_return_parcellation(parcellation_id, atlas)
             region = validate_and_return_region(region_id, parcellation)
@@ -179,7 +179,7 @@ def regional_map_route_decorator():
                     status_code=400,
                     detail=f"space {str(space)} is not supported by region {str(region)}"
                 )
-            
+
             query_id = f"{atlas.id}{parcellation.id}{region.id}{space.id}"
             logger.debug(f'queryId: {query_id}')
             cached_fullpath = get_path_to_regional_map(query_id, region, space)
@@ -238,7 +238,7 @@ def get_single_region_detail(
     parcellation_id: str,
     space_id: Optional[str],
     region_id: str):
-    
+
     atlas = validate_and_return_atlas(atlas_id)
     parcellation = validate_and_return_parcellation(parcellation_id, atlas)
     region = validate_and_return_region(region_id, parcellation)
