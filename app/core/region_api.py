@@ -161,8 +161,9 @@ def regional_map_route_decorator():
         def inner(
             atlas_id: str,
             parcellation_id: str,
-            space_id: Optional[str],
-            region_id: str):
+            region_id: str,
+            space_id: Optional[str] = None
+        ):
 
             atlas = validate_and_return_atlas(atlas_id)
             parcellation = validate_and_return_parcellation(parcellation_id, atlas)
@@ -236,8 +237,8 @@ def get_regional_map_file(cached_fullpath: str):
 def get_single_region_detail(
     atlas_id: str,
     parcellation_id: str,
-    space_id: Optional[str],
-    region_id: str):
+    region_id: str,
+    space_id: Optional[str] = None):
 
     atlas = validate_and_return_atlas(atlas_id)
     parcellation = validate_and_return_parcellation(parcellation_id, atlas)

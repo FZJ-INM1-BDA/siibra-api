@@ -42,8 +42,7 @@ def test_all_regions_for_parcellations():
         ICBM_152_SPACE_ID))
     result_content = json.loads(response.content)
     assert response.status_code == 200
-    # assert len(result_content) == 2
-    assert result_content[0]['children'] is not None
+    assert len(result_content) > 0
 
 
 def test_all_regions_for_parcellations_with_bad_request():
@@ -69,20 +68,10 @@ class TestParcRegions(unittest.TestCase):
             PARCELLATION_ID,
             quote(FS_AVERAGE_SPACE_ID),
         ))
-        jresp=json.loads(response.content)
 
-        region_list=[]
-        def process_region(r):
-            region_list.append(r)
-            for c in r.get('children', []):
-                process_region(c)
+        result_content = json.loads(response.content)
+        assert result_content[0]['hasAnnotation'] is not None
 
-        for r in jresp:
-            process_region(r)
-
-        hoc1_left = [r for r in region_list if r.get('name') == HOC1_LEFT_REGION_NAME]
-        assert len(hoc1_left) == 1
-        assert hoc1_left[0].get('labelIndex') is not None
 
 class TestSingleRegion(unittest.TestCase):
 
@@ -96,7 +85,6 @@ class TestSingleRegion(unittest.TestCase):
         assert response.status_code == 200
         assert result_content['name'] == REGION_BASAL
 
-
     def test_get_one_region_for_parcellation_with_extra_data(self):
         response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}?space_id={}'.format(
             ATLAS_ID.replace('/', '%2F'),
@@ -107,24 +95,7 @@ class TestSingleRegion(unittest.TestCase):
         assert response.status_code == 200
 
         assert result_content['name'] == HOC1_LEFT_REGION_NAME
-
-        # spatial props
-        props_components = result_content.get('props', {}).get('components', [])
-        assert type(props_components) == list
-        assert len(props_components) > 0
-
-        assert type(props_components[0].get('centroid')) == list
-        assert len(props_components[0].get('centroid')) == 3
-        assert all([type(v) == float for v in props_components[0].get('centroid')])
-        assert type(props_components[0].get('volume')) == float
-
-        # _dataset_specs
-        _dataset_specs = result_content.get('_dataset_specs')
-        assert _dataset_specs is not None
-        assert type(_dataset_specs) == list
-        assert len(_dataset_specs) > 0
-        # Add Assertion for extra data
-
+        assert result_content['hasAnnotation']['bestViewPoint']['coordinates'] is not None
 
     def test_get_region_for_space_with_invalid_region_name(self):
 
@@ -135,7 +106,6 @@ class TestSingleRegion(unittest.TestCase):
 
         assert response.status_code == 404
 
-
     def test_get_region_with_correct_name(self):
 
         response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}'.format(
@@ -144,53 +114,32 @@ class TestSingleRegion(unittest.TestCase):
             quote(REGION_AREA_3B_RIGHT)))
         assert response.status_code == 200
 
-    def test_get_region_detail(self):
+    def test_region_map_info(self):
 
-        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}?space_id={}'.format(
-            quote(ATLAS_ID),
-            PARCELLATION_ID,
-            quote(REGION_AREA_3B_RIGHT),
-            quote(ICBM_152_SPACE_ID)
-        ))
-
-        region_json=json.loads(response.content)
-        assert region_json.get('_dataset_specs') is not None
-        assert type(region_json.get('_dataset_specs')) == list
-        info_datasets = [ds for ds in region_json.get('_dataset_specs') if ds.get('@type') == 'minds/core/dataset/v1.0.0']
-        assert len(info_datasets) > 0
-        assert all([ds.get('description') is not None and ds.get('name') is not None for ds in info_datasets])
-
-
-    # hasRegionalMap and other region map must be true
-    def test_region_map(self):
-
-        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}?space_id={}'.format(
+        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}/regional_map/info?space_id={}'.format(
             quote(ATLAS_ID),
             PARCELLATION_ID,
             quote(REGION_AREA_3B_RIGHT),
             quote(ICBM_152_SPACE_ID),
         ))
-        jresp=json.loads(response.content)
-        assert jresp.get('hasRegionalMap') is True
 
-        info_url=jresp.get('links', {}).get('regional_map_info')
-        map_url=jresp.get('links', {}).get('regional_map')
-        assert info_url is not None
-        assert map_url is not None
+        assert response.status_code == 200
 
-        # region map info
+        info = json.loads(response.content)
+        assert info.get('min') is not None
+        assert info.get('max') is not None
 
-        if info_url is not None:
-            response = client.get(info_url)
-            assert response.status_code == 200
-            info=json.loads(response.content)
-            assert info.get('min') is not None
-            assert info.get('max') is not None
+    def test_region_map(self):
 
-        # region map
-        if map_url is not None:
-            response = client.get(map_url)
-            assert response.status_code == 200
+        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}/regional_map/map?space_id={}'.format(
+            quote(ATLAS_ID),
+            PARCELLATION_ID,
+            quote(REGION_AREA_3B_RIGHT),
+            quote(ICBM_152_SPACE_ID),
+        ))
+
+        assert response.status_code == 200
+
 
 class TestSingleRegionFeatures(unittest.TestCase):
 
