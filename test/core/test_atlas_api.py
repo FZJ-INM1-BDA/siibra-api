@@ -26,6 +26,6 @@ def test_get_singe_atlas():
 def test_get_invalid_atlas():
     invalid_id = 'INVALID_ID'
     response = client.get('/v1_0/atlases/{}'.format(invalid_id.replace('/', '%2F')))
-    assert response.status_code == 404
+    assert response.status_code == 400
     result_content = json.loads(response.content)
-    assert result_content['detail'] == 'atlas with id: {} not found.'.format(invalid_id)
+    assert result_content['detail'] == 'atlas_id: {} is not known'.format(invalid_id)
