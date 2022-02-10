@@ -26,9 +26,9 @@ jobs:
 
           echo "Using github.ref: $GITHUB_REF"
 
-          if [[ "$GITHUB_REF" == feat* ]] || [[ "$GITHUB_REF" == dev ]]
+          if [[ "$GITHUB_REF" == *"feat"* ]] || [[ "$GITHUB_REF" == *"dev"* ]]
           then
-            echo "branch starts with next*, use dev dep"
+            echo "feature branch or dev branch, use dev dep"
             pip install -r requirements/dev.txt
           else
             echo "default: install prod dep"
