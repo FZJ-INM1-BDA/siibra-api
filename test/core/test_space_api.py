@@ -36,8 +36,8 @@ def test_get_one_space():
     url = response.url.split('atlases')[0]
     result_content = json.loads(response.content)
     assert response.status_code == 200
-    assert result_content['id'] == 'minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2'
-    assert result_content['name'] == 'MNI152 2009c nonl asym'
+    assert result_content['@id'] == 'minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2'
+    assert result_content['fullName'] == 'MNI152 2009c nonl asym'
     # TODO: Strange error. KeyError: 'name' when calling parcellation.supports_space
     # no error on second call
     # assert len(result_content['availableParcellations']) > 0

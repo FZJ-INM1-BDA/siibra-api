@@ -18,21 +18,9 @@ from fastapi import APIRouter
 from fastapi.encoders import jsonable_encoder
 import siibra
 
-# FastApi router to create rest endpoints
+
 router = APIRouter()
 
-
-class ModalityType(str, Enum):
-    """
-    A class for modality type, to provide selection options to swagger
-    """
-    ReceptorDistribution = 'ReceptorDistribution'
-    GeneExpression = 'GeneExpression'
-    ConnectivityProfile = 'ConnectivityProfile'
-    ConnectivityMatrix = 'ConnectivityMatrix'
-
-
-# region === features
 
 @router.get('/genes', tags=['data'])
 def get_gene_names():
@@ -51,16 +39,7 @@ def get_all_available_modalities():
     """
     Return all possible modalities
     """
-    def get_feature_type(ft):
-        if issubclass(ft, siibra.features.feature.SpatialFeature):
-            return 'SpatialFeature'
-        if issubclass(ft, siibra.features.feature.RegionalFeature):
-            return 'RegionalFeature'
-        if issubclass(ft, siibra.features.feature.ParcellationFeature):
-            return 'ParcellationFeature'
-        return 'UnknownFeatureType'
     return [{
-        'name': feature_name.modality(),
-        'type': get_feature_type(feature_name._FEATURETYPE)
+        'name': feature_name
     } for feature_name in siibra.features.modalities]
 
