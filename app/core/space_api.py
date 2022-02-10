@@ -38,6 +38,9 @@ from app.service.validation import (
     file_response_openapi,
     FeatureIdNameModel,
 )
+from app.service.request_utils import get_spatial_features, get_voi, split_id, get_file_from_nibabel, get_parcellations_for_space
+from app.service.request_utils import get_base_url_from_request, siibra_custom_json_encoder,origin_data_decoder
+from app.service.validation import validate_and_return_atlas, validate_and_return_space
 
 SPACE_PREFIX = "/spaces"
 TAGS = ["spaces"]
@@ -163,15 +166,28 @@ def get_single_spatial_feature_detail(
     tags=TAGS,
     response_model=List[UnionSpatialFeatureModels])
 def get_single_spatial_feature(
-    modality_id: str,
-    atlas_id: str,
-    space_id: str,
-    parcellation_id: Optional[str],
-    region: Optional[str]):
+        atlas_id: str, space_id: str, modality_id: str, request: Request,
+        parcellation_id: Optional[str] = None, region: Optional[str] = None, bbox: Optional[str] = None):
     """
     Get more information for a single feature.
     A parcellation id and region id can be provided optional to get more details.
     """
+    logger.debug(f'api endpoint: get_single_spatial_feature, {atlas_id}, {space_id}, {modality_id}, {parcellation_id}, {region}')
+    if bbox is not None:
+        try:
+            import json
+            list_of_points = json.loads(bbox)
+            assert len(list_of_points) == 2, f"expected list with length 2"
+            assert all(len(point) == 3 for point in list_of_points), f"expected every element in list to have len 3"
+            assert all(isinstance(num, float) or isinstance(num, int) for point in list_of_points for num in point), f"expected every element to be a float"
+            return get_voi(atlas_id, space_id, list_of_points)
+        except Exception as e:
+            raise HTTPException(
+                status_code=400,
+                detail=f"getting voi bad request: {str(e)}"
+            )
+    got_features = get_spatial_features(atlas_id, space_id, modality_id, parc_id=parcellation_id, region_id=region)
+    return got_features
 
     atlas = validate_and_return_atlas(atlas_id)
     space = validate_and_return_space(space_id, atlas)
@@ -189,7 +205,7 @@ def get_spatial_feature_names(atlas_id: str, space_id: str):
     """
     Return all possible feature names and links to get more details
     """
-    
+
     return_list = []
     for modality, query_list in [(modality, FeatureQuery._implementations[modality]) for modality in modalities]:
         if all(issubclass(query._FEATURETYPE, SpatialFeature) for query in query_list):
@@ -199,7 +215,7 @@ def get_spatial_feature_names(atlas_id: str, space_id: str):
                 "name": modality,
                 "nyi": not implemented_flag,
             })
-    
+
     return return_list
 
 
