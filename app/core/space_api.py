@@ -21,7 +21,6 @@ import siibra
 from siibra.core import Space
 from siibra.features.feature import SpatialFeature
 from siibra.features import FeatureQuery, modalities
-from siibra import atlases
 from siibra.features.ieeg import IEEGSessionModel
 from siibra.features.voi import VolumeModel
 from siibra.core.serializable_concept import JSONSerializable
@@ -29,17 +28,13 @@ from siibra.core.serializable_concept import JSONSerializable
 from fastapi import APIRouter, HTTPException
 from starlette.responses import FileResponse, StreamingResponse
 
-from app.service.request_utils import get_file_from_nibabel
 from app.service.validation import (
-    validate_and_return_atlas,
     validate_and_return_parcellation,
     validate_and_return_region,
-    validate_and_return_space,
     file_response_openapi,
     FeatureIdNameModel,
 )
-from app.service.request_utils import get_spatial_features, get_voi, split_id, get_file_from_nibabel, get_parcellations_for_space
-from app.service.request_utils import get_base_url_from_request, siibra_custom_json_encoder,origin_data_decoder
+from app.service.request_utils import  get_voi, get_file_from_nibabel
 from app.service.validation import validate_and_return_atlas, validate_and_return_space
 
 SPACE_PREFIX = "/spaces"
@@ -166,13 +161,14 @@ def get_single_spatial_feature_detail(
     tags=TAGS,
     response_model=List[UnionSpatialFeatureModels])
 def get_single_spatial_feature(
-        atlas_id: str, space_id: str, modality_id: str, request: Request,
+        atlas_id: str, space_id: str, modality_id: str,
         parcellation_id: Optional[str] = None, region: Optional[str] = None, bbox: Optional[str] = None):
     """
     Get more information for a single feature.
     A parcellation id and region id can be provided optional to get more details.
     """
-    logger.debug(f'api endpoint: get_single_spatial_feature, {atlas_id}, {space_id}, {modality_id}, {parcellation_id}, {region}')
+    atlas = validate_and_return_atlas(atlas_id)
+    space = validate_and_return_space(space_id, atlas)
     if bbox is not None:
         try:
             import json
@@ -180,17 +176,13 @@ def get_single_spatial_feature(
             assert len(list_of_points) == 2, f"expected list with length 2"
             assert all(len(point) == 3 for point in list_of_points), f"expected every element in list to have len 3"
             assert all(isinstance(num, float) or isinstance(num, int) for point in list_of_points for num in point), f"expected every element to be a float"
-            return get_voi(atlas_id, space_id, list_of_points)
+            return get_voi(space, list_of_points)
         except Exception as e:
             raise HTTPException(
                 status_code=400,
                 detail=f"getting voi bad request: {str(e)}"
             )
-    got_features = get_spatial_features(atlas_id, space_id, modality_id, parc_id=parcellation_id, region_id=region)
-    return got_features
 
-    atlas = validate_and_return_atlas(atlas_id)
-    space = validate_and_return_space(space_id, atlas)
     parcellation = validate_and_return_parcellation(parcellation_id, atlas) if parcellation_id else None
     roi = validate_and_return_region(region, parcellation) if parcellation else None
     features: List[UnionSpatialFeatureModels] = siibra.get_features(roi or parcellation or space, modality_id)
