@@ -26,7 +26,7 @@ jobs:
 
           echo "Using github.ref: $GITHUB_REF"
 
-          if [[ "$GITHUB_REF" == next* ]]
+          if [[ "$GITHUB_REF" == feat* ]] || [[ "$GITHUB_REF" == dev ]]
           then
             echo "branch starts with next*, use dev dep"
             pip install -r requirements/dev.txt
