@@ -17,12 +17,15 @@ from typing import List
 
 from fastapi import APIRouter, HTTPException
 from fastapi_versioning import version
+from starlette.requests import Request
 
 from app.core.parcellation_api import router as parcellation_router
 from app.core.space_api import router as space_router
 from app.service.validation import (
     validate_and_return_atlas,
 )
+from app.service.request_utils import get_base_url_from_request
+from app.models import RestfulModel
 
 from siibra.core import Atlas
 from siibra import atlases
@@ -35,19 +38,40 @@ router.include_router(parcellation_router, prefix="/{atlas_id:path}")
 router.include_router(space_router, prefix="/{atlas_id:path}")
 
 
-@router.get('', tags=['atlases'], response_model=List[Atlas.to_model.__annotations__.get("return")])
+class SapiAtlasModel(Atlas.to_model.__annotations__.get("return"), RestfulModel):
+    @staticmethod
+    def from_atlas(atlas: Atlas, curr_path: str) -> 'SapiAtlasModel':
+        model = atlas.to_model()
+        return SapiAtlasModel(
+            **model.dict(),
+            links={
+                "spaces": {
+                    "href": f"{curr_path}/spaces"
+                },
+                "parcellations": {
+                    "href": f"{curr_path}/parcellations"
+                },
+                "self": {
+                    "href": f"{curr_path}"
+                }
+            }
+        )
+
+
+@router.get('', tags=['atlases'], response_model=List[SapiAtlasModel])
 @version(1)
-def get_all_atlases():
+def get_all_atlases(request: Request):
     """
     Get all atlases known by siibra.
     """
-    return [atlas.to_model() for atlas in atlases]
+    return [SapiAtlasModel.from_atlas(atlas, get_base_url_from_request(request, atlas_id=atlas.id)) for atlas in atlases]
 
 
-@router.get('/{atlas_id:path}', tags=['atlases'], response_model=Atlas.to_model.__annotations__.get("return"))
+@router.get('/{atlas_id:path}', tags=['atlases'], response_model=SapiAtlasModel)
 @version(1)
-def get_atlas_by_id(atlas_id: str):
+def get_atlas_by_id(atlas_id: str, request: Request):
     """
     Get more information for a specific atlas with links to further objects.
     """
-    return validate_and_return_atlas(atlas_id).to_model()
+    atlas = validate_and_return_atlas(atlas_id)
+    return SapiAtlasModel.from_atlas(atlas, get_base_url_from_request(request, atlas_id=atlas_id))

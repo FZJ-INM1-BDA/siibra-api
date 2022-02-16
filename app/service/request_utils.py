@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from typing import List, Tuple
+from urllib.parse import quote_plus
 import siibra
 import nibabel as nib
 from fastapi import HTTPException, Request
@@ -45,7 +46,7 @@ def get_cached_file(filename: str, fn: callable):
     return cached_full_path
 
 
-def get_base_url_from_request(request: Request):
+def get_base_url_from_request(request: Request, **kwargs):
     proto_header = 'x-forwarded-proto'
     proto = 'http'
     host = request.headers.get('host')
@@ -54,7 +55,14 @@ def get_base_url_from_request(request: Request):
     if proto_header in request.headers:
         proto = request.headers.get(proto_header)
 
-    return '{}://{}/{}/'.format(proto, host, api_version)
+    if 'atlas_id' in kwargs:
+        base_url = f'{proto}://{host}/{api_version}/atlases/{quote_plus(kwargs["atlas_id"])}'
+        if 'parcellation_id' in kwargs:
+            return f'{base_url}/parcellations/{quote_plus(kwargs["parcellation_id"])}'
+        if 'space_id' in kwargs:
+            return f'{base_url}/spaces/{quote_plus(kwargs["space_id"])}'
+        return base_url
+    return '{}://{}'.format(proto, host)
 
 
 def get_all_vois():
