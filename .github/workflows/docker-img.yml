@@ -4,6 +4,7 @@ on:
   push:
     branches:
     - master
+    - dev
   release:
     types:
     - published
@@ -30,8 +31,13 @@ jobs:
         then
 
           # since it's latest, set DEV_FLAG to true
-          echo "DEV_FLAG=1" >> $GITHUB_ENV
           DOCKER_IMAGE_TAG=latest
+
+          if [ "$GITHUB_REF" = "dev" ]
+          then
+            echo "DEV_FLAG=1" >> $GITHUB_ENV
+            DOCKER_IMAGE_TAG=dev
+          fi
         fi
 
         if [ "$GITHUB_EVENT_NAME" = "release" ]

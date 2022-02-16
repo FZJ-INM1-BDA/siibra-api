@@ -16,6 +16,13 @@
 import siibra
 from fastapi import HTTPException
 from siibra.core import Space, Parcellation, Region, Atlas
+from pydantic import BaseModel, Field
+
+
+class FeatureIdNameModel(BaseModel):
+    id: str = Field(..., alias="@id")
+    name: str
+    nyi: bool = True
 
 def validate_and_return_atlas(atlas_id:str) -> Atlas:
     """
@@ -93,3 +100,16 @@ def validate_and_return_region(region_id: str, parcellation: Parcellation) -> Re
             status_code=404,
             detail=f'region: {region_id} is not known'
         )
+
+file_response_openapi = {
+    200: {
+        'content': {
+            'application/octet-stream': {
+                'schema': {
+                    'type': 'string',
+                    'format': 'binary'
+                }
+            }
+        }
+    }
+}

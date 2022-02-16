@@ -13,59 +13,65 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import siibra
-from fastapi import APIRouter, Request, HTTPException
+from typing import List
+
+from fastapi import APIRouter, HTTPException
 from fastapi_versioning import version
+from starlette.requests import Request
+
+from app.core.parcellation_api import router as parcellation_router
+from app.core.space_api import router as space_router
+from app.service.validation import (
+    validate_and_return_atlas,
+)
 from app.service.request_utils import get_base_url_from_request
+from app.models import RestfulModel
 
-# FastApi router to create rest endpoints
-router = APIRouter()
+from siibra.core import Atlas
+from siibra import atlases
 
 
-# region === atlases
-@router.get('', tags=['atlases'])
+ATLAS_PATH = "/atlases"
+router = APIRouter(prefix=ATLAS_PATH)
+
+router.include_router(parcellation_router, prefix="/{atlas_id:path}")
+router.include_router(space_router, prefix="/{atlas_id:path}")
+
+
+class SapiAtlasModel(Atlas.to_model.__annotations__.get("return"), RestfulModel):
+    @staticmethod
+    def from_atlas(atlas: Atlas, curr_path: str) -> 'SapiAtlasModel':
+        model = atlas.to_model()
+        return SapiAtlasModel(
+            **model.dict(),
+            links={
+                "spaces": {
+                    "href": f"{curr_path}/spaces"
+                },
+                "parcellations": {
+                    "href": f"{curr_path}/parcellations"
+                },
+                "self": {
+                    "href": f"{curr_path}"
+                }
+            }
+        )
+
+
+@router.get('', tags=['atlases'], response_model=List[SapiAtlasModel])
 @version(1)
 def get_all_atlases(request: Request):
     """
     Get all atlases known by siibra.
     """
-    result = []
-    for atlas in siibra.atlases:
-        result.append(__atlas_to_result_object(atlas, request))
-    return result
+    return [SapiAtlasModel.from_atlas(atlas, get_base_url_from_request(request, atlas_id=atlas.id)) for atlas in atlases]
 
 
-@router.get('/{atlas_id:path}', tags=['atlases'])
+@router.get('/{atlas_id:path}', tags=['atlases'], response_model=SapiAtlasModel)
 @version(1)
 def get_atlas_by_id(atlas_id: str, request: Request):
     """
     Get more information for a specific atlas with links to further objects.
     """
-    for atlas in siibra.atlases:
-        if atlas.id == atlas_id.replace('%2F', '/'):
-            return __atlas_to_result_object(atlas, request)
-    raise HTTPException(
-        status_code=404,
-        detail='atlas with id: {} not found'.format(atlas_id))
-# endregion
-
-
-def __atlas_to_result_object(atlas, request: Request):
-    return {
-        'id': atlas.id,
-        'name': atlas.name,
-        'links': {
-            'parcellations': {
-                'href': '{}atlases/{}/parcellations'.format(
-                    get_base_url_from_request(request),
-                    atlas.id.replace('/', '%2F')
-                )
-            },
-            'spaces': {
-                'href': '{}atlases/{}/spaces'.format(
-                    get_base_url_from_request(request),
-                    atlas.id.replace('/', '%2F')
-                )
-            }
-        }
-    }
+    atlas = validate_and_return_atlas(atlas_id)
+    return SapiAtlasModel.from_atlas(atlas, get_base_url_from_request(request, atlas_id=atlas_id))

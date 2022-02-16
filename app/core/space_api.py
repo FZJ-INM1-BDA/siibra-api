@@ -14,54 +14,69 @@
 # limitations under the License.
 
 import io
-from typing import Optional
-from urllib.parse import quote
-
+from typing import List, Optional, Union
+from starlette.requests import Request
 import zipfile
 import siibra
+from siibra.core import Space
+from siibra.features.feature import SpatialFeature
+from siibra.features import FeatureQuery, modalities
+from siibra.features.ieeg import IEEGSessionModel
+from siibra.features.voi import VolumeModel
+from siibra.core.serializable_concept import JSONSerializable
 
-from fastapi import APIRouter, HTTPException, Request
-from fastapi.encoders import jsonable_encoder
+from fastapi import APIRouter, HTTPException
 from starlette.responses import FileResponse, StreamingResponse
 
-from app.service.request_utils import get_spatial_features, split_id, get_file_from_nibabel, get_parcellations_for_space
-from app.service.request_utils import get_base_url_from_request, siibra_custom_json_encoder,origin_data_decoder
+from app.service.validation import (
+    validate_and_return_parcellation,
+    validate_and_return_region,
+    file_response_openapi,
+    FeatureIdNameModel,
+)
+from app.models import RestfulModel
+from app.service.request_utils import  get_voi, get_file_from_nibabel, get_base_url_from_request
 from app.service.validation import validate_and_return_atlas, validate_and_return_space
 
-from app import logger
+SPACE_PREFIX = "/spaces"
+TAGS = ["spaces"]
 
-# FastApi router to create rest endpoints
-router = APIRouter()
+router = APIRouter(prefix=SPACE_PREFIX)
+
+UnionSpatialFeatureModels = Union[
+    IEEGSessionModel,
+    VolumeModel,
+]
 
 
-# region === spaces
+class SapiSpaceModel(Space.to_model.__annotations__.get("return"), RestfulModel):
+    @staticmethod
+    def from_space(space: Space, curr_path: str) -> 'SapiSpaceModel':
+        model = space.to_model()
+        return SapiSpaceModel(
+            **model.dict(),
+            links={
+                "self": {
+                    "href": f"{curr_path}"
+                }
+            }
+        )
 
 
-@router.get('/{atlas_id:path}/spaces', tags=['spaces'])
+@router.get("",
+    tags=TAGS,
+    response_model=List[SapiSpaceModel])
 def get_all_spaces(atlas_id: str, request: Request):
     """
     Returns all spaces that are defined in the siibra client.
     """
     atlas = validate_and_return_atlas(atlas_id)
-    result = []
-    for space in atlas.spaces:
-        result.append({
-            'id': split_id(space.id),
-            'name': space.name,
-            'links': {
-                'self': {
-                    'href': '{}atlases/{}/spaces/{}'.format(
-                        get_base_url_from_request(request),
-                        atlas_id.replace('/', '%2F'),
-                        space.id.replace('/', '%2F')
-                    )
-                }
-            }
-        })
-    return jsonable_encoder(result)
+    return [SapiSpaceModel.from_space(space, get_base_url_from_request(request, atlas_id=atlas_id, space_id=space.id)) for space in atlas.spaces]
 
 
-@router.get('/{atlas_id:path}/spaces/{space_id:path}/templates', tags=['spaces'])
+@router.get("/{space_id:path}/templates",
+    tags=TAGS,
+    responses=file_response_openapi)
 def get_template_by_space_id(atlas_id: str, space_id: str):
     """
     Returns a template for a given space id.
@@ -72,12 +87,14 @@ def get_template_by_space_id(atlas_id: str, space_id: str):
 
     # create file-object in memory
     # file_object = io.BytesIO()
-    filename = get_file_from_nibabel(template, 'template', space)
+    filename = get_file_from_nibabel(template, "template", space)
 
-    return FileResponse(filename, filename=filename)
+    return FileResponse(filename, filename=filename, media_type='application/octet-stream')
 
 
-@router.get('/{atlas_id:path}/spaces/{space_id:path}/parcellation_maps', tags=['spaces'])
+@router.get("/{space_id:path}/parcellation_maps",
+    tags=TAGS,
+    responses=file_response_openapi)
 # add parcellations_map_id as optional param
 def get_parcellation_map_for_space(atlas_id: str, space_id: str):
     """
@@ -90,7 +107,7 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):
     if len(valid_parcs) == 1:
         maps = [valid_parcs[0].get_map(space)]
         filename = get_file_from_nibabel(maps[0], 'maps', space)
-        return FileResponse(filename, filename=filename)
+        return FileResponse(filename, filename=filename, media_type='application/octet-stream')
     else:
         raise HTTPException(
             status_code=501,
@@ -124,97 +141,99 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):
         detail='Maps for space with id: {} not found'.format(space_id))
 
 
-@router.get('/{atlas_id:path}/spaces/{space_id:path}/features/{modality_id}', tags=['spaces'])
-def get_single_spatial_feature(
-        atlas_id: str, space_id: str, modality_id: str, request: Request,
-        parcellation_id: Optional[str] = None, region: Optional[str] = None):
-    """
-    Get more information for a single feature.
-    A parcellation id and region id can be provided optional to get more details.
-    """
-    logger.debug(f'api endpoint: get_single_spatial_feature, {atlas_id}, {space_id}, {modality_id}, {parcellation_id}, {region}')
-    got_features = get_spatial_features(atlas_id, space_id, modality_id, parc_id=parcellation_id, region_id=region)
-    return got_features
-
-
-@router.get('/{atlas_id:path}/spaces/{space_id:path}/features/{modality_id}/{feature_id}', tags=['spaces'])
+@router.get("/{space_id:path}/features/{modality_id}/{feature_id}",
+    tags=TAGS,
+    response_model=UnionSpatialFeatureModels)
 def get_single_spatial_feature_detail(
-        atlas_id: str, space_id: str, modality_id: str, feature_id: str, request: Request,
-        parcellation_id: Optional[str] = None, region: Optional[str] = None):
+    modality_id: str,
+    feature_id: str,
+    atlas_id: str,
+    space_id: str,
+    parcellation_id: Optional[str],
+    region: Optional[str]):
     """
     Get a detailed view on a single spatial feature.
     A parcellation id and region id can be provided optional to get more details.
     """
-    got_features = get_spatial_features(atlas_id, space_id, modality_id, feature_id, parc_id=parcellation_id, region_id=region, detail=True)
-    if len(got_features) == 0:
-        raise HTTPException(404, detail=f'feature with id {feature_id} cannot be found')
-    return got_features[0]
+
+    atlas = validate_and_return_atlas(atlas_id)
+    space = validate_and_return_space(space_id, atlas)
+    parcellation = validate_and_return_parcellation(parcellation_id, atlas) if parcellation_id else None
+    roi = validate_and_return_region(region, parcellation) if parcellation else None
+    features: List[UnionSpatialFeatureModels] = siibra.get_features(roi or parcellation or space, modality_id)
+
+    try:
+        found_features = [feature for feature in features if feature.id == feature_id]
+        return found_features[0].to_model(detail=True)
+    except IndexError:
+        return HTTPException(
+            status_code=404,
+            defailt=f"feature with id {feature_id} not found."
+        )
 
 
-@router.get('/{atlas_id:path}/spaces/{space_id:path}/features', tags=['spaces'])
-def get_spatial_feature_names(atlas_id: str, space_id: str, request: Request):
+@router.get("/{space_id:path}/features/{modality_id}",
+    tags=TAGS,
+    response_model=List[UnionSpatialFeatureModels])
+def get_single_spatial_feature(
+        atlas_id: str, space_id: str, modality_id: str,
+        parcellation_id: Optional[str] = None, region: Optional[str] = None, bbox: Optional[str] = None):
+    """
+    Get more information for a single feature.
+    A parcellation id and region id can be provided optional to get more details.
+    """
+    atlas = validate_and_return_atlas(atlas_id)
+    space = validate_and_return_space(space_id, atlas)
+    if bbox is not None:
+        try:
+            import json
+            list_of_points = json.loads(bbox)
+            assert len(list_of_points) == 2, f"expected list with length 2"
+            assert all(len(point) == 3 for point in list_of_points), f"expected every element in list to have len 3"
+            assert all(isinstance(num, float) or isinstance(num, int) for point in list_of_points for num in point), f"expected every element to be a float"
+            return get_voi(space, list_of_points)
+        except Exception as e:
+            raise HTTPException(
+                status_code=400,
+                detail=f"getting voi bad request: {str(e)}"
+            )
+
+    parcellation = validate_and_return_parcellation(parcellation_id, atlas) if parcellation_id else None
+    roi = validate_and_return_region(region, parcellation) if parcellation else None
+    features: List[UnionSpatialFeatureModels] = siibra.get_features(roi or parcellation or space, modality_id)
+
+    return [feature.to_model(detail=False) for feature in features]
+
+
+@router.get("/{space_id:path}/features",
+    tags=TAGS,
+    response_model=List[FeatureIdNameModel])
+def get_spatial_feature_names(atlas_id: str, space_id: str):
     """
     Return all possible feature names and links to get more details
     """
-    validate_and_return_atlas(atlas_id)
-    space = validate_and_return_space(space_id)
-    # TODO: Getting all features with result takes to much time at the moment
-    # features = siibra.get_features(space, 'all')
 
-    return {
-        'features': [{
-            feature.modality(): '{}atlases/{}/spaces/{}/features/{}'.format(
-                get_base_url_from_request(request),
-                atlas_id.replace('/', '%2F'),
-                space_id.replace('/', '%2F'),
-                quote(feature.modality())
-            ) for feature in siibra.features.modalities if issubclass(feature._FEATURETYPE, siibra.features.feature.SpatialFeature)
-        }]
-    }
+    return_list = []
+    for modality, query_list in [(modality, FeatureQuery._implementations[modality]) for modality in modalities]:
+        if all(issubclass(query._FEATURETYPE, SpatialFeature) for query in query_list):
+            implemented_flag = all(issubclass(query._FEATURETYPE, JSONSerializable) for query in query_list)
+            return_list.append({
+                "@id": modality,
+                "name": modality,
+                "nyi": not implemented_flag,
+            })
+
+    return return_list
 
 
-@router.get('/{atlas_id:path}/spaces/{space_id:path}', tags=['spaces'])
+@router.get("/{space_id:path}",
+    tags=TAGS,
+    response_model=SapiSpaceModel)
 def get_one_space_by_id(atlas_id: str, space_id: str, request: Request):
     """
     Returns one space for given id, with links to further resources
     """
-    validate_and_return_atlas(atlas_id)
-    space = validate_and_return_space(space_id)
-    if space:
-        json_result = jsonable_encoder(
-            space, custom_encoder=siibra_custom_json_encoder)
-        # TODO: Error on first call
-        json_result['availableParcellations'] = get_parcellations_for_space(
-            space)
-        json_result['links'] = {
-            'templates': {
-                'href': '{}atlases/{}/spaces/{}/templates'.format(
-                    get_base_url_from_request(request),
-                    atlas_id.replace('/', '%2F'),
-                    space.id.replace('/', '%2F')
-                )
-            },
-            'parcellation_maps': {
-                'href': '{}atlases/{}/spaces/{}/parcellation_maps'.format(
-                    get_base_url_from_request(request),
-                    atlas_id.replace('/', '%2F'),
-                    space.id.replace('/', '%2F')
-                )
-            },
-            'features': {
-                'href': '{}atlases/{}/spaces/{}/features'.format(
-                    get_base_url_from_request(request),
-                    atlas_id.replace('/', '%2F'),
-                    space.id.replace('/', '%2F')
-                )
-            }
-        }
-        if hasattr(space, 'origin_datainfos'):
-            json_result['originDatainfos'] = [ origin_data_decoder(datainfo) for datainfo in space.origin_datainfos]
-        return json_result
-    else:
-        raise HTTPException(
-            status_code=404,
-            detail='space with id: {} not found'.format(space_id))
+    atlas = validate_and_return_atlas(atlas_id)
+    space = validate_and_return_space(space_id, atlas)
+    return SapiSpaceModel.from_space(space, get_base_url_from_request(request, atlas_id=atlas_id, space_id=space_id))
 
-# endregion

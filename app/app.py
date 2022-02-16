@@ -31,9 +31,8 @@ from starlette.responses import Response
 
 from app.core.siibra_api import router as siibra_router
 from app.core.atlas_api import router as atlas_router
-from app.core.space_api import router as space_router
 from app.service.health import router as health_router
-from app.core.parcellation_api import router as parcellation_router
+
 from app.configuration.ebrains_token import get_public_token
 from app.configuration.siibra_custom_exception import SiibraCustomException
 from app.configuration.cache_redis import CacheRedis
@@ -74,10 +73,8 @@ app = FastAPI(
     version="1.0",
     openapi_tags=tags_metadata
 )
-# Add a siibra router with further endpoints
-app.include_router(parcellation_router, prefix=ATLAS_PATH)
-app.include_router(space_router, prefix=ATLAS_PATH)
-app.include_router(atlas_router, prefix=ATLAS_PATH)
+
+app.include_router(atlas_router)
 app.include_router(siibra_router)
 app.include_router(health_router)
 

@@ -26,21 +26,15 @@ jobs:
 
           echo "Using github.ref: $GITHUB_REF"
 
-          if [[ "$GITHUB_REF" == 'refs/heads/master' ]]
+          if [[ "$GITHUB_REF" == *"feat"* ]] || [[ "$GITHUB_REF" == *"dev"* ]]
           then
-            echo "main branch, using prod requirement"
-            pip install -r requirements/prod.txt
-          elif [[ "$GITHUB_REF" == *hotfix* ]]
-          then
-            echo "github.ref contains hotfix keyword, using prod requirement"
-            pip install -r requirements/prod.txt
-          else
-            echo "fallback... using dev requirement"
+            echo "feature branch or dev branch, use dev dep"
             pip install -r requirements/dev.txt
-
-            echo "fallback... set SIIBRA_CONFIG_GITLAB_PROJECT_TAG=master"
-            echo "SIIBRA_CONFIG_GITLAB_PROJECT_TAG=master" >> $GITHUB_ENV
+          else
+            echo "default: install prod dep"
+            pip install -r requirements/prod.txt
           fi
+
       - name: Install test dependecies
         run: pip install pytest pytest-asyncio httpx mock coverage pytest-cov
       - run: |
