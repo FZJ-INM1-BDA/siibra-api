@@ -295,6 +295,26 @@ async def matomo_request_log(request: Request, call_next):
     return response
 
 
+@app.exception_handler(RuntimeError)
+async def validation_exception_handler(request: Request, exc: RuntimeError):
+    """
+    Handling RuntimeErrors.
+    Most of the RuntimeErrors are thrown by the siibra-python library when other Services are not responding.
+    To be more resilient and not throw a simple and unplanned HTTP 500 response, this handler will return an HTTP 503
+    status.
+    :param request: Needed but fastapi definition, but not used
+    :param exc: RuntimeError
+    :return: HTTP status 503 with a custom message
+    """
+    logging.warning(str(exc))
+    # raise HTTPException(status_code=503,
+    #                     detail='This part of the siibra service is temporarily unavailable')
+    return JSONResponse(
+        status_code=503,
+        content="This part of the siibra service is temporarily unavailable",
+    )
+
+
 @app.get('/ready', include_in_schema=False)
 def get_ready():
     return 'OK'

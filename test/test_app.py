@@ -208,3 +208,17 @@ async def test_cache_key(path,queryparam,expected_key):
 
                 get_value_handle.assert_called_once_with(expected_key)
                 set_value_handle.assert_called_once_with(expected_key, b'{"foo": "bar"}')
+
+
+@app.get('/error')
+def error_endpoint():
+    raise RuntimeError('Dummy Exception')
+
+
+@pytest.mark.asyncio
+async def test_exception_handler():
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        response = await ac.get("/error")
+    # response = client.get("/")
+    assert response.status_code == 503
+    assert 'This part of the siibra service is temporarily unavailable' in str(response.content)
