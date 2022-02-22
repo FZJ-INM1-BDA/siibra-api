@@ -37,6 +37,7 @@ router.include_router(parcellation_router, prefix="/{atlas_id:path}")
 router.include_router(space_router, prefix="/{atlas_id:path}")
 
 class SapiAtlasModel(Atlas.to_model.__annotations__.get("return"), RestfulModel):
+    name: str
     @staticmethod
     def from_atlas(atlas: Atlas, curr_path: str) -> 'SapiAtlasModel':
         model = atlas.to_model()
@@ -49,7 +50,7 @@ class SapiAtlasModel(Atlas.to_model.__annotations__.get("return"), RestfulModel)
                 "parcellations": {
                     "href": f"/{curr_path}/{model.id}/parcellations"
                 },
-            }
+            },
         )
 
 @router.get('', tags=['atlases'], response_model=List[SapiAtlasModel])

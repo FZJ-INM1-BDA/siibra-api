@@ -22,7 +22,7 @@ from siibra.core import Space
 from siibra.features.feature import SpatialFeature
 from siibra.features import FeatureQuery, modalities
 from siibra.features.ieeg import IEEGSessionModel
-from siibra.features.voi import VolumeModel
+from siibra.volumes.volume import VolumeModel
 from siibra.core.serializable_concept import JSONSerializable
 
 from fastapi import APIRouter, HTTPException
@@ -209,6 +209,15 @@ def get_spatial_feature_names(atlas_id: str, space_id: str):
             })
 
     return return_list
+
+
+@router.get("/{space_id:path}/volumes",
+    tags=TAGS,
+    response_model=List[VolumeModel])
+def get_one_space_volumes(atlas_id: str, space_id: str):
+    atlas = validate_and_return_atlas(atlas_id)
+    space = validate_and_return_space(space_id, atlas)
+    return [vol.to_model() for vol in space.volumes]
 
 
 @router.get("/{space_id:path}",

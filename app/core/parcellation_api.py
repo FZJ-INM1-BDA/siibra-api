@@ -23,6 +23,7 @@ from siibra import atlases
 from siibra.features.connectivity import ConnectivityMatrixDataModel
 from siibra.features.feature import ParcellationFeature
 from siibra.features import modalities, FeatureQuery
+from siibra.volumes.volume import VolumeModel
 
 from app.service.validation import validate_and_return_atlas, validate_and_return_parcellation, FeatureIdNameModel
 from app.core.region_api import router as region_router
@@ -131,6 +132,20 @@ def get_global_features_names(
     return return_list
 
 
+@router.get('/{parcellation_id:path}/volumes',
+            tags=TAGS,
+            response_model=List[VolumeModel])
+def get_parcellation_by_id(
+    atlas_id: str,
+    parcellation_id: str):
+    """
+    Returns one parcellation for given id.
+    """
+    atlas = validate_and_return_atlas(atlas_id)
+    parcellation = validate_and_return_parcellation(parcellation_id, atlas)
+    return [vol.to_model() for vol in parcellation.volumes]
+
+
 @router.get('/{parcellation_id:path}',
             tags=TAGS,
             response_model=Parcellation.to_model.__annotations__.get("return"))
@@ -140,12 +155,7 @@ def get_parcellation_by_id(
     """
     Returns one parcellation for given id.
     """
-    try:
-        atlas = atlases[atlas_id]
-        parcellation = atlas.parcellations[parcellation_id]
-        return parcellation.to_model()
-    except IndexError as e:
-        raise HTTPException(
-            status_code=404,
-            detail=f"atlas_id {atlas_id} parcellation_id {parcellation_id} not found. {str(e)}"
-        )
+
+    atlas = validate_and_return_atlas(atlas_id)
+    parcellation = validate_and_return_parcellation(parcellation_id, atlas)
+    return parcellation.to_model()
