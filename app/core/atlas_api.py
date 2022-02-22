@@ -24,7 +24,8 @@ from app.core.space_api import router as space_router
 from app.service.validation import (
     validate_and_return_atlas,
 )
-from app.models import RestfulModel, HrefModel
+from app.service.request_utils import get_base_url_from_request
+from app.models import RestfulModel
 
 from siibra.core import Atlas
 from siibra import atlases
@@ -36,6 +37,7 @@ router = APIRouter(prefix=ATLAS_PATH)
 router.include_router(parcellation_router, prefix="/{atlas_id:path}")
 router.include_router(space_router, prefix="/{atlas_id:path}")
 
+
 class SapiAtlasModel(Atlas.to_model.__annotations__.get("return"), RestfulModel):
     name: str
     @staticmethod
@@ -45,13 +47,17 @@ class SapiAtlasModel(Atlas.to_model.__annotations__.get("return"), RestfulModel)
             **model.dict(),
             links={
                 "spaces": {
-                    "href": f"/{curr_path}/{model.id}/spaces"
+                    "href": f"{curr_path}/spaces"
                 },
                 "parcellations": {
-                    "href": f"/{curr_path}/{model.id}/parcellations"
+                    "href": f"{curr_path}/parcellations"
                 },
-            },
+                "self": {
+                    "href": f"{curr_path}"
+                }
+            }
         )
+
 
 @router.get('', tags=['atlases'], response_model=List[SapiAtlasModel])
 @version(1)
@@ -59,7 +65,7 @@ def get_all_atlases(request: Request):
     """
     Get all atlases known by siibra.
     """
-    return [SapiAtlasModel.from_atlas(atlas, request.url.path) for atlas in atlases]
+    return [SapiAtlasModel.from_atlas(atlas, get_base_url_from_request(request, atlas_id=atlas.id)) for atlas in atlases]
 
 
 @router.get('/{atlas_id:path}', tags=['atlases'], response_model=SapiAtlasModel)
@@ -69,4 +75,4 @@ def get_atlas_by_id(atlas_id: str, request: Request):
     Get more information for a specific atlas with links to further objects.
     """
     atlas = validate_and_return_atlas(atlas_id)
-    return SapiAtlasModel.from_atlas(atlas, request.url.path)
+    return SapiAtlasModel.from_atlas(atlas, get_base_url_from_request(request, atlas_id=atlas_id))

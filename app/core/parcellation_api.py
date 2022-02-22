@@ -15,6 +15,7 @@
 
 from typing import List
 from fastapi import APIRouter, HTTPException
+from starlette.requests import Request
 
 import siibra
 from siibra.core.serializable_concept import JSONSerializable
@@ -28,6 +29,8 @@ from app.service.request_utils import get_all_serializable_parcellation_features
 
 from app.service.validation import validate_and_return_atlas, validate_and_return_parcellation
 from app.core.region_api import router as region_router
+from app.models import RestfulModel
+from app.service.request_utils import get_base_url_from_request
 
 preheat_flag = False
 
@@ -41,10 +44,27 @@ router.include_router(region_router, prefix="/{parcellation_id:path}")
 UnionParcellationModels = ConnectivityMatrixDataModel
 
 
+class SapiParcellationModel(Parcellation.to_model.__annotations__.get("return"), RestfulModel):
+    @staticmethod
+    def from_parcellation(parcellation: Parcellation, curr_path: str) -> 'SapiParcellationModel':
+        model = parcellation.to_model()
+        return SapiParcellationModel(
+            **model.dict(),
+            links={
+                "regions": {
+                    "href": f"{curr_path}/regions"
+                },
+                "self": {
+                    "href": f"{curr_path}"
+                }
+            }
+        )
+
+
 @router.get("",
     tags=TAGS,
-    response_model=List[Parcellation.to_model.__annotations__.get("return")])
-def get_all_parcellations(atlas_id: str):
+    response_model=List[SapiParcellationModel])
+def get_all_parcellations(atlas_id: str, request: Request):
     """
     Returns all parcellations that are defined in the siibra client for given atlas.
     """
@@ -56,7 +76,7 @@ def get_all_parcellations(atlas_id: str):
             detail=f"atlas with id: {atlas_id} not found."
         )
     
-    return [p.to_model() for p in atlas.parcellations]
+    return [SapiParcellationModel.from_parcellation(p, get_base_url_from_request(request, atlas_id=atlas_id, parcellation_id=p.id)) for p in atlas.parcellations]
 
 
 @router.get('/{parcellation_id:path}/features/{feature_id}',
@@ -122,14 +142,15 @@ def get_parcellation_by_id(
 
 @router.get('/{parcellation_id:path}',
             tags=TAGS,
-            response_model=Parcellation.to_model.__annotations__.get("return"))
+            response_model=SapiParcellationModel)
 def get_parcellation_by_id(
     atlas_id: str,
-    parcellation_id: str):
+    parcellation_id: str,
+    request: Request):
     """
     Returns one parcellation for given id.
     """
 
     atlas = validate_and_return_atlas(atlas_id)
     parcellation = validate_and_return_parcellation(parcellation_id, atlas)
-    return parcellation.to_model()
+    return SapiParcellationModel.from_parcellation(parcellation, get_base_url_from_request(request, atlas_id=atlas_id, parcellation_id=parcellation_id))

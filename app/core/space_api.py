@@ -15,7 +15,7 @@
 
 import io
 from typing import List, Optional, Union
-
+from starlette.requests import Request
 import zipfile
 import siibra
 from siibra.core import Space
@@ -32,6 +32,8 @@ from app.service.validation import (
     validate_and_return_region,
     file_response_openapi,
 )
+
+from app.models import RestfulModel
 from app.service.request_utils import  get_all_serializable_spatial_features, get_file_from_nibabel
 from app.service.validation import validate_and_return_atlas, validate_and_return_space
 
@@ -46,15 +48,29 @@ UnionSpatialFeatureModels = Union[
 ]
 
 
+class SapiSpaceModel(Space.to_model.__annotations__.get("return"), RestfulModel):
+    @staticmethod
+    def from_space(space: Space, curr_path: str) -> 'SapiSpaceModel':
+        model = space.to_model()
+        return SapiSpaceModel(
+            **model.dict(),
+            links={
+                "self": {
+                    "href": f"{curr_path}"
+                }
+            }
+        )
+
+
 @router.get("",
     tags=TAGS,
-    response_model=List[Space.to_model.__annotations__.get("return")])
-def get_all_spaces(atlas_id: str):
+    response_model=List[SapiSpaceModel])
+def get_all_spaces(atlas_id: str, request: Request):
     """
     Returns all spaces that are defined in the siibra client.
     """
     atlas = validate_and_return_atlas(atlas_id)
-    return [space.to_model() for space in atlas.spaces]
+    return [SapiSpaceModel.from_space(space, get_base_url_from_request(request, atlas_id=atlas_id, space_id=space.id)) for space in atlas.spaces]
 
 
 @router.get("/{space_id:path}/templates",
@@ -191,11 +207,12 @@ def get_one_space_volumes(atlas_id: str, space_id: str):
 
 @router.get("/{space_id:path}",
     tags=TAGS,
-    response_model=Space.to_model.__annotations__.get("return"))
-def get_one_space_by_id(atlas_id: str, space_id: str):
+    response_model=SapiSpaceModel)
+def get_one_space_by_id(atlas_id: str, space_id: str, request: Request):
     """
     Returns one space for given id, with links to further resources
     """
     atlas = validate_and_return_atlas(atlas_id)
-    return validate_and_return_space(space_id, atlas).to_model()
+    space = validate_and_return_space(space_id, atlas)
+    return SapiSpaceModel.from_space(space, get_base_url_from_request(request, atlas_id=atlas_id, space_id=space_id))
 
