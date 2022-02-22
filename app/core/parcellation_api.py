@@ -24,8 +24,9 @@ from siibra.features.connectivity import ConnectivityMatrixDataModel
 from siibra.features.feature import ParcellationFeature
 from siibra.features import modalities, FeatureQuery
 from siibra.volumes.volume import VolumeModel
+from app.service.request_utils import get_all_serializable_parcellation_features
 
-from app.service.validation import validate_and_return_atlas, validate_and_return_parcellation, FeatureIdNameModel
+from app.service.validation import validate_and_return_atlas, validate_and_return_parcellation
 from app.core.region_api import router as region_router
 
 preheat_flag = False
@@ -58,22 +59,21 @@ def get_all_parcellations(atlas_id: str):
     return [p.to_model() for p in atlas.parcellations]
 
 
-@router.get('/{parcellation_id:path}/features/{modality_id}/{feature_id}',
+@router.get('/{parcellation_id:path}/features/{feature_id}',
             tags=TAGS,
             response_model=UnionParcellationModels)
 def get_single_global_feature_detail(
         atlas_id: str,
         parcellation_id: str,
-        modality_id: str,
         feature_id: str):
     """
     Returns a global feature for a specific modality id.
     """
     atlas = validate_and_return_atlas(atlas_id)
     parcellation = validate_and_return_parcellation(parcellation_id, atlas)
+
     try:
-        features = siibra.get_features(parcellation, modality_id)
-        assert all(isinstance(feature, JSONSerializable) for feature in features), f"Expecting all features are jsonserializable"
+        features = get_all_serializable_parcellation_features(parcellation)
         models: List[UnionParcellationModels] = [feature.to_model() for feature in features]
         filtered_models = [mod for mod in models if mod.id == feature_id]
         return filtered_models[0]
@@ -89,47 +89,21 @@ def get_single_global_feature_detail(
         )
 
 
-@router.get('/{parcellation_id:path}/features/{modality_id}',
-            tags=TAGS,
-            response_model=List[UnionParcellationModels])
-def get_single_global_feature(
-    atlas_id: str,
-    parcellation_id: str,
-    modality_id: str):
-    """
-    Returns a global feature for a parcellation, filtered by given modality.
-    """
-    atlas = validate_and_return_atlas(atlas_id)
-    parcellation = validate_and_return_parcellation(parcellation_id, atlas)
-    try:
-        features = siibra.get_features(parcellation, modality_id)
-        assert all(isinstance(feature, JSONSerializable) for feature in features), f"Expecting all features are jsonserializable"
-        return [feature.to_model() for feature in features]
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Internal Error. {str(e)}"
-        )
-
 @router.get('/{parcellation_id:path}/features',
             tags=TAGS,
-            response_model=List[FeatureIdNameModel])
+            response_model=List[UnionParcellationModels])
 def get_global_features_names(
     atlas_id: str,
     parcellation_id: str):
     """
     Returns all global features for a parcellation.
     """
-    return_list = []
-    for modality, query_list in [(modality, FeatureQuery._implementations[modality]) for modality in modalities]:
-        implemented_flag = all(issubclass(query._FEATURETYPE, JSONSerializable) for query in query_list)
-        if all(issubclass(query._FEATURETYPE, ParcellationFeature) for query in query_list):
-            return_list.append({
-                "@id": modality,
-                "name": modality,
-                "nyi": not implemented_flag,
-            })
-    return return_list
+
+    atlas = validate_and_return_atlas(atlas_id)
+    parcellation = validate_and_return_parcellation(parcellation_id, atlas)
+    
+    features = get_all_serializable_parcellation_features(parcellation)
+    return [f.to_model(detail=False) for f in features]
 
 
 @router.get('/{parcellation_id:path}/volumes',
