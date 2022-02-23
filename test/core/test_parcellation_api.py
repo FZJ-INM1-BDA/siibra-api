@@ -55,6 +55,7 @@ def test_get_invalid_parcellation():
     response = client.get('/v1_0/atlases/{}/parcellations/{}'.format(ATLAS_ID.replace('/', '%2F'), INVALID_PARCELLATION_ID.replace('/', '%2F')))
     assert response.status_code == 400
 
+
 def test_get_all_features_for_one_parcellation():
     response = client.get('/v1_0/atlases/{}/parcellations/{}/features'.format(
         ATLAS_ID.replace('/', '%2F'),
