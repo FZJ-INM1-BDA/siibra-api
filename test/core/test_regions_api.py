@@ -162,17 +162,6 @@ class TestSingleRegionFeatures(unittest.TestCase):
             INVALID_FEATURE))
         assert response.status_code == 404
 
-    def test_result_receptor(self):
-        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}/features'.format(
-            quote(ATLAS_ID),
-            # nb must not be quote()
-            PARCELLATION_ID,
-            quote(SF_AMY_LEFT_NAME)))
-        result_content = json.loads(response.content)
-        assert response.status_code == 200
-        filtered_content = [feat for feat in result_content if feat.get("type") == "siibra/receptor"]
-        assert len(filtered_content) > 0
-
     #TODO not yet implemented with pydantic
     # def test_rest_connectivity(self):
     #     conn_id='e428cb6b-0110-4205-94ac-533ca5de6bb5'
