@@ -123,7 +123,7 @@ def get_global_features_names(
             tags=TAGS,
             response_model=List[VolumeModel])
 @SapiParcellationModel.decorate_link("volumes")
-def get_parcellation_by_id(
+def get_volumes_by_id(
     atlas_id: str,
     parcellation_id: str):
     """
