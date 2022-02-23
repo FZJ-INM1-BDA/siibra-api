@@ -37,7 +37,6 @@ router.include_router(space_router, prefix="/{atlas_id:path}")
 
 
 class SapiAtlasModel(Atlas.to_model.__annotations__.get("return"), RestfulModel):
-    name: str
     @staticmethod
     def from_atlas(atlas: Atlas) -> 'SapiAtlasModel':
         model = atlas.to_model()
