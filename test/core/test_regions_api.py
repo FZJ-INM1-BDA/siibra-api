@@ -32,8 +32,8 @@ SPACE_ID = 'minds%2Fcore%2Freferencespace%2Fv1.0.0%2Fdafcffc5-4826-4bf1-8ff6-46b
 FS_AVERAGE_SPACE_ID='minds/core/referencespace/v1.0.0/tmp-fsaverage'
 VALID_MODALITY='EbrainsRegionalDataset'
 VALID_MODALITY_INSTANCE_ID='https%3A%2F%2Fnexus.humanbrainproject.org%2Fv0%2Fdata%2Fminds%2Fcore%2Fdataset%2Fv1.0.0%2F87c6dea7-bdf7-4049-9975-6a9925df393f'
-
-
+INVALID_FEATURE = 'INVALID'
+VALID_MODALITY_ID = 'https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/de08dcb8-28d4-4f8f-b019-ef0f8924d5d4'
 
 def test_all_regions_for_parcellations():
     response = client.get('/v1_0/atlases/{}/parcellations/{}/regions?space_id={}'.format(
@@ -148,69 +148,19 @@ class TestSingleRegionFeatures(unittest.TestCase):
             quote_plus(ATLAS_ID),
             PARCELLATION_ID,
             REGION_BASAL,
-            VALID_MODALITY)
+            VALID_MODALITY_ID)
         response = client.get(url)
 
         # result_content = json.loads(response.content)
         assert response.status_code == 200
 
-    def test_noresult_receptor(self):
-        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}/features/ReceptorDistribution'.format(
+    def test_feature_id_not_found(self):
+        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}/features/{}'.format(
             quote(ATLAS_ID),
-            # nb must not be quote()
-            PARCELLATION_ID,
-            quote(SF_AMY_LEFT_NAME)))
-        result_content = json.loads(response.content)
-        assert response.status_code == 200
-        assert len(result_content) == 0
-
-    def test_result_receptor(self):
-        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}/features/ReceptorDistribution'.format(
-            quote(ATLAS_ID),
-            # nb must not be quote()
-            PARCELLATION_ID,
-            quote(HOC1_LEFT_REGION_NAME)))
-        result_content = json.loads(response.content)
-        assert response.status_code == 200
-        assert len(result_content) > 0
-
-    def test_result_receptor_detail(self):
-        # receptor_dataset_id=r'Density%20measurements%20of%20different%20receptors%20for%20Area%20hOc1%20(V1%2C%2017%2C%20CalcS)%20%5Bhuman%2C%20v1.0%5D'
-        receptor_dataset_id = 'https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/e715e1f7-2079-45c4-a67f-f76b102acfce'
-        url='/v1_0/atlases/{}/parcellations/{}/regions/{}/features/ReceptorDistribution/{}'.format(
-            quote(ATLAS_ID),
-            # nb must not be quote()
             PARCELLATION_ID,
             quote(HOC1_LEFT_REGION_NAME),
-            quote(receptor_dataset_id))
-        response = client.get(url)
-        assert response.status_code == 200
-
-    def test_result_ieeg(self):
-        url='/v1_0/atlases/{atlas_id}/spaces/{space_id}/features/IEEG_Session?parcellation_id={parc_id}&region={region_id}'.format(
-            atlas_id=quote(ATLAS_ID),
-            space_id=quote(ICBM_152_SPACE_ID),
-            parc_id=PARCELLATION_ID,
-            region_id=HOC1_RIGHT_REGION_NAME,
-        )
-        response=client.get(url)
-        result_content = json.loads(response.content)
-        assert response.status_code == 200, response.content
-        assert len(result_content) > 0
-
-
-    def test_no_result_ieeg(self):
-        url='/v1_0/atlases/{atlas_id}/spaces/{space_id}/features/IEEG_Session?parcellation_id={parc_id}&region={region_id}'.format(
-            atlas_id=quote(ATLAS_ID),
-            space_id=quote(ICBM_152_SPACE_ID),
-            parc_id=PARCELLATION_ID,
-            region_id=HOC1_LEFT_REGION_NAME,
-        )
-        response=client.get(url)
-        result_content = json.loads(response.content)
-        assert response.status_code == 200, response.content
-        # hoc1 left should have no ieeg result
-        assert len(result_content) == 0
+            INVALID_FEATURE))
+        assert response.status_code == 404
 
     #TODO not yet implemented with pydantic
     # def test_rest_connectivity(self):

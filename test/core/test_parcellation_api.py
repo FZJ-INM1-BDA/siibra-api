@@ -53,23 +53,13 @@ def test_get_one_parcellation_by_id():
 
 def test_get_invalid_parcellation():
     response = client.get('/v1_0/atlases/{}/parcellations/{}'.format(ATLAS_ID.replace('/', '%2F'), INVALID_PARCELLATION_ID.replace('/', '%2F')))
-    assert response.status_code == 404
+    assert response.status_code == 400
+
 
 def test_get_all_features_for_one_parcellation():
     response = client.get('/v1_0/atlases/{}/parcellations/{}/features'.format(
         ATLAS_ID.replace('/', '%2F'),
         PARCELLATION_ID.replace('/', '%2F'))
-    )
-    result_content = json.loads(response.content)
-    assert response.status_code == 200
-    assert len(result_content) > 0
-
-
-def test_get_one_feature_modality():
-    response = client.get('/v1_0/atlases/{}/parcellations/{}/features/{}'.format(
-        ATLAS_ID.replace('/', '%2F'),
-        PARCELLATION_ID.replace('/', '%2F'),
-        VALID_MODALITY)
     )
     result_content = json.loads(response.content)
     assert response.status_code == 200
@@ -82,4 +72,4 @@ def test_invalid_feature_modality():
         PARCELLATION_ID.replace('/', '%2F'),
         INVALID_MODALITY)
     )
-    assert response.status_code == 500
+    assert response.status_code == 404

@@ -15,14 +15,8 @@
 
 import siibra
 from fastapi import HTTPException
-from siibra.core import Space, Parcellation, Region, Atlas
-from pydantic import BaseModel, Field
+from siibra.core import Space, Parcellation, Region, Atlas, BoundingBox
 
-
-class FeatureIdNameModel(BaseModel):
-    id: str = Field(..., alias="@id")
-    name: str
-    nyi: bool = True
 
 def validate_and_return_atlas(atlas_id:str) -> Atlas:
     """
@@ -99,6 +93,21 @@ def validate_and_return_region(region_id: str, parcellation: Parcellation) -> Re
         raise HTTPException(
             status_code=404,
             detail=f'region: {region_id} is not known'
+        )
+
+def validate_and_return_bbox(bbox: str, space: Space) -> BoundingBox:
+    try:
+        import json
+        boundingbox = json.loads(bbox)
+        assert len(boundingbox) == 2, f"expected list with length 2"
+        assert all(len(point) == 3 for point in boundingbox), f"expected every element in list to have len 3"
+        assert all(isinstance(num, float) or isinstance(num, int) for point in boundingbox for num in point), f"expected every element to be a float"
+        return BoundingBox(boundingbox[0], boundingbox[1], space)
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"getting voi bad request: {str(e)}"
         )
 
 file_response_openapi = {
