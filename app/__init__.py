@@ -22,4 +22,4 @@ logger.addHandler(ch)
 
 logger.setLevel('INFO')
 
-__version__='0.1.11'
+__version__='0.2.0'
