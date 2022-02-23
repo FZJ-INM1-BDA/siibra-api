@@ -111,6 +111,11 @@ jobs:
           DEPLOY_SITE_POSTFIX="-dev"
 
           DOCKER_IMAGE_TAG=latest
+
+          if [[ "$GITHUB_REF" = "refs/heads/dev" ]]
+          then
+            DOCKER_IMAGE_TAG=dev
+          fi
         fi
 
         if [ "$GITHUB_EVENT_NAME" = "release" ]
