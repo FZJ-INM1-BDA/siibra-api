@@ -15,22 +15,16 @@
 
 from typing import List
 from fastapi import APIRouter, HTTPException
-from starlette.requests import Request
 
-import siibra
-from siibra.core.serializable_concept import JSONSerializable
-from siibra.core import Parcellation
+from siibra.core import Parcellation, Atlas
 from siibra import atlases
 from siibra.features.connectivity import ConnectivityMatrixDataModel
-from siibra.features.feature import ParcellationFeature
-from siibra.features import modalities, FeatureQuery
 from siibra.volumes.volume import VolumeModel
 from app.service.request_utils import get_all_serializable_parcellation_features
 
 from app.service.validation import validate_and_return_atlas, validate_and_return_parcellation
-from app.core.region_api import router as region_router
+from app.core.region_api import router as region_router, get_all_regions_from_atlas_parc_space
 from app.models import RestfulModel
-from app.service.request_utils import get_base_url_from_request
 
 preheat_flag = False
 
@@ -46,25 +40,23 @@ UnionParcellationModels = ConnectivityMatrixDataModel
 
 class SapiParcellationModel(Parcellation.to_model.__annotations__.get("return"), RestfulModel):
     @staticmethod
-    def from_parcellation(parcellation: Parcellation, curr_path: str) -> 'SapiParcellationModel':
+    def from_parcellation(parcellation: Parcellation) -> 'SapiParcellationModel':
+        from ..app import app
+
         model = parcellation.to_model()
+        assert len(parcellation.atlases) == 1, f"Expecting 1 and only 1 set of atlases associated with {str(parcellation)}, but got {len(parcellation.atlases)}"
+        atlas: Atlas = list(parcellation.atlases)[0]
+        
         return SapiParcellationModel(
             **model.dict(),
-            links={
-                "regions": {
-                    "href": f"{curr_path}/regions"
-                },
-                "self": {
-                    "href": f"{curr_path}"
-                }
-            }
+            links=SapiParcellationModel.create_links(atlas_id=atlas.to_model().id, parcellation_id=model.id)
         )
 
 
 @router.get("",
     tags=TAGS,
     response_model=List[SapiParcellationModel])
-def get_all_parcellations(atlas_id: str, request: Request):
+def get_all_parcellations(atlas_id: str):
     """
     Returns all parcellations that are defined in the siibra client for given atlas.
     """
@@ -76,7 +68,7 @@ def get_all_parcellations(atlas_id: str, request: Request):
             detail=f"atlas with id: {atlas_id} not found."
         )
     
-    return [SapiParcellationModel.from_parcellation(p, get_base_url_from_request(request, atlas_id=atlas_id, parcellation_id=p.id)) for p in atlas.parcellations]
+    return [SapiParcellationModel.from_parcellation(p) for p in atlas.parcellations]
 
 
 @router.get('/{parcellation_id:path}/features/{feature_id}',
@@ -112,6 +104,7 @@ def get_single_global_feature_detail(
 @router.get('/{parcellation_id:path}/features',
             tags=TAGS,
             response_model=List[UnionParcellationModels])
+@SapiParcellationModel.decorate_link("features")
 def get_global_features_names(
     atlas_id: str,
     parcellation_id: str):
@@ -129,6 +122,7 @@ def get_global_features_names(
 @router.get('/{parcellation_id:path}/volumes',
             tags=TAGS,
             response_model=List[VolumeModel])
+@SapiParcellationModel.decorate_link("volumes")
 def get_parcellation_by_id(
     atlas_id: str,
     parcellation_id: str):
@@ -143,14 +137,16 @@ def get_parcellation_by_id(
 @router.get('/{parcellation_id:path}',
             tags=TAGS,
             response_model=SapiParcellationModel)
+@SapiParcellationModel.decorate_link("self")
 def get_parcellation_by_id(
     atlas_id: str,
-    parcellation_id: str,
-    request: Request):
+    parcellation_id: str):
     """
     Returns one parcellation for given id.
     """
 
     atlas = validate_and_return_atlas(atlas_id)
     parcellation = validate_and_return_parcellation(parcellation_id, atlas)
-    return SapiParcellationModel.from_parcellation(parcellation, get_base_url_from_request(request, atlas_id=atlas_id, parcellation_id=parcellation_id))
+    return SapiParcellationModel.from_parcellation(parcellation)
+
+SapiParcellationModel.decorate_link("regions")(get_all_regions_from_atlas_parc_space)

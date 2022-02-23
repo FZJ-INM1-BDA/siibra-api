@@ -15,10 +15,9 @@
 
 import io
 from typing import List, Optional, Union
-from starlette.requests import Request
 import zipfile
 import siibra
-from siibra.core import Space
+from siibra.core import Space, Atlas
 from siibra.features.ieeg import IEEGSessionModel
 from siibra.features.voi import VOIDataModel
 from siibra.volumes.volume import VolumeModel
@@ -50,27 +49,28 @@ UnionSpatialFeatureModels = Union[
 
 class SapiSpaceModel(Space.to_model.__annotations__.get("return"), RestfulModel):
     @staticmethod
-    def from_space(space: Space, curr_path: str) -> 'SapiSpaceModel':
+    def from_space(space: Space) -> 'SapiSpaceModel':
+
         model = space.to_model()
+        assert len(space.atlases) == 1, f"Expecting only 1 set of atlases associated with space {space}"
+        atlas: Atlas = list(space.atlases)[0]
+        atlas_id = atlas.to_model().id
+
         return SapiSpaceModel(
             **model.dict(),
-            links={
-                "self": {
-                    "href": f"{curr_path}"
-                }
-            }
+            links=SapiSpaceModel.create_links(atlas_id=atlas_id, space_id=model.id)
         )
 
 
 @router.get("",
     tags=TAGS,
     response_model=List[SapiSpaceModel])
-def get_all_spaces(atlas_id: str, request: Request):
+def get_all_spaces(atlas_id: str):
     """
     Returns all spaces that are defined in the siibra client.
     """
     atlas = validate_and_return_atlas(atlas_id)
-    return [SapiSpaceModel.from_space(space, get_base_url_from_request(request, atlas_id=atlas_id, space_id=space.id)) for space in atlas.spaces]
+    return [SapiSpaceModel.from_space(space) for space in atlas.spaces]
 
 
 @router.get("/{space_id:path}/templates",
@@ -175,7 +175,8 @@ def get_single_spatial_feature_detail(
 @router.get("/{space_id:path}/features",
     tags=TAGS,
     response_model=List[UnionSpatialFeatureModels])
-def get_spatial_feature_names(
+@SapiSpaceModel.decorate_link("features")
+def get_spatial_features_from_space(
     atlas_id: str,
     space_id: str,
     parcellation_id: Optional[str]=None,
@@ -199,6 +200,7 @@ def get_spatial_feature_names(
 @router.get("/{space_id:path}/volumes",
     tags=TAGS,
     response_model=List[VolumeModel])
+@SapiSpaceModel.decorate_link("volumes")
 def get_one_space_volumes(atlas_id: str, space_id: str):
     atlas = validate_and_return_atlas(atlas_id)
     space = validate_and_return_space(space_id, atlas)
@@ -208,11 +210,12 @@ def get_one_space_volumes(atlas_id: str, space_id: str):
 @router.get("/{space_id:path}",
     tags=TAGS,
     response_model=SapiSpaceModel)
-def get_one_space_by_id(atlas_id: str, space_id: str, request: Request):
+@SapiSpaceModel.decorate_link("self")
+def get_one_space_by_id(atlas_id: str, space_id: str):
     """
     Returns one space for given id, with links to further resources
     """
     atlas = validate_and_return_atlas(atlas_id)
     space = validate_and_return_space(space_id, atlas)
-    return SapiSpaceModel.from_space(space, get_base_url_from_request(request, atlas_id=atlas_id, space_id=space_id))
+    return SapiSpaceModel.from_space(space)
 
