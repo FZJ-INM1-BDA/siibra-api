@@ -172,16 +172,18 @@ async def cache_response(request: Request, call_next):
 
     cache_key = f"[{__version__}] {request.url.path}{str(request.url.query)}"
 
+    auth_set = request.headers.get('Authorization') is not None
+
     # bypass cache read if:
     # - method is not GET
     # - x-bypass-fast-api-cache is present
-    # - (NYI) if auth token is set
-    bypass_cache_read = request.method.upper() != "GET" or request.headers.get("x-bypass-fast-api-cache")
+    # - if auth token is set
+    bypass_cache_read = request.method.upper() != "GET" or request.headers.get("x-bypass-fast-api-cache") or auth_set
 
     # bypass cache set if:
     # - method is not GET
-    # - (NYI) if auth token is set
-    bypass_cache_set = request.method.upper() != "GET"
+    # - if auth token is set
+    bypass_cache_set = request.method.upper() != "GET" or auth_set
 
     cached_value = redis.get_value(cache_key) if not bypass_cache_read else None
     if cached_value:
@@ -208,15 +210,15 @@ async def cache_response(request: Request, call_next):
 
     # only cache json responses
     # do not cache error responses
-    if not bypass_cache_set and not response.status_code >= 400 and response.headers.get("content-type") == "application/json":
-        content = await read_bytes(response.body_iterator)
-        redis.set_value(cache_key, content)
-        return Response(
-            content,
-            headers=response.headers
-        )
-    else:
+    if bypass_cache_set or response.status_code < 400 or response.headers.get("content-type") != "application/json":
         return response
+    
+    content = await read_bytes(response.body_iterator)
+    redis.set_value(cache_key, content)
+    return Response(
+        content,
+        headers=response.headers
+    )
 
 
 @app.middleware('http')
