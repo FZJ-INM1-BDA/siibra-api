@@ -155,14 +155,15 @@ class TestSingleRegionFeatures(unittest.TestCase):
         assert response.status_code == 200
 
     def test_noresult_receptor(self):
-        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}/features/ReceptorDistribution'.format(
+        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}/features'.format(
             quote(ATLAS_ID),
             # nb must not be quote()
             PARCELLATION_ID,
             quote(SF_AMY_LEFT_NAME)))
         result_content = json.loads(response.content)
         assert response.status_code == 200
-        assert len(result_content) == 0
+        filtered_content = [feat for feat in result_content if feat.get("type") == "siibra/receptor"]
+        assert len(filtered_content) == 0
 
     def test_result_receptor(self):
         response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}/features/ReceptorDistribution'.format(
@@ -200,7 +201,7 @@ class TestSingleRegionFeatures(unittest.TestCase):
 
 
     def test_no_result_ieeg(self):
-        url='/v1_0/atlases/{atlas_id}/spaces/{space_id}/features/IEEG_Session?parcellation_id={parc_id}&region={region_id}'.format(
+        url='/v1_0/atlases/{atlas_id}/spaces/{space_id}/features?parcellation_id={parc_id}&region={region_id}'.format(
             atlas_id=quote(ATLAS_ID),
             space_id=quote(ICBM_152_SPACE_ID),
             parc_id=PARCELLATION_ID,

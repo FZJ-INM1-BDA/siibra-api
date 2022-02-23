@@ -169,7 +169,7 @@ def get_single_spatial_feature_detail(
     except IndexError:
         return HTTPException(
             status_code=404,
-            defailt=f"feature with id {feature_id} not found."
+            detail=f"feature with id {feature_id} not found."
         )
 
 @router.get("/{space_id:path}/features",

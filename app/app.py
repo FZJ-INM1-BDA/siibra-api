@@ -208,9 +208,12 @@ async def cache_response(request: Request, call_next):
 
     response = await call_next(request)
 
-    # only cache json responses
-    # do not cache error responses
-    if bypass_cache_set or response.status_code < 400 or response.headers.get("content-type") != "application/json":
+    # conditions when do not cache
+    if (
+        bypass_cache_set or
+        response.status_code >= 400 or
+        response.headers.get("content-type") != "application/json"
+    ):
         return response
     
     content = await read_bytes(response.body_iterator)
