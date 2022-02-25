@@ -16,7 +16,6 @@
 import os
 
 import requests
-import json
 import siibra
 import uuid
 import hashlib
@@ -32,6 +31,7 @@ from starlette.responses import Response
 from app.core.siibra_api import router as siibra_router
 from app.core.atlas_api import router as atlas_router
 from app.service.health import router as health_router
+from app.service.metrics import router as metrics_router
 
 from app.configuration.ebrains_token import get_public_token
 from app.configuration.siibra_custom_exception import SiibraCustomException
@@ -39,6 +39,7 @@ from app.configuration.cache_redis import CacheRedis
 from . import logger
 from . import __version__
 import logging
+
 siibra.logger.setLevel(logging.WARNING)
 
 security = HTTPBearer()
@@ -77,7 +78,7 @@ app = FastAPI(
 app.include_router(atlas_router)
 app.include_router(siibra_router)
 app.include_router(health_router)
-
+app.include_router(metrics_router)
 
 # Versioning for all api endpoints
 app = VersionedFastAPI(app, default_api_version=1)
@@ -87,7 +88,6 @@ app = VersionedFastAPI(app, default_api_version=1)
 templates = Jinja2Templates(directory='templates/')
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-pypi_stat_url = 'https://pypistats.org/api/packages/siibra/overall?mirrors=false'
 
 # Allow CORS
 origins = ['*']
@@ -112,38 +112,6 @@ def home(request: Request):
             'request': request})
 
 
-@app.get('/stats', include_in_schema=False)
-def home(request: Request):
-    """
-    Return the template for the siibra statistics.
-
-    :param request: fastApi Request object
-    :return: the rendered stats.html template
-    """
-    download_data_json = requests.get(pypi_stat_url)
-    if download_data_json.status_code == 200:
-        download_data = json.loads(download_data_json.content)
-
-        download_sum = 0
-        download_sum_month = {}
-
-        for d in download_data['data']:
-            download_sum += d['downloads']
-            date_index = '{}-{}'.format(d['date'].split('-')
-                                        [0], d['date'].split('-')[1])
-            if date_index not in download_sum_month:
-                download_sum_month[date_index] = 0
-            download_sum_month[date_index] += d['downloads']
-
-        return templates.TemplateResponse('stats.html', context={
-            'request': request,
-            'download_sum': download_sum,
-            'download_sum_month': download_sum_month
-        })
-    else:
-        logger.warning('Could not retrieve pypi statistics')
-        raise HTTPException(status_code=500,
-                            detail='Could not retrieve pypi statistics')
 
 
 # Each middleware function is called before the request is processed
@@ -178,7 +146,8 @@ async def cache_response(request: Request, call_next):
     # - method is not GET
     # - x-bypass-fast-api-cache is present
     # - if auth token is set
-    bypass_cache_read = request.method.upper() != "GET" or request.headers.get("x-bypass-fast-api-cache") or auth_set
+    bypass_cache_read = request.method.upper() != "GET" or request.headers.get(
+        "x-bypass-fast-api-cache") or auth_set or 'metrics' in request.url.path
 
     # bypass cache set if:
     # - method is not GET
@@ -187,7 +156,6 @@ async def cache_response(request: Request, call_next):
 
     cached_value = redis.get_value(cache_key) if not bypass_cache_read else None
     if cached_value:
-
         # starlette seems to normalize header to lower case
         # so .get("origin") also works if the request has "Origin: http://..."
         has_origin = request.headers.get("origin")
@@ -210,12 +178,12 @@ async def cache_response(request: Request, call_next):
 
     # conditions when do not cache
     if (
-        bypass_cache_set or
-        response.status_code >= 400 or
-        response.headers.get("content-type") != "application/json"
+            bypass_cache_set or
+            response.status_code >= 400 or
+            response.headers.get("content-type") != "application/json"
     ):
         return response
-    
+
     content = await read_bytes(response.body_iterator)
     redis.set_value(cache_key, content)
     return Response(
@@ -303,5 +271,3 @@ async def matomo_request_log(request: Request, call_next):
 @app.get('/ready', include_in_schema=False)
 def get_ready():
     return 'OK'
-
-

@@ -28,7 +28,7 @@ async def test_home():
 @pytest.mark.asyncio
 async def test_stats():
     async with AsyncClient(app=app, base_url="http://test") as ac:
-        response = await ac.get("/stats")
+        response = await ac.get("/v1_0/stats")
     assert response.status_code == 200
     assert 'Siibra - statistics' in str(response.content)
 
