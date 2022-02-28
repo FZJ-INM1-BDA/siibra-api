@@ -61,8 +61,8 @@ def test_get_all_features_for_one_parcellation():
         ATLAS_ID.replace('/', '%2F'),
         PARCELLATION_ID.replace('/', '%2F'))
     )
-    result_content = json.loads(response.content)
     assert response.status_code == 200
+    result_content = json.loads(response.content)
     assert len(result_content) > 0
 
 
