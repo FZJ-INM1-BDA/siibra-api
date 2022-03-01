@@ -8,3 +8,4 @@ aiofiles
 redis
 diskcache
 oauthlib
+psutil
