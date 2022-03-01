@@ -30,7 +30,7 @@ INVALID_REGION_NAME = 'INVALID_REGION'
 SPACE_ID = 'minds%2Fcore%2Freferencespace%2Fv1.0.0%2Fdafcffc5-4826-4bf1-8ff6-46b8a31ff8e2'
 FS_AVERAGE_SPACE_ID='minds/core/referencespace/v1.0.0/tmp-fsaverage'
 VALID_MODALITY='StreamlineCounts'
-INVALID_MODALITY='INVALID MOD'
+INVALID_MODALITY='INVALID%20MOD'
 VALID_MODALITY_INSTANCE_ID='https%3A%2F%2Fnexus.humanbrainproject.org%2Fv0%2Fdata%2Fminds%2Fcore%2Fdataset%2Fv1.0.0%2F87c6dea7-bdf7-4049-9975-6a9925df393f'
 
 def test_get_all_parcellations():
@@ -72,4 +72,4 @@ def test_invalid_feature_modality():
         PARCELLATION_ID.replace('/', '%2F'),
         INVALID_MODALITY)
     )
-    assert response.status_code == 404
+    assert response.status_code == 404, f"Expecting 404, got {response.status_code}. Response is: {str(response.content)}"
