@@ -14,17 +14,17 @@
 # limitations under the License.
 
 from typing import List
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 from siibra.core import Parcellation, Atlas
 from siibra import atlases
 from siibra.features.connectivity import ConnectivityMatrixDataModel
 from siibra.volumes.volume import VolumeModel
-from app.service.request_utils import get_all_serializable_parcellation_features
+from app.service.request_utils import get_all_serializable_parcellation_features, pagination_common_params
 
 from app.service.validation import validate_and_return_atlas, validate_and_return_parcellation
 from app.core.region_api import router as region_router, get_all_regions_from_atlas_parc_space
-from app.models import RestfulModel
+from app.models import RestfulModel, SPyParcellationFeatureModel, SerializationErrorModel
 
 preheat_flag = False
 
@@ -34,8 +34,6 @@ TAGS = ["parcellations"]
 
 router = APIRouter(prefix=PARCELLATION_PATH)
 router.include_router(region_router, prefix="/{parcellation_id:path}")
-
-UnionParcellationModels = ConnectivityMatrixDataModel
 
 
 class SapiParcellationModel(Parcellation.to_model.__annotations__.get("return"), RestfulModel):
@@ -73,7 +71,7 @@ def get_all_parcellations(atlas_id: str):
 
 @router.get('/{parcellation_id:path}/features/{feature_id}',
             tags=TAGS,
-            response_model=UnionParcellationModels)
+            response_model=SPyParcellationFeatureModel)
 def get_single_global_feature_detail(
         atlas_id: str,
         parcellation_id: str,
@@ -84,12 +82,12 @@ def get_single_global_feature_detail(
     atlas = validate_and_return_atlas(atlas_id)
     parcellation = validate_and_return_parcellation(parcellation_id, atlas)
 
+    features = get_all_serializable_parcellation_features(parcellation)
+
     try:
-        features = get_all_serializable_parcellation_features(parcellation)
-        models: List[UnionParcellationModels] = [feature.to_model() for feature in features]
-        filtered_models = [mod for mod in models if mod.id == feature_id]
-        return filtered_models[0]
-    except IndexError:
+        found_feature = [feat for feat in features if feat.model_id == feature_id][0]
+        return found_feature.to_model(detail=True)
+    except IndexError as err:
         raise HTTPException(
             status_code=404,
             detail=f"cannot find feature_id {feature_id}"
@@ -103,20 +101,38 @@ def get_single_global_feature_detail(
 
 @router.get('/{parcellation_id:path}/features',
             tags=TAGS,
-            response_model=List[UnionParcellationModels])
+            response_model=List[SPyParcellationFeatureModel])
 @SapiParcellationModel.decorate_link("features")
 def get_global_features_names(
     atlas_id: str,
-    parcellation_id: str):
+    parcellation_id: str,
+    pagination: dict = Depends(pagination_common_params)):
     """
     Returns all global features for a parcellation.
     """
-
     atlas = validate_and_return_atlas(atlas_id)
     parcellation = validate_and_return_parcellation(parcellation_id, atlas)
     
     features = get_all_serializable_parcellation_features(parcellation)
-    return [f.to_model(detail=False) for f in features]
+    
+    per_page = pagination.get("per_page")
+    page = pagination.get("page")
+    start_idx = per_page * page
+    end_idx = per_page * (page + 1)
+    return_list: List[SPyParcellationFeatureModel] = []
+    
+    for feat in features[start_idx : end_idx]:
+        try:
+            return_list.append(
+                feat.to_model(detail=False)
+            )
+        except Exception as err:
+            return_list.append(
+                SerializationErrorModel(message=str(err))
+            )
+            # some connectivity data returns
+            continue
+    return return_list
 
 
 @router.get('/{parcellation_id:path}/volumes',
