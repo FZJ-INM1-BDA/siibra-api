@@ -1,7 +1,7 @@
-from typing import Callable, ClassVar, Dict, List
-from pydantic import BaseModel, Field, PrivateAttr
+from typing import Callable, ClassVar, Dict, Generic, List, TypeVar, Union
+from pydantic import BaseModel, Field
 from functools import wraps
-from abc import ABC
+from siibra.features.connectivity import ConnectivityMatrixDataModel, ConnectivityMatrix
 
 class HrefModel(BaseModel):
     href: str
@@ -33,3 +33,10 @@ class RestfulModel(BaseModel):
         cls._decorated_links = dict()
         return super().__init_subclass__()
 
+class SerializationErrorModel(BaseModel):
+    type: str = Field("spy/serialization-error", const=True)
+    message: str
+
+SPyParcellationFeature = ConnectivityMatrix
+
+SPyParcellationFeatureModel = Union[ConnectivityMatrixDataModel, SerializationErrorModel]

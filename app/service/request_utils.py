@@ -13,15 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
-import siibra
+from typing import List, Optional
 import nibabel as nib
-from fastapi import HTTPException
-from app.configuration.cache_redis import CacheRedis
 import hashlib
 import os
-from app.configuration.diskcache import CACHEDIR
+from fastapi import HTTPException
 
+
+from app.configuration.cache_redis import CacheRedis
+from app.configuration.diskcache import CACHEDIR
+from app.models import SPyParcellationFeature
+
+import siibra
 from siibra.core import Region, Parcellation, Space, BoundingBox
 from siibra.core.serializable_concept import JSONSerializable
 from siibra.features import FeatureQuery, modalities
@@ -119,7 +122,7 @@ def get_all_serializable_regional_features(region: Region, space: Space=None) ->
         for feat in siibra.get_features(region, modality=mod, space=space)]
 
 
-def get_all_serializable_parcellation_features(parcellation: Parcellation, **kwargs):
+def get_all_serializable_parcellation_features(parcellation: Parcellation, **kwargs) -> List[SPyParcellationFeature]:
     
     supported_modalities: List[str] = []
     for modality, query_list in [(modality, FeatureQuery._implementations[modality]) for modality in modalities]:
@@ -160,3 +163,9 @@ def get_all_serializable_spatial_features(space: Space, parcellation: Parcellati
         status_code=400,
         detail=f"parcellation, region or bbox are required"
     )
+
+def pagination_common_params(per_page: Optional[int] = 20, page: Optional[int] = 0):
+    return {
+        'per_page': per_page,
+        'page': page,
+    }
