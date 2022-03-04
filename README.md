@@ -56,6 +56,15 @@ Running the application with docker-compose allows **hot reload**.
 Changes in the code will be directly taken over into the running container. 
 
 
+## How to contribute
+
+If you want to contribute to ``siibra-api``, feel free to fork it and open a
+pull request with your changes. You are also welcome to contribute to
+discussion in the issue tracker and of course to report issues you are
+facing yourself. If you find the software useful, please reference this
+repository URL in publications and derived work. You can also star the
+project to show us that you are using it.
+
 ## Acknowledgements
 
 This software code is funded from the European Union’s Horizon 2020 Framework
