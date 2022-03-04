@@ -5,6 +5,7 @@ import psutil
 import requests
 import json
 from app import logger
+import siibra
 
 router = APIRouter()
 templates = Jinja2Templates(directory='templates/')
@@ -27,6 +28,9 @@ def get_metrics():
             'disk': {
                 'used': f'{psutil.disk_usage("/").used >> 20} MB',
                 'free': f'{psutil.disk_usage("/").free >> 20} MB'
+            },
+            'siibra-python': {
+                'version': siibra.__version__
             }
         }
     )
