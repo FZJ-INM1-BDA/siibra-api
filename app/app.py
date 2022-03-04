@@ -307,11 +307,9 @@ async def validation_exception_handler(request: Request, exc: RuntimeError):
     :return: HTTP status 503 with a custom message
     """
     logging.warning(str(exc))
-    # raise HTTPException(status_code=503,
-    #                     detail='This part of the siibra service is temporarily unavailable')
     return JSONResponse(
         status_code=503,
-        content="This part of the siibra service is temporarily unavailable",
+        content={'detail': 'This part of the siibra service is temporarily unavailable'},
     )
 
 
