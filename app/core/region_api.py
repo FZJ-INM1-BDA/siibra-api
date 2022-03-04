@@ -44,14 +44,18 @@ UnionRegionalFeatureModels = Union[
 def get_all_regions_from_atlas_parc_space(
     atlas_id: str,
     parcellation_id: str,
-    space_id: Optional[str] = None):
+    space_id: Optional[str] = None,
+    find:  Optional[str] = None):
     """
     Returns all regions for a given parcellation id.
     """
     atlas = validate_and_return_atlas(atlas_id)
     parcellation = validate_and_return_parcellation(parcellation_id, atlas)
     space = validate_and_return_space(space_id, atlas) if space_id else None
-    return [r.to_model(space=space) for r in parcellation.regiontree]
+    if find is None:
+        return [r.to_model(space=space) for r in parcellation.regiontree]
+    else:
+        return [r.to_model(space=space) for r in parcellation.find_regions(find)]
 
 
 
