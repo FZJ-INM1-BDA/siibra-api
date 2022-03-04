@@ -33,7 +33,7 @@ jobs:
           # since it's latest, set DEV_FLAG to true
           DOCKER_IMAGE_TAG=latest
 
-          if [ "$GITHUB_REF" = "dev" ]
+          if [[ "$GITHUB_REF" = "refs/heads/dev" ]]
           then
             echo "DEV_FLAG=1" >> $GITHUB_ENV
             DOCKER_IMAGE_TAG=dev
@@ -111,6 +111,11 @@ jobs:
           DEPLOY_SITE_POSTFIX="-dev"
 
           DOCKER_IMAGE_TAG=latest
+
+          if [[ "$GITHUB_REF" = "refs/heads/dev" ]]
+          then
+            DOCKER_IMAGE_TAG=dev
+          fi
         fi
 
         if [ "$GITHUB_EVENT_NAME" = "release" ]

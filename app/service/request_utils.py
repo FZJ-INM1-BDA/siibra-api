@@ -13,19 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Tuple
-from urllib.parse import quote_plus
-import siibra
+from typing import List, Optional
 import nibabel as nib
-from fastapi import HTTPException, Request
-from app.configuration.cache_redis import CacheRedis
 import hashlib
 import os
-from app.configuration.diskcache import CACHEDIR
+from fastapi import HTTPException
 
-from siibra.core import Space, BoundingBox
-from siibra.features import FeatureQuery
+
+from app.configuration.cache_redis import CacheRedis
+from app.configuration.diskcache import CACHEDIR
+from app.models import SPyParcellationFeature
+
+import siibra
+from siibra.core import Region, Parcellation, Space, BoundingBox
+from siibra.core.serializable_concept import JSONSerializable
+from siibra.features import FeatureQuery, modalities
 from siibra.features.voi import VolumeOfInterest
+from siibra.features.feature import RegionalFeature, ParcellationFeature, SpatialFeature
+
 
 cache_redis = CacheRedis.get_instance()
 
@@ -46,25 +51,6 @@ def get_cached_file(filename: str, fn: callable):
     return cached_full_path
 
 
-def get_base_url_from_request(request: Request, **kwargs):
-    proto_header = 'x-forwarded-proto'
-    proto = 'http'
-    host = request.headers.get('host')
-    api_version = str(request.url).replace(
-        str(request.base_url), '').split('/')[0]
-    if proto_header in request.headers:
-        proto = request.headers.get(proto_header)
-
-    if 'atlas_id' in kwargs:
-        base_url = f'{proto}://{host}/{api_version}/atlases/{quote_plus(kwargs["atlas_id"])}'
-        if 'parcellation_id' in kwargs:
-            return f'{base_url}/parcellations/{quote_plus(kwargs["parcellation_id"])}'
-        if 'space_id' in kwargs:
-            return f'{base_url}/spaces/{quote_plus(kwargs["space_id"])}'
-        return base_url
-    return '{}://{}'.format(proto, host)
-
-
 def get_all_vois():
     queries = FeatureQuery.queries("volume")
     features: List[VolumeOfInterest] = [feat for query in queries for feat in query.features]
@@ -72,34 +58,6 @@ def get_all_vois():
 
 
 all_voi_features = get_all_vois()
-
-
-def get_voi(space: Space, boundingbox: Tuple[Tuple[float, float, float], Tuple[float, float, float]]):
-    bbox = BoundingBox(boundingbox[0], boundingbox[1], space)
-
-    def serialize_point(point):
-        return [p for p in point]
-
-    def serialize_voi(voi: VolumeOfInterest):
-        return {
-            "@id": voi.id,
-            "name": voi.name,
-            "description": voi.description,
-            "url": voi.urls,
-            "location":{
-                "space": {
-                    "@id": voi.location.space.id
-                },
-                "center": serialize_point(voi.location.center),
-                "minpoint": serialize_point(voi.location.minpoint),
-                "maxpoint": serialize_point(voi.location.maxpoint),
-            },
-            "volumes": [vol_src_sans_space(vol) for vol in voi.volumes]
-        }
-    return [serialize_voi(feat)
-        for feat in all_voi_features
-        if feat.location.space is space
-        and bbox.intersection(feat.location)]
 
 
 def get_path_to_regional_map(query_id, roi, space_of_interest):
@@ -147,3 +105,67 @@ def get_path_to_regional_map(query_id, roi, space_of_interest):
 
     return get_cached_file(cached_filename, save_new_nii)
 
+
+def get_all_serializable_regional_features(region: Region, space: Space=None) -> List[RegionalFeature]:
+    supported_modalities: List[str] = []
+    for modality, query_list in [(modality, FeatureQuery._implementations[modality]) for modality in modalities]:
+        if all(
+            issubclass(query._FEATURETYPE, RegionalFeature) and
+            issubclass(query._FEATURETYPE, JSONSerializable)
+            for query in query_list
+        ):
+            supported_modalities.append(modality)
+
+    # providing list/tuple to modality results in a dict return, rather than list
+    return [feat
+        for mod in supported_modalities
+        for feat in siibra.get_features(region, modality=mod, space=space)]
+
+
+def get_all_serializable_parcellation_features(parcellation: Parcellation, **kwargs) -> List[SPyParcellationFeature]:
+    
+    supported_modalities: List[str] = []
+    for modality, query_list in [(modality, FeatureQuery._implementations[modality]) for modality in modalities]:
+        if all(
+            issubclass(query._FEATURETYPE, ParcellationFeature) and
+            issubclass(query._FEATURETYPE, JSONSerializable)
+            for query in query_list
+        ):
+            supported_modalities.append(modality)
+
+    # providing list/tuple to modality results in a dict return, rather than list
+    return [feat
+        for mod in supported_modalities
+        for feat in siibra.get_features(parcellation, modality=mod, **kwargs)]
+
+def get_all_serializable_spatial_features(space: Space, parcellation: Parcellation=None, region: Region=None, bbox:BoundingBox=None, **kwargs):
+
+    supported_modalities = []
+    for modality, query_list in [(modality, FeatureQuery._implementations[modality]) for modality in modalities]:
+        if all(
+            issubclass(query._FEATURETYPE, SpatialFeature) and
+            issubclass(query._FEATURETYPE, JSONSerializable)
+            for query in query_list
+        ):
+            supported_modalities.append(modality)
+
+    roi = region or parcellation
+    if roi:
+        return [feat
+            for mod in supported_modalities
+            for feat in siibra.get_features(roi, modality=mod, **kwargs)]
+    if bbox:
+        return [feat
+            for feat in all_voi_features
+            if feat.location.space is space and
+            bbox.intersection(feat.location) ]
+    raise HTTPException(
+        status_code=400,
+        detail=f"parcellation, region or bbox are required"
+    )
+
+def pagination_common_params(per_page: Optional[int] = 20, page: Optional[int] = 0):
+    return {
+        'per_page': per_page,
+        'page': page,
+    }

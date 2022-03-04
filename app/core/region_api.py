@@ -13,7 +13,7 @@ from siibra.core.datasets import DatasetJsonModel
 from siibra.core.serializable_concept import JSONSerializable
 
 from app.configuration.diskcache import memoize
-from app.service.request_utils import get_path_to_regional_map
+from app.service.request_utils import get_all_serializable_regional_features, get_path_to_regional_map
 from app import logger
 from app.service.validation import (
     validate_and_return_atlas,
@@ -21,7 +21,6 @@ from app.service.validation import (
     validate_and_return_region,
     validate_and_return_space,
     file_response_openapi,
-    FeatureIdNameModel,
 )
 
 REGION_PATH = "/regions"
@@ -55,9 +54,11 @@ def get_all_regions_from_atlas_parc_space(
     return [r.to_model(space=space) for r in parcellation.regiontree]
 
 
+
 @router.get("/{region_id:path}/features",
             tags=TAGS,
-            response_model=List[FeatureIdNameModel])
+            response_model=List[UnionRegionalFeatureModels])
+@memoize(typed=True)
 def get_all_features_for_region(
     atlas_id: str,
     parcellation_id: str,
@@ -76,18 +77,10 @@ def get_all_features_for_region(
             detail=f"space {str(space)} is not supported by region {str(region)}"
         )
 
-    return_list = []
-    for modality, query_list in [(modality, FeatureQuery._implementations[modality]) for modality in modalities]:
-        if all(issubclass(query._FEATURETYPE, RegionalFeature) for query in query_list):
-            implemented_flag = all(issubclass(query._FEATURETYPE, JSONSerializable) for query in query_list)
-            return_list.append({
-                "@id": modality,
-                "name": modality,
-                "nyi": not implemented_flag
-            })
-    return return_list
+    return [feat.to_model(space=space) for feat in get_all_serializable_regional_features(region, space)]
 
-@router.get("/{region_id:path}/features/{modality_id}/{feature_id:path}",
+
+@router.get("/{region_id:path}/features/{feature_id:path}",
             tags=TAGS,
             response_model=UnionRegionalFeatureModels)
 @memoize(typed=True)
@@ -95,7 +88,6 @@ def get_regional_modality_by_id(
     atlas_id: str,
     parcellation_id: str,
     region_id: str,
-    modality_id: str,
     feature_id: str,
     space_id: Optional[str]=None,
     gene: Optional[str]=None):
@@ -112,44 +104,14 @@ def get_regional_modality_by_id(
             detail=f"space {str(space)} is not supported by region {str(region)}"
         )
 
-    features = siibra.get_features(region, modality=modality_id)
-    filtered_features = [feature for feature in features if feature.to_model(detail=False).id == feature_id]
+    found_feat = [feat for feat in get_all_serializable_regional_features(region, space) if feat.to_model(space=space).id == feature_id]
     try:
-        return filtered_features[0].to_model(detail=True).dict()
+        return found_feat[0].to_model(detail=True, space=space)
     except IndexError:
         raise HTTPException(
             status_code=404,
             detail=f"cannot find feature with id {feature_id}"
         )
-
-
-@router.get("/{region_id:path}/features/{modality_id}",
-            tags=TAGS,
-            response_model=List[UnionRegionalFeatureModels])
-@memoize(typed=True)
-def get_feature_modality_for_region(
-    atlas_id: str,
-    parcellation_id: str,
-    region_id: str,
-    modality_id: str,
-    space_id: Optional[str] = None,
-    gene: Optional[str] = None):
-    """
-    Returns list of the features for a region, as defined by the modality.
-    """
-
-    atlas = validate_and_return_atlas(atlas_id)
-    parcellation = validate_and_return_parcellation(parcellation_id, atlas)
-    region = validate_and_return_region(region_id, parcellation)
-    space = validate_and_return_space(space_id, atlas) if space_id else None
-    if space and (space not in region.supported_spaces):
-        raise HTTPException(
-            status_code=400,
-            detail=f"space {str(space)} is not supported by region {str(region)}"
-        )
-
-    features = siibra.get_features(region, modality=modality_id)
-    return [feature.to_model(detail=False) for feature in features]
 
 
 def regional_map_route_decorator():
