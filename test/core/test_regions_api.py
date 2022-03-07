@@ -45,6 +45,36 @@ def test_all_regions_for_parcellations():
     assert len(result_content) > 0
 
 
+def test_all_regions_for_parcellations_with_search_param():
+    response = client.get('/v1_0/atlases/{}/parcellations/{}/regions?space_id={}'.format(
+        ATLAS_ID.replace('/', '%2F'),
+        PARCELLATION_ID,
+        ICBM_152_SPACE_ID))
+    full_length = len(json.loads(response.content))
+    assert response.status_code == 200
+    assert full_length > 0
+
+    response = client.get('/v1_0/atlases/{}/parcellations/{}/regions?space_id={}&find={}'.format(
+        ATLAS_ID.replace('/', '%2F'),
+        PARCELLATION_ID,
+        ICBM_152_SPACE_ID,
+        'left'))
+    filtered_length = len(json.loads(response.content))
+    assert response.status_code == 200
+    assert full_length > filtered_length
+
+
+def test_all_regions_for_parcellations_with_empty_find_result():
+    response = client.get('/v1_0/atlases/{}/parcellations/{}/regions?space_id={}&find={}'.format(
+        ATLAS_ID.replace('/', '%2F'),
+        PARCELLATION_ID,
+        ICBM_152_SPACE_ID,
+        INVALID_REGION_NAME))
+    length = len(json.loads(response.content))
+    assert response.status_code == 200
+    assert length == 0
+
+
 def test_all_regions_for_parcellations_with_bad_request():
     response = client.get('/v1_0/atlases/{}/parcellations/{}/regions'.format(ATLAS_ID.replace('/', '%2F'), INVALID_PARCELLATION_ID))
     assert response.status_code == 400
