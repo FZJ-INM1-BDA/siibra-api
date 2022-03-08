@@ -30,6 +30,7 @@ from starlette.responses import Response
 
 from app.core.siibra_api import router as siibra_router
 from app.core.atlas_api import router as atlas_router
+from app.core.feature_api import router as features_router
 from app.service.health import router as health_router
 from app.service.metrics import router as metrics_router
 
@@ -77,6 +78,7 @@ app = FastAPI(
 
 app.include_router(atlas_router)
 app.include_router(siibra_router)
+app.include_router(features_router)
 app.include_router(health_router)
 app.include_router(metrics_router)
 
