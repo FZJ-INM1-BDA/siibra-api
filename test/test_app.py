@@ -1,5 +1,6 @@
 from _pytest.mark import param
 import pytest
+import json
 from httpx import AsyncClient
 from fastapi.testclient import TestClient
 
@@ -227,4 +228,6 @@ async def test_exception_handler():
         response = await ac.get("/error")
     # response = client.get("/")
     assert response.status_code == 503
-    assert 'This part of the siibra service is temporarily unavailable' in str(response.content)
+    result_content = json.loads(response.content)
+    assert 'This part of the siibra service is temporarily unavailable' in result_content['detail']
+    assert 'Dummy Exception' in result_content['error']
