@@ -138,8 +138,7 @@ async def matomo_request_log(request: Request, call_next):
     test_list = ['.css', '.js', '.png', '.gif', '.json', '.ico', 'localhost']
     res = any(ele in str(test_url) for ele in test_list)
 
-    if 'SIIBRA_ENVIRONMENT' in os.environ:
-        # if os.environ['SIIBRA_ENVIRONMENT'] == 'PRODUCTION':
+    if 'DEPLOY_ENVIRONMENT' in os.environ:
         if not res:
             payload = {
                 'idsite': 13,
@@ -150,9 +149,8 @@ async def matomo_request_log(request: Request, call_next):
                 'rand': str(uuid.uuid1()),
                 'lang': request.headers.get('Accept-Language'),
                 'ua': request.headers.get('User-Agent'),
-                '_cvar': {'1': ['environment', os.environ['SIIBRA_ENVIRONMENT']]}
+                '_cvar': {'1': ['environment', os.environ['DEPLOY_ENVIRONMENT']]}
             }
-            print(payload)
             try:
                 r = requests.get('https://stats.humanbrainproject.eu/matomo.php', params=payload)
                 print('Matomo logging with status: {}'.format(r.status_code))
