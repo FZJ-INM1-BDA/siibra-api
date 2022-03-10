@@ -2,8 +2,7 @@ from typing import Callable, List, Optional, Tuple, Union
 
 from fastapi import APIRouter, HTTPException
 
-import siibra
-from siibra.features import FeatureQuery, modalities
+from siibra.features import FeatureQuery
 
 
 from app.core.region_api import UnionRegionalFeatureModels
@@ -35,7 +34,11 @@ def get_feature_details(feature_id: str,
     :param region_id:
     :return: UnionRegionalFeatureModels
     """
-    raise HTTPException(
-        status_code=501,
-        detail=f"Not yet implemented"
-    )
+    feature = FeatureQuery.get_feature_by_id(feature_id)
+    if feature is not None:
+        return feature.to_model()
+    else:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Feature with id {feature_id} could not be found"
+        )
