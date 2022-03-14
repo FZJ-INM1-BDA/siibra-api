@@ -16,7 +16,7 @@ def test_get_all_gene_names():
 
 
 def test_get_all_available_modalities():
-    response = client.get('/v1_0/features')
+    response = client.get('/v1_0/modalities')
     assert response.status_code == 200
     result_content = json.loads(response.content)
     assert len(result_content) > 0
