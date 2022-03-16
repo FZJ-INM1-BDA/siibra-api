@@ -125,6 +125,27 @@ class TestRequestUtils(unittest.TestCase):
     #     nii = nib.load(path_to_file)
     #     assert nii is not None
 
+def test_get_path_to_regional_map():
+    hoc1 = siibra.parcellations['2.9'].decode_region('hoc1 left')
+    colin = siibra.spaces['colin']
+    path_to_nii = request_utils.get_path_to_regional_map("test_query", hoc1, colin)
+    
+    # remove any existing nii file
+    import os
+    os.unlink(path_to_nii)
+
+    path_to_nii = request_utils.get_path_to_regional_map("test_query", hoc1, colin)
+    
+    import nibabel
+    import numpy
+    
+    nii = nibabel.load(path_to_nii)
+
+    assert nii.header.get_xyzt_units() == ("mm", "sec")
+    assert nii.header['dim'][4] == 1
+    assert nii.header['dim'][5] == 1
+    assert nii.header.get_data_dtype() != numpy.float64
+
 
 if __name__ == '__main__':
     unittest.main()
