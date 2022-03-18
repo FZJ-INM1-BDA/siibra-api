@@ -66,6 +66,28 @@ def test_get_all_features_for_one_parcellation():
     assert len(result_content) > 0
 
 
+def test_get_filtered_features_for_one_parcellation():
+    response = client.get('/v1_0/atlases/{}/parcellations/{}/features?type={}'.format(
+        ATLAS_ID.replace('/', '%2F'),
+        PARCELLATION_ID.replace('/', '%2F'),
+        'siibra/features/connectivity')
+    )
+    assert response.status_code == 200
+    result_content = json.loads(response.content)
+    assert len(result_content) > 0
+
+
+def test_get_all_features_for_one_parcellation_with_wrong_type_filter():
+    response = client.get('/v1_0/atlases/{}/parcellations/{}/features?type={}'.format(
+        ATLAS_ID.replace('/', '%2F'),
+        PARCELLATION_ID.replace('/', '%2F'),
+        'FOO')
+    )
+    assert response.status_code == 200
+    result_content = json.loads(response.content)
+    assert len(result_content) == 0
+
+
 def test_invalid_feature_modality():
     response = client.get('/v1_0/atlases/{}/parcellations/{}/features/{}'.format(
         ATLAS_ID.replace('/', '%2F'),
