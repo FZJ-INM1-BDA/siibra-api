@@ -1,5 +1,6 @@
 from _pytest.mark import param
 import pytest
+import json
 from httpx import AsyncClient
 from fastapi.testclient import TestClient
 
@@ -214,3 +215,19 @@ async def test_cache_key(path,queryparam,expected_key):
 
                 get_value_handle.assert_called_once_with(expected_key)
                 set_value_handle.assert_called_once_with(expected_key, b'{"foo": "bar"}')
+
+
+@app.get('/error')
+def error_endpoint():
+    raise RuntimeError('Dummy Exception')
+
+
+@pytest.mark.asyncio
+async def test_exception_handler():
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        response = await ac.get("/error")
+    # response = client.get("/")
+    assert response.status_code == 503
+    result_content = json.loads(response.content)
+    assert 'This part of the siibra service is temporarily unavailable' in result_content['detail']
+    assert 'Dummy Exception' in result_content['error']

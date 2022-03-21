@@ -127,6 +127,50 @@ async def read_bytes(generator) -> bytes:
     return body
 
 
+@app.middleware('http')
+async def matomo_request_log(request: Request, call_next):
+    """
+    Middleware will be executed before each request.
+    If the URL does not belong to a resource file, a log will be sent to matomo monitoring.
+    :param request: current fastAPI request object
+    :param call_next: next middleware method
+    :return: the response after preprocessing
+    """
+    test_url = request.url
+    test_list = ['.css', '.js', '.png', '.gif', '.json', '.ico', 'localhost']
+    res = any(ele in str(test_url) for ele in test_list)
+
+    if 'DEPLOY_ENVIRONMENT' in os.environ:
+        if not res:
+            payload = {
+                'idsite': 13,
+                'rec': 1,
+                'action_name': 'siibra_api',
+                'url': request.url,
+                '_id': hashlib.blake2b(digest_size=8, key=request.client.host.encode()).hexdigest(),
+                'rand': str(uuid.uuid1()),
+                'lang': request.headers.get('Accept-Language'),
+                'ua': request.headers.get('User-Agent'),
+                '_cvar': {'1': ['environment', os.environ['DEPLOY_ENVIRONMENT']]}
+            }
+            try:
+                r = requests.get('https://stats.humanbrainproject.eu/matomo.php', params=payload)
+                print('Matomo logging with status: {}'.format(r.status_code))
+                pass
+            except Exception:
+                logger.info('Could not log to matomo instance')
+        else:
+            logger.info('Request for: {}'.format(request.url))
+    response = await call_next(request)
+    return response
+
+
+do_not_cache_list = [
+    "metrics",
+    "openapi.json"
+]
+
+
 @app.middleware("http")
 async def cache_response(request: Request, call_next):
     """
@@ -148,13 +192,23 @@ async def cache_response(request: Request, call_next):
     # - method is not GET
     # - x-bypass-fast-api-cache is present
     # - if auth token is set
-    bypass_cache_read = request.method.upper() != "GET" or request.headers.get(
-        "x-bypass-fast-api-cache") or auth_set or 'metrics' in request.url.path
+    # - if any part of request.url.path matches with do_not_cache_list
+    bypass_cache_read = (
+        request.method.upper() != "GET"
+        or request.headers.get("x-bypass-fast-api-cache")
+        or auth_set
+        or any (keyword in request.url.path for keyword in do_not_cache_list)
+    )
 
     # bypass cache set if:
     # - method is not GET
     # - if auth token is set
-    bypass_cache_set = request.method.upper() != "GET" or auth_set
+    # - if any part of request.url.path matches with do_not_cache_list
+    bypass_cache_set = (
+        request.method.upper() != "GET" 
+        or auth_set 
+        or any (keyword in request.url.path for keyword in do_not_cache_list)
+    )
 
     cached_value = redis.get_value(cache_key) if not bypass_cache_read else None
     if cached_value:
@@ -230,44 +284,25 @@ async def add_version_header(request: Request, call_next):
     return response
 
 
-@app.middleware('http')
-async def matomo_request_log(request: Request, call_next):
+@app.exception_handler(RuntimeError)
+async def validation_exception_handler(request: Request, exc: RuntimeError):
     """
-    Middleware will be executed before each request.
-    If the URL does not belong to a resource file, a log will be sent to matomo monitoring.
-    :param request: current fastAPI request object
-    :param call_next: next middleware method
-    :return: the response after preprocessing
+    Handling RuntimeErrors.
+    Most of the RuntimeErrors are thrown by the siibra-python library when other Services are not responding.
+    To be more resilient and not throw a simple and unplanned HTTP 500 response, this handler will return an HTTP 503
+    status.
+    :param request: Needed but fastapi definition, but not used
+    :param exc: RuntimeError
+    :return: HTTP status 503 with a custom message
     """
-    test_url = request.url
-    test_list = ['.css', '.js', '.png', '.gif', '.json', '.ico', 'localhost']
-    res = any(ele in str(test_url) for ele in test_list)
-
-    if 'SIIBRA_ENVIRONMENT' in os.environ:
-        # if os.environ['SIIBRA_ENVIRONMENT'] == 'PRODUCTION':
-        if not res:
-            payload = {
-                'idsite': 13,
-                'rec': 1,
-                'action_name': 'siibra_api',
-                'url': request.url,
-                '_id': hashlib.blake2b(digest_size=8, key=request.client.host.encode()).hexdigest(),
-                'rand': str(uuid.uuid1()),
-                'lang': request.headers.get('Accept-Language'),
-                'ua': request.headers.get('User-Agent'),
-                '_cvar': {'1': ['environment', os.environ['SIIBRA_ENVIRONMENT']]}
-            }
-            print(payload)
-            try:
-                r = requests.get('https://stats.humanbrainproject.eu/matomo.php', params=payload)
-                print('Matomo logging with status: {}'.format(r.status_code))
-                pass
-            except Exception:
-                logger.info('Could not log to matomo instance')
-        else:
-            logger.info('Request for: {}'.format(request.url))
-    response = await call_next(request)
-    return response
+    logging.warning(str(exc))
+    return JSONResponse(
+        status_code=503,
+        content={
+            'detail': 'This part of the siibra service is temporarily unavailable',
+            'error': str(exc)
+        },
+    )
 
 
 @app.get('/ready', include_in_schema=False)
