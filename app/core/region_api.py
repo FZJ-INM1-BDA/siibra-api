@@ -63,7 +63,7 @@ def get_all_regions_from_atlas_parc_space(
             tags=TAGS,
             response_model=List[UnionRegionalFeatureModels])
 @memoize(typed=True)
-def get_all_features_for_region(
+def get_all_regional_features_for_region(
     atlas_id: str,
     parcellation_id: str,
     region_id: str,
@@ -88,7 +88,7 @@ def get_all_features_for_region(
             tags=TAGS,
             response_model=UnionRegionalFeatureModels)
 @memoize(typed=True)
-def get_regional_modality_by_id(
+def get_single_detailed_regional_feature(
     atlas_id: str,
     parcellation_id: str,
     region_id: str,
