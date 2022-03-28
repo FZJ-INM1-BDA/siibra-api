@@ -72,7 +72,7 @@ def get_all_parcellations(atlas_id: str):
 @router.get('/{parcellation_id:path}/features/{feature_id}',
             tags=TAGS,
             response_model=SPyParcellationFeatureModel)
-def get_single_global_feature_detail(
+def get_single_detailed_global_feature(
         atlas_id: str,
         parcellation_id: str,
         feature_id: str):
@@ -103,7 +103,7 @@ def get_single_global_feature_detail(
             tags=TAGS,
             response_model=List[SPyParcellationFeatureModel])
 @SapiParcellationModel.decorate_link("features")
-def get_global_features_names(
+def get_all_global_features_for_parcellation(
     atlas_id: str,
     parcellation_id: str,
     pagination: dict = Depends(pagination_common_params)):
@@ -139,7 +139,7 @@ def get_global_features_names(
             tags=TAGS,
             response_model=List[VolumeModel])
 @SapiParcellationModel.decorate_link("volumes")
-def get_volumes_by_id(
+def get_volumes_for_parcellation(
     atlas_id: str,
     parcellation_id: str):
     """
@@ -154,7 +154,7 @@ def get_volumes_by_id(
             tags=TAGS,
             response_model=SapiParcellationModel)
 @SapiParcellationModel.decorate_link("self")
-def get_parcellation_by_id(
+def get_single_parcellation_detail(
     atlas_id: str,
     parcellation_id: str):
     """

@@ -143,12 +143,12 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):
 @router.get("/{space_id:path}/features/{feature_id}",
     tags=TAGS,
     response_model=UnionSpatialFeatureModels)
-def get_single_spatial_feature_detail(
+def get_single_detailed_spatial_feature(
     feature_id: str,
     atlas_id: str,
     space_id: str,
-    parcellation_id: Optional[str],
-    region: Optional[str],
+    parcellation_id: Optional[str]=None,
+    region: Optional[str]=None,
     bbox: Optional[str]=None):
     """
     Get a detailed view on a single spatial feature.
@@ -176,7 +176,7 @@ def get_single_spatial_feature_detail(
     tags=TAGS,
     response_model=List[UnionSpatialFeatureModels])
 @SapiSpaceModel.decorate_link("features")
-def get_spatial_features_from_space(
+def get_all_spatial_features_for_space(
     atlas_id: str,
     space_id: str,
     parcellation_id: Optional[str]=None,
@@ -201,7 +201,7 @@ def get_spatial_features_from_space(
     tags=TAGS,
     response_model=List[VolumeModel])
 @SapiSpaceModel.decorate_link("volumes")
-def get_one_space_volumes(atlas_id: str, space_id: str):
+def get_volumes_for_space(atlas_id: str, space_id: str):
     atlas = validate_and_return_atlas(atlas_id)
     space = validate_and_return_space(space_id, atlas)
     return [vol.to_model() for vol in space.volumes]
@@ -211,7 +211,7 @@ def get_one_space_volumes(atlas_id: str, space_id: str):
     tags=TAGS,
     response_model=SapiSpaceModel)
 @SapiSpaceModel.decorate_link("self")
-def get_one_space_by_id(atlas_id: str, space_id: str):
+def get_single_space_detail(atlas_id: str, space_id: str):
     """
     Returns one space for given id, with links to further resources
     """
