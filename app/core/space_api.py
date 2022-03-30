@@ -164,8 +164,8 @@ def get_single_detailed_spatial_feature(
 
     try:
         features = get_all_serializable_spatial_features(space=space, parcellation=parcellation, region=region, bbox=boundingbox)
-        found_features = [feature for feature in features if feature.to_model().id == feature_id]
-        return found_features[0].to_model(detail=True)
+        found_features = [feature for feature in features if feature.model_id == feature_id]
+        return found_features[0].to_model(detail=True, roi=region or parcellation, bbox=boundingbox)
     except IndexError:
         return HTTPException(
             status_code=404,
