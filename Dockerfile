@@ -1,5 +1,5 @@
 # Use fastapi python 3.7 as base image
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.7
+FROM python:3.7
 
 # Upgrade pip to latest version
 RUN python -m pip install --upgrade pip
