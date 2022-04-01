@@ -70,7 +70,7 @@ def test_get_filtered_features_for_one_parcellation():
     response = client.get('/v1_0/atlases/{}/parcellations/{}/features?type={}'.format(
         ATLAS_ID.replace('/', '%2F'),
         PARCELLATION_ID.replace('/', '%2F'),
-        'siibra/features/connectivity')
+        'siibra/features/connectivity/streamlineCounts')
     )
     assert response.status_code == 200
     result_content = json.loads(response.content)
