@@ -1,11 +1,9 @@
 import json
-
+from urllib.parse import quote
 from fastapi.testclient import TestClient
+from siibra.features.ieeg import IEEGSessionModel
 
 from app.app import app
-
-import siibra
-# from siibra import region
 
 client = TestClient(app)
 
@@ -49,6 +47,63 @@ def test_get_invalid_space():
     assert response.status_code == 400
     assert result_content['detail'] == f'space_id: {INVALID_SPACE_ID} is not known'
 
+def test_ieeg_spatial_feature():
+    url_tmpl='/v1_0/atlases/{}/spaces/{}/features{}?parcellation_id={}&region={}'
+
+    # first get all spatial features given jba2.9 and hoc1 right
+    url=url_tmpl.format(
+        ATLAS_ID,
+        "mni152",
+        "",
+        quote("2.9"),
+        quote("hoc1 right")
+    )
+    response = client.get(url)
+    assert response.status_code == 200
+    resp_json = response.json()
+    assert len(resp_json) > 0
+
+    # now, for each, get detail, and verify inRoi attr
+    for item in resp_json:
+        if item.get("@type") != "siibra/features/ieegSession":
+            continue
+        detail_url=url_tmpl.format(
+            ATLAS_ID,
+            "mni152",
+            '/' + quote(item.get("@id")),
+            quote("2.9"),
+            quote("hoc1 right")
+        )
+        resp = client.get(detail_url)
+        assert resp.status_code == 200
+        resp_json = resp.json()
+        model = IEEGSessionModel(**resp_json)
+
+        # session should be in roi
+        assert model.in_roi == True
+
+        # some electrode should be in roi
+        assert any(
+            electrode.in_roi
+            for electrode in model.electrodes.values()
+        )
+
+        # electrodes in roi should have some ctpt in roi
+        assert any(
+            contact_pt.in_roi
+            for electrode in model.electrodes.values()
+            if electrode.in_roi
+            for contact_pt in electrode.contact_points.values()
+        )
+
+        # the eletrodes not in roi should have all ctpt not in roi
+        assert all(
+            not contact_pt.in_roi
+            for electrode in model.electrodes.values()
+            if not electrode.in_roi
+            for contact_pt in electrode.contact_points.values()
+        )
+    
 
 def test_get_templates_for_space():
     pass
