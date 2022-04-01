@@ -280,7 +280,7 @@ def get_regional_feature(
             },
             'get_detail': lambda receptor_pr: { 
                 "__receptor_symbols": siibra.features.receptors.RECEPTOR_SYMBOLS,
-                "__files": [], #receptor_pr.files, # TODO where  to get files
+                "__files": receptor_pr.files,
                 "__data": {
                     "__profiles": receptor_pr.profiles,
                     "__autoradiographs": {
