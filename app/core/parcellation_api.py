@@ -123,15 +123,14 @@ def get_global_features_names(
     return_list: List[SPyParcellationFeatureModel] = []
     for feat in features[start_idx : end_idx]:
         try:
-            feat_model = feat.to_model(detail=False)
             if type:
-                if feat_model.type == type:
+                if feat.get_model_type() == type:
                     return_list.append(
-                        feat_model
+                        feat.to_model(detail=False)
                     )
             else:
                 return_list.append(
-                    feat_model
+                    feat.to_model(detail=False)
                 )
         except Exception as err:
             return_list.append(
