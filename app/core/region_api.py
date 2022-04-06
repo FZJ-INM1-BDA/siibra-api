@@ -67,7 +67,8 @@ def get_all_regional_features_for_region(
     atlas_id: str,
     parcellation_id: str,
     region_id: str,
-    space_id: Optional[str]=None):
+    space_id: Optional[str]=None,
+    type: Optional[str]=None):
     """
     Returns all regional features for a region.
     """
@@ -80,8 +81,10 @@ def get_all_regional_features_for_region(
             status_code=400,
             detail=f"space {str(space)} is not supported by region {str(region)}"
         )
-
-    return [feat.to_model(space=space) for feat in get_all_serializable_regional_features(region, space)]
+    if not type:
+        return [feat.to_model(space=space) for feat in get_all_serializable_regional_features(region, space)]
+    else:
+        return [feat.to_model(space=space) for feat in get_all_serializable_regional_features(region, space) if feat.to_model().type == type]
 
 
 @router.get("/{region_id:path}/features/{feature_id:path}",

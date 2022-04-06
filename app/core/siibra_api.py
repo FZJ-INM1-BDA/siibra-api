@@ -34,12 +34,13 @@ def get_gene_names():
     return jsonable_encoder({'genes': genes})
 
 
-@router.get('/features', tags=['data'])
+@router.get('/modalities', tags=['data'])
 def get_all_available_modalities():
     """
     Return all possible modalities
     """
     return [{
-        'name': feature_name
+        'name': feature_name,
+        'type': ''
     } for feature_name in siibra.features.modalities]
 

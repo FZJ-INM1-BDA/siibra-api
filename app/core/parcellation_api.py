@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 
 from siibra.core import Parcellation, Atlas
@@ -106,6 +106,7 @@ def get_single_detailed_global_feature(
 def get_all_global_features_for_parcellation(
     atlas_id: str,
     parcellation_id: str,
+    type: Optional[str] = None,
     pagination: dict = Depends(pagination_common_params)):
     """
     Returns all global features for a parcellation.
@@ -120,12 +121,17 @@ def get_all_global_features_for_parcellation(
     start_idx = per_page * page
     end_idx = per_page * (page + 1)
     return_list: List[SPyParcellationFeatureModel] = []
-    
     for feat in features[start_idx : end_idx]:
         try:
-            return_list.append(
-                feat.to_model(detail=False)
-            )
+            if type:
+                if feat.get_model_type() == type:
+                    return_list.append(
+                        feat.to_model(detail=False)
+                    )
+            else:
+                return_list.append(
+                    feat.to_model(detail=False)
+                )
         except Exception as err:
             return_list.append(
                 SerializationErrorModel(message=str(err))
