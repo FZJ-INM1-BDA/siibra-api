@@ -19,7 +19,10 @@ import requests
 import siibra
 import uuid
 import hashlib
-from fastapi import FastAPI, Request, HTTPException
+import logging
+import time
+
+from fastapi import FastAPI, Request
 from fastapi.security import HTTPBearer
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
@@ -36,9 +39,8 @@ from app.service.metrics import router as metrics_router
 from app.configuration.ebrains_token import get_public_token
 from app.configuration.siibra_custom_exception import SiibraCustomException
 from app.configuration.cache_redis import CacheRedis
-from . import logger
+from . import logger, access_logger
 from . import __version__
-import logging
 
 siibra.logger.setLevel(logging.WARNING)
 
@@ -131,6 +133,10 @@ do_not_cache_list = [
     "openapi.json"
 ]
 
+do_no_cache_query_list = [
+    "bbox="
+]
+
 
 @app.middleware("http")
 async def cache_response(request: Request, call_next):
@@ -159,6 +165,7 @@ async def cache_response(request: Request, call_next):
         or request.headers.get("x-bypass-fast-api-cache")
         or auth_set
         or any (keyword in request.url.path for keyword in do_not_cache_list)
+        or any (keyword in request.url.query for keyword in do_no_cache_query_list)
     )
 
     # bypass cache set if:
@@ -284,6 +291,18 @@ async def matomo_request_log(request: Request, call_next):
     response = await call_next(request)
     return response
 
+
+@app.middleware('http')
+async def access_log(request: Request, call_next):
+    start_time = time.time()
+    resp = await call_next(request)
+    process_time = (time.time() - start_time) * 1000
+    access_logger.info(f'{request.method.upper()} {str(request.url)}', extra={
+        'resp_status': str(resp.status_code),
+        'process_time_ms': str(round(process_time)),
+        'hit_cache': 'cache_hit' if resp.headers.get("x-fastapi-cache") == 'hit' else 'cache_miss'
+    })
+    return resp
 
 @app.exception_handler(RuntimeError)
 async def validation_exception_handler(request: Request, exc: RuntimeError):

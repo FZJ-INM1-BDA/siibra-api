@@ -1,0 +1,25 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+    external_labels:
+      src: "promtail"
+
+scrape_configs:
+- job_name: system
+  static_configs:
+  - targets:
+      - localhost
+    labels:
+      tag: "siibra-api-access-log.local-dev.info"
+      __path__: /var/log/access.log
+  - targets:
+      - localhost
+    labels:
+      tag: "siibra-api.local-dev.info"
+      __path__: /var/log/general.log

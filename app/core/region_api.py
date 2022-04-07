@@ -7,10 +7,7 @@ from starlette.responses import FileResponse
 import siibra
 from siibra.core import Region
 from siibra.features.receptors import ReceptorDatasetModel
-from siibra.features import FeatureQuery, modalities
-from siibra.features.feature import RegionalFeature
 from siibra.core.datasets import DatasetJsonModel
-from siibra.core.serializable_concept import JSONSerializable
 
 from app.configuration.diskcache import memoize
 from app.service.request_utils import get_all_serializable_regional_features, get_path_to_regional_map
