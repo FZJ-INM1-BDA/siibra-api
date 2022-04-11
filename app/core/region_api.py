@@ -57,7 +57,7 @@ def get_all_regions_from_atlas_parc_space(
 
 
 
-@router.get("/{region_id}/features",
+@router.get("/{region_id:lazy_path}/features",
             tags=TAGS,
             response_model=List[UnionRegionalFeatureModels])
 def get_all_regional_features_for_region(
@@ -84,7 +84,7 @@ def get_all_regional_features_for_region(
         return [feat.to_model(space=space) for feat in get_all_serializable_regional_features(region, space) if feat.to_model().type == type]
 
 
-@router.get("/{region_id}/features/{feature_id:path}",
+@router.get("/{region_id:lazy_path}/features/{feature_id:lazy_path}",
             tags=TAGS,
             response_model=UnionRegionalFeatureModels)
 def get_single_detailed_regional_feature(
@@ -164,7 +164,7 @@ class NiiMetadataModel(BaseModel):
     max: float
 
 
-@router.get("/{region_id}/regional_map/info",
+@router.get("/{region_id:lazy_path}/regional_map/info",
             tags=TAGS,
             response_model=NiiMetadataModel)
 @regional_map_route_decorator()
@@ -184,7 +184,7 @@ def get_regional_map_info(cached_fullpath: str):
     }
 
 
-@router.get("/{region_id}/regional_map/map",
+@router.get("/{region_id:lazy_path}/regional_map/map",
             tags=TAGS,
             responses=file_response_openapi)
 @regional_map_route_decorator()
@@ -195,7 +195,7 @@ def get_regional_map_file(cached_fullpath: str):
     return FileResponse(cached_fullpath, media_type='application/octet-stream')
 
 
-@router.get("/{region_id}",
+@router.get("/{region_id:lazy_path}",
             tags=TAGS,
             response_model=Region.to_model.__annotations__.get("return"))
 def get_single_region_detail(

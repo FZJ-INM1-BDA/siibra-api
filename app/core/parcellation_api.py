@@ -26,14 +26,12 @@ from app.service.validation import validate_and_return_atlas, validate_and_retur
 from app.core.region_api import router as region_router, get_all_regions_from_atlas_parc_space
 from app.models import RestfulModel, SPyParcellationFeatureModel, SerializationErrorModel
 
-preheat_flag = False
-
 
 PARCELLATION_PATH = "/parcellations"
 TAGS = ["parcellations"]
 
 router = APIRouter(prefix=PARCELLATION_PATH)
-router.include_router(region_router, prefix="/{parcellation_id:path}")
+router.include_router(region_router, prefix="/{parcellation_id:lazy_path}")
 
 
 class SapiParcellationModel(Parcellation.to_model.__annotations__.get("return"), RestfulModel):
@@ -69,7 +67,7 @@ def get_all_parcellations(atlas_id: str):
     return [SapiParcellationModel.from_parcellation(p) for p in atlas.parcellations]
 
 
-@router.get('/{parcellation_id:path}/features/{feature_id}',
+@router.get('/{parcellation_id:lazy_path}/features/{feature_id:lazy_path}',
             tags=TAGS,
             response_model=SPyParcellationFeatureModel)
 def get_single_detailed_global_feature(
@@ -99,7 +97,7 @@ def get_single_detailed_global_feature(
         )
 
 
-@router.get('/{parcellation_id:path}/features',
+@router.get('/{parcellation_id:lazy_path}/features',
             tags=TAGS,
             response_model=List[SPyParcellationFeatureModel])
 @SapiParcellationModel.decorate_link("features")
@@ -141,7 +139,7 @@ def get_all_global_features_for_parcellation(
     return return_list
 
 
-@router.get('/{parcellation_id:path}/volumes',
+@router.get('/{parcellation_id:lazy_path}/volumes',
             tags=TAGS,
             response_model=List[VolumeModel])
 @SapiParcellationModel.decorate_link("volumes")
@@ -156,7 +154,7 @@ def get_volumes_for_parcellation(
     return [vol.to_model() for vol in parcellation.volumes]
 
 
-@router.get('/{parcellation_id:path}',
+@router.get('/{parcellation_id:lazy_path}',
             tags=TAGS,
             response_model=SapiParcellationModel)
 @SapiParcellationModel.decorate_link("self")

@@ -18,6 +18,12 @@ from logging.handlers import TimedRotatingFileHandler
 import os
 from siibra import logger as siibra_logger
 
+# The patching has to be done before any other imports of starlette
+# once fastapi uses 0.19.0 https://www.starlette.io/release-notes/#0190
+# use register_url_convertor directly instead of weird patching
+from .util.route_converter import add_lazy_path
+add_lazy_path()
+
 logger = logging.getLogger(__name__)
 access_logger = logging.getLogger(__name__ + ".access_log")
 
