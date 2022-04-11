@@ -20,15 +20,3 @@ import logging
 logger = logging.getLogger(__name__)
 
 CACHEDIR = siibra.retrieval.CACHE.folder
-if os.environ.get('SIIBRA_API_DISABLE_CACHE'):
-    logger.warning('Not using caching')
-    def memoize(**kwargs):
-        def wrapper(func):
-            return func
-        return wrapper
-else:
-    from diskcache import FanoutCache
-    logger.warning('Using diskcahe.FanoutCache')
-    def memoize(**kwargs):
-        cache = FanoutCache(CACHEDIR)
-        return cache.memoize(**kwargs)

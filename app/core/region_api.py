@@ -7,9 +7,9 @@ from starlette.responses import FileResponse
 import siibra
 from siibra.core import Region
 from siibra.features.receptors import ReceptorDatasetModel
+from siibra.features.cells import CorticalCellDistributionModel
 from siibra.core.datasets import DatasetJsonModel
 
-from app.configuration.diskcache import memoize
 from app.service.request_utils import get_all_serializable_regional_features, get_path_to_regional_map
 from app import logger
 from app.service.validation import (
@@ -33,6 +33,7 @@ class BaseDatasetJsonModel(DatasetJsonModel): pass
 UnionRegionalFeatureModels = Union[
     ReceptorDatasetModel,
     BaseDatasetJsonModel,
+    CorticalCellDistributionModel,
 ]
 
 
@@ -56,10 +57,9 @@ def get_all_regions_from_atlas_parc_space(
 
 
 
-@router.get("/{region_id:path}/features",
+@router.get("/{region_id}/features",
             tags=TAGS,
             response_model=List[UnionRegionalFeatureModels])
-@memoize(typed=True)
 def get_all_regional_features_for_region(
     atlas_id: str,
     parcellation_id: str,
@@ -84,10 +84,9 @@ def get_all_regional_features_for_region(
         return [feat.to_model(space=space) for feat in get_all_serializable_regional_features(region, space) if feat.to_model().type == type]
 
 
-@router.get("/{region_id:path}/features/{feature_id:path}",
+@router.get("/{region_id}/features/{feature_id:path}",
             tags=TAGS,
             response_model=UnionRegionalFeatureModels)
-@memoize(typed=True)
 def get_single_detailed_regional_feature(
     atlas_id: str,
     parcellation_id: str,
@@ -108,7 +107,7 @@ def get_single_detailed_regional_feature(
             detail=f"space {str(space)} is not supported by region {str(region)}"
         )
 
-    found_feat = [feat for feat in get_all_serializable_regional_features(region, space) if feat.to_model(space=space).id == feature_id]
+    found_feat = [feat for feat in get_all_serializable_regional_features(region, space) if feat.model_id == feature_id]
     try:
         return found_feat[0].to_model(detail=True, space=space)
     except IndexError:
@@ -165,10 +164,9 @@ class NiiMetadataModel(BaseModel):
     max: float
 
 
-@router.get("/{region_id:path}/regional_map/info",
+@router.get("/{region_id}/regional_map/info",
             tags=TAGS,
             response_model=NiiMetadataModel)
-@memoize(typed=True)
 @regional_map_route_decorator()
 def get_regional_map_info(cached_fullpath: str):
     """
@@ -186,7 +184,7 @@ def get_regional_map_info(cached_fullpath: str):
     }
 
 
-@router.get("/{region_id:path}/regional_map/map",
+@router.get("/{region_id}/regional_map/map",
             tags=TAGS,
             responses=file_response_openapi)
 @regional_map_route_decorator()
@@ -197,7 +195,7 @@ def get_regional_map_file(cached_fullpath: str):
     return FileResponse(cached_fullpath, media_type='application/octet-stream')
 
 
-@router.get("/{region_id:path}",
+@router.get("/{region_id}",
             tags=TAGS,
             response_model=Region.to_model.__annotations__.get("return"))
 def get_single_region_detail(
