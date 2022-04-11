@@ -345,7 +345,7 @@ async def access_log(request: Request, call_next):
     return resp
 
 @app.exception_handler(RuntimeError)
-async def validation_exception_handler(request: Request, exc: RuntimeError):
+async def runtime_exception_handler(request: Request, exc: RuntimeError):
     """
     Handling RuntimeErrors.
     Most of the RuntimeErrors are thrown by the siibra-python library when other Services are not responding.

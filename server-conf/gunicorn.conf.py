@@ -7,5 +7,5 @@
 timeout=120
 worker_class="uvicorn.workers.UvicornWorker"
 workers=4
-bind='127.0.0.1:5000'
+bind='0.0.0.0:5000'
 wsgi_app="app.app:app"
