@@ -9,3 +9,4 @@ redis
 diskcache
 oauthlib
 psutil
+gunicorn
