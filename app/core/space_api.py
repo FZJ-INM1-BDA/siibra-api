@@ -73,7 +73,7 @@ def get_all_spaces(atlas_id: str):
     return [SapiSpaceModel.from_space(space) for space in atlas.spaces]
 
 
-@router.get("/{space_id:path}/templates",
+@router.get("/{space_id:lazy_path}/templates",
     tags=TAGS,
     responses=file_response_openapi)
 def get_template_by_space_id(atlas_id: str, space_id: str):
@@ -91,7 +91,7 @@ def get_template_by_space_id(atlas_id: str, space_id: str):
     return FileResponse(filename, filename=filename, media_type='application/octet-stream')
 
 
-@router.get("/{space_id:path}/parcellation_maps",
+@router.get("/{space_id:lazy_path}/parcellation_maps",
     tags=TAGS,
     responses=file_response_openapi)
 # add parcellations_map_id as optional param
@@ -140,7 +140,7 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):
         detail='Maps for space with id: {} not found'.format(space_id))
 
 
-@router.get("/{space_id:path}/features/{feature_id}",
+@router.get("/{space_id:lazy_path}/features/{feature_id}",
     tags=TAGS,
     response_model=UnionSpatialFeatureModels)
 def get_single_detailed_spatial_feature(
@@ -172,7 +172,7 @@ def get_single_detailed_spatial_feature(
             detail=f"feature with id {feature_id} not found."
         )
 
-@router.get("/{space_id:path}/features",
+@router.get("/{space_id:lazy_path}/features",
     tags=TAGS,
     response_model=List[UnionSpatialFeatureModels])
 @SapiSpaceModel.decorate_link("features")
@@ -197,7 +197,7 @@ def get_all_spatial_features_for_space(
     return [feat.to_model(detail=False) for feat in features]
 
 
-@router.get("/{space_id:path}/volumes",
+@router.get("/{space_id:lazy_path}/volumes",
     tags=TAGS,
     response_model=List[VolumeModel])
 @SapiSpaceModel.decorate_link("volumes")
@@ -207,7 +207,7 @@ def get_volumes_for_space(atlas_id: str, space_id: str):
     return [vol.to_model() for vol in space.volumes]
 
 
-@router.get("/{space_id:path}",
+@router.get("/{space_id:lazy_path}",
     tags=TAGS,
     response_model=SapiSpaceModel)
 @SapiSpaceModel.decorate_link("self")

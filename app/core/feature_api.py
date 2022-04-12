@@ -15,7 +15,7 @@ router = APIRouter(prefix=FEATURE_PATH)
 TAGS=["features"]
 
 
-@router.get("/{feature_id:path}", tags=TAGS,
+@router.get("/{feature_id:lazy_path}", tags=TAGS,
             response_model=UnionRegionalFeatureModels)
 def get_feature_details(feature_id: str,
                         atlas_id: Optional[str] = None,

@@ -67,7 +67,6 @@ tags_metadata = [
     },
 ]
 
-ATLAS_PATH = '/atlases'
 siibra_version_header = 'x-siibra-api-version'
 
 # Main fastAPI application

@@ -18,7 +18,16 @@ from logging.handlers import TimedRotatingFileHandler
 import os
 from siibra import logger as siibra_logger
 
-logger = logging.getLogger(__name__)
+# The patching has to be done before any other imports of starlette
+# once fastapi uses 0.19.0 https://www.starlette.io/release-notes/#0190
+# use register_url_convertor directly instead of weird patching
+from .util.route_converter import add_lazy_path
+add_lazy_path()
+
+main_logger = logging.getLogger(__name__)
+main_logger.setLevel(logging.INFO)
+
+logger = logging.getLogger(__name__ + ".info")
 access_logger = logging.getLogger(__name__ + ".access_log")
 
 ch = logging.StreamHandler()
@@ -28,8 +37,15 @@ logger.addHandler(ch)
 logger.setLevel('INFO')
 
 
-if os.environ.get("SIIBRA_API_ACCESS_LOG_FILE"):
-    access_log_handler = TimedRotatingFileHandler(os.environ.get("SIIBRA_API_ACCESS_LOG_FILE"), when="d", encoding="utf-8")
+log_dir = os.environ.get("SIIBRA_API_LOG_DIR")
+
+if log_dir:
+    log_dir += '' if log_dir.endswith('/') else '/'
+
+if log_dir:
+    import socket
+    filename = log_dir + f"{socket.gethostname()}.access.log"
+    access_log_handler = TimedRotatingFileHandler(filename, when="d", encoding="utf-8")
 else:
     access_log_handler = logging.StreamHandler()
 
@@ -39,8 +55,10 @@ access_log_handler.setLevel(logging.INFO)
 access_logger.addHandler(access_log_handler)
 
 
-if os.environ.get("SIIBRA_API_GENERAL_LOG_FILE"):
-    warn_fh = TimedRotatingFileHandler(os.environ.get("SIIBRA_API_GENERAL_LOG_FILE"), when="d", encoding="utf-8")
+if log_dir:
+    import socket
+    filename = log_dir + f"{socket.gethostname()}.general.log"
+    warn_fh = TimedRotatingFileHandler(filename, when="d", encoding="utf-8")
     warn_fh.setLevel(logging.INFO)
     warn_fh.setFormatter(formatter)
     logger.addHandler(warn_fh)
