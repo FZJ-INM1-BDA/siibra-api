@@ -40,8 +40,11 @@ logger.setLevel('INFO')
 log_dir = os.environ.get("SIIBRA_API_LOG_DIR")
 
 if log_dir:
+    log_dir += '' if log_dir.endswith('/') else '/'
+
+if log_dir:
     import socket
-    filename = log_dir + f"/{socket.gethostname()}.access.log"
+    filename = log_dir + f"{socket.gethostname()}.access.log"
     access_log_handler = TimedRotatingFileHandler(filename, when="d", encoding="utf-8")
 else:
     access_log_handler = logging.StreamHandler()
@@ -54,7 +57,7 @@ access_logger.addHandler(access_log_handler)
 
 if log_dir:
     import socket
-    filename = log_dir + f"/{socket.gethostname()}.general.log"
+    filename = log_dir + f"{socket.gethostname()}.general.log"
     warn_fh = TimedRotatingFileHandler(filename, when="d", encoding="utf-8")
     warn_fh.setLevel(logging.INFO)
     warn_fh.setFormatter(formatter)
