@@ -13,11 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from enum import Enum
 from fastapi import APIRouter
 from fastapi.encoders import jsonable_encoder
 import siibra
-
+from siibra.core.serializable_concept import JSONSerializable
 
 router = APIRouter()
 
@@ -41,6 +40,8 @@ def get_all_available_modalities():
     """
     return [{
         'name': feature_name,
-        'type': ''
+        'types': set([ FeatureQuery._FEATURETYPE.get_model_type()
+            for FeatureQuery in siibra.features.FeatureQuery._implementations[feature_name]
+            if issubclass(FeatureQuery._FEATURETYPE, JSONSerializable) ])
     } for feature_name in siibra.features.modalities]
 
