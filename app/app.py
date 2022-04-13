@@ -334,14 +334,26 @@ async def matomo_request_log(request: Request, call_next):
 @app.middleware('http')
 async def access_log(request: Request, call_next):
     start_time = time.time()
-    resp = await call_next(request)
-    process_time = (time.time() - start_time) * 1000
-    access_logger.info(f'{request.method.upper()} {str(request.url)}', extra={
-        'resp_status': str(resp.status_code),
-        'process_time_ms': str(round(process_time)),
-        'hit_cache': 'cache_hit' if resp.headers.get("x-fastapi-cache") == 'hit' else 'cache_miss'
-    })
-    return resp
+    try:
+        resp = await call_next(request)
+        process_time = (time.time() - start_time) * 1000
+        access_logger.info(f'{request.method.upper()} {str(request.url)}', extra={
+            'resp_status': str(resp.status_code),
+            'process_time_ms': str(round(process_time)),
+            'hit_cache': 'cache_hit' if resp.headers.get("x-fastapi-cache") == 'hit' else 'cache_miss'
+        })
+        return resp
+    
+    # Reverse proxy sometimes has a dedicated timeout
+    # In events where server takes too long to respond, fastapi will raise a RuntimeError with body "No response returned."
+    # Log the incident, and the time of response (This should reflect the duration of request, rather than when the client closes the connection)
+    except RuntimeError:
+        process_time = (time.time() - start_time) * 1000
+        access_logger.info(f'{request.method.upper()} {str(request.url)}', extra={
+            'resp_status': '504',
+            'process_time_ms': str(round(process_time)),
+            'hit_cache': 'cache_miss'
+        })
 
 @app.exception_handler(RuntimeError)
 async def runtime_exception_handler(request: Request, exc: RuntimeError):
@@ -355,6 +367,7 @@ async def runtime_exception_handler(request: Request, exc: RuntimeError):
     :return: HTTP status 503 with a custom message
     """
     logging.warning(str(exc))
+    print('handler!!')
     return JSONResponse(
         status_code=503,
         content={
