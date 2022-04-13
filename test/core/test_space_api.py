@@ -10,6 +10,7 @@ client = TestClient(app)
 ATLAS_ID = 'juelich/iav/atlas/v1.0.0/1'
 SPACE_ID = 'minds%2Fcore%2Freferencespace%2Fv1.0.0%2Fdafcffc5-4826-4bf1-8ff6-46b8a31ff8e2'
 INVALID_SPACE_ID = 'INVALID_SPACE_ID'
+url_tmpl='/v1_0/atlases/{}/spaces/{}/features{}?parcellation_id={}&region={}'
 
 
 # class MockRegionProps:
@@ -48,7 +49,6 @@ def test_get_invalid_space():
     assert result_content['detail'] == f'space_id: {INVALID_SPACE_ID} is not known'
 
 def test_ieeg_spatial_feature():
-    url_tmpl='/v1_0/atlases/{}/spaces/{}/features{}?parcellation_id={}&region={}'
 
     # first get all spatial features given jba2.9 and hoc1 right
     url=url_tmpl.format(
@@ -103,7 +103,18 @@ def test_ieeg_spatial_feature():
             if not electrode.in_roi
             for contact_pt in electrode.contact_points.values()
         )
+def test_resolve_single_detailed_feature():
     
+    resp = client.get(
+        url_tmpl.format(
+            'juelich/iav/atlas/v1.0.0/1',
+            'minds/core/referencespace/v1.0.0/dafcffc5-4826-4bf1-8ff6-46b8a31ff8e2',
+            '/siibra/features/ieegSession/d11d92a6e925f158254f3ac1df2e33cf:HID-Sub-018',
+            'minds/core/parcellationatlas/v1.0.0/94c1125b-b87e-45e4-901c-00daee7f2579-290',
+            'Area%20hOc1%20(V1,%2017,%20CalcS)%20right'
+        ),
+    )
+    assert resp.status_code == 200
 
 def test_get_templates_for_space():
     pass

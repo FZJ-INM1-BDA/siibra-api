@@ -140,7 +140,7 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):
         detail='Maps for space with id: {} not found'.format(space_id))
 
 
-@router.get("/{space_id:lazy_path}/features/{feature_id}",
+@router.get("/{space_id:lazy_path}/features/{feature_id:lazy_path}",
     tags=TAGS,
     response_model=UnionSpatialFeatureModels)
 def get_single_detailed_spatial_feature(
