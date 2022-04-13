@@ -367,7 +367,6 @@ async def runtime_exception_handler(request: Request, exc: RuntimeError):
     :return: HTTP status 503 with a custom message
     """
     logging.warning(str(exc))
-    print('handler!!')
     return JSONResponse(
         status_code=503,
         content={
