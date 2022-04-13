@@ -30,10 +30,8 @@ HOC1_REGION_ID = 'minds%2Fcore%2Fparcellationregion%2Fv1.0.0%2F5151ab8f-d8cb-4e6
 INVALID_REGION_NAME = 'INVALID_REGION'
 SPACE_ID = 'minds%2Fcore%2Freferencespace%2Fv1.0.0%2Fdafcffc5-4826-4bf1-8ff6-46b8a31ff8e2'
 FS_AVERAGE_SPACE_ID='minds/core/referencespace/v1.0.0/tmp-fsaverage'
-VALID_MODALITY='EbrainsRegionalDataset'
-VALID_MODALITY_INSTANCE_ID='https%3A%2F%2Fnexus.humanbrainproject.org%2Fv0%2Fdata%2Fminds%2Fcore%2Fdataset%2Fv1.0.0%2F87c6dea7-bdf7-4049-9975-6a9925df393f'
-INVALID_FEATURE = 'INVALID'
-VALID_MODALITY_ID = 'https://nexus.humanbrainproject.org/v0/data/minds/core/dataset/v1.0.0/de08dcb8-28d4-4f8f-b019-ef0f8924d5d4'
+INVALID_FEATURE_ID = 'INVALID'
+VALID_FEATURE_ID = 'siibra/features/receptor/33c1e49ddd06eed636eb35e747378f40'
 
 def test_all_regions_for_parcellations():
     response = client.get('/v1_0/atlases/{}/parcellations/{}/regions?space_id={}'.format(
@@ -178,7 +176,7 @@ class TestSingleRegionFeatures(unittest.TestCase):
             quote_plus(ATLAS_ID),
             PARCELLATION_ID,
             REGION_BASAL,
-            VALID_MODALITY_ID)
+            VALID_FEATURE_ID)
         response = client.get(url)
 
         # result_content = json.loads(response.content)
@@ -189,7 +187,7 @@ class TestSingleRegionFeatures(unittest.TestCase):
             quote(ATLAS_ID),
             PARCELLATION_ID,
             quote(HOC1_LEFT_REGION_NAME),
-            INVALID_FEATURE))
+            INVALID_FEATURE_ID))
         assert response.status_code == 404
 
     #TODO not yet implemented with pydantic
