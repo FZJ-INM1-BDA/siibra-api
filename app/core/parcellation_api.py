@@ -242,7 +242,6 @@ def parse_region_selection(
 
 @router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/regional_map/info',
             tags=['parcellations'])
-@memoize(typed=True)
 def get_regional_map_info(
         atlas_id: str,
         parcellation_id: str,
@@ -273,7 +272,6 @@ def get_regional_map_info(
 
 @router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/regional_map/map',
             tags=['parcellations'])
-@memoize(typed=True)
 def get_regional_map_file(
         atlas_id: str,
         parcellation_id: str,
