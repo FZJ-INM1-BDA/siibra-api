@@ -522,30 +522,32 @@ def get_path_to_regional_map(query_id, roi, space_of_interest):
         import nibabel as nib
         import numpy as np
 
+        image = regional_map.image
+
         # fix regional_map if necessary
-        regional_map.image.header.set_xyzt_units('mm', 'sec')
+        image.header.set_xyzt_units('mm', 'sec')
 
         # time series
-        regional_map.image.header['dim'][4] = 1
+        image.header['dim'][4] = 1
 
         # num channel
-        regional_map.image.header['dim'][5] = 1
+        image.header['dim'][5] = 1
 
         # cast type float64 to float32
-        if regional_map.image.header.get_data_dtype() == np.float64:
-            fdata=regional_map.image.get_fdata()
+        if image.header.get_data_dtype() == np.float64:
+            fdata=image.get_fdata()
             new_data=fdata.astype(np.float32)
-            regional_map.image.set_data_dtype(np.float32)
+            image.set_data_dtype(np.float32)
 
-            if regional_map.image.header['sizeof_hdr'] == 348:
-                new_image=nib.Nifti1Image(new_data, regional_map.image.affine, regional_map.image.header)
-            elif regional_map.image.header['sizeof_hdr'] == 540:
-                new_image=nib.Nifti2Image(new_data, regional_map.image.affine, regional_map.image.header)
+            if image.header['sizeof_hdr'] == 348:
+                new_image=nib.Nifti1Image(new_data, image.affine, image.header)
+            elif image.header['sizeof_hdr'] == 540:
+                new_image=nib.Nifti2Image(new_data, image.affine, image.header)
             else:
                 raise IOError('regional map has incorrect sizeof_hdr')
             nib.save(new_image, cached_fullpath)
         else:
-            nib.save(regional_map.image, cached_fullpath)
+            nib.save(image, cached_fullpath)
 
     return get_cached_file(cached_filename, save_new_nii)
 
