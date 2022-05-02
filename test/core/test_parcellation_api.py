@@ -63,7 +63,8 @@ def test_get_all_features_for_one_parcellation():
     )
     assert response.status_code == 200
     result_content = json.loads(response.content)
-    assert len(result_content) > 0
+    assert result_content.get('items')
+    assert len(result_content.get('items')) > 0
 
 
 def test_get_filtered_features_for_one_parcellation():
@@ -74,7 +75,8 @@ def test_get_filtered_features_for_one_parcellation():
     )
     assert response.status_code == 200
     result_content = json.loads(response.content)
-    assert len(result_content) > 0
+    assert result_content.get('items')
+    assert len(result_content.get('items')) > 0
 
 
 def test_get_all_features_for_one_parcellation_with_wrong_type_filter():
@@ -85,7 +87,8 @@ def test_get_all_features_for_one_parcellation_with_wrong_type_filter():
     )
     assert response.status_code == 200
     result_content = json.loads(response.content)
-    assert len(result_content) == 0
+    assert result_content.get('items')
+    assert len(result_content.get('items')) == 0
 
 
 def test_invalid_feature_modality():
