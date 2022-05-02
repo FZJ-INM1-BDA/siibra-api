@@ -63,7 +63,7 @@ def test_get_all_features_for_one_parcellation():
     )
     assert response.status_code == 200
     result_content = json.loads(response.content)
-    assert result_content.get('items')
+    assert result_content.get('items') is not None
     assert len(result_content.get('items')) > 0
 
 
@@ -75,7 +75,7 @@ def test_get_filtered_features_for_one_parcellation():
     )
     assert response.status_code == 200
     result_content = json.loads(response.content)
-    assert result_content.get('items')
+    assert result_content.get('items') is not None
     assert len(result_content.get('items')) > 0
 
 
@@ -87,7 +87,7 @@ def test_get_all_features_for_one_parcellation_with_wrong_type_filter():
     )
     assert response.status_code == 200
     result_content = json.loads(response.content)
-    assert result_content.get('items')
+    assert result_content.get('items') is not None
     assert len(result_content.get('items')) == 0
 
 
