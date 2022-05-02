@@ -22,11 +22,12 @@ import hashlib
 import logging
 import time
 
+from fastapi_versioning import VersionedFastAPI
+from fastapi_pagination import add_pagination
 from fastapi import FastAPI, Request
 from fastapi.security import HTTPBearer
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi_versioning import VersionedFastAPI
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import Response
@@ -82,6 +83,9 @@ app.include_router(siibra_router)
 app.include_router(features_router)
 app.include_router(health_router)
 app.include_router(metrics_router)
+
+# add pagination
+add_pagination(app)
 
 # Versioning for all api endpoints
 app = VersionedFastAPI(app, default_api_version=1)
@@ -354,6 +358,8 @@ async def access_log(request: Request, call_next):
             'process_time_ms': str(round(process_time)),
             'hit_cache': 'cache_miss'
         })
+    except Exception as e:
+        logger.critical(e)
 
 @app.exception_handler(RuntimeError)
 async def runtime_exception_handler(request: Request, exc: RuntimeError):
@@ -375,6 +381,13 @@ async def runtime_exception_handler(request: Request, exc: RuntimeError):
         },
     )
 
+@app.exception_handler(Exception)
+async def validation_exception_handler(request: Request, exc: Exception):
+    print(str(exc))
+    return JSONResponse(
+        status_code=500,
+        content="some error"
+    )
 
 @app.get('/ready', include_in_schema=False)
 def get_ready():

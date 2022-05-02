@@ -15,16 +15,16 @@
 
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi_pagination import paginate, Page, Params
 
 from siibra.core import Parcellation, Atlas
 from siibra import atlases
-from siibra.features.connectivity import ConnectivityMatrixDataModel
 from siibra.volumes.volume import VolumeModel
 from app.service.request_utils import get_all_serializable_parcellation_features, pagination_common_params
 
 from app.service.validation import validate_and_return_atlas, validate_and_return_parcellation
 from app.core.region_api import router as region_router, get_all_regions_from_atlas_parc_space
-from app.models import RestfulModel, SPyParcellationFeatureModel, SerializationErrorModel
+from app.models import CustomList, RestfulModel, SPyParcellationFeatureModel, SerializationErrorModel
 
 
 PARCELLATION_PATH = "/parcellations"
@@ -99,13 +99,13 @@ def get_single_detailed_global_feature(
 
 @router.get('/{parcellation_id:lazy_path}/features',
             tags=TAGS,
-            response_model=List[SPyParcellationFeatureModel])
+            response_model=Page[SPyParcellationFeatureModel])
 @SapiParcellationModel.decorate_link("features")
 def get_all_global_features_for_parcellation(
     atlas_id: str,
     parcellation_id: str,
     type: Optional[str] = None,
-    pagination: dict = Depends(pagination_common_params)):
+    params: Params = Depends()):
     """
     Returns all global features for a parcellation.
     """
@@ -114,29 +114,11 @@ def get_all_global_features_for_parcellation(
     
     features = get_all_serializable_parcellation_features(parcellation)
     
-    per_page = pagination.get("per_page")
-    page = pagination.get("page")
-    start_idx = per_page * page
-    end_idx = per_page * (page + 1)
-    return_list: List[SPyParcellationFeatureModel] = []
-    for feat in features[start_idx : end_idx]:
-        try:
-            if type:
-                if feat.get_model_type() == type:
-                    return_list.append(
-                        feat.to_model(detail=False)
-                    )
-            else:
-                return_list.append(
-                    feat.to_model(detail=False)
-                )
-        except Exception as err:
-            return_list.append(
-                SerializationErrorModel(message=str(err))
-            )
-            # some connectivity data returns
-            continue
-    return return_list
+    if type:
+        features = [feat for feat in features if feat.get_model_type() == type]
+
+    sequence = CustomList(features, detail=False)
+    return paginate(sequence, params)
 
 
 @router.get('/{parcellation_id:lazy_path}/volumes',
