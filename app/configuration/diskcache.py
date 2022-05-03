@@ -1,4 +1,4 @@
-# Copyright 2018-2020 Institute of Neuroscience and Medicine (INM-1),
+# Copyright 2018-2022 Institute of Neuroscience and Medicine (INM-1),
 # Forschungszentrum Jülich GmbH
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import siibra
-import os
 import logging
 
 logger = logging.getLogger(__name__)
