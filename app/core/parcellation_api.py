@@ -20,11 +20,11 @@ from fastapi_pagination import paginate, Page, Params
 from siibra.core import Parcellation, Atlas
 from siibra import atlases
 from siibra.volumes.volume import VolumeModel
-from app.service.request_utils import get_all_serializable_parcellation_features, pagination_common_params
+from app.service.request_utils import get_all_serializable_parcellation_features
 
 from app.service.validation import validate_and_return_atlas, validate_and_return_parcellation
 from app.core.region_api import router as region_router, get_all_regions_from_atlas_parc_space
-from app.models import CustomList, RestfulModel, SPyParcellationFeatureModel, SerializationErrorModel
+from app.models import CustomList, RestfulModel, SPyParcellationFeatureModel
 
 
 PARCELLATION_PATH = "/parcellations"
@@ -37,7 +37,6 @@ router.include_router(region_router, prefix="/{parcellation_id:lazy_path}")
 class SapiParcellationModel(Parcellation.to_model.__annotations__.get("return"), RestfulModel):
     @staticmethod
     def from_parcellation(parcellation: Parcellation) -> 'SapiParcellationModel':
-        from ..app import app
 
         model = parcellation.to_model()
         assert len(parcellation.atlases) == 1, f"Expecting 1 and only 1 set of atlases associated with {str(parcellation)}, but got {len(parcellation.atlases)}"
@@ -49,9 +48,7 @@ class SapiParcellationModel(Parcellation.to_model.__annotations__.get("return"),
         )
 
 
-@router.get("",
-    tags=TAGS,
-    response_model=List[SapiParcellationModel])
+@router.get("", tags=TAGS, response_model=List[SapiParcellationModel])
 def get_all_parcellations(atlas_id: str):
     """
     Returns all parcellations that are defined in the siibra client for given atlas.
@@ -67,7 +64,7 @@ def get_all_parcellations(atlas_id: str):
     return [SapiParcellationModel.from_parcellation(p) for p in atlas.parcellations]
 
 
-@router.get('/{parcellation_id:lazy_path}/features/{feature_id:lazy_path}',
+@router.get("/{parcellation_id:lazy_path}/features/{feature_id:lazy_path}",
             tags=TAGS,
             response_model=SPyParcellationFeatureModel)
 def get_single_detailed_global_feature(
@@ -97,7 +94,7 @@ def get_single_detailed_global_feature(
         )
 
 
-@router.get('/{parcellation_id:lazy_path}/features',
+@router.get("/{parcellation_id:lazy_path}/features",
             tags=TAGS,
             response_model=Page[SPyParcellationFeatureModel])
 @SapiParcellationModel.decorate_link("features")
@@ -121,7 +118,7 @@ def get_all_global_features_for_parcellation(
     return paginate(sequence, params)
 
 
-@router.get('/{parcellation_id:lazy_path}/volumes',
+@router.get("/{parcellation_id:lazy_path}/volumes",
             tags=TAGS,
             response_model=List[VolumeModel])
 @SapiParcellationModel.decorate_link("volumes")
@@ -136,7 +133,7 @@ def get_volumes_for_parcellation(
     return [vol.to_model() for vol in parcellation.volumes]
 
 
-@router.get('/{parcellation_id:lazy_path}',
+@router.get("/{parcellation_id:lazy_path}",
             tags=TAGS,
             response_model=SapiParcellationModel)
 @SapiParcellationModel.decorate_link("self")
@@ -150,5 +147,6 @@ def get_single_parcellation_detail(
     atlas = validate_and_return_atlas(atlas_id)
     parcellation = validate_and_return_parcellation(parcellation_id, atlas)
     return SapiParcellationModel.from_parcellation(parcellation)
+
 
 SapiParcellationModel.decorate_link("regions")(get_all_regions_from_atlas_parc_space)
