@@ -19,7 +19,6 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from starlette.responses import FileResponse
 
-import siibra
 from siibra.core import Region
 from siibra.features.receptors import ReceptorDatasetModel
 from siibra.features.cells import CorticalCellDistributionModel
@@ -39,11 +38,13 @@ REGION_PATH = "/regions"
 
 router = APIRouter(prefix=REGION_PATH)
 
-TAGS=["regions"]
+TAGS = ["regions"]
 
 
 # this is required, otherwise, Union operation collapses it to DatasetJsonModel
-class BaseDatasetJsonModel(DatasetJsonModel): pass
+class BaseDatasetJsonModel(DatasetJsonModel):
+    pass
+
 
 UnionRegionalFeatureModels = Union[
     ReceptorDatasetModel,
@@ -110,7 +111,7 @@ def get_single_detailed_regional_feature(
     space_id: Optional[str]=None,
     gene: Optional[str]=None):
     """
-    Returns a feature for a region, as defined by by the modality and feature ID
+    Returns a feature for a region, as defined by the modality and feature ID
     """
     atlas = validate_and_return_atlas(atlas_id)
     parcellation = validate_and_return_parcellation(parcellation_id, atlas)
@@ -135,7 +136,7 @@ def get_single_detailed_regional_feature(
 def regional_map_route_decorator():
     """
     Return the full path to the requested regional map (Probabilistic map).
-    If does not exist, will download and cache the result.
+    If it does not exist, will download and cache the result.
     """
     def outer(fn: Callable):
         def inner(
@@ -162,9 +163,9 @@ def regional_map_route_decorator():
                 )
 
             query_id = f"{atlas.id}{parcellation.id}{region.id}{space.id}"
-            logger.debug(f'queryId: {query_id}')
+            logger.debug(f"queryId: {query_id}")
             cached_fullpath = get_path_to_regional_map(query_id, region, space)
-            logger.debug(f'cached path: {cached_fullpath}')
+            logger.debug(f"cached path: {cached_fullpath}")
             return fn(cached_fullpath)
 
         inner.__name__ = fn.__name__
@@ -187,15 +188,14 @@ def get_regional_map_info(cached_fullpath: str):
     """
     Returns information about a regional map for given region name.
     """
-
     import nibabel as nib
     import numpy as np
     
     nii = nib.load(cached_fullpath)
     data = nii.get_fdata()
     return {
-        'min': np.min(data),
-        'max': np.max(data),
+        "min": np.min(data),
+        "max": np.max(data),
     }
 
 
@@ -207,18 +207,13 @@ def get_regional_map_file(cached_fullpath: str):
     """
     Returns a regional map for given region name.
     """
-    return FileResponse(cached_fullpath, media_type='application/octet-stream')
+    return FileResponse(cached_fullpath, media_type="application/octet-stream")
 
 
 @router.get("/{region_id:lazy_path}",
             tags=TAGS,
             response_model=Region.to_model.__annotations__.get("return"))
-def get_single_region_detail(
-    atlas_id: str,
-    parcellation_id: str,
-    region_id: str,
-    space_id: Optional[str] = None):
-
+def get_single_region_detail(atlas_id: str, parcellation_id: str, region_id: str, space_id: Optional[str] = None):
     atlas = validate_and_return_atlas(atlas_id)
     parcellation = validate_and_return_parcellation(parcellation_id, atlas)
     region = validate_and_return_region(region_id, parcellation)
