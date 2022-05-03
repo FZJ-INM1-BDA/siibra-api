@@ -45,7 +45,8 @@ class SapiAtlasModel(Atlas.to_model.__annotations__.get("return"), RestfulModel)
             links=SapiAtlasModel.create_links(atlas_id=model.id)
         )
 
-@router.get('', tags=['atlases'], response_model=List[SapiAtlasModel])
+
+@router.get("", tags=["atlases"], response_model=List[SapiAtlasModel])
 @version(1)
 def get_all_atlases():
     """
@@ -54,7 +55,7 @@ def get_all_atlases():
     return [SapiAtlasModel.from_atlas(atlas) for atlas in atlases]
 
 
-@router.get('/{atlas_id:lazy_path}', tags=['atlases'], response_model=SapiAtlasModel)
+@router.get("/{atlas_id:lazy_path}", tags=["atlases"], response_model=SapiAtlasModel)
 @version(1)
 @SapiAtlasModel.decorate_link("self")
 def get_atlas_by_id(atlas_id: str):
