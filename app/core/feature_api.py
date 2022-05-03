@@ -14,12 +14,8 @@
 # limitations under the License.
 
 from typing import Callable, List, Optional, Tuple, Union
-
 from fastapi import APIRouter, HTTPException
-
 from siibra.features import FeatureQuery
-
-
 from app.core.region_api import UnionRegionalFeatureModels
 
 
@@ -27,7 +23,7 @@ FEATURE_PATH = "/features"
 
 router = APIRouter(prefix=FEATURE_PATH)
 
-TAGS=["features"]
+TAGS = ["features"]
 
 
 @router.get("/{feature_id:lazy_path}", tags=TAGS,
