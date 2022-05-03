@@ -21,16 +21,16 @@ import time
 from app import logger
 from app.configuration.siibra_custom_exception import SiibraCustomException
 
-_client_id = os.getenv('EBRAINS_IAM_CLIENT_ID')
-_client_secret = os.getenv('EBRAINS_IAM_CLIENT_SECRET')
-_refresh_token = os.getenv('EBRAINS_IAM_REFRESH_TOKEN')
-_access_token = os.getenv('EBRAINS_IAM_ACCESS_TOKEN')
+_client_id = os.getenv("EBRAINS_IAM_CLIENT_ID")
+_client_secret = os.getenv("EBRAINS_IAM_CLIENT_SECRET")
+_refresh_token = os.getenv("EBRAINS_IAM_REFRESH_TOKEN")
+_access_token = os.getenv("EBRAINS_IAM_ACCESS_TOKEN")
 
 
 class TokenWrapper:
     def __init__(
             self,
-            iam_url='https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect',
+            iam_url="https://iam.ebrains.eu/auth/realms/hbp/protocol/openid-connect",
             client_id=None,
             client_secret=None,
             refresh_token=None):
@@ -41,37 +41,37 @@ class TokenWrapper:
         self.access_token = None
 
     def _check_req(self):
-        error_msg = 'Could not retrieve authentication token'
+        error_msg = "Could not retrieve authentication token"
         if self.client_id is None:
-            logger.error('client_id is required')
+            logger.error("client_id is required")
             raise SiibraCustomException(error_msg)
         if self.client_secret is None:
-            logger.error('client_secret is required')
+            logger.error("client_secret is required")
             raise SiibraCustomException(error_msg)
         if self.refresh_token is None:
-            logger.error('refresh_token is required')
+            logger.error("refresh_token is required")
             raise SiibraCustomException(error_msg)
         return True
 
     def _get_new_token(self):
         """ internal method, to get a new token """
         self._check_req()
-        url = f'{self.iam_url}/token'
+        url = f"{self.iam_url}/token"
         resp = requests.post(
             url,
-            headers={'content-type': 'application/x-www-form-urlencoded'},
+            headers={"content-type": "application/x-www-form-urlencoded"},
             data={
-                'grant_type': 'client_credentials',
-                'client_id': self.client_id,
-                'client_secret': self.client_secret
+                "grant_type": "client_credentials",
+                "client_id": self.client_id,
+                "client_secret": self.client_secret
             })
-        if resp.status_code != 200 or 'json' not in resp.headers['Content-Type']:
-            logger.info(f'Could not reach {self.iam_url} to get access token')
+        if resp.status_code != 200 or "json" not in resp.headers["Content-Type"]:
+            logger.info(f"Could not reach {self.iam_url} to get access token")
             raise SiibraCustomException(
-                message='siibra-api service is temporary not available',
+                message="siibra-api service is temporary not available",
                 status_code=503)
         json_token = resp.json()
-        self.access_token = json_token['access_token']
+        self.access_token = json_token["access_token"]
 
     @staticmethod
     def decode(input):
@@ -80,7 +80,7 @@ class TokenWrapper:
         needs to add padding manually, as jwt spec allows missing padding, but python decode does not
         """
         r = len(input) % 4
-        padding = '=' * (4 - r)
+        padding = "=" * (4 - r)
         decoded = base64.urlsafe_b64decode(input + padding)
         return json.loads(decoded)
 
@@ -95,7 +95,7 @@ class TokenWrapper:
 
         split = self.access_token.split('.')
         decoded = TokenWrapper.decode(split[1])
-        expire_utc_sec = decoded['exp']
+        expire_utc_sec = decoded["exp"]
         current_utc_sec = time.time()
         if (expire_utc_sec - current_utc_sec) < (60 * 5):
             self._get_new_token()
@@ -115,5 +115,5 @@ def get_public_token():
     return token_wrapper.get_token()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print(get_public_token())
