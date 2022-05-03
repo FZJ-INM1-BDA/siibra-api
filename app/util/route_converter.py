@@ -94,4 +94,4 @@ def add_lazy_path():
     class LazyPathConverter(PathConvertor):
         regex = ".*?"
 
-    CONVERTOR_TYPES['lazy_path'] = LazyPathConverter()
+    CONVERTOR_TYPES["lazy_path"] = LazyPathConverter()

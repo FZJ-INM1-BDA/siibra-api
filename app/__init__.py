@@ -31,16 +31,16 @@ logger = logging.getLogger(__name__ + ".info")
 access_logger = logging.getLogger(__name__ + ".access_log")
 
 ch = logging.StreamHandler()
-formatter = logging.Formatter('[%(name)s:%(levelname)s]  %(message)s')
+formatter = logging.Formatter("[%(name)s:%(levelname)s]  %(message)s")
 ch.setFormatter(formatter)
 logger.addHandler(ch)
-logger.setLevel('INFO')
+logger.setLevel("INFO")
 
 
 log_dir = os.environ.get("SIIBRA_API_LOG_DIR")
 
 if log_dir:
-    log_dir += '' if log_dir.endswith('/') else '/'
+    log_dir += "" if log_dir.endswith("/") else "/"
 
 if log_dir:
     import socket
@@ -49,7 +49,7 @@ if log_dir:
 else:
     access_log_handler = logging.StreamHandler()
 
-access_format = logging.Formatter('%(asctime)s - %(resp_status)s - %(process_time_ms)sms - %(hit_cache)s - %(message)s')
+access_format = logging.Formatter("%(asctime)s - %(resp_status)s - %(process_time_ms)sms - %(hit_cache)s - %(message)s")
 access_log_handler.setFormatter(access_format)
 access_log_handler.setLevel(logging.INFO)
 access_logger.addHandler(access_log_handler)
@@ -64,4 +64,4 @@ if log_dir:
     logger.addHandler(warn_fh)
     siibra_logger.addHandler(warn_fh)
 
-__version__='0.2.0'
+__version__ = "0.2.0"

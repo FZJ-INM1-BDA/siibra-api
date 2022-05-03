@@ -68,7 +68,7 @@ tags_metadata = [
     },
 ]
 
-siibra_version_header = 'x-siibra-api-version'
+siibra_version_header = "x-siibra-api-version"
 
 # Main fastAPI application
 app = FastAPI(
@@ -92,21 +92,21 @@ app = VersionedFastAPI(app, default_api_version=1)
 
 # Template list, with every template in the project
 # can be rendered and returned
-templates = Jinja2Templates(directory='templates/')
+templates = Jinja2Templates(directory="templates/")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 # Allow CORS
-origins = ['*']
+origins = ["*"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_methods=['GET'],
+    allow_methods=["GET"],
     expose_headers=[siibra_version_header]
 )
 
 
-@app.get('/', include_in_schema=False)
+@app.get("/", include_in_schema=False)
 def home(request: Request):
     """
     Return the template for the siibra landing page.
@@ -115,15 +115,13 @@ def home(request: Request):
     :return: the rendered index.html template
     """
     return templates.TemplateResponse(
-        'index.html', context={
-            'request': request})
-
-
+        "index.html", context={
+            "request": request})
 
 
 # Each middleware function is called before the request is processed
 # For FastAPI the order is important.
-# The functions are called (perhaps couter-intuitively) from bottom to top.
+# The functions are called (perhaps counter-intuitively) from bottom to top.
 # See: https://github.com/encode/starlette/issues/479 and https://github.com/xgui3783/starlette-middleware-demo
 
 async def read_bytes(generator) -> bytes:
@@ -133,7 +131,7 @@ async def read_bytes(generator) -> bytes:
     return body
 
 
-@app.middleware('http')
+@app.middleware("http")
 async def matomo_request_log(request: Request, call_next):
     """
     Middleware will be executed before each request.
@@ -143,30 +141,30 @@ async def matomo_request_log(request: Request, call_next):
     :return: the response after preprocessing
     """
     test_url = request.url
-    test_list = ['.css', '.js', '.png', '.gif', '.json', '.ico', 'localhost']
+    test_list = [".css", ".js", ".png", ".gif", ".json", ".ico", "localhost"]
     res = any(ele in str(test_url) for ele in test_list)
 
-    if 'DEPLOY_ENVIRONMENT' in os.environ:
+    if "DEPLOY_ENVIRONMENT" in os.environ:
         if not res:
             payload = {
-                'idsite': 13,
-                'rec': 1,
-                'action_name': 'siibra_api',
-                'url': request.url,
-                '_id': hashlib.blake2b(digest_size=8, key=request.client.host.encode()).hexdigest(),
-                'rand': str(uuid.uuid1()),
-                'lang': request.headers.get('Accept-Language'),
-                'ua': request.headers.get('User-Agent'),
-                '_cvar': {'1': ['environment', os.environ['DEPLOY_ENVIRONMENT']]}
+                "idsite": 13,
+                "rec": 1,
+                "action_name": "siibra_api",
+                "url": request.url,
+                "_id": hashlib.blake2b(digest_size=8, key=request.client.host.encode()).hexdigest(),
+                "rand": str(uuid.uuid1()),
+                "lang": request.headers.get("Accept-Language"),
+                "ua": request.headers.get("User-Agent"),
+                "_cvar": {"1": ["environment", os.environ["DEPLOY_ENVIRONMENT"]]}
             }
             try:
-                r = requests.get('https://stats.humanbrainproject.eu/matomo.php', params=payload)
-                print('Matomo logging with status: {}'.format(r.status_code))
+                r = requests.get("https://stats.humanbrainproject.eu/matomo.php", params=payload)
+                print("Matomo logging with status: {}".format(r.status_code))
                 pass
             except Exception:
-                logger.info('Could not log to matomo instance')
+                logger.info("Could not log to matomo instance")
         else:
-            logger.info('Request for: {}'.format(request.url))
+            logger.info("Request for: {}".format(request.url))
     response = await call_next(request)
     return response
 
@@ -196,7 +194,7 @@ async def cache_response(request: Request, call_next):
 
     cache_key = f"[{__version__}] {request.url.path}{str(request.url.query)}"
 
-    auth_set = request.headers.get('Authorization') is not None
+    auth_set = request.headers.get("Authorization") is not None
 
     # bypass cache read if:
     # - method is not GET
@@ -259,7 +257,7 @@ async def cache_response(request: Request, call_next):
     )
 
 
-@app.middleware('http')
+@app.middleware("http")
 async def set_auth_header(request: Request, call_next):
     """
     Set authentication for further requests with siibra
@@ -269,23 +267,23 @@ async def set_auth_header(request: Request, call_next):
     :return: an altered response
     """
 
-    bearer_token = request.headers.get('Authorization')
+    bearer_token = request.headers.get("Authorization")
     try:
         if bearer_token:
-            siibra.set_ebrains_token(bearer_token.replace('Bearer ', ''))
+            siibra.set_ebrains_token(bearer_token.replace("Bearer ", ''))
         else:
             public_token = get_public_token()
             siibra.set_ebrains_token(public_token)
         response = await call_next(request)
         return response
     except SiibraCustomException as err:
-        logger.error('Could not set authentication token')
+        logger.error("Could not set authentication token")
         return JSONResponse(
             status_code=err.status_code, content={
-                'message': err.message})
+                "message": err.message})
 
 
-@app.middleware('http')
+@app.middleware("http")
 async def add_version_header(request: Request, call_next):
     """
     Add the latest application version as a custom header
@@ -295,7 +293,7 @@ async def add_version_header(request: Request, call_next):
     return response
 
 
-@app.middleware('http')
+@app.middleware("http")
 async def matomo_request_log(request: Request, call_next):
     """
     Middleware will be executed before each request.
@@ -305,46 +303,46 @@ async def matomo_request_log(request: Request, call_next):
     :return: the response after preprocessing
     """
     test_url = request.url
-    test_list = ['.css', '.js', '.png', '.gif', '.json', '.ico', 'localhost']
+    test_list = [".css", ".js", ".png", ".gif", ".json", ".ico", "localhost"]
     res = any(ele in str(test_url) for ele in test_list)
 
-    if 'SIIBRA_ENVIRONMENT' in os.environ:
+    if "SIIBRA_ENVIRONMENT" in os.environ:
         # if os.environ['SIIBRA_ENVIRONMENT'] == 'PRODUCTION':
         if not res:
             payload = {
-                'idsite': 13,
-                'rec': 1,
-                'action_name': 'siibra_api',
-                'url': request.url,
-                '_id': hashlib.blake2b(digest_size=8, key=request.client.host.encode()).hexdigest(),
-                'rand': str(uuid.uuid1()),
-                'lang': request.headers.get('Accept-Language'),
-                'ua': request.headers.get('User-Agent'),
-                '_cvar': {'1': ['environment', os.environ['SIIBRA_ENVIRONMENT']]}
+                "idsite": 13,
+                "rec": 1,
+                "action_name": "siibra_api",
+                "url": request.url,
+                "_id": hashlib.blake2b(digest_size=8, key=request.client.host.encode()).hexdigest(),
+                "rand": str(uuid.uuid1()),
+                "lang": request.headers.get("Accept-Language"),
+                "ua": request.headers.get("User-Agent"),
+                "_cvar": {"1": ["environment", os.environ["SIIBRA_ENVIRONMENT"]]}
             }
             logger.debug(payload)
             try:
-                r = requests.get('https://stats.humanbrainproject.eu/matomo.php', params=payload)
-                logger.info('Matomo logging with status: {}'.format(r.status_code))
+                r = requests.get("https://stats.humanbrainproject.eu/matomo.php", params=payload)
+                logger.info("Matomo logging with status: {}".format(r.status_code))
                 pass
             except Exception:
-                logger.info('Could not log to matomo instance')
+                logger.info("Could not log to matomo instance")
         else:
-            logger.info('Request for: {}'.format(request.url))
+            logger.info("Request for: {}".format(request.url))
     response = await call_next(request)
     return response
 
 
-@app.middleware('http')
+@app.middleware("http")
 async def access_log(request: Request, call_next):
     start_time = time.time()
     try:
         resp = await call_next(request)
         process_time = (time.time() - start_time) * 1000
-        access_logger.info(f'{request.method.upper()} {str(request.url)}', extra={
-            'resp_status': str(resp.status_code),
-            'process_time_ms': str(round(process_time)),
-            'hit_cache': 'cache_hit' if resp.headers.get("x-fastapi-cache") == 'hit' else 'cache_miss'
+        access_logger.info(f"{request.method.upper()} {str(request.url)}", extra={
+            "resp_status": str(resp.status_code),
+            "process_time_ms": str(round(process_time)),
+            "hit_cache": "cache_hit" if resp.headers.get("x-fastapi-cache") == "hit" else "cache_miss"
         })
         return resp
     
@@ -353,13 +351,14 @@ async def access_log(request: Request, call_next):
     # Log the incident, and the time of response (This should reflect the duration of request, rather than when the client closes the connection)
     except RuntimeError:
         process_time = (time.time() - start_time) * 1000
-        access_logger.info(f'{request.method.upper()} {str(request.url)}', extra={
-            'resp_status': '504',
-            'process_time_ms': str(round(process_time)),
-            'hit_cache': 'cache_miss'
+        access_logger.info(f"{request.method.upper()} {str(request.url)}", extra={
+            "resp_status": "504",
+            "process_time_ms": str(round(process_time)),
+            "hit_cache": "cache_miss"
         })
     except Exception as e:
         logger.critical(e)
+
 
 @app.exception_handler(RuntimeError)
 async def runtime_exception_handler(request: Request, exc: RuntimeError):
@@ -376,10 +375,11 @@ async def runtime_exception_handler(request: Request, exc: RuntimeError):
     return JSONResponse(
         status_code=503,
         content={
-            'detail': 'This part of the siibra service is temporarily unavailable',
-            'error': str(exc)
+            "detail": "This part of the siibra service is temporarily unavailable",
+            "error": str(exc)
         },
     )
+
 
 @app.exception_handler(Exception)
 async def validation_exception_handler(request: Request, exc: Exception):
@@ -389,6 +389,7 @@ async def validation_exception_handler(request: Request, exc: Exception):
         content="some error"
     )
 
-@app.get('/ready', include_in_schema=False)
+
+@app.get("/ready", include_in_schema=False)
 def get_ready():
-    return 'OK'
+    return "OK"
