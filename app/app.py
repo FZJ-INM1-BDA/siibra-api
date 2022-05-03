@@ -131,44 +131,6 @@ async def read_bytes(generator) -> bytes:
     return body
 
 
-@app.middleware("http")
-async def matomo_request_log(request: Request, call_next):
-    """
-    Middleware will be executed before each request.
-    If the URL does not belong to a resource file, a log will be sent to matomo monitoring.
-    :param request: current fastAPI request object
-    :param call_next: next middleware method
-    :return: the response after preprocessing
-    """
-    test_url = request.url
-    test_list = [".css", ".js", ".png", ".gif", ".json", ".ico", "localhost"]
-    res = any(ele in str(test_url) for ele in test_list)
-
-    if "DEPLOY_ENVIRONMENT" in os.environ:
-        if not res:
-            payload = {
-                "idsite": 13,
-                "rec": 1,
-                "action_name": "siibra_api",
-                "url": request.url,
-                "_id": hashlib.blake2b(digest_size=8, key=request.client.host.encode()).hexdigest(),
-                "rand": str(uuid.uuid1()),
-                "lang": request.headers.get("Accept-Language"),
-                "ua": request.headers.get("User-Agent"),
-                "_cvar": {"1": ["environment", os.environ["DEPLOY_ENVIRONMENT"]]}
-            }
-            try:
-                r = requests.get("https://stats.humanbrainproject.eu/matomo.php", params=payload)
-                print("Matomo logging with status: {}".format(r.status_code))
-                pass
-            except Exception:
-                logger.info("Could not log to matomo instance")
-        else:
-            logger.info("Request for: {}".format(request.url))
-    response = await call_next(request)
-    return response
-
-
 do_not_cache_list = [
     "metrics",
     "openapi.json"
