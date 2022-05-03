@@ -62,9 +62,7 @@ class SapiSpaceModel(Space.to_model.__annotations__.get("return"), RestfulModel)
         )
 
 
-@router.get("",
-    tags=TAGS,
-    response_model=List[SapiSpaceModel])
+@router.get("", tags=TAGS, response_model=List[SapiSpaceModel])
 def get_all_spaces(atlas_id: str):
     """
     Returns all spaces that are defined in the siibra client.
@@ -73,9 +71,7 @@ def get_all_spaces(atlas_id: str):
     return [SapiSpaceModel.from_space(space) for space in atlas.spaces]
 
 
-@router.get("/{space_id:lazy_path}/templates",
-    tags=TAGS,
-    responses=file_response_openapi)
+@router.get("/{space_id:lazy_path}/templates", tags=TAGS, responses=file_response_openapi)
 def get_template_by_space_id(atlas_id: str, space_id: str):
     """
     Returns a template for a given space id.
@@ -84,17 +80,13 @@ def get_template_by_space_id(atlas_id: str, space_id: str):
     space = validate_and_return_space(space_id)
     template = atlas.get_template(space).fetch()
 
-    # create file-object in memory
-    # file_object = io.BytesIO()
     filename = get_file_from_nibabel(template, "template", space)
 
-    return FileResponse(filename, filename=filename, media_type='application/octet-stream')
+    return FileResponse(filename, filename=filename, media_type="application/octet-stream")
 
 
-@router.get("/{space_id:lazy_path}/parcellation_maps",
-    tags=TAGS,
-    responses=file_response_openapi)
-# add parcellations_map_id as optional param
+# TODO: add parcellations_map_id as optional param
+@router.get("/{space_id:lazy_path}/parcellation_maps", tags=TAGS, responses=file_response_openapi)
 def get_parcellation_map_for_space(atlas_id: str, space_id: str):
     """
     Returns all parcellation maps for a given space id.
@@ -105,12 +97,12 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):
 
     if len(valid_parcs) == 1:
         maps = [valid_parcs[0].get_map(space)]
-        filename = get_file_from_nibabel(maps[0], 'maps', space)
-        return FileResponse(filename, filename=filename, media_type='application/octet-stream')
+        filename = get_file_from_nibabel(maps[0], "maps", space)
+        return FileResponse(filename, filename=filename, media_type="application/octet-stream")
     else:
         raise HTTPException(
             status_code=501,
-            detail=f'space with id {space_id} has multiple parc, not yet implemented')
+            detail=f"space with id {space_id} has multiple parc, not yet implemented")
         maps = [p.get_map(space) for p in valid_parcs]
         files = []
         mem_zip = io.BytesIO()
@@ -120,7 +112,7 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):
             files.append(
                 get_file_from_nibabel(
                     map,
-                    'map-{}'.format(label_index),
+                    "map-{}".format(label_index),
                     space))
             label_index = label_index + 1
 
@@ -132,12 +124,12 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):
         mem_zip.seek(0)
         response = StreamingResponse(
             iter([mem_zip.getvalue()]), media_type="application/x-zip-compressed")
-        response.headers["Content-Disposition"] = 'attachment; filename=maps-{}.zip'.format(
-            space.name.replace(' ', '_'))
+        response.headers["Content-Disposition"] = "attachment; filename=maps-{}.zip".format(
+            space.name.replace(" ", "_"))
         return response
     raise HTTPException(
         status_code=404,
-        detail='Maps for space with id: {} not found'.format(space_id))
+        detail="Maps for space with id: {} not found".format(space_id))
 
 
 @router.get("/{space_id:lazy_path}/features/{feature_id:lazy_path}",
@@ -172,9 +164,8 @@ def get_single_detailed_spatial_feature(
             detail=f"feature with id {feature_id} not found."
         )
 
-@router.get("/{space_id:lazy_path}/features",
-    tags=TAGS,
-    response_model=List[UnionSpatialFeatureModels])
+
+@router.get("/{space_id:lazy_path}/features", tags=TAGS, response_model=List[UnionSpatialFeatureModels])
 @SapiSpaceModel.decorate_link("features")
 def get_all_spatial_features_for_space(
     atlas_id: str,
@@ -185,7 +176,6 @@ def get_all_spatial_features_for_space(
     """
     Return all possible feature names and links to get more details
     """
-
     atlas = validate_and_return_atlas(atlas_id)
     space = validate_and_return_space(space_id, atlas)
     parcellation = validate_and_return_parcellation(parcellation_id, atlas) if parcellation_id else None
@@ -197,9 +187,7 @@ def get_all_spatial_features_for_space(
     return [feat.to_model(detail=False) for feat in features]
 
 
-@router.get("/{space_id:lazy_path}/volumes",
-    tags=TAGS,
-    response_model=List[VolumeModel])
+@router.get("/{space_id:lazy_path}/volumes", tags=TAGS, response_model=List[VolumeModel])
 @SapiSpaceModel.decorate_link("volumes")
 def get_volumes_for_space(atlas_id: str, space_id: str):
     atlas = validate_and_return_atlas(atlas_id)
@@ -207,9 +195,7 @@ def get_volumes_for_space(atlas_id: str, space_id: str):
     return [vol.to_model() for vol in space.volumes]
 
 
-@router.get("/{space_id:lazy_path}",
-    tags=TAGS,
-    response_model=SapiSpaceModel)
+@router.get("/{space_id:lazy_path}", tags=TAGS, response_model=SapiSpaceModel)
 @SapiSpaceModel.decorate_link("self")
 def get_single_space_detail(atlas_id: str, space_id: str):
     """
