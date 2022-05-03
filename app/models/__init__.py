@@ -19,8 +19,10 @@ from functools import wraps
 from siibra.features.connectivity import ConnectivityMatrixDataModel, ConnectivityMatrix
 from siibra.core.serializable_concept import JSONSerializable
 
+
 class HrefModel(BaseModel):
     href: str
+
 
 class RestfulModel(BaseModel):
     links: Dict[str, HrefModel]
@@ -38,7 +40,7 @@ class RestfulModel(BaseModel):
     
 
     @classmethod
-    def create_links(cls, **kwargs) -> Dict[str, 'HrefModel']:
+    def create_links(cls, **kwargs) -> Dict[str, "HrefModel"]:
         from ..app import app
         return {
             link_name: HrefModel(href=app.url_path_for(endpoint_fn_name, **kwargs))
@@ -49,9 +51,11 @@ class RestfulModel(BaseModel):
         cls._decorated_links = dict()
         return super().__init_subclass__()
 
+
 class SerializationErrorModel(BaseModel):
     type: str = Field("spy/serialization-error", const=True)
     message: str
+
 
 class CustomList(list):
 
