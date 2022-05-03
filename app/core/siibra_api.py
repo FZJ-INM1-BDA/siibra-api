@@ -21,26 +21,25 @@ from siibra.core.serializable_concept import JSONSerializable
 router = APIRouter()
 
 
-@router.get('/genes', tags=['data'])
+@router.get("/genes", tags=["data"])
 def get_gene_names():
     """
     Return all genes (name, acronym) in siibra
     """
-    # genes = features.genes.AllenBrainAtlasQuery.GENE_NAMES
     genes = []
     for gene in siibra.features.gene_names:
         genes.append(gene)
-    return jsonable_encoder({'genes': genes})
+    return jsonable_encoder({"genes": genes})
 
 
-@router.get('/modalities', tags=['data'])
+@router.get("/modalities", tags=["data"])
 def get_all_available_modalities():
     """
     Return all possible modalities
     """
     return [{
-        'name': feature_name,
-        'types': set([ FeatureQuery._FEATURETYPE.get_model_type()
+        "name": feature_name,
+        "types": set([ FeatureQuery._FEATURETYPE.get_model_type()
             for FeatureQuery in siibra.features.FeatureQuery._implementations[feature_name]
             if issubclass(FeatureQuery._FEATURETYPE, JSONSerializable) ])
     } for feature_name in siibra.features.modalities]
