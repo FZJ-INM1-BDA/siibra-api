@@ -18,9 +18,8 @@ class SiibraCustomException(Exception):
 
     Attributes:
         message -- explanation of the error
-        status_code -- what HTTP error should be presented to the user
+        status_code -- HTTP error that should be presented to the user
     """
-
     def __init__(self, message, status_code=500):
         self.message = message
         self.status_code = status_code
