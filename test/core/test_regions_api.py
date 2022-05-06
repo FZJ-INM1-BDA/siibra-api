@@ -175,7 +175,7 @@ class TestSingleRegionFeatures(unittest.TestCase):
         url = '/v2_0/atlases/{}/parcellations/{}/regions/{}/features/{}'.format(
             quote_plus(ATLAS_ID),
             PARCELLATION_ID,
-            HOC1_LEFT_REGION_NAME,
+            quote(HOC1_LEFT_REGION_NAME),
             VALID_FEATURE_ID)
         response = client.get(url)
 
