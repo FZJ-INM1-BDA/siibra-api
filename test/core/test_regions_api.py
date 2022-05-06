@@ -31,7 +31,7 @@ INVALID_REGION_NAME = 'INVALID_REGION'
 SPACE_ID = 'minds%2Fcore%2Freferencespace%2Fv1.0.0%2Fdafcffc5-4826-4bf1-8ff6-46b8a31ff8e2'
 FS_AVERAGE_SPACE_ID='minds/core/referencespace/v1.0.0/tmp-fsaverage'
 INVALID_FEATURE_ID = 'INVALID'
-VALID_FEATURE_ID = 'siibra/features/receptor/33c1e49ddd06eed636eb35e747378f40'
+VALID_FEATURE_ID = 'siibra/features/receptor/0a1f16d4ecab4cf8d96c5631d545e926'
 
 def test_all_regions_for_parcellations():
     response = client.get('/v2_0/atlases/{}/parcellations/{}/regions?space_id={}'.format(
