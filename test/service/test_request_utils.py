@@ -89,22 +89,22 @@ class TestRequestUtils(unittest.TestCase):
     #     self.request_mock.headers = {
     #         'host': 'localhost',
     #     }
-    #     self.request_mock.url = 'http://localhost/v1_0/test'
+    #     self.request_mock.url = 'http://localhost/v2_0/test'
     #     self.request_mock.base_url = 'http://localhost/'
 
     #     url = request_utils.get_base_url_from_request(self.request_mock)
-    #     self.assertEqual(url, 'http://localhost/v1_0/')
+    #     self.assertEqual(url, 'http://localhost/v2_0/')
 
     # def test_base_url_with_redirect(self):
     #     self.request_mock.headers = {
     #         'host': 'localhost',
     #         'x-forwarded-proto': 'https'
     #     }
-    #     self.request_mock.url = 'http://localhost/v1_0/test'
+    #     self.request_mock.url = 'http://localhost/v2_0/test'
     #     self.request_mock.base_url = 'http://localhost/'
 
     #     url = request_utils.get_base_url_from_request(self.request_mock)
-    #     self.assertEqual(url, 'https://localhost/v1_0/')
+    #     self.assertEqual(url, 'https://localhost/v2_0/')
 
 
 #TODO find error

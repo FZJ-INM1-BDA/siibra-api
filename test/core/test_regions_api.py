@@ -34,7 +34,7 @@ INVALID_FEATURE_ID = 'INVALID'
 VALID_FEATURE_ID = 'siibra/features/receptor/33c1e49ddd06eed636eb35e747378f40'
 
 def test_all_regions_for_parcellations():
-    response = client.get('/v1_0/atlases/{}/parcellations/{}/regions?space_id={}'.format(
+    response = client.get('/v2_0/atlases/{}/parcellations/{}/regions?space_id={}'.format(
         ATLAS_ID.replace('/', '%2F'),
         PARCELLATION_ID,
         ICBM_152_SPACE_ID))
@@ -44,7 +44,7 @@ def test_all_regions_for_parcellations():
 
 
 def test_all_regions_for_parcellations_with_search_param():
-    response = client.get('/v1_0/atlases/{}/parcellations/{}/regions?space_id={}'.format(
+    response = client.get('/v2_0/atlases/{}/parcellations/{}/regions?space_id={}'.format(
         ATLAS_ID.replace('/', '%2F'),
         PARCELLATION_ID,
         ICBM_152_SPACE_ID))
@@ -52,7 +52,7 @@ def test_all_regions_for_parcellations_with_search_param():
     assert response.status_code == 200
     assert full_length > 0
 
-    response = client.get('/v1_0/atlases/{}/parcellations/{}/regions?space_id={}&find={}'.format(
+    response = client.get('/v2_0/atlases/{}/parcellations/{}/regions?space_id={}&find={}'.format(
         ATLAS_ID.replace('/', '%2F'),
         PARCELLATION_ID,
         ICBM_152_SPACE_ID,
@@ -63,7 +63,7 @@ def test_all_regions_for_parcellations_with_search_param():
 
 
 def test_all_regions_for_parcellations_with_empty_find_result():
-    response = client.get('/v1_0/atlases/{}/parcellations/{}/regions?space_id={}&find={}'.format(
+    response = client.get('/v2_0/atlases/{}/parcellations/{}/regions?space_id={}&find={}'.format(
         ATLAS_ID.replace('/', '%2F'),
         PARCELLATION_ID,
         ICBM_152_SPACE_ID,
@@ -74,7 +74,7 @@ def test_all_regions_for_parcellations_with_empty_find_result():
 
 
 def test_all_regions_for_parcellations_with_bad_request():
-    response = client.get('/v1_0/atlases/{}/parcellations/{}/regions'.format(ATLAS_ID.replace('/', '%2F'), INVALID_PARCELLATION_ID))
+    response = client.get('/v2_0/atlases/{}/parcellations/{}/regions'.format(ATLAS_ID.replace('/', '%2F'), INVALID_PARCELLATION_ID))
     assert response.status_code == 400
     result_content = json.loads(response.content)
     assert result_content['detail'] == f'parcellation_id: {INVALID_PARCELLATION_ID} is not known'
@@ -83,7 +83,7 @@ def test_all_regions_for_parcellations_with_bad_request():
 class TestParcRegions(unittest.TestCase):
 
     def test_regions_return_fine(self):
-        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions?space_id={}'.format(
+        response = client.get('/v2_0/atlases/{}/parcellations/{}/regions?space_id={}'.format(
             quote(ATLAS_ID),
             PARCELLATION_ID,
             quote(FS_AVERAGE_SPACE_ID),
@@ -91,7 +91,7 @@ class TestParcRegions(unittest.TestCase):
         assert response.status_code == 200
 
     def test_regions_in_fsaverage(self):
-        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions?space_id={}'.format(
+        response = client.get('/v2_0/atlases/{}/parcellations/{}/regions?space_id={}'.format(
             quote(ATLAS_ID),
             PARCELLATION_ID,
             quote(FS_AVERAGE_SPACE_ID),
@@ -104,7 +104,7 @@ class TestParcRegions(unittest.TestCase):
 class TestSingleRegion(unittest.TestCase):
 
     def test_get_one_region_for_parcellation_without_extra_data(self):
-        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}'.format(
+        response = client.get('/v2_0/atlases/{}/parcellations/{}/regions/{}'.format(
             quote(ATLAS_ID),
             # nb must not be quote()
             PARCELLATION_ID,
@@ -114,7 +114,7 @@ class TestSingleRegion(unittest.TestCase):
         assert result_content['name'] == REGION_BASAL
 
     def test_get_one_region_for_parcellation_with_extra_data(self):
-        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}?space_id={}'.format(
+        response = client.get('/v2_0/atlases/{}/parcellations/{}/regions/{}?space_id={}'.format(
             ATLAS_ID.replace('/', '%2F'),
             PARCELLATION_ID,
             HOC1_LEFT_REGION_NAME,
@@ -127,7 +127,7 @@ class TestSingleRegion(unittest.TestCase):
 
     def test_get_region_for_space_with_invalid_region_name(self):
 
-        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}'.format(
+        response = client.get('/v2_0/atlases/{}/parcellations/{}/regions/{}'.format(
             quote(ATLAS_ID),
             PARCELLATION_ID,
             quote(INVALID_REGION_NAME)))
@@ -136,7 +136,7 @@ class TestSingleRegion(unittest.TestCase):
 
     def test_get_region_with_correct_name(self):
 
-        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}'.format(
+        response = client.get('/v2_0/atlases/{}/parcellations/{}/regions/{}'.format(
             quote(ATLAS_ID),
             PARCELLATION_ID,
             quote(REGION_AREA_3B_RIGHT)))
@@ -144,7 +144,7 @@ class TestSingleRegion(unittest.TestCase):
 
     def test_region_map_info(self):
 
-        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}/regional_map/info?space_id={}'.format(
+        response = client.get('/v2_0/atlases/{}/parcellations/{}/regions/{}/regional_map/info?space_id={}'.format(
             quote(ATLAS_ID),
             PARCELLATION_ID,
             quote(REGION_AREA_3B_RIGHT),
@@ -159,7 +159,7 @@ class TestSingleRegion(unittest.TestCase):
 
     def test_region_map(self):
 
-        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}/regional_map/map?space_id={}'.format(
+        response = client.get('/v2_0/atlases/{}/parcellations/{}/regions/{}/regional_map/map?space_id={}'.format(
             quote(ATLAS_ID),
             PARCELLATION_ID,
             quote(REGION_AREA_3B_RIGHT),
@@ -172,7 +172,7 @@ class TestSingleRegion(unittest.TestCase):
 class TestSingleRegionFeatures(unittest.TestCase):
 
     def test_regional_modality_by_id(self):
-        url = '/v1_0/atlases/{}/parcellations/{}/regions/{}/features/{}'.format(
+        url = '/v2_0/atlases/{}/parcellations/{}/regions/{}/features/{}'.format(
             quote_plus(ATLAS_ID),
             PARCELLATION_ID,
             HOC1_LEFT_REGION_NAME,
@@ -183,7 +183,7 @@ class TestSingleRegionFeatures(unittest.TestCase):
         assert response.status_code == 200
 
     def test_feature_id_not_found(self):
-        response = client.get('/v1_0/atlases/{}/parcellations/{}/regions/{}/features/{}'.format(
+        response = client.get('/v2_0/atlases/{}/parcellations/{}/regions/{}/features/{}'.format(
             quote(ATLAS_ID),
             PARCELLATION_ID,
             quote(HOC1_LEFT_REGION_NAME),
@@ -193,7 +193,7 @@ class TestSingleRegionFeatures(unittest.TestCase):
     #TODO not yet implemented with pydantic
     # def test_rest_connectivity(self):
     #     conn_id='e428cb6b-0110-4205-94ac-533ca5de6bb5'
-    #     url='/v1_0/atlases/{atlas_id}/parcellations/{parcellation_id}/regions/{region_spec}/features/ConnectivityProfile/{conn_id}'.format(
+    #     url='/v2_0/atlases/{atlas_id}/parcellations/{parcellation_id}/regions/{region_spec}/features/ConnectivityProfile/{conn_id}'.format(
     #         atlas_id=quote_plus(ATLAS_ID),
     #         parcellation_id=PARCELLATION_ID,
     #         region_spec=quote_plus(HOC1_LEFT_REGION_NAME),

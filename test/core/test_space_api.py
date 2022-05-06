@@ -10,7 +10,7 @@ client = TestClient(app)
 ATLAS_ID = 'juelich/iav/atlas/v1.0.0/1'
 SPACE_ID = 'minds%2Fcore%2Freferencespace%2Fv1.0.0%2Fdafcffc5-4826-4bf1-8ff6-46b8a31ff8e2'
 INVALID_SPACE_ID = 'INVALID_SPACE_ID'
-url_tmpl='/v1_0/atlases/{}/spaces/{}/features{}?parcellation_id={}&region={}'
+url_tmpl='/v2_0/atlases/{}/spaces/{}/features{}?parcellation_id={}&region={}'
 
 
 # class MockRegionProps:
@@ -24,14 +24,14 @@ get_file_from_nibabel = {}
 
 
 def test_get_all_spaces():
-    response = client.get('/v1_0/atlases/{}/spaces'.format(ATLAS_ID.replace('/', '%2F')))
+    response = client.get('/v2_0/atlases/{}/spaces'.format(ATLAS_ID.replace('/', '%2F')))
     result_content = json.loads(response.content)
     assert response.status_code == 200
     assert len(result_content) == 4
 
 
 def test_get_one_space():
-    response = client.get('/v1_0/atlases/{}/spaces/{}'.format(ATLAS_ID.replace('/', '%2F'), SPACE_ID))
+    response = client.get('/v2_0/atlases/{}/spaces/{}'.format(ATLAS_ID.replace('/', '%2F'), SPACE_ID))
     url = response.url.split('atlases')[0]
     result_content = json.loads(response.content)
     assert response.status_code == 200
@@ -43,7 +43,7 @@ def test_get_one_space():
 
 
 def test_get_invalid_space():
-    response = client.get('/v1_0/atlases/{}/spaces/{}'.format(ATLAS_ID.replace('/', '%2F'), INVALID_SPACE_ID))
+    response = client.get('/v2_0/atlases/{}/spaces/{}'.format(ATLAS_ID.replace('/', '%2F'), INVALID_SPACE_ID))
     result_content = json.loads(response.content)
     assert response.status_code == 400
     assert result_content['detail'] == f'space_id: {INVALID_SPACE_ID} is not known'
@@ -127,7 +127,7 @@ def test_get_templates_for_space():
 # currently this test crashes the server
 # for mni152
 # def test_get_parcellation_maps_for_space():
-#     response = client.get('/v1_0/atlases/{}/spaces/{}/parcellation_maps'.format(ATLAS_ID.replace('/', '%2F'), SPACE_ID))
+#     response = client.get('/v2_0/atlases/{}/spaces/{}/parcellation_maps'.format(ATLAS_ID.replace('/', '%2F'), SPACE_ID))
 #     assert response.status_code == 200
 #     assert 'application/x-zip-compressed' in response.headers['content-type']
 #     assert 'attachment' in response.headers['content-disposition']
