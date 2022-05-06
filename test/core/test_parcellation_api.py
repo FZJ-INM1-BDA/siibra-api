@@ -35,7 +35,7 @@ VALID_MODALITY_INSTANCE_ID='https%3A%2F%2Fnexus.humanbrainproject.org%2Fv0%2Fdat
 
 def test_get_all_parcellations():
     response = client.get(
-        '/v1_0/atlases/{}/parcellations'.format(ATLAS_ID.replace('/', '%2F')),
+        '/v2_0/atlases/{}/parcellations'.format(ATLAS_ID.replace('/', '%2F')),
     )
     result_content = json.loads(response.content)
     assert response.status_code == 200
@@ -43,7 +43,7 @@ def test_get_all_parcellations():
 
 
 def test_get_one_parcellation_by_id():
-    response = client.get('/v1_0/atlases/{}/parcellations/{}'.format(ATLAS_ID.replace('/', '%2F'), PARCELLATION_ID.replace('/', '%2F')))
+    response = client.get('/v2_0/atlases/{}/parcellations/{}'.format(ATLAS_ID.replace('/', '%2F'), PARCELLATION_ID.replace('/', '%2F')))
     result_content = json.loads(response.content)
     assert response.status_code == 200
     assert result_content['@id'] == PARCELLATION_ID
@@ -52,12 +52,12 @@ def test_get_one_parcellation_by_id():
 
 
 def test_get_invalid_parcellation():
-    response = client.get('/v1_0/atlases/{}/parcellations/{}'.format(ATLAS_ID.replace('/', '%2F'), INVALID_PARCELLATION_ID.replace('/', '%2F')))
+    response = client.get('/v2_0/atlases/{}/parcellations/{}'.format(ATLAS_ID.replace('/', '%2F'), INVALID_PARCELLATION_ID.replace('/', '%2F')))
     assert response.status_code == 400
 
 
 def test_get_all_features_for_one_parcellation():
-    response = client.get('/v1_0/atlases/{}/parcellations/{}/features'.format(
+    response = client.get('/v2_0/atlases/{}/parcellations/{}/features'.format(
         ATLAS_ID.replace('/', '%2F'),
         PARCELLATION_ID.replace('/', '%2F'))
     )
@@ -68,7 +68,7 @@ def test_get_all_features_for_one_parcellation():
 
 
 def test_get_filtered_features_for_one_parcellation():
-    response = client.get('/v1_0/atlases/{}/parcellations/{}/features?type={}'.format(
+    response = client.get('/v2_0/atlases/{}/parcellations/{}/features?type={}'.format(
         ATLAS_ID.replace('/', '%2F'),
         PARCELLATION_ID.replace('/', '%2F'),
         'siibra/features/connectivity/streamlineCounts')
@@ -80,7 +80,7 @@ def test_get_filtered_features_for_one_parcellation():
 
 
 def test_get_all_features_for_one_parcellation_with_wrong_type_filter():
-    response = client.get('/v1_0/atlases/{}/parcellations/{}/features?type={}'.format(
+    response = client.get('/v2_0/atlases/{}/parcellations/{}/features?type={}'.format(
         ATLAS_ID.replace('/', '%2F'),
         PARCELLATION_ID.replace('/', '%2F'),
         'FOO')
@@ -92,7 +92,7 @@ def test_get_all_features_for_one_parcellation_with_wrong_type_filter():
 
 
 def test_invalid_feature_modality():
-    response = client.get('/v1_0/atlases/{}/parcellations/{}/features/{}'.format(
+    response = client.get('/v2_0/atlases/{}/parcellations/{}/features/{}'.format(
         ATLAS_ID.replace('/', '%2F'),
         PARCELLATION_ID.replace('/', '%2F'),
         INVALID_MODALITY)

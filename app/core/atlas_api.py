@@ -18,6 +18,7 @@ from typing import List
 from fastapi import APIRouter
 from fastapi_versioning import version
 
+from app import FASTAPI_VERSION
 from app.core.parcellation_api import get_all_parcellations, router as parcellation_router
 from app.core.space_api import get_all_spaces, router as space_router
 from app.service.validation import (
@@ -45,9 +46,8 @@ class SapiAtlasModel(Atlas.to_model.__annotations__.get("return"), RestfulModel)
             links=SapiAtlasModel.create_links(atlas_id=model.id)
         )
 
-
-@router.get("", tags=["atlases"], response_model=List[SapiAtlasModel])
-@version(1)
+@router.get('', tags=['atlases'], response_model=List[SapiAtlasModel])
+@version(*FASTAPI_VERSION)
 def get_all_atlases():
     """
     Get all atlases known by siibra.
@@ -55,8 +55,8 @@ def get_all_atlases():
     return [SapiAtlasModel.from_atlas(atlas) for atlas in atlases]
 
 
-@router.get("/{atlas_id:lazy_path}", tags=["atlases"], response_model=SapiAtlasModel)
-@version(1)
+@router.get('/{atlas_id:lazy_path}', tags=['atlases'], response_model=SapiAtlasModel)
+@version(*FASTAPI_VERSION)
 @SapiAtlasModel.decorate_link("self")
 def get_atlas_by_id(atlas_id: str):
     """

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
@@ -13,7 +13,6 @@
 <body>
 <div class="container">
     <div class="jumbotron">
-{#        <img src="/static/images/siibra-api.jpeg" class="rounded float-right" style="max-width:20%;" alt="...">#}
         <h1 class="display-4">Siibra API</h1>
         <p class="lead">
             Siibra provides functionalities for the Juelich Brain.
@@ -30,12 +29,17 @@
                         The swagger documentation is a great way to learn more about the API.
                         It is even possible to use the playground of the documentation and send requests without further development.
                     </p>
-                    <a href="/v1_0/docs" target="_blank" class="btn btn-primary">swagger</a>
+                    {% for version in versions %}
+                    <a href="/{{ version }}/docs" target="_blank" class="btn btn-primary">swagger {{ version }}</a>
+                    {% endfor %}
                     <hr>
                     <p>
                         Another view on the documentation is provided as ReDoc.
                     </p>
-                    <a href="/v1_0/redoc" target="_blank" class="btn btn-primary">ReDoc</a>
+
+                    {% for version in versions %}
+                    <a href="/{{ version }}/redoc" target="_blank" class="btn btn-primary">redoc {{ version }}</a>
+                    {% endfor %}
                 </div>
             </li>
             <li class="list-group-item">
