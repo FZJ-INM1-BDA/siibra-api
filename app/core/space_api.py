@@ -23,7 +23,9 @@ from siibra.features.voi import VOIDataModel
 from siibra.volumes.volume import VolumeModel
 
 from fastapi import APIRouter, HTTPException
+from fastapi_versioning import version
 from starlette.responses import FileResponse, StreamingResponse
+from app import FASTAPI_VERSION
 
 from app.service.validation import (
     validate_and_return_bbox,
@@ -65,6 +67,7 @@ class SapiSpaceModel(Space.to_model.__annotations__.get("return"), RestfulModel)
 @router.get("",
     tags=TAGS,
     response_model=List[SapiSpaceModel])
+@version(*FASTAPI_VERSION)
 def get_all_spaces(atlas_id: str):
     """
     Returns all spaces that are defined in the siibra client.
@@ -76,6 +79,7 @@ def get_all_spaces(atlas_id: str):
 @router.get("/{space_id:lazy_path}/templates",
     tags=TAGS,
     responses=file_response_openapi)
+@version(*FASTAPI_VERSION)
 def get_template_by_space_id(atlas_id: str, space_id: str):
     """
     Returns a template for a given space id.
@@ -95,6 +99,7 @@ def get_template_by_space_id(atlas_id: str, space_id: str):
     tags=TAGS,
     responses=file_response_openapi)
 # add parcellations_map_id as optional param
+@version(*FASTAPI_VERSION)
 def get_parcellation_map_for_space(atlas_id: str, space_id: str):
     """
     Returns all parcellation maps for a given space id.
@@ -141,8 +146,9 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):
 
 
 @router.get("/{space_id:lazy_path}/features/{feature_id:lazy_path}",
-    tags=TAGS,
+    tags=[*TAGS, "features"],
     response_model=UnionSpatialFeatureModels)
+@version(*FASTAPI_VERSION)
 def get_single_detailed_spatial_feature(
     feature_id: str,
     atlas_id: str,
@@ -173,8 +179,9 @@ def get_single_detailed_spatial_feature(
         )
 
 @router.get("/{space_id:lazy_path}/features",
-    tags=TAGS,
+    tags=[*TAGS, "features"],
     response_model=List[UnionSpatialFeatureModels])
+@version(*FASTAPI_VERSION)
 @SapiSpaceModel.decorate_link("features")
 def get_all_spatial_features_for_space(
     atlas_id: str,
@@ -200,6 +207,7 @@ def get_all_spatial_features_for_space(
 @router.get("/{space_id:lazy_path}/volumes",
     tags=TAGS,
     response_model=List[VolumeModel])
+@version(*FASTAPI_VERSION)
 @SapiSpaceModel.decorate_link("volumes")
 def get_volumes_for_space(atlas_id: str, space_id: str):
     atlas = validate_and_return_atlas(atlas_id)
@@ -210,6 +218,7 @@ def get_volumes_for_space(atlas_id: str, space_id: str):
 @router.get("/{space_id:lazy_path}",
     tags=TAGS,
     response_model=SapiSpaceModel)
+@version(*FASTAPI_VERSION)
 @SapiSpaceModel.decorate_link("self")
 def get_single_space_detail(atlas_id: str, space_id: str):
     """

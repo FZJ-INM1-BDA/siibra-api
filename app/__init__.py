@@ -65,3 +65,4 @@ if log_dir:
     siibra_logger.addHandler(warn_fh)
 
 __version__='0.2.0'
+FASTAPI_VERSION = (2, 0)

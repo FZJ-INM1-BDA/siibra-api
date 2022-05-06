@@ -1,17 +1,20 @@
 from typing import Callable, List, Optional, Tuple, Union
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi_pagination import Page, Params, paginate
 from pydantic import BaseModel
 from starlette.responses import FileResponse
+from fastapi_versioning import version
 
-import siibra
 from siibra.core import Region
 from siibra.features.receptors import ReceptorDatasetModel
 from siibra.features.cells import CorticalCellDistributionModel
 from siibra.core.datasets import DatasetJsonModel
+from siibra.volumes.volume import VolumeModel
 
+from app.models import CustomList
 from app.service.request_utils import get_all_serializable_regional_features, get_path_to_regional_map
-from app import logger
+from app import FASTAPI_VERSION, logger
 from app.service.validation import (
     validate_and_return_atlas,
     validate_and_return_parcellation,
@@ -39,6 +42,7 @@ UnionRegionalFeatureModels = Union[
 
 @router.get("", tags=TAGS,
             response_model=List[Region.to_model.__annotations__.get("return")])
+@version(*FASTAPI_VERSION)
 def get_all_regions_from_atlas_parc_space(
     atlas_id: str,
     parcellation_id: str,
@@ -58,8 +62,9 @@ def get_all_regions_from_atlas_parc_space(
 
 
 @router.get("/{region_id:lazy_path}/features",
-            tags=TAGS,
+            tags=[*TAGS, "features"],
             response_model=List[UnionRegionalFeatureModels])
+@version(*FASTAPI_VERSION)
 def get_all_regional_features_for_region(
     atlas_id: str,
     parcellation_id: str,
@@ -85,8 +90,9 @@ def get_all_regional_features_for_region(
 
 
 @router.get("/{region_id:lazy_path}/features/{feature_id:lazy_path}",
-            tags=TAGS,
+            tags=[*TAGS, "features"],
             response_model=UnionRegionalFeatureModels)
+@version(*FASTAPI_VERSION)
 def get_single_detailed_regional_feature(
     atlas_id: str,
     parcellation_id: str,
@@ -167,6 +173,7 @@ class NiiMetadataModel(BaseModel):
 @router.get("/{region_id:lazy_path}/regional_map/info",
             tags=TAGS,
             response_model=NiiMetadataModel)
+@version(*FASTAPI_VERSION)
 @regional_map_route_decorator()
 def get_regional_map_info(cached_fullpath: str):
     """
@@ -187,6 +194,7 @@ def get_regional_map_info(cached_fullpath: str):
 @router.get("/{region_id:lazy_path}/regional_map/map",
             tags=TAGS,
             responses=file_response_openapi)
+@version(*FASTAPI_VERSION)
 @regional_map_route_decorator()
 def get_regional_map_file(cached_fullpath: str):
     """
@@ -194,10 +202,57 @@ def get_regional_map_file(cached_fullpath: str):
     """
     return FileResponse(cached_fullpath, media_type='application/octet-stream')
 
+@router.get("/{region_id:lazy_path}/volumes", tags=TAGS, response_model=Page[VolumeModel])
+@version(*FASTAPI_VERSION)
+def get_regional_volumes(
+    atlas_id: str,
+    parcellation_id: str,
+    region_id: str,
+    space_id: Optional[str]=None,
+    type: Optional[str]=None,
+    params: Params = Depends()):
+
+    atlas = validate_and_return_atlas(atlas_id)
+    parcellation = validate_and_return_parcellation(parcellation_id, atlas)
+    region = validate_and_return_region(region_id, parcellation)
+    space = validate_and_return_space(space_id, atlas) if space_id else None
+    list_of_vol = [vol
+        for vol in region.volumes
+        if all([
+            space is None or vol.space is space,
+            type is None or vol.get_model_type() == type
+        ])]
+    sequence = CustomList(list_of_vol, detail=False)
+    return paginate(sequence, params)
+
+@router.get("/{region_id:lazy_path}/volumes/{volume_id:lazy_path}",
+    tags=TAGS,
+    response_model=VolumeModel)
+@version(*FASTAPI_VERSION)
+def get_regional_volumes(
+    atlas_id: str,
+    parcellation_id: str,
+    region_id: str,
+    volume_id: str):
+    try:
+        atlas = validate_and_return_atlas(atlas_id)
+        parcellation = validate_and_return_parcellation(parcellation_id, atlas)
+        region = validate_and_return_region(region_id, parcellation)
+        
+        volume_of_interest = [vol for vol in region.volumes if vol.model_id == volume_id]
+
+        return volume_of_interest[0].to_model(detail=True)
+    except IndexError:
+        raise HTTPException(status_code=404, detail=f"volume with id {volume_id} not found")
+    except Exception as e:
+        logger.error(str(e))
+        raise e
+
 
 @router.get("/{region_id:lazy_path}",
             tags=TAGS,
             response_model=Region.to_model.__annotations__.get("return"))
+@version(*FASTAPI_VERSION)
 def get_single_region_detail(
     atlas_id: str,
     parcellation_id: str,
