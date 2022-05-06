@@ -1,4 +1,4 @@
-# Copyright 2018-2020 Institute of Neuroscience and Medicine (INM-1),
+# Copyright 2018-2022 Institute of Neuroscience and Medicine (INM-1),
 # Forschungszentrum Jülich GmbH
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,7 +26,7 @@ from app.service.request_utils import get_all_serializable_parcellation_features
 
 from app.service.validation import validate_and_return_atlas, validate_and_return_parcellation
 from app.core.region_api import router as region_router, get_all_regions_from_atlas_parc_space
-from app.models import CustomList, RestfulModel, SPyParcellationFeatureModel, SerializationErrorModel
+from app.models import CustomList, RestfulModel, SPyParcellationFeatureModel
 
 
 PARCELLATION_PATH = "/parcellations"
@@ -100,7 +100,7 @@ def get_single_detailed_global_feature(
         )
 
 
-@router.get('/{parcellation_id:lazy_path}/features',
+@router.get("/{parcellation_id:lazy_path}/features",
             tags=[*TAGS, "features"],
             response_model=Page[SPyParcellationFeatureModel])
 @version(*FASTAPI_VERSION)
@@ -125,7 +125,7 @@ def get_all_global_features_for_parcellation(
     return paginate(sequence, params)
 
 
-@router.get('/{parcellation_id:lazy_path}/volumes',
+@router.get("/{parcellation_id:lazy_path}/volumes",
             tags=TAGS,
             response_model=List[VolumeModel])
 @version(*FASTAPI_VERSION)
@@ -141,7 +141,7 @@ def get_volumes_for_parcellation(
     return [vol.to_model() for vol in parcellation.volumes]
 
 
-@router.get('/{parcellation_id:lazy_path}',
+@router.get("/{parcellation_id:lazy_path}",
             tags=TAGS,
             response_model=SapiParcellationModel)
 @version(*FASTAPI_VERSION)
@@ -156,5 +156,6 @@ def get_single_parcellation_detail(
     atlas = validate_and_return_atlas(atlas_id)
     parcellation = validate_and_return_parcellation(parcellation_id, atlas)
     return SapiParcellationModel.from_parcellation(parcellation)
+
 
 SapiParcellationModel.decorate_link("regions")(get_all_regions_from_atlas_parc_space)

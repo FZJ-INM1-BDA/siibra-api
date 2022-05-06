@@ -1,4 +1,4 @@
-# Copyright 2018-2020 Institute of Neuroscience and Medicine (INM-1),
+# Copyright 2018-2022 Institute of Neuroscience and Medicine (INM-1),
 # Forschungszentrum Jülich GmbH
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +18,7 @@ from fastapi import HTTPException
 from siibra.core import Space, Parcellation, Region, Atlas, BoundingBox
 
 
-def validate_and_return_atlas(atlas_id:str) -> Atlas:
+def validate_and_return_atlas(atlas_id: str) -> Atlas:
     """
     Check if the given atlas id is valid and return an atlas object
     If the atlas id is not valid, throw a HTTP 400 Exception
@@ -31,16 +31,17 @@ def validate_and_return_atlas(atlas_id:str) -> Atlas:
     except:
         raise HTTPException(
             status_code=400,
-            detail=f'atlas_id: {atlas_id} is not known'
+            detail=f"atlas_id: {atlas_id} is not known"
         )
 
 
-def validate_and_return_space(space_id:str, atlas:Atlas=None) -> Space:
+def validate_and_return_space(space_id: str, atlas: Atlas = None) -> Space:
     """
     Check if the given space id is valid and return a space object
     If the space id is not valid, throw a HTTP 400 Exception
 
     :param space_id: id that needs to be checked
+    :param atlas: if atlas is not None, get spaces from the provided atlas instance
     :return: siibra space object
     """
     try:
@@ -51,16 +52,17 @@ def validate_and_return_space(space_id:str, atlas:Atlas=None) -> Space:
     except:
         raise HTTPException(
             status_code=400,
-            detail=f'space_id: {space_id} is not known'
+            detail=f"space_id: {space_id} is not known"
         )
 
 
-def validate_and_return_parcellation(parcellation_id:str, atlas:Atlas=None) -> Parcellation:
+def validate_and_return_parcellation(parcellation_id: str, atlas: Atlas = None) -> Parcellation:
     """
     Check if the given parcellation id is valid and return a parcellation object
     If the parcellation id is not valid, throw a HTTP 400 Exception
 
     :param parcellation_id: id that needs to be checked
+    :param atlas: if atlas is not None, get parcellations from the provided atlas instance
     :return: siibra parcellation object
     """
     try:
@@ -71,7 +73,7 @@ def validate_and_return_parcellation(parcellation_id:str, atlas:Atlas=None) -> P
     except:
         raise HTTPException(
             status_code=400,
-            detail=f'parcellation_id: {parcellation_id} is not known'
+            detail=f"parcellation_id: {parcellation_id} is not known"
         )
 
 
@@ -92,8 +94,9 @@ def validate_and_return_region(region_id: str, parcellation: Parcellation) -> Re
     except:
         raise HTTPException(
             status_code=404,
-            detail=f'region: {region_id} is not known'
+            detail=f"region: {region_id} is not known"
         )
+
 
 def validate_and_return_bbox(bbox: str, space: Space) -> BoundingBox:
     try:
@@ -110,13 +113,14 @@ def validate_and_return_bbox(bbox: str, space: Space) -> BoundingBox:
             detail=f"getting voi bad request: {str(e)}"
         )
 
+
 file_response_openapi = {
     200: {
-        'content': {
-            'application/octet-stream': {
-                'schema': {
-                    'type': 'string',
-                    'format': 'binary'
+        "content": {
+            "application/octet-stream": {
+                "schema": {
+                    "type": "string",
+                    "format": "binary"
                 }
             }
         }

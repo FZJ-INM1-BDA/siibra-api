@@ -1,11 +1,28 @@
+# Copyright 2018-2022 Institute of Neuroscience and Medicine (INM-1),
+# Forschungszentrum Jülich GmbH
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from typing import Callable, ClassVar, Dict, List, Union
 from pydantic import BaseModel, Field
 from functools import wraps
 from siibra.features.connectivity import ConnectivityMatrixDataModel, ConnectivityMatrix
 from siibra.core.serializable_concept import JSONSerializable
 
+
 class HrefModel(BaseModel):
     href: str
+
 
 class RestfulModel(BaseModel):
     links: Dict[str, HrefModel]
@@ -23,7 +40,7 @@ class RestfulModel(BaseModel):
     
 
     @classmethod
-    def create_links(cls, **kwargs) -> Dict[str, 'HrefModel']:
+    def create_links(cls, **kwargs) -> Dict[str, "HrefModel"]:
         from ..app import app
         return {
             link_name: HrefModel(href=app.url_path_for(endpoint_fn_name, **kwargs))
@@ -34,9 +51,11 @@ class RestfulModel(BaseModel):
         cls._decorated_links = dict()
         return super().__init_subclass__()
 
+
 class SerializationErrorModel(BaseModel):
     type: str = Field("spy/serialization-error", const=True)
     message: str
+
 
 class CustomList(list):
 

@@ -1,4 +1,4 @@
-# Copyright 2018-2020 Institute of Neuroscience and Medicine (INM-1),
+# Copyright 2018-2022 Institute of Neuroscience and Medicine (INM-1),
 # Forschungszentrum Jülich GmbH
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,8 +34,9 @@ from siibra.features.feature import RegionalFeature, ParcellationFeature, Spatia
 
 cache_redis = CacheRedis.get_instance()
 
+
 def get_file_from_nibabel(nibabel_object, nifti_type, space):
-    filename = '{}-{}.nii'.format(nifti_type, space.name.replace(' ', '_'))
+    filename = "{}-{}.nii".format(nifti_type, space.name.replace(" ", "_"))
     # save nifti file in file-object
     nib.save(nibabel_object, filename)
     return filename
@@ -67,11 +68,11 @@ def get_path_to_regional_map(query_id, roi, space_of_interest):
     if regional_map is None:
         raise HTTPException(
             status_code=404,
-            detail=f'continuous regional map for region {roi.name} cannot be found')
+            detail=f"continuous regional map for region {roi.name} cannot be found")
 
     cached_filename = str(
         hashlib.sha256(
-            query_id.encode('utf-8')).hexdigest()) + '.nii.gz'
+            query_id.encode("utf-8")).hexdigest()) + ".nii.gz"
 
     image = regional_map.image
 
@@ -81,26 +82,26 @@ def get_path_to_regional_map(query_id, roi, space_of_interest):
         import numpy as np
 
         # fix regional_map if necessary
-        image.header.set_xyzt_units('mm', 'sec')
+        image.header.set_xyzt_units("mm", "sec")
 
         # time series
-        image.header['dim'][4] = 1
+        image.header["dim"][4] = 1
 
         # num channel
-        image.header['dim'][5] = 1
+        image.header["dim"][5] = 1
 
         # cast type float64 to float32
         if image.header.get_data_dtype() == np.float64:
-            fdata=image.get_fdata()
-            new_data=fdata.astype(np.float32)
+            fdata = image.get_fdata()
+            new_data = fdata.astype(np.float32)
             image.set_data_dtype(np.float32)
 
-            if image.header['sizeof_hdr'] == 348:
-                new_image=nib.Nifti1Image(new_data, image.affine, image.header)
-            elif image.header['sizeof_hdr'] == 540:
-                new_image=nib.Nifti2Image(new_data, image.affine, image.header)
+            if image.header["sizeof_hdr"] == 348:
+                new_image = nib.Nifti1Image(new_data, image.affine, image.header)
+            elif image.header["sizeof_hdr"] == 540:
+                new_image = nib.Nifti2Image(new_data, image.affine, image.header)
             else:
-                raise IOError('regional map has incorrect sizeof_hdr')
+                raise IOError("regional map has incorrect sizeof_hdr")
             nib.save(new_image, cached_fullpath)
         else:
             nib.save(image, cached_fullpath)
@@ -140,6 +141,7 @@ def get_all_serializable_parcellation_features(parcellation: Parcellation, **kwa
         for mod in supported_modalities
         for feat in siibra.get_features(parcellation, modality=mod, **kwargs)]
 
+
 def get_all_serializable_spatial_features(space: Space, parcellation: Parcellation=None, region: Region=None, bbox:BoundingBox=None, **kwargs):
 
     supported_modalities = []
@@ -166,8 +168,9 @@ def get_all_serializable_spatial_features(space: Space, parcellation: Parcellati
         detail=f"parcellation, region or bbox are required"
     )
 
+
 def pagination_common_params(per_page: Optional[int] = 20, page: Optional[int] = 0):
     return {
-        'per_page': per_page,
-        'page': page,
+        "per_page": per_page,
+        "page": page,
     }

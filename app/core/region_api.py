@@ -1,3 +1,18 @@
+# Copyright 2018-2022 Institute of Neuroscience and Medicine (INM-1),
+# Forschungszentrum Jülich GmbH
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from typing import Callable, List, Optional, Tuple, Union
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -27,11 +42,13 @@ REGION_PATH = "/regions"
 
 router = APIRouter(prefix=REGION_PATH)
 
-TAGS=["regions"]
+TAGS = ["regions"]
 
 
 # this is required, otherwise, Union operation collapses it to DatasetJsonModel
-class BaseDatasetJsonModel(DatasetJsonModel): pass
+class BaseDatasetJsonModel(DatasetJsonModel):
+    pass
+
 
 UnionRegionalFeatureModels = Union[
     ReceptorDatasetModel,
@@ -101,7 +118,7 @@ def get_single_detailed_regional_feature(
     space_id: Optional[str]=None,
     gene: Optional[str]=None):
     """
-    Returns a feature for a region, as defined by by the modality and feature ID
+    Returns a feature for a region, as defined by the modality and feature ID
     """
     atlas = validate_and_return_atlas(atlas_id)
     parcellation = validate_and_return_parcellation(parcellation_id, atlas)
@@ -126,7 +143,7 @@ def get_single_detailed_regional_feature(
 def regional_map_route_decorator():
     """
     Return the full path to the requested regional map (Probabilistic map).
-    If does not exist, will download and cache the result.
+    If it does not exist, will download and cache the result.
     """
     def outer(fn: Callable):
         def inner(
@@ -153,9 +170,9 @@ def regional_map_route_decorator():
                 )
 
             query_id = f"{atlas.id}{parcellation.id}{region.id}{space.id}"
-            logger.debug(f'queryId: {query_id}')
+            logger.debug(f"queryId: {query_id}")
             cached_fullpath = get_path_to_regional_map(query_id, region, space)
-            logger.debug(f'cached path: {cached_fullpath}')
+            logger.debug(f"cached path: {cached_fullpath}")
             return fn(cached_fullpath)
 
         inner.__name__ = fn.__name__
@@ -179,15 +196,14 @@ def get_regional_map_info(cached_fullpath: str):
     """
     Returns information about a regional map for given region name.
     """
-
     import nibabel as nib
     import numpy as np
     
     nii = nib.load(cached_fullpath)
     data = nii.get_fdata()
     return {
-        'min': np.min(data),
-        'max': np.max(data),
+        "min": np.min(data),
+        "max": np.max(data),
     }
 
 
@@ -200,7 +216,7 @@ def get_regional_map_file(cached_fullpath: str):
     """
     Returns a regional map for given region name.
     """
-    return FileResponse(cached_fullpath, media_type='application/octet-stream')
+    return FileResponse(cached_fullpath, media_type="application/octet-stream")
 
 @router.get("/{region_id:lazy_path}/volumes", tags=TAGS, response_model=Page[VolumeModel])
 @version(*FASTAPI_VERSION)
@@ -253,12 +269,7 @@ def get_regional_volumes(
             tags=TAGS,
             response_model=Region.to_model.__annotations__.get("return"))
 @version(*FASTAPI_VERSION)
-def get_single_region_detail(
-    atlas_id: str,
-    parcellation_id: str,
-    region_id: str,
-    space_id: Optional[str] = None):
-
+def get_single_region_detail(atlas_id: str, parcellation_id: str, region_id: str, space_id: Optional[str] = None):
     atlas = validate_and_return_atlas(atlas_id)
     parcellation = validate_and_return_parcellation(parcellation_id, atlas)
     region = validate_and_return_region(region_id, parcellation)
