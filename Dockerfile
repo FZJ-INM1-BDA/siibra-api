@@ -40,4 +40,4 @@ EXPOSE 5000
 # Start application
 # SIIBRA_CONFIG_GITLAB_PROJECT_TAG will be set to empty string if DEV_FLAG build arg is unset
 # It needs to be unset, in this case, or the empty string will be parsed as truthy in python
-ENTRYPOINT ["/bin/bash", "-c", "if [ -z $SIIBRA_CONFIG_GITLAB_PROJECT_TAG ]; then unset SIIBRA_CONFIG_GITLAB_PROJECT_TAG; fi && python -m gunicorn -c ./server-conf/gunicorn.conf.py"]
+ENTRYPOINT ["/bin/bash", "-c", "if [ -z $SIIBRA_CONFIG_GITLAB_PROJECT_TAG ]; then unset SIIBRA_CONFIG_GITLAB_PROJECT_TAG; fi && uvicorn app.app:app --host 0.0.0.0 --port 5000 --workers 4"]
