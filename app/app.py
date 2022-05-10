@@ -88,7 +88,7 @@ app.include_router(metrics_router)
 add_pagination(app)
 
 # Versioning for all api endpoints
-app = VersionedFastAPI(app, default_api_version=1)
+app = VersionedFastAPI(app)
 
 # Template list, with every template in the project
 # can be rendered and returned
@@ -116,7 +116,11 @@ def home(request: Request):
     """
     return templates.TemplateResponse(
         "index.html", context={
-            "request": request})
+            "request": request,
+            "versions": ["v2_0", "v1_0"]
+        })
+
+
 
 
 # Each middleware function is called before the request is processed

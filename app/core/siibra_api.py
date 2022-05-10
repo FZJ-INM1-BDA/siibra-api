@@ -15,13 +15,17 @@
 
 from fastapi import APIRouter
 from fastapi.encoders import jsonable_encoder
+from fastapi_versioning import version
 import siibra
 from siibra.core.serializable_concept import JSONSerializable
+
+from app import FASTAPI_VERSION
 
 router = APIRouter()
 
 
 @router.get("/genes", tags=["data"])
+@version(*FASTAPI_VERSION)
 def get_gene_names():
     """
     Return all genes (name, acronym) in siibra
@@ -33,6 +37,7 @@ def get_gene_names():
 
 
 @router.get("/modalities", tags=["data"])
+@version(*FASTAPI_VERSION)
 def get_all_available_modalities():
     """
     Return all possible modalities
