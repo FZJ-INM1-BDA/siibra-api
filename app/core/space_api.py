@@ -177,6 +177,7 @@ def get_all_spatial_features_for_space(
     atlas_id: str,
     space_id: str,
     parcellation_id: Optional[str]=None,
+    type: Optional[str] = None,
     region: Optional[str]=None,
     bbox: Optional[str]=None):
     """
@@ -190,7 +191,10 @@ def get_all_spatial_features_for_space(
     boundingbox = validate_and_return_bbox(bbox, space) if bbox else None
 
     features = get_all_serializable_spatial_features(space=space, parcellation=parcellation, region=region, bbox=boundingbox)
-    return [feat.to_model(detail=False) for feat in features]
+    if type:
+        return [feat.to_model(detail=False) for feat in features if feat.to_model().type == type]
+    else:
+        return [feat.to_model(detail=False) for feat in features]
 
 
 @router.get("/{space_id:lazy_path}/volumes", tags=TAGS, response_model=List[VolumeModel])
