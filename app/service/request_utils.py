@@ -81,6 +81,8 @@ def get_path_to_regional_map(query_id, roi, space_of_interest):
         import nibabel as nib
         import numpy as np
 
+        image = regional_map.image
+
         # fix regional_map if necessary
         image.header.set_xyzt_units("mm", "sec")
 
