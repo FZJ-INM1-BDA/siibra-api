@@ -85,7 +85,41 @@ jobs:
           docker-registry.ebrains.eu
         echo "Pushing $DOCKER_BUILT_TAG"
         docker push $DOCKER_BUILT_TAG
+    
+    # Only push versioned tag to registry if
+    # - it is a release event
+    # - the release event is *not* a release candidate (rc)
+    - name: 'Push versioned tag to registry'
+      if: |
+        github.event_name == "release" &&
+        !contains(github.ref, 'rc')
+      run: |
         
+        echo "Login to docker registry"
+        docker login \
+          -u '${{ secrets.EBRAINS_DOCKER_REG_USER }}' \
+          -p '${{ secrets.EBRAINS_DOCKER_REG_TOKEN }}' \
+          docker-registry.ebrains.eu
+
+        BREAK=5
+        VERSION=$(grep -Po '^__version__.*?"\K[\w.]+' app/__init__.py)
+        while [[ "$VERSION" == *"."* ]]
+        do
+          if [[ "$BREAK" == "0" ]]
+          then
+            echo "Fuse broke!"
+            exit 1
+          fi
+          VERSIONED_DOCKERTAG=${{ env.DOCKER_REGISTRY }}${{ env.DOCKER_IMG }}:$VERSION
+          echo "tagging and pushing $VERSIONED_DOCKERTAG"
+          docker tag $DOCKER_BUILT_TAG $VERSIONED_DOCKERTAG
+          docker push VERSIONED_DOCKERTAG
+
+          echo "Push successful... Incrementing version & break"
+          VERSION=$(echo $VERSION | sed -e 's/\.\w*$//g')
+          BREAK=$(( "$BREAK" - 1 ))
+        done
+        echo "Done"
 
   deploy-on-okd:
     needs: build-docker-img
