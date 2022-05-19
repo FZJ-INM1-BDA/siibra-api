@@ -4,11 +4,11 @@ FROM python:3.7
 # Upgrade pip to latest version
 RUN python -m pip install --upgrade pip
 
-# Copy the application and install dependencies
-COPY . /app
-WORKDIR /app
-
-RUN python -m pip install -U pip
+# Copy and install common dependencies
+# This should allow *some* layers to be cached
+COPY ./requirements /requirements
+WORKDIR /requirements
+RUN python -m pip install -r common.txt
 
 # can be passed in via --build-arg DEV_FLAG=1
 ARG DEV_FLAG
@@ -18,6 +18,9 @@ ENV DEPLOY_ENVIRONMENT=${DEV_FLAG:+develop}
 ENV DEPLOY_ENVIRONMENT=${DEPLOY_ENVIRONMENT:-production}
 # if DEV_FLAG flag is set, set SIIBRA_CONFIG_GITLAB_PROJECT_TAG=develop
 #ENV SIIBRA_CONFIG_GITLAB_PROJECT_TAG=${DEV_FLAG:+develop}
+
+COPY . /app
+WORKDIR /app
 
 RUN if [ "$DEPLOY_ENVIRONMENT" = "production" ]; \
   then python -m pip install -r requirements/prod.txt; \
