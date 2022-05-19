@@ -113,7 +113,7 @@ jobs:
           VERSIONED_DOCKERTAG=${{ env.DOCKER_REGISTRY }}${{ env.DOCKER_IMG }}:$VERSION
           echo "tagging and pushing $VERSIONED_DOCKERTAG"
           docker tag $DOCKER_BUILT_TAG $VERSIONED_DOCKERTAG
-          docker push VERSIONED_DOCKERTAG
+          docker push $VERSIONED_DOCKERTAG
 
           echo "Push successful... Incrementing version & break"
           VERSION=$(echo $VERSION | sed -e 's/\.\w*$//g')
