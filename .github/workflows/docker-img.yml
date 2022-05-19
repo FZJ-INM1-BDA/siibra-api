@@ -91,7 +91,7 @@ jobs:
     # - the release event is *not* a release candidate (rc)
     - name: 'Push versioned tag to registry'
       if: |
-        github.event_name == "release" &&
+        github.event_name == 'release' &&
         !contains(github.ref, 'rc')
       run: |
         
