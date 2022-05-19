@@ -1,4 +1,4 @@
-# Copyright 2018-2020 Institute of Neuroscience and Medicine (INM-1),
+# Copyright 2018-2022 Institute of Neuroscience and Medicine (INM-1),
 # Forschungszentrum Jülich GmbH
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,59 +13,58 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import siibra
-from fastapi import APIRouter, Request, HTTPException
+from typing import List
+
+from fastapi import APIRouter
 from fastapi_versioning import version
-from app.service.request_utils import get_base_url_from_request
 
-# FastApi router to create rest endpoints
-router = APIRouter()
+from app import FASTAPI_VERSION
+from app.core.parcellation_api import get_all_parcellations, router as parcellation_router
+from app.core.space_api import get_all_spaces, router as space_router
+from app.service.validation import (
+    validate_and_return_atlas,
+)
+from app.models import RestfulModel
+
+from siibra.core import Atlas
+from siibra import atlases
 
 
-# region === atlases
-@router.get('', tags=['atlases'])
-@version(1)
-def get_all_atlases(request: Request):
+ATLAS_PATH = "/atlases"
+router = APIRouter(prefix=ATLAS_PATH)
+
+router.include_router(parcellation_router, prefix="/{atlas_id:lazy_path}")
+router.include_router(space_router, prefix="/{atlas_id:lazy_path}")
+
+
+class SapiAtlasModel(Atlas.to_model.__annotations__.get("return"), RestfulModel):
+    @staticmethod
+    def from_atlas(atlas: Atlas) -> 'SapiAtlasModel':
+        model = atlas.to_model()
+        return SapiAtlasModel(
+            **model.dict(),
+            links=SapiAtlasModel.create_links(atlas_id=model.id)
+        )
+
+@router.get('', tags=['atlases'], response_model=List[SapiAtlasModel])
+@version(*FASTAPI_VERSION)
+def get_all_atlases():
     """
     Get all atlases known by siibra.
     """
-    result = []
-    for atlas in siibra.atlases:
-        result.append(__atlas_to_result_object(atlas, request))
-    return result
+    return [SapiAtlasModel.from_atlas(atlas) for atlas in atlases]
 
 
-@router.get('/{atlas_id:path}', tags=['atlases'])
-@version(1)
-def get_atlas_by_id(atlas_id: str, request: Request):
+@router.get('/{atlas_id:lazy_path}', tags=['atlases'], response_model=SapiAtlasModel)
+@version(*FASTAPI_VERSION)
+@SapiAtlasModel.decorate_link("self")
+def get_atlas_by_id(atlas_id: str):
     """
     Get more information for a specific atlas with links to further objects.
     """
-    for atlas in siibra.atlases:
-        if atlas.id == atlas_id.replace('%2F', '/'):
-            return __atlas_to_result_object(atlas, request)
-    raise HTTPException(
-        status_code=404,
-        detail='atlas with id: {} not found'.format(atlas_id))
-# endregion
+    atlas = validate_and_return_atlas(atlas_id)
+    return SapiAtlasModel.from_atlas(atlas)
 
 
-def __atlas_to_result_object(atlas, request: Request):
-    return {
-        'id': atlas.id,
-        'name': atlas.name,
-        'links': {
-            'parcellations': {
-                'href': '{}atlases/{}/parcellations'.format(
-                    get_base_url_from_request(request),
-                    atlas.id.replace('/', '%2F')
-                )
-            },
-            'spaces': {
-                'href': '{}atlases/{}/spaces'.format(
-                    get_base_url_from_request(request),
-                    atlas.id.replace('/', '%2F')
-                )
-            }
-        }
-    }
+SapiAtlasModel.decorate_link("spaces")(get_all_spaces)
+SapiAtlasModel.decorate_link("parcellations")(get_all_parcellations)

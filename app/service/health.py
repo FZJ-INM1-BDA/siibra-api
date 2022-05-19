@@ -1,4 +1,4 @@
-# Copyright 2018-2020 Institute of Neuroscience and Medicine (INM-1),
+# Copyright 2018-2022 Institute of Neuroscience and Medicine (INM-1),
 # Forschungszentrum Jülich GmbH
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,9 +19,9 @@ from fastapi.responses import JSONResponse
 router = APIRouter()
 
 
-@router.get('/health', include_in_schema=False)
+@router.get("/health", include_in_schema=False)
 def get_all_parcellations():
     return JSONResponse(
         status_code=200,
-        content={'health': 'UP'}
+        content={"health": "UP"}
     )

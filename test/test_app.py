@@ -1,5 +1,5 @@
-from _pytest.mark import param
 import pytest
+import json
 from httpx import AsyncClient
 from fastapi.testclient import TestClient
 
@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 from starlette.requests import Request
 
 from starlette.responses import StreamingResponse
-from app.app import app, cache_response, __version__, siibra_version_header
+from app.app import app, cache_response, __version__, read_bytes, siibra_version_header
 from app.configuration.cache_redis import CacheRedis
 
 client = TestClient(app)
@@ -28,7 +28,7 @@ async def test_home():
 @pytest.mark.asyncio
 async def test_stats():
     async with AsyncClient(app=app, base_url="http://test") as ac:
-        response = await ac.get("/stats")
+        response = await ac.get("/v2_0/stats")
     assert response.status_code == 200
     assert 'Siibra - statistics' in str(response.content)
 
@@ -140,10 +140,16 @@ async def test_cache_response_hit_cache(hdr,get_value_returns,expect_cache_hit_h
             else:
                 assert resp.headers.get("x-fastapi-cache") is None
 
-            if get_value_returns:
-                assert resp.body.decode("utf-8") == get_value_returns
+
+            if hasattr(resp, "body_iterator"):
+                body = await read_bytes(resp.body_iterator)
             else:
-                assert resp.body.decode("utf-8") == '{"hello": "world"}'
+                body = resp.body
+
+            if get_value_returns:
+                assert body.decode("utf-8") == get_value_returns
+            else:
+                assert body.decode("utf-8") == '{"hello": "world"}'
 
 test_cache_miss_params = ("call_next_raises_flag,call_next_status,call_next_returns,media_type,set_value_called", [
     (True,None,None,None,False),
@@ -208,3 +214,19 @@ async def test_cache_key(path,queryparam,expected_key):
 
                 get_value_handle.assert_called_once_with(expected_key)
                 set_value_handle.assert_called_once_with(expected_key, b'{"foo": "bar"}')
+
+
+@app.get('/error')
+def error_endpoint():
+    raise RuntimeError('Dummy Exception')
+
+
+@pytest.mark.asyncio
+async def test_exception_handler():
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        response = await ac.get("/error")
+    # response = client.get("/")
+    assert response.status_code == 503
+    result_content = json.loads(response.content)
+    assert 'This part of the siibra service is temporarily unavailable' in result_content['detail']
+    assert 'Dummy Exception' in result_content['error']

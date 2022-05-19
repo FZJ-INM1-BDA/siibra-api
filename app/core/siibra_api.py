@@ -1,4 +1,4 @@
-# Copyright 2018-2020 Institute of Neuroscience and Medicine (INM-1),
+# Copyright 2018-2022 Institute of Neuroscience and Medicine (INM-1),
 # Forschungszentrum Jülich GmbH
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,54 +13,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from enum import Enum
 from fastapi import APIRouter
 from fastapi.encoders import jsonable_encoder
+from fastapi_versioning import version
 import siibra
+from siibra.core.serializable_concept import JSONSerializable
 
-# FastApi router to create rest endpoints
+from app import FASTAPI_VERSION
+
 router = APIRouter()
 
 
-class ModalityType(str, Enum):
-    """
-    A class for modality type, to provide selection options to swagger
-    """
-    ReceptorDistribution = 'ReceptorDistribution'
-    GeneExpression = 'GeneExpression'
-    ConnectivityProfile = 'ConnectivityProfile'
-    ConnectivityMatrix = 'ConnectivityMatrix'
-
-
-# region === features
-
-@router.get('/genes', tags=['data'])
+@router.get("/genes", tags=["data"])
+@version(*FASTAPI_VERSION)
 def get_gene_names():
     """
     Return all genes (name, acronym) in siibra
     """
-    # genes = features.genes.AllenBrainAtlasQuery.GENE_NAMES
     genes = []
     for gene in siibra.features.gene_names:
         genes.append(gene)
-    return jsonable_encoder({'genes': genes})
+    return jsonable_encoder({"genes": genes})
 
 
-@router.get('/features', tags=['data'])
+@router.get("/modalities", tags=["data"])
+@version(*FASTAPI_VERSION)
 def get_all_available_modalities():
     """
     Return all possible modalities
     """
-    def get_feature_type(ft):
-        if issubclass(ft, siibra.features.feature.SpatialFeature):
-            return 'SpatialFeature'
-        if issubclass(ft, siibra.features.feature.RegionalFeature):
-            return 'RegionalFeature'
-        if issubclass(ft, siibra.features.feature.ParcellationFeature):
-            return 'ParcellationFeature'
-        return 'UnknownFeatureType'
     return [{
-        'name': feature_name.modality(),
-        'type': get_feature_type(feature_name._FEATURETYPE)
+        "name": feature_name,
+        "types": set([ FeatureQuery._FEATURETYPE.get_model_type()
+            for FeatureQuery in siibra.features.FeatureQuery._implementations[feature_name]
+            if issubclass(FeatureQuery._FEATURETYPE, JSONSerializable) ])
     } for feature_name in siibra.features.modalities]
 

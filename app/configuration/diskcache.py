@@ -1,4 +1,4 @@
-# Copyright 2018-2020 Institute of Neuroscience and Medicine (INM-1),
+# Copyright 2018-2022 Institute of Neuroscience and Medicine (INM-1),
 # Forschungszentrum Jülich GmbH
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,21 +14,8 @@
 # limitations under the License.
 
 import siibra
-import os
 import logging
 
 logger = logging.getLogger(__name__)
 
 CACHEDIR = siibra.retrieval.CACHE.folder
-if os.environ.get('SIIBRA_API_DISABLE_CACHE'):
-    logger.warning('Not using caching')
-    def memoize(**kwargs):
-        def wrapper(func):
-            return func
-        return wrapper
-else:
-    from diskcache import FanoutCache
-    logger.warning('Using diskcahe.FanoutCache')
-    def memoize(**kwargs):
-        cache = FanoutCache(CACHEDIR)
-        return cache.memoize(**kwargs)

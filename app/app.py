@@ -1,4 +1,4 @@
-# Copyright 2018-2020 Institute of Neuroscience and Medicine (INM-1),
+# Copyright 2018-2022 Institute of Neuroscience and Medicine (INM-1),
 # Forschungszentrum Jülich GmbH
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,27 +16,34 @@
 import os
 
 import requests
-import json
 import siibra
-from fastapi import FastAPI, Request, HTTPException
+import uuid
+import hashlib
+import logging
+import time
+
+from fastapi_versioning import VersionedFastAPI
+from fastapi_pagination import add_pagination
+from fastapi import FastAPI, Request
 from fastapi.security import HTTPBearer
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi_versioning import VersionedFastAPI
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import Response
 
 from app.core.siibra_api import router as siibra_router
 from app.core.atlas_api import router as atlas_router
-from app.core.space_api import router as space_router
+from app.core.feature_api import router as features_router
 from app.service.health import router as health_router
-from app.core.parcellation_api import router as parcellation_router
+from app.service.metrics import router as metrics_router
+
 from app.configuration.ebrains_token import get_public_token
 from app.configuration.siibra_custom_exception import SiibraCustomException
-from . import logger
+from app.configuration.cache_redis import CacheRedis
+from . import logger, access_logger
 from . import __version__
-import logging
+
 siibra.logger.setLevel(logging.WARNING)
 
 security = HTTPBearer()
@@ -61,8 +68,7 @@ tags_metadata = [
     },
 ]
 
-ATLAS_PATH = '/atlases'
-siibra_version_header='x-siibra-api-version'
+siibra_version_header = "x-siibra-api-version"
 
 # Main fastAPI application
 app = FastAPI(
@@ -71,35 +77,36 @@ app = FastAPI(
     version="1.0",
     openapi_tags=tags_metadata
 )
-# Add a siibra router with further endpoints
-app.include_router(parcellation_router, prefix=ATLAS_PATH)
-app.include_router(space_router, prefix=ATLAS_PATH)
-app.include_router(atlas_router, prefix=ATLAS_PATH)
-app.include_router(siibra_router)
-app.include_router(health_router)
 
+app.include_router(atlas_router)
+app.include_router(siibra_router)
+app.include_router(features_router)
+app.include_router(health_router)
+app.include_router(metrics_router)
+
+# add pagination
+add_pagination(app)
 
 # Versioning for all api endpoints
-app = VersionedFastAPI(app, default_api_version=1)
+app = VersionedFastAPI(app)
 
 # Template list, with every template in the project
 # can be rendered and returned
-templates = Jinja2Templates(directory='templates/')
+templates = Jinja2Templates(directory="templates/")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-pypi_stat_url = 'https://pypistats.org/api/packages/siibra/overall?mirrors=false'
 
 # Allow CORS
-origins = ['*']
+origins = ["*"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_methods=['GET'],
+    allow_methods=["GET"],
     expose_headers=[siibra_version_header]
 )
 
 
-@app.get('/', include_in_schema=False)
+@app.get("/", include_in_schema=False)
 def home(request: Request):
     """
     Return the template for the siibra landing page.
@@ -108,110 +115,18 @@ def home(request: Request):
     :return: the rendered index.html template
     """
     return templates.TemplateResponse(
-        'index.html', context={
-            'request': request})
-
-
-@app.get('/stats', include_in_schema=False)
-def home(request: Request):
-    """
-    Return the template for the siibra statistics.
-
-    :param request: fastApi Request object
-    :return: the rendered stats.html template
-    """
-    download_data_json = requests.get(pypi_stat_url)
-    if download_data_json.status_code == 200:
-        download_data = json.loads(download_data_json.content)
-
-        download_sum = 0
-        download_sum_month = {}
-
-        for d in download_data['data']:
-            download_sum += d['downloads']
-            date_index = '{}-{}'.format(d['date'].split('-')
-                                        [0], d['date'].split('-')[1])
-            if date_index not in download_sum_month:
-                download_sum_month[date_index] = 0
-            download_sum_month[date_index] += d['downloads']
-
-        return templates.TemplateResponse('stats.html', context={
-            'request': request,
-            'download_sum': download_sum,
-            'download_sum_month': download_sum_month
+        "index.html", context={
+            "request": request,
+            "versions": ["v2_0", "v1_0"]
         })
-    else:
-        logger.warning('Could not retrieve pypi statistics')
-        raise HTTPException(status_code=500,
-                            detail='Could not retrieve pypi statistics')
 
 
-@app.middleware('http')
-async def set_auth_header(request: Request, call_next):
-    """
-    Set authentication for further requests with siibra
-    If a user provides a header, this one will be used otherwise use the default public token
-    :param request: current request
-    :param call_next: next middleware function
-    :return: an altered response
-    """
-
-    path = request.scope['path']  # get the request route
-    print(f'path: {path}')
-
-    bearer_token = request.headers.get('Authorization')
-    try:
-        if bearer_token:
-            siibra.set_ebrains_token(bearer_token.replace('Bearer ', ''))
-        else:
-            public_token = get_public_token()
-            siibra.set_ebrains_token(public_token)
-        response = await call_next(request)
-        return response
-    except SiibraCustomException as err:
-        logger.error('Could not set authentication token')
-        return JSONResponse(
-            status_code=err.status_code, content={
-                'message': err.message})
 
 
-@app.middleware('http')
-async def matomo_request_log(request: Request, call_next):
-    """
-    Middleware will be executed before each request.
-    If the URL does not belog to a resource file, a log will be send to matomo monitoring.
-    :param request: current fastAPI request object
-    :param call_next: next middleware method
-    :return: the response after preprocessing
-    """
-    test_url = request.url
-    test_list = ['.css', '.js', '.png', '.gif', '.json', '.ico']
-    res = any(ele in str(test_url) for ele in test_list)
-
-    if 'SIIBRA_ENVIRONMENT' in os.environ:
-        if os.environ['SIIBRA_ENVIRONMENT'] == 'PRODUCTION':
-            if not res:
-                payload = {
-                    'idsite': 13,
-                    'rec': 1,
-                    'action_name': 'siibra_api',
-                    'url': request.url,
-                    '_id': 'my_ip',
-                    'lang': request.headers.get('Accept-Language'),
-                    'ua': request.headers.get('User-Agent')
-                }
-                try:
-                    # r = requests.get('https://stats.humanbrainproject.eu/matomo.php', params=payload)
-                    # print('Matomo logging with status: {}'.format(r.status_code))
-                    pass
-                except Exception:
-                    logger.info('Could not log to matomo instance')
-        else:
-            logger.info('Request for: {}'.format(request.url))
-    response = await call_next(request)
-    return response
-
-from app.configuration.cache_redis import CacheRedis
+# Each middleware function is called before the request is processed
+# For FastAPI the order is important.
+# The functions are called (perhaps counter-intuitively) from bottom to top.
+# See: https://github.com/encode/starlette/issues/479 and https://github.com/xgui3783/starlette-middleware-demo
 
 async def read_bytes(generator) -> bytes:
     body = b""
@@ -220,27 +135,58 @@ async def read_bytes(generator) -> bytes:
     return body
 
 
+do_not_cache_list = [
+    "metrics",
+    "openapi.json"
+]
+
+do_no_cache_query_list = [
+    "bbox="
+]
+
+
 @app.middleware("http")
 async def cache_response(request: Request, call_next):
+    """
+    Cache requests to redis, to improve response time.
 
+    Cached content is returned with a new response. In this NO other following middleware will be called
+
+    :param request: current request
+    :param call_next: next middleware function
+    :return: current response or a new Response with cached content
+    """
     redis = CacheRedis.get_instance()
 
     cache_key = f"[{__version__}] {request.url.path}{str(request.url.query)}"
 
+    auth_set = request.headers.get("Authorization") is not None
+
     # bypass cache read if:
     # - method is not GET
     # - x-bypass-fast-api-cache is present
-    # - (NYI) if auth token is set 
-    bypass_cache_read = request.method.upper() != "GET" or request.headers.get("x-bypass-fast-api-cache")
+    # - if auth token is set
+    # - if any part of request.url.path matches with do_not_cache_list
+    bypass_cache_read = (
+        request.method.upper() != "GET"
+        or request.headers.get("x-bypass-fast-api-cache")
+        or auth_set
+        or any (keyword in request.url.path for keyword in do_not_cache_list)
+        or any (keyword in request.url.query for keyword in do_no_cache_query_list)
+    )
 
     # bypass cache set if:
     # - method is not GET
-    # - (NYI) if auth token is set
-    bypass_cache_set = request.method.upper() != "GET"
+    # - if auth token is set
+    # - if any part of request.url.path matches with do_not_cache_list
+    bypass_cache_set = (
+        request.method.upper() != "GET" 
+        or auth_set 
+        or any (keyword in request.url.path for keyword in do_not_cache_list)
+    )
 
     cached_value = redis.get_value(cache_key) if not bypass_cache_read else None
     if cached_value:
-
         # starlette seems to normalize header to lower case
         # so .get("origin") also works if the request has "Origin: http://..."
         has_origin = request.headers.get("origin")
@@ -249,7 +195,7 @@ async def cache_response(request: Request, call_next):
             "access-control-expose-headers": f"{siibra_version_header}",
             siibra_version_header: __version__,
         } if has_origin else {}
-        
+
         return Response(
             cached_value,
             headers={
@@ -261,27 +207,155 @@ async def cache_response(request: Request, call_next):
 
     response = await call_next(request)
 
-    # only cache json responses
-    # do not cache error responses
-    if not bypass_cache_set and not response.status_code >= 400 and response.headers.get("content-type") == "application/json":
-        content = await read_bytes(response.body_iterator)
-        redis.set_value(cache_key, content)
-        return Response(
-            content,
-            headers=response.headers
-        )
-    else:
+    # conditions when do not cache
+    if (
+            bypass_cache_set or
+            response.status_code >= 400 or
+            response.headers.get("content-type") != "application/json"
+    ):
         return response
 
+    content = await read_bytes(response.body_iterator)
+    redis.set_value(cache_key, content)
+    return Response(
+        content,
+        headers=response.headers
+    )
 
-@app.middleware('http')
+
+@app.middleware("http")
+async def set_auth_header(request: Request, call_next):
+    """
+    Set authentication for further requests with siibra
+    If a user provides a header, this one will be used otherwise use the default public token
+    :param request: current request
+    :param call_next: next middleware function
+    :return: an altered response
+    """
+
+    bearer_token = request.headers.get("Authorization")
+    try:
+        if bearer_token:
+            siibra.set_ebrains_token(bearer_token.replace("Bearer ", ''))
+        else:
+            public_token = get_public_token()
+            siibra.set_ebrains_token(public_token)
+        response = await call_next(request)
+        return response
+    except SiibraCustomException as err:
+        logger.error("Could not set authentication token")
+        return JSONResponse(
+            status_code=err.status_code, content={
+                "message": err.message})
+
+
+@app.middleware("http")
 async def add_version_header(request: Request, call_next):
+    """
+    Add the latest application version as a custom header
+    """
     response = await call_next(request)
     response.headers[siibra_version_header] = __version__
     return response
 
-@app.get('/ready', include_in_schema=False)
+
+@app.middleware("http")
+async def matomo_request_log(request: Request, call_next):
+    """
+    Middleware will be executed before each request.
+    If the URL does not belong to a resource file, a log will be sent to matomo monitoring.
+    :param request: current fastAPI request object
+    :param call_next: next middleware method
+    :return: the response after preprocessing
+    """
+    test_url = request.url
+    test_list = [".css", ".js", ".png", ".gif", ".json", ".ico", "localhost"]
+    res = any(ele in str(test_url) for ele in test_list)
+
+    if "SIIBRA_ENVIRONMENT" in os.environ:
+        # if os.environ['SIIBRA_ENVIRONMENT'] == 'PRODUCTION':
+        if not res:
+            payload = {
+                "idsite": 13,
+                "rec": 1,
+                "action_name": "siibra_api",
+                "url": request.url,
+                "_id": hashlib.blake2b(digest_size=8, key=request.client.host.encode()).hexdigest(),
+                "rand": str(uuid.uuid1()),
+                "lang": request.headers.get("Accept-Language"),
+                "ua": request.headers.get("User-Agent"),
+                "_cvar": {"1": ["environment", os.environ["SIIBRA_ENVIRONMENT"]]}
+            }
+            logger.debug(payload)
+            try:
+                r = requests.get("https://stats.humanbrainproject.eu/matomo.php", params=payload)
+                logger.info("Matomo logging with status: {}".format(r.status_code))
+                pass
+            except Exception:
+                logger.info("Could not log to matomo instance")
+        else:
+            logger.info("Request for: {}".format(request.url))
+    response = await call_next(request)
+    return response
+
+
+@app.middleware("http")
+async def access_log(request: Request, call_next):
+    start_time = time.time()
+    try:
+        resp = await call_next(request)
+        process_time = (time.time() - start_time) * 1000
+        access_logger.info(f"{request.method.upper()} {str(request.url)}", extra={
+            "resp_status": str(resp.status_code),
+            "process_time_ms": str(round(process_time)),
+            "hit_cache": "cache_hit" if resp.headers.get("x-fastapi-cache") == "hit" else "cache_miss"
+        })
+        return resp
+    
+    # Reverse proxy sometimes has a dedicated timeout
+    # In events where server takes too long to respond, fastapi will raise a RuntimeError with body "No response returned."
+    # Log the incident, and the time of response (This should reflect the duration of request, rather than when the client closes the connection)
+    except RuntimeError:
+        process_time = (time.time() - start_time) * 1000
+        access_logger.info(f"{request.method.upper()} {str(request.url)}", extra={
+            "resp_status": "504",
+            "process_time_ms": str(round(process_time)),
+            "hit_cache": "cache_miss"
+        })
+    except Exception as e:
+        logger.critical(e)
+
+
+@app.exception_handler(RuntimeError)
+async def runtime_exception_handler(request: Request, exc: RuntimeError):
+    """
+    Handling RuntimeErrors.
+    Most of the RuntimeErrors are thrown by the siibra-python library when other Services are not responding.
+    To be more resilient and not throw a simple and unplanned HTTP 500 response, this handler will return an HTTP 503
+    status.
+    :param request: Needed but fastapi definition, but not used
+    :param exc: RuntimeError
+    :return: HTTP status 503 with a custom message
+    """
+    logging.warning(str(exc))
+    return JSONResponse(
+        status_code=503,
+        content={
+            "detail": "This part of the siibra service is temporarily unavailable",
+            "error": str(exc)
+        },
+    )
+
+
+@app.exception_handler(Exception)
+async def validation_exception_handler(request: Request, exc: Exception):
+    print(str(exc))
+    return JSONResponse(
+        status_code=500,
+        content="some error"
+    )
+
+
+@app.get("/ready", include_in_schema=False)
 def get_ready():
-    return 'OK'
-
-
+    return "OK"
