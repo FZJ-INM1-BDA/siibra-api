@@ -103,7 +103,7 @@ def get_all_regional_features_for_region(
     if not type:
         return [feat.to_model(space=space) for feat in get_all_serializable_regional_features(region, space)]
     else:
-        return [feat.to_model(space=space) for feat in get_all_serializable_regional_features(region, space) if feat.to_model().type == type]
+        return [feat.to_model(space=space) for feat in get_all_serializable_regional_features(region, space) if feat.get_model_type() == type]
 
 
 @router.get("/{region_id:lazy_path}/features/{feature_id:lazy_path}",
