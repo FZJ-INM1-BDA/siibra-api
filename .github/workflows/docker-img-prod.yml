@@ -95,7 +95,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: 'Set env var'
       run: |
-        OKD_ENDPOINT=${{ env.OKD_PROJECT }}
+        OKD_ENDPOINT=${{ env.OKD_ENDPOINT }}
         OKD_SECRET=${{ env.OKD_SECRET }}
         DEPLOY_SITE_POSTFIX=""
 
