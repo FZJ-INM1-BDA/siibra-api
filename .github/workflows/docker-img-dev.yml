@@ -1,20 +1,15 @@
-name: '[docker image]'
+name: '[docker image dev]'
 
 on:
   push:
     branches:
     - master
     - dev
-  release:
-    types:
-    - published
 
 env:
   OKD_PROJECT: siibra-api
-  OKD_DEV_ENDPOINT: https://okd-dev.hbp.eu:443
-  OKD_PROD_ENDPOINT: https://okd.hbp.eu:443
-  OKD_DEV_SECRET: ${{ secrets.OKD_DEV_SECRET }}
-  OKD_PROD_SECRET: ${{ secrets.OKD_PROD_SECRET }}
+  OKD_ENDPOINT: https://okd-dev.hbp.eu:443
+  OKD_SECRET: ${{ secrets.OKD_DEV_SECRET }}
   DOCKER_REGISTRY: 'docker-registry.ebrains.eu/siibra/'
   DOCKER_IMG: 'siibra-api'
 
@@ -27,30 +22,13 @@ jobs:
       run: |
         echo "Event: $GITHUB_EVENT_NAME"
 
-        if [ "$GITHUB_EVENT_NAME" = "push" ]
+        # since it's latest, set DEV_FLAG to true
+        DOCKER_IMAGE_TAG=latest
+
+        if [[ "$GITHUB_REF" = "refs/heads/dev" ]]
         then
-
-          # since it's latest, set DEV_FLAG to true
-          DOCKER_IMAGE_TAG=latest
-
-          if [[ "$GITHUB_REF" = "refs/heads/dev" ]]
-          then
-            echo "DEV_FLAG=1" >> $GITHUB_ENV
-            DOCKER_IMAGE_TAG=dev
-          fi
-        fi
-
-        if [ "$GITHUB_EVENT_NAME" = "release" ]
-        then
-
-          if [[ "$GITHUB_REF" = *"rc"* ]]
-          then
-            # if release contains rc, set img tag to rc
-            DOCKER_IMAGE_TAG=rc
-          else
-            # if release contains rc, otherwise, set img tag to stable
-            DOCKER_IMAGE_TAG=stable
-          fi
+          echo "DEV_FLAG=1" >> $GITHUB_ENV
+          DOCKER_IMAGE_TAG=dev
         fi
 
         echo "DOCKER_IMAGE_TAG: $DOCKER_IMAGE_TAG"
@@ -86,41 +64,6 @@ jobs:
         echo "Pushing $DOCKER_BUILT_TAG"
         docker push $DOCKER_BUILT_TAG
     
-    # Only push versioned tag to registry if
-    # - it is a release event
-    # - the release event is *not* a release candidate (rc)
-    - name: 'Push versioned tag to registry'
-      if: |
-        github.event_name == 'release' &&
-        !contains(github.ref, 'rc')
-      run: |
-        
-        echo "Login to docker registry"
-        docker login \
-          -u '${{ secrets.EBRAINS_DOCKER_REG_USER }}' \
-          -p '${{ secrets.EBRAINS_DOCKER_REG_TOKEN }}' \
-          docker-registry.ebrains.eu
-
-        BREAK=5
-        VERSION=$(grep -Po '^__version__.*?"\K[\w.]+' app/__init__.py)
-        while [[ "$VERSION" == *"."* ]]
-        do
-          if [[ "$BREAK" == "0" ]]
-          then
-            echo "Fuse broke!"
-            exit 1
-          fi
-          VERSIONED_DOCKERTAG=${{ env.DOCKER_REGISTRY }}${{ env.DOCKER_IMG }}:$VERSION
-          echo "tagging and pushing $VERSIONED_DOCKERTAG"
-          docker tag $DOCKER_BUILT_TAG $VERSIONED_DOCKERTAG
-          docker push $VERSIONED_DOCKERTAG
-
-          echo "Push successful... Incrementing version & break"
-          VERSION=$(echo $VERSION | sed -e 's/\.\w*$//g')
-          BREAK=$(( "$BREAK" - 1 ))
-        done
-        echo "Done"
-
   deploy-on-okd:
     needs: build-docker-img
     if: success()
@@ -130,43 +73,16 @@ jobs:
     - uses: actions/checkout@v2
     - name: 'Set env var'
       run: |
-        echo "Event: $GITHUB_EVENT_NAME"
+        echo "event triggered is 'push', use develop envvar"
+        OKD_ENDPOINT=${{ env.OKD_ENDPOINT }}
+        OKD_SECRET=${{ env.OKD_SECRET }}
+        DEPLOY_SITE_POSTFIX="-dev"
 
-        if [ "$GITHUB_EVENT_NAME" = "push" ]
+        DOCKER_IMAGE_TAG=latest
+
+        if [[ "$GITHUB_REF" = "refs/heads/dev" ]]
         then
-
-          echo "event triggered is 'push', use dev envvar"
-          # since it's release, set DEV_FLAG to true
-          echo "DEV_FLAG=1" >> $GITHUB_ENV
-
-          echo "event triggered is 'push', use develop envvar"
-          OKD_ENDPOINT=${{ env.OKD_DEV_ENDPOINT }}
-          OKD_SECRET=${{ env.OKD_DEV_SECRET }}
-          DEPLOY_SITE_POSTFIX="-dev"
-
-          DOCKER_IMAGE_TAG=latest
-
-          if [[ "$GITHUB_REF" = "refs/heads/dev" ]]
-          then
-            DOCKER_IMAGE_TAG=dev
-          fi
-        fi
-
-        if [ "$GITHUB_EVENT_NAME" = "release" ]
-        then
-
-          OKD_ENDPOINT=${{ env.OKD_PROD_ENDPOINT }}
-          OKD_SECRET=${{ env.OKD_PROD_SECRET }}
-          DEPLOY_SITE_POSTFIX=""
-
-          if [[ "$GITHUB_REF" = *"rc"* ]]
-          then
-            # if release contains rc, set img tag to rc
-            DOCKER_IMAGE_TAG=rc
-          else
-            # if release contains rc, otherwise, set img tag to stable
-            DOCKER_IMAGE_TAG=stable
-          fi
+          DOCKER_IMAGE_TAG=dev
         fi
 
         echo "OKD_ENDPOINT=$OKD_ENDPOINT" >> $GITHUB_ENV

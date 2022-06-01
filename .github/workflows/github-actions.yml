@@ -1,6 +1,10 @@
 name: siibra ci pipeline
 
-on: push
+# only run on push to branch, not on tags
+on:
+  push:
+    branches:
+    - '*'
 
 jobs:
   test:
