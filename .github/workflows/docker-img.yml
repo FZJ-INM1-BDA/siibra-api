@@ -33,7 +33,7 @@ jobs:
       run: |
         echo "GITHUB_REF: $GITHUB_REF"
 
-        if [ "$GITHUB_REF" = "v1" ]
+        if [ "$GITHUB_REF" = "refs/heads/v1" ]
         then
           DOCKER_IMAGE_TAG=$VERSION
         fi
