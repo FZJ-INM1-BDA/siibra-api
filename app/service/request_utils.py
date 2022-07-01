@@ -399,9 +399,12 @@ def get_ieeg_session_detail(ieeg_session: siibra.features.ieeg.IEEG_Session, reg
 
 
 def get_all_vois():
-    queries = FeatureQuery.queries("volume")
-    features: List[VolumeOfInterest] = [feat for query in queries for feat in query.features]
-    return features
+    # TODO temporarily disabled. siibra0.3a6 cannot handle rgb volumes
+    # In order to fix this issue:
+    # - siibra0.3a22+ needs to use brainscape-datafeature:master
+    # - reserver brainscape-datafeature:develop for backwards compat
+    
+    return []
 
 all_voi_features = get_all_vois()
 

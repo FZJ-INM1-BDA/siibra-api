@@ -15,18 +15,21 @@
 
 import io
 from typing import Optional
+import requests
+import re
+from os import path
 from urllib.parse import quote
 
 import zipfile
 import siibra
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Response
 from fastapi.encoders import jsonable_encoder
 from starlette.responses import FileResponse, StreamingResponse
 
 from app.service.request_utils import get_spatial_features, get_voi, split_id, get_file_from_nibabel, get_parcellations_for_space
 from app.service.request_utils import get_base_url_from_request, siibra_custom_json_encoder,origin_data_decoder
-from app.service.validation import validate_and_return_atlas, validate_and_return_space
+from app.service.validation import validate_and_return_atlas, validate_and_return_parcellation, validate_and_return_space
 
 from app import logger
 
@@ -68,6 +71,25 @@ def get_template_by_space_id(atlas_id: str, space_id: str):
     """
     atlas = validate_and_return_atlas(atlas_id)
     space = validate_and_return_space(space_id)
+
+    threesurfer_volume_spec = [spec for spec in space._dataset_specs if spec.get("volume_type") == "threesurfer/gii"]
+    if len(threesurfer_volume_spec) > 0:
+
+        zipbuffer = io.BytesIO()
+        with zipfile.ZipFile(zipbuffer, "a", zipfile.ZIP_DEFLATED, False) as zipfilehandle:
+            for spec in [spec for spec in threesurfer_volume_spec]:
+                surfaces = spec.get('detail', {}).get('threesurfer/gii', {}).get('surfaces', [])
+                root_url = spec.get('url')
+                for surface in surfaces:
+                    surface_url = re.sub(r'^root:', root_url, surface.get('url'))
+                    resp = requests.get(surface_url)
+                    filename = path.basename(surface_url)
+                    zipfilehandle.writestr(filename, resp.content)
+
+        return Response(zipbuffer.getvalue(), headers={
+            'content-disposition': f'attachment;filename={space.name}.zip'
+        }, media_type="application/x-zip-compressed")
+    
     template = atlas.get_template(space).fetch()
 
     # create file-object in memory
@@ -76,15 +98,39 @@ def get_template_by_space_id(atlas_id: str, space_id: str):
 
     return FileResponse(filename, filename=filename)
 
+allow_list_parcellation_map = ("nii", "")
 
 @router.get('/{atlas_id:path}/spaces/{space_id:path}/parcellation_maps', tags=['spaces'])
 # add parcellations_map_id as optional param
-def get_parcellation_map_for_space(atlas_id: str, space_id: str):
+def get_parcellation_map_for_space(atlas_id: str, space_id: str, parcellation_id: Optional[str]=None):
     """
     Returns all parcellation maps for a given space id.
     """
-    validate_and_return_atlas(atlas_id)
-    space = validate_and_return_space(space_id)
+    atlas = validate_and_return_atlas(atlas_id)
+    space = validate_and_return_space(space_id, atlas)
+
+    if parcellation_id is not None:
+        parcellation = validate_and_return_parcellation(parcellation_id, atlas)
+        relevant_maps = [spec for spec in parcellation._dataset_specs
+            if spec.get("space_id") is not None
+            and siibra.spaces[spec.get("space_id")] is space
+            and spec.get("volume_type") in allow_list_parcellation_map]
+        
+        assert all(map.get("url") is not None for map in relevant_maps), f"all relevant maps' url should be defined"
+
+        if len(relevant_maps) == 0:
+            raise HTTPException(404, detail=f"Could not find any volume files for {space_id}, {parcellation_id}")
+
+        zipbuffer = io.BytesIO()
+        with zipfile.ZipFile(zipbuffer, "a", zipfile.ZIP_DEFLATED, False) as zipfilehandle:
+            for spec in [spec for spec in relevant_maps]:
+                resp = requests.get(spec.get("url"))
+                filename = path.basename(spec.get("url"))
+                zipfilehandle.writestr(filename, resp.content)
+        return Response(zipbuffer.getvalue(), headers={
+            'content-disposition': f'attachment;filename={space.name}-{parcellation.name}.zip'
+        }, media_type="application/x-zip-compressed")
+
     valid_parcs = [p for p in siibra.parcellations if p.supports_space(space)]
 
     if len(valid_parcs) == 1:
