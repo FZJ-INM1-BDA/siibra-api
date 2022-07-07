@@ -62,7 +62,8 @@ if log_dir:
     warn_fh.setLevel(logging.INFO)
     warn_fh.setFormatter(formatter)
     logger.addHandler(warn_fh)
+    siibra_logger.setLevel(logging.INFO)
     siibra_logger.addHandler(warn_fh)
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 FASTAPI_VERSION = (2, 0)
