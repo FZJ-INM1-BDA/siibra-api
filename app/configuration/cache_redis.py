@@ -16,9 +16,9 @@
 import redis
 import os
 
-_host = os.getenv("SIIBRA_REDIS_SERVICE_HOST") or "siibra-redis"
+_host = os.getenv("SIIBRA_REDIS_SERVICE_HOST") or os.getenv("REDIS_SERVICE_HOST") or "siibra-redis"
 _password = os.getenv("REDIS_PASSWORD")
-_port = os.getenv("SIIBRA_REDIS_SERVICE_PORT") or 6379
+_port = os.getenv("SIIBRA_REDIS_SERVICE_PORT") or os.getenv("REDIS_SERVICE_PORT") or 6379
 # do not use in ci
 _is_ci = os.getenv("CI") is not None
 
