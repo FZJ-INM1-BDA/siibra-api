@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from urllib.parse import quote
 import siibra
 from enum import Enum
 from typing import Optional
@@ -21,7 +22,7 @@ from siibra.core.datasets import EbrainsDataset
 from siibra.core.parcellation import Parcellation
 from starlette.responses import FileResponse
 from fastapi.encoders import jsonable_encoder
-from app.service.request_utils import get_region_by_name, region_encoder, split_id
+from app.service.request_utils import get_label_of_parcellation_map, get_path_to_parcellation_map, get_region_by_name, region_encoder, split_id
 from app.service.request_utils import get_spaces_for_parcellation, get_base_url_from_request, siibra_custom_json_encoder
 from app.service.request_utils import get_global_features, get_regional_feature, get_path_to_regional_map
 from app.configuration.diskcache import memoize
@@ -239,6 +240,9 @@ def parse_region_selection(
     #         detail=f'found multiple region withs pec {region_id}')
     return region, space_of_interest
 
+class MapTypeEnum(str, Enum):
+    CONTINUOUS = 'CONTINUOUS'
+    LABELLED = "LABELLED"
 
 @router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/regional_map/info',
             tags=['parcellations'])
@@ -246,28 +250,44 @@ def get_regional_map_info(
         atlas_id: str,
         parcellation_id: str,
         region_id: str,
-        space_id: Optional[str] = None):
+        space_id: Optional[str] = None,
+        map_type: Optional[MapTypeEnum] = MapTypeEnum.CONTINUOUS):
     """
     Returns information about a regional map for given region name.
     """
-    validate_and_return_atlas(atlas_id)
-    parcellation = validate_and_return_parcellation(parcellation_id)
-    region = validate_and_return_region(region_id, parcellation)
-    region.get_regional_map("mni152", siibra.MapType.CONTINUOUS)
 
     roi, space_of_interest = parse_region_selection(
         atlas_id, parcellation_id, region_id, space_id)
-    query_id = f'{atlas_id}{parcellation_id}{roi.name}{space_id}'
-    cached_fullpath = get_path_to_regional_map(
-        query_id, roi, space_of_interest)
-    import nibabel as nib
-    import numpy as np
-    nii = nib.load(cached_fullpath)
-    data = nii.get_fdata()
-    return {
-        'min': np.min(data),
-        'max': np.max(data),
-    }
+
+    if map_type == MapTypeEnum.CONTINUOUS:
+        query_id = f'{atlas_id}{parcellation_id}{roi.name}{space_id}'
+        cached_fullpath = get_path_to_regional_map(
+            query_id, roi, space_of_interest)
+        import nibabel as nib
+        import numpy as np
+        nii = nib.load(cached_fullpath)
+        data = nii.get_fdata()
+        return {
+            'min': np.min(data),
+            'max': np.max(data),
+        }
+    if map_type == MapTypeEnum.LABELLED:
+        laterality = ''
+        if 'left' in region_id.lower():
+            laterality += 'left'
+        if 'right' in region_id.lower():
+            laterality += 'right'
+
+        region_label_query_id = f'{atlas_id}{parcellation_id}{region_id}{space_id}'
+        label = get_label_of_parcellation_map(
+            region_label_query_id, roi, roi.parcellation, space_of_interest
+        )
+        return {
+            'label': label,
+            'url': f'/v1_0/atlases/{quote(atlas_id)}/parcellations/{quote(parcellation_id)}/regions/{quote(region_id)}/regional_map/map?space_id={quote(space_id)}&map_type={quote(map_type.value)}'
+        }
+    
+    raise HTTPException(400, detail="Must set map_type as CONTINUOUS or LABELLED")
 
 
 @router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}/regional_map/map',
@@ -276,21 +296,38 @@ def get_regional_map_file(
         atlas_id: str,
         parcellation_id: str,
         region_id: str,
-        space_id: Optional[str] = None):
+        space_id: Optional[str] = None,
+        map_type: Optional[MapTypeEnum] = MapTypeEnum.CONTINUOUS):
     """
     Returns a regional map for given region name.
     """
     roi, space_of_interest = parse_region_selection(
         atlas_id, parcellation_id, region_id, space_id)
-    print(f'region: {roi}')
-    print(f'space: {space_of_interest}')
-    query_id = f'{atlas_id}{parcellation_id}{roi.name}{space_id}'
-    print(f'queryId: {query_id}')
-    cached_fullpath = get_path_to_regional_map(
-        query_id, roi, space_of_interest)
-    print(f'cached path: {cached_fullpath}')
-    return FileResponse(cached_fullpath, media_type='application/octet-stream')
 
+    if map_type == MapTypeEnum.CONTINUOUS:
+        print(f'region: {roi}')
+        print(f'space: {space_of_interest}')
+        query_id = f'{atlas_id}{parcellation_id}{roi.name}{space_id}'
+        print(f'queryId: {query_id}')
+        cached_fullpath = get_path_to_regional_map(
+            query_id, roi, space_of_interest)
+        print(f'cached path: {cached_fullpath}')
+        return FileResponse(cached_fullpath, media_type='application/octet-stream')
+
+    if map_type == MapTypeEnum.LABELLED:
+        laterality = ''
+        if 'left' in region_id.lower():
+            laterality += 'left'
+        if 'right' in region_id.lower():
+            laterality += 'right'
+
+        parc_map_query_id = f'{atlas_id}{parcellation_id}{laterality}{space_id}'
+        cached_fullpath = get_path_to_parcellation_map(
+            parc_map_query_id, roi, roi.parcellation, space_of_interest
+        )
+        return FileResponse(cached_fullpath, media_type='application/octet-stream')
+    
+    raise HTTPException(400, detail="map_type must be either CONTINUOUS or LABELLED")
 
 @router.get('/{atlas_id:path}/parcellations/{parcellation_id:path}/regions/{region_id:path}',
             tags=['parcellations'])

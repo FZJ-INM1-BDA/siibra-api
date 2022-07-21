@@ -219,28 +219,54 @@ async def read_bytes(generator) -> bytes:
         body += data
     return body
 
+do_not_cache_list = [
+    "metrics",
+    "openapi.json"
+]
+
+do_no_cache_query_list = []
+
 
 @app.middleware("http")
 async def cache_response(request: Request, call_next):
-
+    """
+    Cache requests to redis, to improve response time.
+    Cached content is returned with a new response. In this NO other following middleware will be called
+    :param request: current request
+    :param call_next: next middleware function
+    :return: current response or a new Response with cached content
+    """
     redis = CacheRedis.get_instance()
 
     cache_key = f"[{__version__}] {request.url.path}{str(request.url.query)}"
 
+    auth_set = request.headers.get("Authorization") is not None
+
     # bypass cache read if:
     # - method is not GET
     # - x-bypass-fast-api-cache is present
-    # - (NYI) if auth token is set 
-    bypass_cache_read = request.method.upper() != "GET" or request.headers.get("x-bypass-fast-api-cache")
+    # - if auth token is set
+    # - if any part of request.url.path matches with do_not_cache_list
+    bypass_cache_read = (
+        request.method.upper() != "GET"
+        or request.headers.get("x-bypass-fast-api-cache")
+        or auth_set
+        or any (keyword in request.url.path for keyword in do_not_cache_list)
+        or any (keyword in request.url.query for keyword in do_no_cache_query_list)
+    )
 
     # bypass cache set if:
     # - method is not GET
-    # - (NYI) if auth token is set
-    bypass_cache_set = request.method.upper() != "GET"
+    # - if auth token is set
+    # - if any part of request.url.path matches with do_not_cache_list
+    bypass_cache_set = (
+        request.method.upper() != "GET" 
+        or auth_set 
+        or any (keyword in request.url.path for keyword in do_not_cache_list)
+    )
 
     cached_value = redis.get_value(cache_key) if not bypass_cache_read else None
     if cached_value:
-
         # starlette seems to normalize header to lower case
         # so .get("origin") also works if the request has "Origin: http://..."
         has_origin = request.headers.get("origin")
@@ -249,7 +275,7 @@ async def cache_response(request: Request, call_next):
             "access-control-expose-headers": f"{siibra_version_header}",
             siibra_version_header: __version__,
         } if has_origin else {}
-        
+
         return Response(
             cached_value,
             headers={
@@ -261,17 +287,21 @@ async def cache_response(request: Request, call_next):
 
     response = await call_next(request)
 
-    # only cache json responses
-    # do not cache error responses
-    if not bypass_cache_set and not response.status_code >= 400 and response.headers.get("content-type") == "application/json":
-        content = await read_bytes(response.body_iterator)
-        redis.set_value(cache_key, content)
-        return Response(
-            content,
-            headers=response.headers
-        )
-    else:
+    # conditions when do not cache
+    if (
+            bypass_cache_set or
+            response.status_code >= 400 or
+            response.headers.get("content-type") != "application/json"
+    ):
         return response
+
+    content = await read_bytes(response.body_iterator)
+    redis.set_value(cache_key, content)
+    return Response(
+        content,
+        headers=response.headers
+    )
+
 
 
 @app.middleware('http')

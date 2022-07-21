@@ -181,7 +181,8 @@ def find_region_via_id(atlas, region_id):
 SUPPORTED_FEATURES = [
     # siibra.features.genes.GeneExpression,
     siibra.features.genes.AllenBrainAtlasQuery,
-    siibra.features.connectivity.ConnectivityProfileQuery,
+    # temporarily disabled as imports have changed
+    # siibra.features.connectivity.ConnectivityProfileQuery,
     siibra.features.receptors.ReceptorQuery,
     siibra.features.ebrains.EbrainsRegionalFeatureQuery,
     siibra.features.ieeg.IEEG_SessionQuery,
@@ -249,21 +250,24 @@ def get_regional_feature(
              },
              'instance': gene_feat,
         } for gene_feat in got_features]
-    if siibra.features.modalities[modality_id] == siibra.features.connectivity.ConnectivityProfileQuery:
-        shaped_features = [{
-            'summary': {
-                "@id": conn_pr._matrix.id,
-                "src_name": conn_pr.name,
-                "src_info": conn_pr.description,
-                "kgSchema": conn_pr._matrix.type_id,
-                "kgId": conn_pr._matrix.id,
-            },
-            'get_detail': lambda conn_pr: { 
-                "__column_names": list(conn_pr.regionnames), #TODO: where to get the names?
-                "__profile": conn_pr.profile.tolist(),
-             },
-             'instance': conn_pr,
-        } for conn_pr in got_features]
+    
+    # Temporarily disabled, as imports have changed 
+
+    # if siibra.features.modalities[modality_id] == siibra.features.connectivity.ConnectivityProfileQuery:
+    #     shaped_features = [{
+    #         'summary': {
+    #             "@id": conn_pr._matrix.id,
+    #             "src_name": conn_pr.name,
+    #             "src_info": conn_pr.description,
+    #             "kgSchema": conn_pr._matrix.type_id,
+    #             "kgId": conn_pr._matrix.id,
+    #         },
+    #         'get_detail': lambda conn_pr: { 
+    #             "__column_names": list(conn_pr.regionnames),
+    #             "__profile": conn_pr.profile.tolist(),
+    #          },
+    #          'instance': conn_pr,
+    #     } for conn_pr in got_features]
     if siibra.features.modalities[modality_id] == siibra.features.receptors.ReceptorQuery:
         shaped_features = [{
             'summary': {
@@ -553,6 +557,38 @@ def get_path_to_regional_map(query_id, roi, space_of_interest):
             nib.save(image, cached_fullpath)
 
     return get_cached_file(cached_filename, save_new_nii)
+
+def get_path_to_parcellation_map(query_id, roi, parcellation, space_of_interest):
+
+    cached_filename = str(
+        hashlib.sha256(
+            query_id.encode('utf-8')).hexdigest()) + '.nii.gz'
+
+    def save_new_nii(cached_full_path):
+        parc_map = parcellation.get_map(space_of_interest)
+        indices = parc_map.get_index(roi)
+        assert len(indices) == 1
+        nii = parc_map.fetch(indices[0].map)
+        nib.save(nii, cached_full_path)
+        
+    return get_cached_file(cached_filename, save_new_nii)
+
+def get_label_of_parcellation_map(query_id, roi, parcellation, space_of_interest):
+    cached_filename = str(
+        hashlib.sha256(
+            query_id.encode('utf-8')).hexdigest()) + '.lbl.txt'
+
+    def save_new_lbl(cached_full_path):
+        parc_map = parcellation.get_map(space_of_interest)
+        indices = parc_map.get_index(roi)
+        assert len(indices) == 1
+        with open(cached_full_path, 'w') as fp:
+            fp.write(str(indices[0].label))
+        
+    full_file_path = get_cached_file(cached_filename, save_new_lbl)
+    with open(full_file_path, 'r') as fp:
+        return int(fp.read())
+    
 
 @memoize(typed=True)
 def get_region_by_name(
