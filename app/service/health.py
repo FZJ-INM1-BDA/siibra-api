@@ -20,7 +20,7 @@ router = APIRouter()
 
 
 @router.get("/health", include_in_schema=False)
-def get_all_parcellations():
+def get_health():
     return JSONResponse(
         status_code=200,
         content={"health": "UP"}

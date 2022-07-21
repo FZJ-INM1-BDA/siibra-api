@@ -201,6 +201,12 @@ def get_all_spatial_features_for_space(
 @version(*FASTAPI_VERSION)
 @SapiSpaceModel.decorate_link("volumes")
 def get_volumes_for_space(atlas_id: str, space_id: str):
+    """
+    Return all volumes for given space id.
+    :param atlas_id:
+    :param space_id:
+    :return:
+    """
     atlas = validate_and_return_atlas(atlas_id)
     space = validate_and_return_space(space_id, atlas)
     return [vol.to_model() for vol in space.volumes]

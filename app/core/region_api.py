@@ -218,6 +218,7 @@ def get_regional_map_file(cached_fullpath: str):
     """
     return FileResponse(cached_fullpath, media_type="application/octet-stream")
 
+
 @router.get("/{region_id:lazy_path}/volumes", tags=TAGS, response_model=Page[VolumeModel])
 @version(*FASTAPI_VERSION)
 def get_regional_volumes(
@@ -227,7 +228,9 @@ def get_regional_volumes(
     space_id: Optional[str]=None,
     type: Optional[str]=None,
     params: Params = Depends()):
-
+    """
+    Return volumes for a given region ID. The response can be further specified by providing a space id and type.
+    """
     atlas = validate_and_return_atlas(atlas_id)
     parcellation = validate_and_return_parcellation(parcellation_id, atlas)
     region = validate_and_return_region(region_id, parcellation)
@@ -241,6 +244,7 @@ def get_regional_volumes(
     sequence = CustomList(list_of_vol, detail=False)
     return paginate(sequence, params)
 
+
 @router.get("/{region_id:lazy_path}/volumes/{volume_id:lazy_path}",
     tags=TAGS,
     response_model=VolumeModel)
@@ -250,6 +254,9 @@ def get_regional_volumes(
     parcellation_id: str,
     region_id: str,
     volume_id: str):
+    """
+    Return a specific volume by id.
+    """
     try:
         atlas = validate_and_return_atlas(atlas_id)
         parcellation = validate_and_return_parcellation(parcellation_id, atlas)
@@ -270,6 +277,10 @@ def get_regional_volumes(
             response_model=Region.to_model.__annotations__.get("return"))
 @version(*FASTAPI_VERSION)
 def get_single_region_detail(atlas_id: str, parcellation_id: str, region_id: str, space_id: Optional[str] = None):
+    """
+    Get a single region by providing the region id.
+    Getting a single region will return the region with more details.
+    """
     atlas = validate_and_return_atlas(atlas_id)
     parcellation = validate_and_return_parcellation(parcellation_id, atlas)
     region = validate_and_return_region(region_id, parcellation)
