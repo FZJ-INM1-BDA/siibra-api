@@ -15,17 +15,17 @@ class TestAtlasApi(unittest.TestCase):
         response = client.get('/v2_0/atlases')
         self.assertEuqal(response.status_code, 200)
         result_content = json.loads(response.content)
-        self.assertEuqal(len(result_content), 4)
+        self.assertEqual(len(result_content), 4)
 
     def test_get_singe_atlas(self):
         response = client.get('/v2_0/atlases/{}'.format(self.ATLAS_ID.replace('/', '%2F')))
         self.assertEuqal(response.status_code, 200)
         result_content = json.loads(response.content)
-        self.assertEuqal(result_content['@id'], self.ATLAS_ID)
+        self.assertEqual(result_content['@id'], self.ATLAS_ID)
 
     def test_get_invalid_atlas(self):
         invalid_id = 'INVALID_ID'
         response = client.get('/v2_0/atlases/{}'.format(invalid_id.replace('/', '%2F')))
         self.assertEuqal(response.status_code, 400)
         result_content = json.loads(response.content)
-        self.assertEuqal(result_content['detail'], 'atlas_id: {} is not known'.format(invalid_id))
+        self.assertEqual(result_content['detail'], 'atlas_id: {} is not known'.format(invalid_id))
