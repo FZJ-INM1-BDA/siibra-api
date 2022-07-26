@@ -11,6 +11,7 @@ env:
   OKD_SECRET: ${{ secrets.OKD_PROD_SECRET }}
   DOCKER_REGISTRY: 'docker-registry.ebrains.eu/siibra/'
   DOCKER_IMG: 'siibra-api'
+  OKD_STABLE_IS: docker-registry.default.svc:5000/siibra-api/siibra-api-stable:stable
 
 jobs:
   build-docker-img:
@@ -115,7 +116,15 @@ jobs:
         echo "DOCKER_IMAGE_TAG: $DOCKER_IMAGE_TAG"
         echo "DOCKER_IMAGE_TAG=$DOCKER_IMAGE_TAG" >> $GITHUB_ENV
 
+    - name: "If full release, trigger via update image-stream"
+      if: ! contains(github.ref, 'rc')
+      run: |
+        oc login ${OKD_ENDPOINT} --token=${OKD_SECRET}
+        oc project ${{ env.OKD_PROJECT }}
+        oc import-image ${{ env.OKD_STABLE_IS }}
+
     - name: 'Login via oc cli & deploy'
+      if: contains(github.ref, 'rc')
       run: |
         oc login ${OKD_ENDPOINT} --token=${OKD_SECRET}
         oc project ${{ env.OKD_PROJECT }}
