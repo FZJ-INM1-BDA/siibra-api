@@ -283,18 +283,19 @@ class TestSingleRegionFeatures(unittest.TestCase):
         # hoc1 left should have no ieeg result
         assert len(result_content) == 0
 
-    def test_rest_connectivity(self):
-        conn_id='e428cb6b-0110-4205-94ac-533ca5de6bb5'
-        url='/v1_0/atlases/{atlas_id}/parcellations/{parcellation_id}/regions/{region_spec}/features/ConnectivityProfile/{conn_id}'.format(
-            atlas_id=quote_plus(ATLAS_ID),
-            parcellation_id=PARCELLATION_ID,
-            region_spec=quote_plus(HOC1_LEFT_REGION_NAME),
-            conn_id=conn_id
-        )
-        response=client.get(url)
-        assert response.status_code == 200
-        response_json=json.loads(response.content)
-        column_names=response_json.get('__column_names')
-        assert column_names is not None
-        assert type(column_names) == list
-        assert len(column_names) > 0
+    # temporarily disable connectvity
+    # def test_rest_connectivity(self):
+    #     conn_id='e428cb6b-0110-4205-94ac-533ca5de6bb5'
+    #     url='/v1_0/atlases/{atlas_id}/parcellations/{parcellation_id}/regions/{region_spec}/features/ConnectivityProfile/{conn_id}'.format(
+    #         atlas_id=quote_plus(ATLAS_ID),
+    #         parcellation_id=PARCELLATION_ID,
+    #         region_spec=quote_plus(HOC1_LEFT_REGION_NAME),
+    #         conn_id=conn_id
+    #     )
+    #     response=client.get(url)
+    #     assert response.status_code == 200
+    #     response_json=json.loads(response.content)
+    #     column_names=response_json.get('__column_names')
+    #     assert column_names is not None
+    #     assert type(column_names) == list
+    #     assert len(column_names) > 0
