@@ -28,7 +28,7 @@ from app import logger
 from app.service.validation import validate_and_return_atlas, validate_and_return_parcellation, \
     validate_and_return_region, validate_and_return_space
 # TODO: Local or Remote NiftiVolume? NeuroglancerVolume = NgVolume?
-from siibra.volumes.volume import VolumeSrc, LocalNiftiVolume, NeuroglancerVolume
+from siibra.volumes.volume import VolumeSrc, LocalNiftiVolume, NeuroglancerVolume, RemoteNiftiVolume
 from siibra.core import Space, BoundingBox
 from siibra.features import FeatureQuery
 from siibra.features.voi import VolumeOfInterest
@@ -723,9 +723,16 @@ def ebrains_dataset_encoder(ds: siibra.core.datasets.EbrainsDataset):
         'urls': ds.urls,
     }
 
+forbidden_keys = (
+    "atlases",
+    "_datasets_cached"
+)
+
 def space_encoder(space: Space):
     return {
-        key: space.__dict__[key] for key in space.__dict__ if key != 'atlases'
+        key: space.__dict__[key]
+        for key in space.__dict__
+        if key not in forbidden_keys
     }
     
 
