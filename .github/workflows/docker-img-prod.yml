@@ -59,7 +59,6 @@ jobs:
         github.event_name == 'release' &&
         !contains(github.ref, 'rc')
       run: |
-        
         echo "Login to docker registry"
         docker login \
           -u '${{ secrets.EBRAINS_DOCKER_REG_USER }}' \
@@ -86,8 +85,9 @@ jobs:
         done
         echo "Done"
 
-  deploy-on-okd:
-    if: {{ success() && ! contains(github.ref, 'rc') }}
+  deploy-prod-on-okd:
+    needs: build-docker-img
+    if: ! contains(github.ref, 'rc')
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -114,10 +114,9 @@ jobs:
 
   deploy-rc-on-okd:
     needs: build-docker-img
-    if: {{ success() && contains(github.ref, 'rc') }}
+    if: contains(github.ref, 'rc')
     runs-on: ubuntu-latest
     steps:
-
     - uses: actions/checkout@v2
     - name: 'Set env var'
       run: |
