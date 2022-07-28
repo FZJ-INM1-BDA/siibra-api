@@ -27,7 +27,7 @@ from fastapi import APIRouter, HTTPException, Request, Response
 from fastapi.encoders import jsonable_encoder
 from starlette.responses import FileResponse, StreamingResponse
 
-from app.service.request_utils import get_spatial_features, get_voi, split_id, get_file_from_nibabel, get_parcellations_for_space
+from app.service.request_utils import get_feature_cls_from_name, get_spatial_features, get_voi, split_id, get_file_from_nibabel, get_parcellations_for_space
 from app.service.request_utils import get_base_url_from_request, siibra_custom_json_encoder,origin_data_decoder
 from app.service.validation import validate_and_return_atlas, validate_and_return_parcellation, validate_and_return_space
 
@@ -220,6 +220,12 @@ def get_spatial_feature_names(atlas_id: str, space_id: str, request: Request):
     # TODO: Getting all features with result takes to much time at the moment
     # features = siibra.get_features(space, 'all')
 
+    def is_spatial_feature(ft: str):
+        try:
+            featurecls = get_feature_cls_from_name(ft)
+            return issubclass(featurecls[0], siibra.features.features.SpatialFeature)
+        except:
+            return False
     return {
         'features': [{
             feature.modality(): '{}atlases/{}/spaces/{}/features/{}'.format(
@@ -227,7 +233,7 @@ def get_spatial_feature_names(atlas_id: str, space_id: str, request: Request):
                 atlas_id.replace('/', '%2F'),
                 space_id.replace('/', '%2F'),
                 quote(feature.modality())
-            ) for feature in siibra.features.modalities if issubclass(feature._FEATURETYPE, siibra.features.feature.SpatialFeature)
+            ) for feature in siibra.features.modalities if is_spatial_feature(feature)
         }]
     }
 

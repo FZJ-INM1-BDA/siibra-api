@@ -88,17 +88,17 @@ jobs:
         - deploy-site: 'jsc'
           okd-img-stream: 'docker-registry.default.svc:5000/siibra-api/siibra-api-stable-v1:0.1'
           okd-endpoint: https://okd.jsc.hbp.eu:443
-          okd-secrets: ${{ secrets.OKD_JSC_SECRET }}
+          okd-secret-key: OKD_JSC_SECRET
           okd-project: siibra-api
         - deploy-site: 'cscs'
           okd-img-stream: 'docker-registry.default.svc:5000/siibra-api/siibra-api-stable-v1:0.1'
           okd-endpoint: https://okd.hbp.eu:443
-          okd-secrets: ${{ secrets.OKD_PROD_SECRET }}
+          okd-secret-key: OKD_PROD_SECRET
           okd-project: siibra-api
     steps:
     - name: 'Login and deploy'
       run: |
-        oc login ${{ matrix.okd-endpoint }} --token=${{ matrix.okd-secrets }}
+        oc login ${{ matrix.okd-endpoint }} --token=${{ secrets[matrix.okd-secret-key] }}
         oc project ${{ matrix.okd-project }}
         oc import-image ${{ matrix.okd-img-stream }}
 

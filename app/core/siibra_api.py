@@ -18,6 +18,8 @@ from fastapi import APIRouter
 from fastapi.encoders import jsonable_encoder
 import siibra
 
+from app.service.request_utils import get_feature_cls_from_name
+
 # FastApi router to create rest endpoints
 router = APIRouter()
 
@@ -51,16 +53,22 @@ def get_all_available_modalities():
     """
     Return all possible modalities
     """
-    def get_feature_type(ft):
-        if issubclass(ft, siibra.features.feature.SpatialFeature):
-            return 'SpatialFeature'
-        if issubclass(ft, siibra.features.feature.RegionalFeature):
-            return 'RegionalFeature'
-        if issubclass(ft, siibra.features.feature.ParcellationFeature):
-            return 'ParcellationFeature'
-        return 'UnknownFeatureType'
+    def get_feature_type(ft: str):
+        try:
+            featurecls = get_feature_cls_from_name(ft)
+            feature = featurecls[0]
+            if issubclass(feature, siibra.features.feature.SpatialFeature):
+                return 'SpatialFeature'
+            if issubclass(feature, siibra.features.feature.RegionalFeature):
+                return 'RegionalFeature'
+            if issubclass(feature, siibra.features.feature.ParcellationFeature):
+                return 'ParcellationFeature'
+            return 'UnknownFeatureType'
+        except Exception as e:
+            return 'UnknownFeatureType'
+
     return [{
-        'name': feature_name.modality(),
-        'type': get_feature_type(feature_name._FEATURETYPE)
+        'name': feature_name,
+        'type': get_feature_type(feature_name)
     } for feature_name in siibra.features.modalities]
 

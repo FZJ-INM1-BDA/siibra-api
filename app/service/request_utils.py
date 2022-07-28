@@ -226,7 +226,7 @@ def get_regional_feature(
                      detail=f'Could not get features for region with id {region_id}')
 
     shaped_features = None
-    if siibra.features.modalities[modality_id] == siibra.features.ebrains.EbrainsRegionalFeatureQuery:
+    if siibra.features.ebrains.EbrainsRegionalFeatureQuery._FEATURETYPE in get_feature_cls_from_name(modality_id):
         shaped_features = [{
             'summary': {
                 '@id': kg_rf_f.id,
@@ -235,7 +235,7 @@ def get_regional_feature(
             'get_detail': lambda kg_rf_f: { '__detail': kg_rf_f.detail },
             'instance': kg_rf_f,
         } for kg_rf_f in got_features]
-    if siibra.features.modalities[modality_id] == siibra.features.genes.AllenBrainAtlasQuery:
+    if siibra.features.genes.AllenBrainAtlasQuery._FEATURETYPE in get_feature_cls_from_name(modality_id):
         shaped_features = [{
             'summary': {
                 '@id': hashlib.md5(str(gene_feat).encode("utf-8")).hexdigest(),
@@ -253,7 +253,7 @@ def get_regional_feature(
     
     # Temporarily disabled, as imports have changed 
 
-    # if siibra.features.modalities[modality_id] == siibra.features.connectivity.ConnectivityProfileQuery:
+    #  if siibra.features.connectivity.ConnectivityProfileQuery._FEATURETYPE in get_feature_cls_from_name(modality_id):
     #     shaped_features = [{
     #         'summary': {
     #             "@id": conn_pr._matrix.id,
@@ -268,7 +268,7 @@ def get_regional_feature(
     #          },
     #          'instance': conn_pr,
     #     } for conn_pr in got_features]
-    if siibra.features.modalities[modality_id] == siibra.features.receptors.ReceptorQuery:
+    if siibra.features.receptors.ReceptorQuery._FEATURETYPE in get_feature_cls_from_name(modality_id):
         shaped_features = [{
             'summary': {
                 "@id": receptor_pr.name,
@@ -303,7 +303,7 @@ def get_regional_feature(
              },
              'instance': receptor_pr,
         } for receptor_pr in got_features]
-    if siibra.features.modalities[modality_id] == siibra.features.cells.RegionalCellDensityExtractor:
+    if siibra.features.cells.RegionalCellDensityExtractor._FEATURETYPE in get_feature_cls_from_name(modality_id):
         shaped_features = [{
             'summary': {
                 "@id": '...',
@@ -441,6 +441,18 @@ def get_voi(atlas_id: str, space_id: str, boundingbox: Tuple[Tuple[float, float,
         if feat.location.space is space
         and bbox.intersection(feat.location)]
 
+def get_feature_cls_from_name(name: str) -> List[siibra.features.feature.Feature]:
+    assert name in [f for f in siibra.features.modalities], f"{name} not in modalities"
+    assert name in siibra.features.FeatureQuery._implementations, f"{name} not in implementations"
+    assert len(siibra.features.FeatureQuery._implementations[name]) > 0, f"{name} has no query class"
+    return [featuretype._FEATURETYPE for featuretype in siibra.features.FeatureQuery._implementations[name]]
+    
+def is_spatial_feature(ft: str) -> bool:
+    try:
+        featurecls = get_feature_cls_from_name(ft)
+        return issubclass(featurecls[0], siibra.features.feature.SpatialFeature)
+    except:
+        return False
 
 @memoize(typed=True)
 def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detail=False, parc_id=None, region_id=None):
@@ -449,13 +461,7 @@ def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detai
         raise HTTPException(status_code=400,
                             detail=f'{modality_id} is not a valid modality')
 
-    # TODO: Why only spatial features
-    if not issubclass(
-            # feature_classes[modality_id],
-            # feature_export.SpatialFeature):
-            siibra.features.modalities[modality_id]._FEATURETYPE,
-            siibra.features.feature.SpatialFeature):
-        # modality_id is not a global feature, return empty array
+    if not is_spatial_feature(modality_id):
         return []
 
     atlas = validate_and_return_atlas(atlas_id)
@@ -482,7 +488,8 @@ def get_spatial_features(atlas_id, space_id, modality_id, feature_id=None, detai
         raise HTTPException(404, detail=f'Could not get spatial features.')
     
     shaped_features = None
-    if siibra.features.modalities[modality_id] == siibra.features.ieeg.IEEG_SessionQuery:
+    
+    if siibra.features.ieeg.IEEG_SessionQuery._FEATURETYPE in get_feature_cls_from_name(modality_id):
         shaped_features=[{
             'summary': {
                 '@id': hashlib.md5(str(feat).encode("utf-8")).hexdigest(),
