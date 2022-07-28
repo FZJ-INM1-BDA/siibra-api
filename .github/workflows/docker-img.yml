@@ -3,12 +3,7 @@ name: '[docker image]'
 on:
   push:
     branches:
-    - master
-    - next
     - v1
-  release:
-    types:
-    - published
 
 env:
   OKD_PROJECT: siibra-api
@@ -82,81 +77,31 @@ jobs:
         done
         echo "Done"
 
-  # deployment should only require pulling newest image on openshift deployment
-  # deploy-on-okd:
-  #   needs: build-docker-img
-  #   if: success()
-  #   runs-on: ubuntu-latest
-  #   steps:
+  deploy-on-okd:
+    if: success()
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        deploy-site: ['jsc', 'cscs']
+        include:
+        - deploy-site: 'jsc'
+          okd-img-stream: 'docker-registry.default.svc:5000/siibra-api/siibra-api-stable-v1:0.1'
+          okd-endpoint: https://okd.jsc.hbp.eu:443
+          okd-secrets: ${{ secrets.OKD_JSC_SECRET }}
+          okd-project: siibra-api
+        - deploy-site: 'cscs'
+          okd-img-stream: 'docker-registry.default.svc:5000/siibra-api/siibra-api-stable-v1:0.1'
+          okd-endpoint: https://okd.hbp.eu:443
+          okd-secrets: ${{ secrets.OKD_PROD_SECRET }}
+          okd-project: siibra-api
+    steps:
+    - name: 'Login and deploy'
+      run: |
+        oc login ${{ matrix.okd-endpoint }} --token=${{ matrix.okd-secrets }}
+        oc project ${{ matrix.okd-project }}
+        oc import-image ${{ matrix.okd-img-stream }}
 
-  #   - uses: actions/checkout@v2
-  #   - name: 'Set env var'
-  #     run: |
-  #       echo "Event: $GITHUB_EVENT_NAME"
-
-  #       if [ "$GITHUB_EVENT_NAME" = "push" ]
-  #       then
-
-  #         echo "event triggered is 'push', use dev envvar"
-  #         # since it's release, set DEV_FLAG to true
-  #         echo "DEV_FLAG=1" >> $GITHUB_ENV
-
-  #         echo "event triggered is 'push', use develop envvar"
-  #         OKD_ENDPOINT=${{ env.OKD_DEV_ENDPOINT }}
-  #         OKD_SECRET=${{ env.OKD_DEV_SECRET }}
-  #         DEPLOY_SITE_POSTFIX="-dev"
-
-  #         DOCKER_IMAGE_TAG=latest
-  #       fi
-
-  #       if [ "$GITHUB_EVENT_NAME" = "release" ]
-  #       then
-
-  #         OKD_ENDPOINT=${{ env.OKD_PROD_ENDPOINT }}
-  #         OKD_SECRET=${{ env.OKD_PROD_SECRET }}
-  #         DEPLOY_SITE_POSTFIX=""
-
-  #         if [[ "$GITHUB_REF" = *"rc"* ]]
-  #         then
-  #           # if release contains rc, set img tag to rc
-  #           DOCKER_IMAGE_TAG=rc
-  #         else
-  #           # if release contains rc, otherwise, set img tag to stable
-  #           DOCKER_IMAGE_TAG=stable
-  #         fi
-  #       fi
-
-  #       echo "OKD_ENDPOINT=$OKD_ENDPOINT" >> $GITHUB_ENV
-  #       echo "OKD_SECRET=$OKD_SECRET" >> $GITHUB_ENV
-  #       echo "DEPLOY_SITE_POSTFIX=$DEPLOY_SITE_POSTFIX" >> $GITHUB_ENV
-
-  #       echo "DOCKER_IMAGE_TAG: $DOCKER_IMAGE_TAG"
-  #       echo "DOCKER_IMAGE_TAG=$DOCKER_IMAGE_TAG" >> $GITHUB_ENV
-
-  #   - name: 'Login via oc cli & deploy'
-  #     run: |
-  #       oc login ${OKD_ENDPOINT} --token=${OKD_SECRET}
-  #       oc project ${{ env.OKD_PROJECT }}
-
-  #       # sanitise docker_img_tag, even though it shouldn't be necessary (valid tags are latest | rc | stable )
-  #       DEPLOY_FLAVOUR=$(echo ${DOCKER_IMAGE_TAG//[_\/]/} | awk '{ print tolower($0) }')
-  #       echo "Working docker tag: $DOCKER_IMAGE_TAG, sanitized flavour: $DEPLOY_FLAVOUR"
-        
-  #       # check if the deploy already exist
-  #       if oc get dc siibra-api-branch-deploy-$DEPLOY_FLAVOUR; then
-  #         # trigger redeploy if deployconfig exists already
-  #         echo "dc siibra-api-branch-deploy-$DEPLOY_FLAVOUR already exist, redeploy..."
-  #         oc rollout latest dc/siibra-api-branch-deploy-$DEPLOY_FLAVOUR
-  #       else 
-  #         # create new app if deployconfig does not yet exist
-  #         echo "dc siibra-api-branch-deploy-$DEPLOY_FLAVOUR does not yet exist, create new app..."
-  #         oc new-app --template siibra-api-branch-deploy \
-  #           -p DOCKER_IMAGE_TAG=$DOCKER_IMAGE_TAG \
-  #           -p DEPLOY_SITE_POSTFIX=$DEPLOY_SITE_POSTFIX \
-  #           -p DEPLOY_FLAVOUR=$DEPLOY_FLAVOUR
-  #       fi
-
-  
       # - name: 'Update status badge'
       #   if: success()
       #   run: |
