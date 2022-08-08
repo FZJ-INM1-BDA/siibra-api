@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Optional
+from typing import List, Optional, Type
 import nibabel as nib
 import hashlib
 import os
@@ -27,7 +27,7 @@ from app.models import SPyParcellationFeature
 import siibra
 from siibra.core import Region, Parcellation, Space, BoundingBox
 from siibra.core.serializable_concept import JSONSerializable
-from siibra.features import FeatureQuery, modalities
+from siibra.features import modalities
 from siibra.features.voi import VolumeOfInterest
 from siibra.features.feature import RegionalFeature, ParcellationFeature, SpatialFeature
 
@@ -53,8 +53,8 @@ def get_cached_file(filename: str, fn: callable):
 
 
 def get_all_vois():
-    queries = FeatureQuery.queries("volume")
-    features: List[VolumeOfInterest] = [feat for query in queries for feat in query.features]
+    cls = modalities["volume"]
+    features: List[VolumeOfInterest] = [feat for feat in cls.get_modalities()]
     return features
 
 
@@ -112,54 +112,33 @@ def get_path_to_regional_map(query_id, roi, space_of_interest):
 
 
 def get_all_serializable_regional_features(region: Region, space: Space=None) -> List[RegionalFeature]:
-    supported_modalities: List[str] = []
-    for modality, query_list in [(modality, FeatureQuery._implementations[modality]) for modality in modalities]:
-        if all(
-            issubclass(query._FEATURETYPE, RegionalFeature) and
-            issubclass(query._FEATURETYPE, JSONSerializable)
-            for query in query_list
-        ):
-            supported_modalities.append(modality)
-
-    # providing list/tuple to modality results in a dict return, rather than list
-    return [feat
-        for mod in supported_modalities
-        for feat in siibra.get_features(region, modality=mod, space=space)]
+    
+    support_clss: List[Type[RegionalFeature]] = [cls for cls in modalities
+        if issubclass(cls, RegionalFeature)
+        and issubclass(cls, JSONSerializable)]
+    return [feat for support_cls in support_clss for feat in RegionalFeature.get_features(region, modality=support_cls.modality(), space=space)]
 
 
 def get_all_serializable_parcellation_features(parcellation: Parcellation, **kwargs) -> List[SPyParcellationFeature]:
-    
-    supported_modalities: List[str] = []
-    for modality, query_list in [(modality, FeatureQuery._implementations[modality]) for modality in modalities]:
-        if all(
-            issubclass(query._FEATURETYPE, ParcellationFeature) and
-            issubclass(query._FEATURETYPE, JSONSerializable)
-            for query in query_list
-        ):
-            supported_modalities.append(modality)
+    support_clss: List[Type[ParcellationFeature]] = [cls for cls in modalities
+        if issubclass(cls, ParcellationFeature)
+        and issubclass(cls, JSONSerializable)]
 
-    # providing list/tuple to modality results in a dict return, rather than list
     return [feat
-        for mod in supported_modalities
-        for feat in siibra.get_features(parcellation, modality=mod, **kwargs)]
-
+            for support_cls in support_clss
+            for feat in support_cls.get_features(parcellation, modality=support_cls)]
 
 def get_all_serializable_spatial_features(space: Space, parcellation: Parcellation=None, region: Region=None, bbox:BoundingBox=None, **kwargs):
-
-    supported_modalities = []
-    for modality, query_list in [(modality, FeatureQuery._implementations[modality]) for modality in modalities]:
-        if all(
-            issubclass(query._FEATURETYPE, SpatialFeature) and
-            issubclass(query._FEATURETYPE, JSONSerializable)
-            for query in query_list
-        ):
-            supported_modalities.append(modality)
+    support_clss: List[Type[SpatialFeature]] = [cls for cls in modalities
+        if issubclass(cls, SpatialFeature)
+        and issubclass(cls, JSONSerializable)]
 
     roi = region or parcellation
     if roi:
         return [feat
-            for mod in supported_modalities
-            for feat in siibra.get_features(roi, modality=mod, **kwargs)]
+            for support_cls in support_clss
+            for feat in support_cls.get_features(roi, modality=support_cls, space=space)]
+
     if bbox:
         return [feat
             for feat in all_voi_features

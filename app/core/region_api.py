@@ -22,7 +22,7 @@ from starlette.responses import FileResponse
 from fastapi_versioning import version
 
 from siibra.core import Region
-from siibra.features.receptors import ReceptorDatasetModel
+# from siibra.features.receptors import ReceptorDatasetModel
 from siibra.features.cells import CorticalCellDistributionModel
 from siibra.core.datasets import DatasetJsonModel
 from siibra.volumes.volume import VolumeModel
@@ -51,7 +51,7 @@ class BaseDatasetJsonModel(DatasetJsonModel):
 
 
 UnionRegionalFeatureModels = Union[
-    ReceptorDatasetModel,
+    # ReceptorDatasetModel,
     BaseDatasetJsonModel,
     CorticalCellDistributionModel,
 ]

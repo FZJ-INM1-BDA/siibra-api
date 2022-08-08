@@ -19,7 +19,7 @@ from fastapi_versioning import version
 import siibra
 from siibra.core.serializable_concept import JSONSerializable
 
-from app import FASTAPI_VERSION
+from app import FASTAPI_VERSION, logger
 
 router = APIRouter()
 
@@ -42,10 +42,11 @@ def get_all_available_modalities():
     """
     Return all possible modalities
     """
+    unsupported_mods = [m for m in siibra.features.modalities if not issubclass(m, JSONSerializable)]
+    if len(unsupported_mods) > 0:
+        logger.warn(f"Following modalities are not subclass of JSONSerializable, and thus not supported: {','.join([m.modality() for m in unsupported_mods])}")
     return [{
-        "name": feature_name,
-        "types": set([ FeatureQuery._FEATURETYPE.get_model_type()
-            for FeatureQuery in siibra.features.FeatureQuery._implementations[feature_name]
-            if issubclass(FeatureQuery._FEATURETYPE, JSONSerializable) ])
-    } for feature_name in siibra.features.modalities]
+        "name": mod.modality(),
+        "types": set([ mod.get_model_type() ])
+    } for mod in siibra.features.modalities if issubclass(mod, JSONSerializable)]
 

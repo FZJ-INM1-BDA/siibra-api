@@ -16,7 +16,7 @@
 from typing import Optional, Union
 from fastapi import APIRouter, HTTPException
 from fastapi_versioning import version
-from siibra.features import FeatureQuery
+from siibra.features import modalities
 from app.core.region_api import UnionRegionalFeatureModels
 from app.core.space_api import UnionSpatialFeatureModels
 from app.models import SPyParcellationFeatureModel
@@ -56,7 +56,8 @@ def get_feature_details(feature_id: str,
     :param region_id:
     :return: FeatureModels
     """
-    feature = FeatureQuery.get_feature_by_id(feature_id)
+    raise HTTPException(501, detail="querying feature with id has temporarily been yanked. will implement in the future.")
+    # TODO implement
     if feature is not None:
         return feature.to_model(detail=True)
     else:
