@@ -87,7 +87,7 @@ jobs:
 
   deploy-prod-on-okd:
     needs: build-docker-img
-    if: ! contains(github.ref, 'rc')
+    if: ${{ ! contains(github.ref, 'rc') }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -114,7 +114,7 @@ jobs:
 
   deploy-rc-on-okd:
     needs: build-docker-img
-    if: contains(github.ref, 'rc')
+    if: ${{ contains(github.ref, 'rc') }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
