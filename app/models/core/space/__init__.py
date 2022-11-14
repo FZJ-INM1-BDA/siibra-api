@@ -43,7 +43,7 @@ class LocationModel(ConfigBaseModel):
 @serialize(Location)
 def location_to_model(location: Location, **kwargs) -> LocationModel:
     return LocationModel(
-        id=f"spy/location/space:{location.space.model_id if location.space is not None else 'None'}",
+        id=f"spy/location/space:{location.space.id if location.space is not None else 'None'}",
         space={"@id": location.space.id},
         type="spy/location",
     )

@@ -1,3 +1,1 @@
-from .space import *
-from .atlas import *
-from .datasets import *
+from . import space, atlas, datasets
