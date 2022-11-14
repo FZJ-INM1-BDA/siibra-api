@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field
 from functools import wraps
 from siibra.features.connectivity import ConnectivityMatrixDataModel, ConnectivityMatrix
 from siibra.core.serializable_concept import JSONSerializable
-
+from .core import *
 
 class HrefModel(BaseModel):
     href: str
@@ -87,3 +87,13 @@ class CustomList(list):
 SPyParcellationFeature = ConnectivityMatrix
 
 SPyParcellationFeatureModel = Union[ConnectivityMatrixDataModel, SerializationErrorModel]
+
+class ClsUnregForSerialisationException(Exception): pass
+
+def instance_to_model(instance, **kwargs):
+    from .util import REGISTER
+    for Cls in REGISTER:
+        if isinstance(instance, Cls):
+            return REGISTER[Cls](instance, **kwargs)
+    raise ClsUnregForSerialisationException(f"class {instance.__class__}  has not been registered to be serialized!")
+    
