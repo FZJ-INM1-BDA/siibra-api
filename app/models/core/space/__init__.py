@@ -4,9 +4,9 @@ from typing import List, Dict
 from siibra.core.space import Space, Point, BoundingBox, Location
 from app.models.util import serialize
 
-from ...openminds.base import ConfigBaseModel
-from ...openminds.SANDS.v3.atlas import commonCoordinateSpace
-from ...openminds.SANDS.v3.miscellaneous.coordinatePoint import (
+from app.models.openminds.base import ConfigBaseModel
+from app.models.openminds.SANDS.v3.atlas import commonCoordinateSpace
+from app.models.openminds.SANDS.v3.miscellaneous.coordinatePoint import (
     Model as CoordinatePointModel,
     Coordinates as QuantitativeValueModel,
 )
