@@ -27,7 +27,7 @@ from siibra.features.cells import CorticalCellDistributionModel
 from siibra.core.datasets import DatasetJsonModel
 from siibra.volumes.volume import VolumeModel
 
-from app.models import CustomList
+from models.app.customlist import CustomList
 from app.service.request_utils import get_all_serializable_regional_features, get_path_to_regional_map
 from app import FASTAPI_VERSION, logger
 from app.service.validation import (

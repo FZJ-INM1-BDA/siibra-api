@@ -22,7 +22,7 @@ from fastapi import HTTPException
 
 from app.configuration.cache_redis import CacheRedis
 from app.configuration.diskcache import CACHEDIR
-from app.models import SPyParcellationFeature
+from models.features.connectivity import ConnectivityMatrixDataModel
 
 import siibra
 from siibra.core import Region, Parcellation, Space, BoundingBox
@@ -119,6 +119,7 @@ def get_all_serializable_regional_features(region: Region, space: Space=None) ->
     return [feat for support_cls in support_clss for feat in RegionalFeature.get_features(region, modality=support_cls.modality(), space=space)]
 
 
+SPyParcellationFeature = ConnectivityMatrixDataModel
 def get_all_serializable_parcellation_features(parcellation: Parcellation, **kwargs) -> List[SPyParcellationFeature]:
     support_clss: List[Type[ParcellationFeature]] = [cls for cls in modalities
         if issubclass(cls, ParcellationFeature)

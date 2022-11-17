@@ -24,7 +24,7 @@ from app.core.space_api import get_all_spaces, router as space_router
 from app.service.validation import (
     validate_and_return_atlas,
 )
-from app.models import RestfulModel
+from models.app.restful import RestfulModel
 
 from siibra.core import Atlas
 from siibra import atlases

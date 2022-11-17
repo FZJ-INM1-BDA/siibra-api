@@ -34,7 +34,7 @@ from app.service.validation import (
     file_response_openapi,
 )
 
-from app.models import RestfulModel
+from models.app.restful import RestfulModel
 from app.service.request_utils import  get_all_serializable_spatial_features, get_file_from_nibabel
 from app.service.validation import validate_and_return_atlas, validate_and_return_space
 

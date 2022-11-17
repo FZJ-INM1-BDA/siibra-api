@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Optional
+from typing import List, Optional, Union
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_pagination import paginate, Page, Params
 from fastapi_versioning import version
@@ -26,8 +26,13 @@ from app.service.request_utils import get_all_serializable_parcellation_features
 
 from app.service.validation import validate_and_return_atlas, validate_and_return_parcellation
 from app.core.region_api import router as region_router, get_all_regions_from_atlas_parc_space
-from app.models import CustomList, RestfulModel, SPyParcellationFeatureModel
 
+from models.app.customlist import CustomList
+from models.app.error import SerializationErrorModel
+from models.app.restful import RestfulModel
+from models.features.connectivity import ConnectivityMatrixDataModel
+
+SPyParcellationFeatureModel = Union[ConnectivityMatrixDataModel, SerializationErrorModel]
 
 PARCELLATION_PATH = "/parcellations"
 TAGS = ["parcellations"]
