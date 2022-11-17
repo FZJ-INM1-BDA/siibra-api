@@ -20,7 +20,7 @@ jobs:
         pip install pydantic
     - name: Attempt to import model, should succeed.
       run: |
-        python -c "import model"
+        python -c "import models"
   test:
     runs-on: ubuntu-latest
     env:
