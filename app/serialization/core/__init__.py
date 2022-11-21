@@ -1,1 +1,1 @@
-from . import atlas, dataset, space
+from . import atlas, dataset, space, parcellation, region

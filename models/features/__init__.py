@@ -1,1 +1,7 @@
-from . import cells, ieeg, voi, connectivity, feature
+from . import (
+    cells,
+    connectivity,
+    feature,
+    ieeg,
+    voi,
+)

@@ -1,1 +1,7 @@
-from . import space, atlas, datasets
+from . import (
+    parcellation,
+    atlas,
+    datasets,
+    region,
+    space,
+)
