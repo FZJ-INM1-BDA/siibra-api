@@ -1,9 +1,9 @@
 import siibra
 import pytest
-from app.serialization.util import instance_to_model
-from models.core.atlas import SiibraAtlasModel
+from api.serialization.util import instance_to_model
+from api.models.core.atlas import SiibraAtlasModel
 
-all_atlases = [s for s in siibra.REGISTRY[siibra.Atlas]]
+all_atlases = [s for s in siibra.Atlas.registry()]
 
 @pytest.mark.parametrize("atlas", all_atlases)
 def test_atlas(atlas: siibra.Atlas):

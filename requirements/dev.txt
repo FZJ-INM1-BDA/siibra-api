@@ -1,2 +1,0 @@
--r common.txt
-git+https://github.com/FZJ-INM1-BDA/siibra-python@add_ebrains_info

@@ -1,8 +1,8 @@
 from siibra.features import IEEG_SessionQuery
 from siibra.features.ieeg import IEEG_Session
 import pytest
-from app.serialization.util import instance_to_model
-from models.features.ieeg import IEEGSessionModel
+from api.serialization.util import instance_to_model
+from api.models.features.ieeg import IEEGSessionModel
 ieeg_query = IEEG_SessionQuery()
 
 all_ieeg_features = [f for f in ieeg_query.features]

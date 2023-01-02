@@ -1,8 +1,8 @@
 from siibra import REGISTRY
 from siibra.features.voi import VolumeOfInterest
 import pytest
-from app.serialization.util import instance_to_model
-from models.features.voi import VOIDataModel
+from api.serialization.util import instance_to_model
+from api.models.features.voi import VOIDataModel
 
 all_vois = [v for v in REGISTRY[VolumeOfInterest]]
 @pytest.mark.parametrize('voi', all_vois)

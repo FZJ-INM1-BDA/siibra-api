@@ -1,9 +1,9 @@
 import siibra
 import pytest
-from app.serialization.util import instance_to_model
-from models.core.parcellation import SiibraParcellationModel
+from api.serialization.util import instance_to_model
+from api.models.core.parcellation import SiibraParcellationModel
 
-all_parcellations = [p for p in siibra.REGISTRY[siibra.Parcellation]]
+all_parcellations = [p for p in siibra.Parcellation.registry()]
 
 @pytest.mark.parametrize("parc", all_parcellations)
 def test_parcellations(parc: siibra.Parcellation):

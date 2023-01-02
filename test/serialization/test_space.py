@@ -1,9 +1,9 @@
 import siibra
 import pytest
-from app.serialization.util import instance_to_model
-from models.core.space import commonCoordinateSpace
+from api.serialization.util import instance_to_model
+from api.models.core.space import commonCoordinateSpace
 
-all_spaces = [s for s in siibra.REGISTRY[siibra.Space]]
+all_spaces = [s for s in siibra.Space.registry()]
 
 @pytest.mark.parametrize("space", all_spaces)
 def test_space(space: siibra.Space):

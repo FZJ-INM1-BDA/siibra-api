@@ -27,10 +27,10 @@ from app.service.request_utils import get_all_serializable_parcellation_features
 from app.service.validation import validate_and_return_atlas, validate_and_return_parcellation
 from app.core.region_api import router as region_router, get_all_regions_from_atlas_parc_space
 
-from models.app.customlist import CustomList
-from models.app.error import SerializationErrorModel
-from models.app.restful import RestfulModel
-from models.features.connectivity import ConnectivityMatrixDataModel
+from api.models.app.customlist import CustomList
+from api.models.app.error import SerializationErrorModel
+from api.models.app.restful import RestfulModel
+from api.models.features.connectivity import ConnectivityMatrixDataModel
 
 SPyParcellationFeatureModel = Union[ConnectivityMatrixDataModel, SerializationErrorModel]
 

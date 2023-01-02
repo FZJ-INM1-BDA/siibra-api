@@ -21,8 +21,8 @@ from app.core.region_api import UnionRegionalFeatureModels
 from app.core.space_api import UnionSpatialFeatureModels
 from app import FASTAPI_VERSION
 from siibra.features.connectivity import ConnectivityMatrix
-from models.features.connectivity import ConnectivityMatrixDataModel
-from models.app.error import SerializationErrorModel
+from api.models.features.connectivity import ConnectivityMatrixDataModel
+from api.models.app.error import SerializationErrorModel
 SPyParcellationFeature = ConnectivityMatrix
 
 SPyParcellationFeatureModel = Union[ConnectivityMatrixDataModel, SerializationErrorModel]

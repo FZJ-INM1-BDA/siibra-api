@@ -6,8 +6,8 @@ from siibra.features.connectivity import (
 )
 from siibra import REGISTRY
 import pytest
-from app.serialization.util import instance_to_model
-from models.features.connectivity import ConnectivityMatrixDataModel
+from api.serialization.util import instance_to_model
+from api.models.features.connectivity import ConnectivityMatrixDataModel
 
 streamline_counts = [f for f in REGISTRY[StreamlineCounts]]
 streamline_lengths = [f for f in REGISTRY[StreamlineLengths]]

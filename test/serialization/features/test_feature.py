@@ -18,8 +18,8 @@ from siibra.features.feature import (
     CorticalProfile,
 )
 
-from app.serialization.util import instance_to_model
-from models.features.feature import (
+from api.serialization.util import instance_to_model
+from api.models.features.feature import (
     RegionalFingerprintModel,
     CorticalProfileModel,
 )

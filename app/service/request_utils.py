@@ -22,7 +22,7 @@ from fastapi import HTTPException
 
 from app.configuration.cache_redis import CacheRedis
 from app.configuration.diskcache import CACHEDIR
-from models.features.connectivity import ConnectivityMatrixDataModel
+from api.models.features.connectivity import ConnectivityMatrixDataModel
 
 import siibra
 from siibra.core import Region, Parcellation, Space, BoundingBox
