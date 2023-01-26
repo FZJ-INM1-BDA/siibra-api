@@ -6,4 +6,4 @@ jinja2
 uvicorn[standard]
 redis
 diskcache
--r requirements/siibra.txt
+-r siibra.txt

@@ -1,7 +1,7 @@
 FROM python:3.10
 RUN python -m pip install -U pip
-COPY ./requirements/worker.txt /requirements.txt
-RUN pip install -r /requirements.txt
+COPY ./requirements /requirements
+RUN python -m pip install -r /requirements/worker.txt
 
 COPY . /worker
 WORKDIR /worker

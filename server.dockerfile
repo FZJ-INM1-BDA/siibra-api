@@ -1,7 +1,7 @@
 FROM python:3.10-alpine
 RUN python -m pip install -U pip
-COPY ./requirements/server.txt /requirements.txt
-RUN pip install -r /requirements.txt
+COPY ./requirements /requirements
+RUN python -m pip install -r /requirements/server.txt
 
 COPY . /api
 WORKDIR /api
