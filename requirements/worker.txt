@@ -1,2 +1,2 @@
--r siibra.txt
+-r requirements/siibra.txt
 celery[redis]==5.2.6

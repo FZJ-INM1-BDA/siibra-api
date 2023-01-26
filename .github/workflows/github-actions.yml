@@ -1,4 +1,4 @@
-name: siibra ci pipeline
+name: '[ci]tests'
 
 # only run on push to branch, not on tags
 on:
