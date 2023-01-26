@@ -77,7 +77,6 @@ class Model(SiibraBaseModel):
         description='Reference to an inspiring element.',
         min_items=1,
         title='inspiredBy',
-        unique_items=True,
     )
     internal_identifier: str = Field(
         ...,
@@ -92,7 +91,6 @@ class Model(SiibraBaseModel):
         max_items=2,
         min_items=1,
         title='laterality',
-        unique_items=True,
     )
     visualized_in: Optional[Dict[str, Any]] = Field(
         None,

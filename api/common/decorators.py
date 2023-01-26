@@ -15,13 +15,11 @@ def data_decorator(role: ROLE_TYPE):
                 def celery_task_wrapper(self, *args, **kwargs):
                     return fn(*args, **kwargs)
                     
-                bla = app.task(bind=True)(
+                return app.task(bind=True)(
                     wraps(
                         fn
                     )(celery_task_wrapper)
                 )
-                app.task()
-                return bla
             except ImportError as e:
                 errmsg = f"For worker role, celery must be installed as a dep"
                 print(errmsg)

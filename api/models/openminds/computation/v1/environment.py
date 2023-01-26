@@ -15,7 +15,6 @@ class Model(SiibraBaseModel):
         alias='configuration',
         min_items=1,
         title='configuration',
-        unique_items=True,
     )
     description: Optional[str] = Field(
         None,
@@ -37,5 +36,4 @@ class Model(SiibraBaseModel):
         alias='software',
         min_items=1,
         title='software',
-        unique_items=True,
     )

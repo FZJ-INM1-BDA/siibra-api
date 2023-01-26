@@ -1,13 +1,10 @@
 from api.serialization.util import serialize, instance_to_model
-from siibra import Parcellation, Space
-from siibra.core.parcellation import ParcellationVersion
-from api.models.openminds.base import SiibraAtIdModel
+from api.serialization.util.siibra import Parcellation, Space, ParcellationVersion
+from api.models._commons import SiibraAtIdModel
 from api.models.core.parcellation import (
     SiibraParcellationVersionModel,
     SiibraParcellationModel,
     BrainAtlasVersionModel,
-    SIIBRA_PARCELLATION_MODEL_TYPE,
-    BRAIN_ATLAS_VERSION_TYPE,
     AtlasType,
     HasTerminologyVersion,
 )
@@ -25,12 +22,10 @@ def get_brain_atlas_version_name(parc: Parcellation, space: Space) -> str:
 def parcellation_to_model(parc: Parcellation, **kwargs):
     return SiibraParcellationModel(
         id=parc.id,
-        type=SIIBRA_PARCELLATION_MODEL_TYPE,
         name=parc.name,
         modality=parc.modality,
         brain_atlas_versions=[BrainAtlasVersionModel(
             id=get_brain_atlas_version_id(parc, spc),
-            type=BRAIN_ATLAS_VERSION_TYPE,
             atlas_type={
                 # TODO fix
                 "@id": AtlasType.PROBABILISTIC_ATLAS
@@ -50,8 +45,8 @@ def parcellation_to_model(parc: Parcellation, **kwargs):
             full_name=get_brain_atlas_version_name(parc, spc),
             has_terminology_version=HasTerminologyVersion(
                 has_entity_version=[{
-                    "@id": r.id
-                } for r in parc]
+                    "@id": id
+                } for id in set([r.id for r in parc]) ]
             ),
             license={
                 # TODO fix
@@ -68,16 +63,14 @@ def parcellation_to_model(parc: Parcellation, **kwargs):
 
 @serialize(ParcellationVersion)
 def parcversion_to_model(version: ParcellationVersion, **kwargs):
-    assert version.prev is None or isinstance(version.prev, Parcellation), f"parcellationVersion to_model failed. expected .prev, if defined, to be instance of Parcellation, but is {version.prev.__class__} instead"
-    assert version.next is None or isinstance(version.next, Parcellation), f"parcellationVersion to_model failed. expected .next, if defined, to be instance of Parcellation, but is {version.next.__class__} instead"
     return SiibraParcellationVersionModel(
         name=version.name,
         deprecated=version.deprecated,
         prev=SiibraAtIdModel(
-            id=version.prev.id
-        ) if version.prev is not None else None,
+            id=version.prev_id
+        ) if version.prev_id is not None else None,
         next=SiibraAtIdModel(
-            id=version.next.id
-        ) if version.next is not None else None,
+            id=version.next_id
+        ) if version.next_id is not None else None,
     )
 

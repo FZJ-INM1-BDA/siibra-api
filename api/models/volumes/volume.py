@@ -1,23 +1,28 @@
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List, Union
 from pydantic import Field
-from api.models.openminds.base import (
+from enum import Enum
+from api.models._commons import (
     ConfigBaseModel,
     SiibraAtIdModel,
 )
 from api.models.core.datasets import DatasetJsonModel
 
-class VolumeDataModel(ConfigBaseModel):
-    type: str
-    is_volume: bool
-    is_surface: bool
-    detail: Dict[str, Any]
+class VolumeModel(ConfigBaseModel):
+    name: str
+    formats: List[str]
+    
+    provides_mesh: bool = Field(..., alias="providesMesh")
+    provides_image: bool = Field(..., alias="providesImage")
+
+    fragments: Dict[str, List[str]]
+    variant: Optional[str]
+
+    provided_volumes: Dict[str, Union[str, Dict[str, str]]] = Field(..., alias="providedVolumes")
+
     space: SiibraAtIdModel
-    url: Optional[str]
-    url_map: Optional[Dict[str, str]]
-    map_type: Optional[str]
-    volume_type: Optional[str]
 
-
-class VolumeModel(DatasetJsonModel):
-    type: str = Field(..., alias="@type")
-    data: VolumeDataModel
+# exactly matches MapType.name in siibra
+# exported here to avoid dependency on siibra
+class MapType(str, Enum):
+    LABELLED = "LABELLED"
+    STATISTICAL = "STATISTICAL"

@@ -12,12 +12,14 @@ services:
       - ./:/api
       - ./siibra-cache:/siibra-cache
     entrypoint: "uvicorn api.server:api --host 0.0.0.0 --port 5000 --workers 4 --reload"
+    image: siibra-api:v0.4-all
     build:
       context: .
       dockerfile: Dockerfile
     ports:
     - '5000:5000'
     environment:
+      SIIBRA_API_ROLE: all
       REDIS_HOST: redis
       REDIS_PORT: '6379'
       SIIBRA_CACHEDIR: /siibra-cache

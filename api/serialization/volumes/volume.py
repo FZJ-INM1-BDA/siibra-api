@@ -1,31 +1,19 @@
 from api.serialization.util import serialize, instance_to_model
 from api.models.volumes.volume import (
-    VolumeDataModel,
     VolumeModel,
+    SiibraAtIdModel
 )
-from siibra.volumes import VolumeSrc
+from api.serialization.util.siibra import Volume
 
-@serialize(VolumeSrc)
-def volume_to_model(vol: VolumeSrc, **kwargs) -> VolumeModel:
-    super_model = instance_to_model(vol, skip_classes=(VolumeSrc,), **kwargs)
-    super_dict = {
-        **super_model.dict(),
-        **{"@id": vol.id, "@type": f"spy/volume/{vol.volume_type}"},
-    }
-
+@serialize(Volume)
+def volume_to_model(vol: Volume, **kwargs) -> VolumeModel:
     return VolumeModel(
-        data=VolumeDataModel(
-            type=vol.volume_type,
-            is_volume=vol.is_volume,
-            is_surface=vol.is_surface,
-            detail=vol.detail or {},
-            space={"@id": vol.space.id},
-            url=vol.url if isinstance(vol.url, str) else None,
-            url_map=vol.url if isinstance(vol.url, dict) else None,
-            map_type=vol.map_type.name
-            if hasattr(vol, "map_type") and vol.map_type is not None
-            else None,
-            volume_type=vol.volume_type,
-        ),
-        **super_dict,
+        name=str(vol.name),
+        formats=list(vol.formats),
+        provides_mesh=vol.provides_mesh,
+        provides_image=vol.provides_image,
+        fragments=vol.fragments,
+        variant=vol.variant,
+        provided_volumes=vol.providers,
+        space=SiibraAtIdModel(id=vol.space.id)
     )

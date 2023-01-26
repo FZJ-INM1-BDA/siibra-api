@@ -54,5 +54,4 @@ class Model(SiibraBaseModel):
         description='Words or expressions used in the same language that have the same or nearly the same meaning in some or all senses.',
         min_items=1,
         title='synonym',
-        unique_items=True,
     )

@@ -6,5 +6,4 @@ jinja2
 uvicorn[standard]
 redis
 diskcache
-git+https://github.com/FZJ-INM1-BDA/siibra-python.git@cc0c12b
-# siibra>=0.4,<0.5
+-r siibra.txt

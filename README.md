@@ -29,32 +29,68 @@ In addition to the documentation of each API endpoint, a playground is provided 
 
 [Swagger API](https://siibra-api-stable.apps.hbp.eu/v1_0/docs#/)
 
-## Local Startup / Development
+## Configuration
+
+siibra-api can be configured by:
+
+- environment variables, as indicated by the <./api/siibra_api_config.py> , or ...
+- directly overwriting the <./api/siibra_api_config.py> file, by overwriting or docker volume mounting
+
+## Architecture
+
+siibra-api is configured to run in three different modes: `all` , `server` and `worker`, set via the `ROLE` variable in <./api/siibra_api_config.py> .
+
+siibra-api will behave differently baesd on the role it is assigned. As a result, each role requires different dependencies, and different `dockerfile`s:
 
 
-The siibra-api can be easily started locally with docker compose.
-A `docker-compose.yml` file is already included in the project. 
-Only some environment variables are needed. This variables can be defined in a file `.env`.
+| role | dependency | dockerfile | handle http | data processing |
+| --- | --- | --- | --- | --- |
+| `all` | <./requirements/all.txt> | <./Dockerfile> | ✓ | ✓ |
+| `server` | <./requirements/server.txt> | <./server.dockerfile> | ✓ | |
+| `worker` | <./requirements/worker.txt> | <./worker.dockerfile> | | ✓ | 
 
-Step by step start up:
 
-1. Create `.env` file on the same level as `docker-compose.yml`
-2. Add all needed environment variables as described in the example:
 
-``` 
-SIIBRA_ENVIRONMENT=DEVELOPMENT
-EBRAINS_IAM_CLIENT_ID=<IAM_CLIENT_ID>
-EBRAINS_IAM_CLIENT_SECRET=<IAM_CLIENT_SECRET>
-EBRAINS_IAM_REFRESH_TOKEN=<IAM_REFRESH_TOKEN>
+## Local Startup
+
+siibra-api can be run locally with python >= 3.7, or docker-compose.
+
+### with python >= 3.7
+
+```sh
+pip install -r requirements/all.txt && uvicorn api.server:api --host 127.0.0.1 --port 5000
 ```
 
-3. Run `docker-compose --env-file ./.env.dev -f docker-compose.yml -f docker-compose-dev.yml up -d` to start the application
+### with `docker-compose`
 
-:bulb: 
+```sh
+docker-compose -f ./docker-compose.yml up -d
+```
 
-Running the application with docker-compose allows **hot reload**.
-Changes in the code will be directly taken over into the running container. 
+### server/worker configuration
 
+A `docker-compose` script is also provided for server/worker configuration:
+
+```sh
+docker-compose -f ./docker-compose-sw.yml up-d
+```
+
+
+## Development
+
+siibra-api can be launched with hot-reload enabled. Changes to the code will automatically restart the services.
+
+### with python >= 3.7
+
+```sh
+pip install -r requirements/all.txt && uvicorn api.server:api --host 127.0.0.1 --port 5000 --reload
+```
+
+### with `docker-compose`
+
+```sh
+docker-compose -f ./docker-compose-dev.yml up -d
+```
 
 ## How to contribute
 

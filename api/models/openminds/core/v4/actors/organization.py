@@ -16,7 +16,6 @@ class Model(SiibraBaseModel):
         description='Digital handle to identify objects or legal persons.',
         min_items=1,
         title='digitalIdentifier',
-        unique_items=True,
     )
     full_name: str = Field(
         ...,

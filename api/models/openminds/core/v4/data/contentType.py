@@ -15,7 +15,6 @@ class Model(SiibraBaseModel):
         alias='dataType',
         min_items=1,
         title='dataType',
-        unique_items=True,
     )
     description: Optional[str] = Field(
         None,
@@ -29,7 +28,6 @@ class Model(SiibraBaseModel):
         description='String of characters attached as suffix to the names of files of a particular format.',
         min_items=1,
         title='fileExtension',
-        unique_items=True,
     )
     name: str = Field(
         ...,
@@ -55,5 +53,4 @@ class Model(SiibraBaseModel):
         description='Words or expressions used in the same language that have the same or nearly the same meaning in some or all senses.',
         min_items=1,
         title='synonym',
-        unique_items=True,
     )

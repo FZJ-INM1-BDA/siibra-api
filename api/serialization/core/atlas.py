@@ -1,9 +1,9 @@
-from siibra import Atlas
 from api.models.core.atlas import (
     SpeciesModel,
     SiibraAtlasModel,
     SiibraAtIdModel
 )
+from api.serialization.util.siibra import Atlas
 from api.serialization.util import (
     serialize
 )
@@ -48,7 +48,6 @@ def get_species_data(species_str: str) -> SpeciesModel:
 def atlas_to_model(atlas: Atlas) -> SiibraAtlasModel:
     return SiibraAtlasModel(
         id=atlas.id,
-        type="juelich/iav/atlas/v1.0.0",
         name=atlas.name,
         spaces=[SiibraAtIdModel(id=spc.id) for spc in atlas.spaces],
         parcellations=[SiibraAtIdModel(id=parc.id) for parc in atlas.parcellations],

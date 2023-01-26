@@ -34,5 +34,4 @@ class Model(SiibraBaseModel):
         description='Hypertext document (block of information) found on the World Wide Web.',
         min_items=1,
         title='webpage',
-        unique_items=True,
     )

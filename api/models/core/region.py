@@ -1,5 +1,5 @@
 from api.models.openminds.SANDS.v3.atlas.parcellationEntityVersion import (
-    Model as ParcellationEntityVersionModel,
+    Model as _ParcellationEntityVersionModel,
     Coordinates,
     BestViewPoint,
     HasAnnotation,
@@ -7,10 +7,9 @@ from api.models.openminds.SANDS.v3.atlas.parcellationEntityVersion import (
 from api.models.openminds.SANDS.v3.atlas.parcellationEntity import (
     Model as ParcellationEntityModel,
 )
+from api.models._commons import ConfigBaseModel
 
-OPENMINDS_PARCELLATION_ENTITY_VERSION_TYPE = (
-    "https://openminds.ebrains.eu/sands/ParcellationEntityVersion"
-)
+class ParcellationEntityVersionModel(_ParcellationEntityVersionModel, ConfigBaseModel, type="core/region"):pass
 
 class UnitOfMeasurement:
     MILLIMETER = "https://openminds.ebrains.eu/instances/unitOfMeasurement/millimeter"

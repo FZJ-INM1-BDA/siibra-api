@@ -1,6 +1,6 @@
 from typing import Dict, Optional
 from pydantic import Field
-from api.models.openminds.base import ConfigBaseModel
+from api.models._commons import ConfigBaseModel
 from api.models.openminds.SANDS.v3.miscellaneous.coordinatePoint import (
     Model as CoordinatePointModel,
 )

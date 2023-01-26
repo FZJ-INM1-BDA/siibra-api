@@ -61,7 +61,6 @@ class Model(SiibraBaseModel):
         alias='dataType',
         min_items=1,
         title='dataType',
-        unique_items=True,
     )
     file_repository: Optional[
         Dict[str, Any]
@@ -89,7 +88,6 @@ class Model(SiibraBaseModel):
         description='Reference to the ensemble of multiple things or beings.',
         min_items=1,
         title='isPartOf',
-        unique_items=True,
     )
     name: str = Field(
         ...,

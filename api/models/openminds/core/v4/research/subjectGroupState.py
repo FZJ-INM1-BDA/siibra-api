@@ -114,14 +114,12 @@ class Model(SiibraBaseModel):
         description='Distinct life cycle class that is defined by a similar age or age range (developmental stage) within a group of individual beings.',
         min_items=1,
         title='ageCategory',
-        unique_items=True,
     )
     attribute: Optional[List[Any]] = Field(
         None,
         alias='attribute',
         min_items=1,
         title='attribute',
-        unique_items=True,
     )
     handedness: Optional[List[Any]] = Field(
         None,
@@ -129,7 +127,6 @@ class Model(SiibraBaseModel):
         description='Degree to which an organism prefers one hand or foot over the other hand or foot during the performance of a task.',
         min_items=1,
         title='handedness',
-        unique_items=True,
     )
     lookup_label: Optional[str] = Field(
         None,
@@ -142,7 +139,6 @@ class Model(SiibraBaseModel):
         description='Structural and functional deviation from the normal that constitutes a disease or characterizes a particular disease.',
         min_items=1,
         title='pathology',
-        unique_items=True,
     )
     weight: Optional[
         Union[

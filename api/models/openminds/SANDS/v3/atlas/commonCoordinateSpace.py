@@ -51,7 +51,6 @@ class Model(SiibraBaseModel):
         description='Two or three dimensional image that particluarly represents a specific coordinate space.',
         min_items=1,
         title='defaultImage',
-        unique_items=True,
     )
     digital_identifier: Optional[
         Dict[str, Any]
@@ -88,12 +87,11 @@ class Model(SiibraBaseModel):
     ontology_identifier: Optional[List[str]] = Field(
         None,
         alias='ontologyIdentifier',
-        description='Term or code used to identify something or someone registered within a particular ontology.',
         min_items=1,
+        description='Term or code used to identify something or someone registered within a particular ontology.',
         title='ontologyIdentifier',
-        unique_items=True,
     )
-    release_date: date = Field(
+    release_date: str = Field(
         ...,
         alias='releaseDate',
         description='Fixed date on which a product is due to become or was made available for the general public to see or buy',

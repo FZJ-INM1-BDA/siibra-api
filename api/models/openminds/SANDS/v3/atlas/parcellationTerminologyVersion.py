@@ -16,14 +16,12 @@ class Model(SiibraBaseModel):
         description='Reference to a file instance in which something is stored.',
         min_items=1,
         title='definedIn',
-        unique_items=True,
     )
     has_entity_version: List[Any] = Field(
         ...,
         alias='hasEntityVersion',
         min_items=1,
         title='hasEntityVersion',
-        unique_items=True,
     )
     ontology_identifier: Optional[List[str]] = Field(
         None,
@@ -31,5 +29,4 @@ class Model(SiibraBaseModel):
         description='Term or code used to identify something or someone registered within a particular ontology.',
         min_items=1,
         title='ontologyIdentifier',
-        unique_items=True,
     )

@@ -119,7 +119,6 @@ class Model(SiibraBaseModel):
         alias='attribute',
         min_items=1,
         title='attribute',
-        unique_items=True,
     )
     handedness: Optional[Dict[str, Any]] = Field(
         None,
@@ -138,7 +137,6 @@ class Model(SiibraBaseModel):
         description='Structural and functional deviation from the normal that constitutes a disease or characterizes a particular disease.',
         min_items=1,
         title='pathology',
-        unique_items=True,
     )
     weight: Optional[
         Union[

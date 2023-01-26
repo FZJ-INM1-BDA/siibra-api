@@ -14,7 +14,6 @@ class Copyright(SiibraBaseModel):
         description='Legal person in possession of something.',
         min_items=1,
         title='holder',
-        unique_items=True,
     )
     year: constr(regex=r'([0-9]{4})') = Field(
         ...,
@@ -30,7 +29,6 @@ class OtherContribution(SiibraBaseModel):
         description='Distinct class of what was given or supplied as a part or share.',
         min_items=1,
         title='contributionType',
-        unique_items=True,
     )
     contributor: Any = Field(
         ...,
@@ -54,14 +52,12 @@ class Model(SiibraBaseModel):
         description='Creator of a literary or creative work, as well as a dataset publication.',
         min_items=1,
         title='author',
-        unique_items=True,
     )
     behavioral_protocol: Optional[List[Any]] = Field(
         None,
         alias='behavioralProtocol',
         min_items=1,
         title='behavioralProtocol',
-        unique_items=True,
     )
     copyright: Optional[
         'Copyright'
@@ -76,14 +72,12 @@ class Model(SiibraBaseModel):
         description="The 'custodian' is a legal person who is responsible for the content and quality of the data, metadata, and/or code of a research product.",
         min_items=1,
         title='custodian',
-        unique_items=True,
     )
     data_type: List[Any] = Field(
         ...,
         alias='dataType',
         min_items=1,
         title='dataType',
-        unique_items=True,
     )
     description: Optional[
         constr(max_length=2000)
@@ -110,7 +104,6 @@ class Model(SiibraBaseModel):
         alias='experimentalApproach',
         min_items=1,
         title='experimentalApproach',
-        unique_items=True,
     )
     full_documentation: Dict[str, Any] = Field(
         ...,
@@ -130,7 +123,6 @@ class Model(SiibraBaseModel):
         description='Money provided by a legal person for a particular purpose.',
         min_items=1,
         title='funding',
-        unique_items=True,
     )
     homepage: Optional[Dict[str, Any]] = Field(
         None,
@@ -150,7 +142,6 @@ class Model(SiibraBaseModel):
         description='Data that is put into a process or machine.',
         min_items=1,
         title='inputData',
-        unique_items=True,
     )
     is_alternative_version_of: Optional[
         List[Any]
@@ -160,7 +151,6 @@ class Model(SiibraBaseModel):
         description='Reference to an original form where the essence was preserved, but presented in an alternative form.',
         min_items=1,
         title='isAlternativeVersionOf',
-        unique_items=True,
     )
     is_new_version_of: Optional[
         Dict[str, Any]
@@ -177,7 +167,6 @@ class Model(SiibraBaseModel):
         max_items=5,
         min_items=1,
         title='keyword',
-        unique_items=True,
     )
     license: Dict[str, Any] = Field(
         ...,
@@ -197,7 +186,6 @@ class Model(SiibraBaseModel):
         alias='preparationDesign',
         min_items=1,
         title='preparationDesign',
-        unique_items=True,
     )
     related_publication: Optional[List[Any]] = Field(
         None,
@@ -205,7 +193,6 @@ class Model(SiibraBaseModel):
         description='Reference to something that was made available for the general public to see or buy.',
         min_items=1,
         title='relatedPublication',
-        unique_items=True,
     )
     release_date: date = Field(
         ...,
@@ -230,7 +217,6 @@ class Model(SiibraBaseModel):
         alias='studiedSpecimen',
         min_items=1,
         title='studiedSpecimen',
-        unique_items=True,
     )
     study_target: Optional[List[Any]] = Field(
         None,
@@ -238,7 +224,6 @@ class Model(SiibraBaseModel):
         description='Structure or function that was targeted within a study.',
         min_items=1,
         title='studyTarget',
-        unique_items=True,
     )
     support_channel: Optional[List[str]] = Field(
         None,
@@ -246,7 +231,6 @@ class Model(SiibraBaseModel):
         description='Way of communication used to interact with users or customers.',
         min_items=1,
         title='supportChannel',
-        unique_items=True,
     )
     technique: List[Any] = Field(
         ...,
@@ -254,7 +238,6 @@ class Model(SiibraBaseModel):
         description='Method of accomplishing a desired aim.',
         min_items=1,
         title='technique',
-        unique_items=True,
     )
     version_identifier: str = Field(
         ...,

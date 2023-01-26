@@ -16,7 +16,6 @@ class Model(SiibraBaseModel):
         description='Legal person who organizes the collaborative work of people or groups.',
         min_items=1,
         title='coordinator',
-        unique_items=True,
     )
     description: str = Field(
         ...,
@@ -36,7 +35,6 @@ class Model(SiibraBaseModel):
         description='Reference to subsidiary research products.',
         min_items=2,
         title='hasResearchProducts',
-        unique_items=True,
     )
     homepage: Optional[Dict[str, Any]] = Field(
         None,

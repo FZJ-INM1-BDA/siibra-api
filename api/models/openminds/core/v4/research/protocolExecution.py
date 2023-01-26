@@ -87,7 +87,6 @@ class Model(SiibraBaseModel):
         alias='behavioralProtocol',
         min_items=1,
         title='behavioralProtocol',
-        unique_items=True,
     )
     description: Optional[str] = Field(
         None,
@@ -106,7 +105,6 @@ class Model(SiibraBaseModel):
         description='Something or someone that is put into or participates in a process or machine.',
         min_items=1,
         title='input',
-        unique_items=True,
     )
     is_part_of: Dict[str, Any] = Field(
         ...,
@@ -125,7 +123,6 @@ class Model(SiibraBaseModel):
         description='Something or someone that comes out of, is delivered or produced by a process or machine.',
         min_items=1,
         title='output',
-        unique_items=True,
     )
     parameter_set: Optional[
         'ParameterSet'
@@ -147,7 +144,6 @@ class Model(SiibraBaseModel):
         description='Plan that describes the process of a scientific or medical experiment, treatment, or procedure.',
         min_items=1,
         title='protocol',
-        unique_items=True,
     )
     started_at_time: Optional[
         Union[Any, Any]
@@ -162,5 +158,4 @@ class Model(SiibraBaseModel):
         description='Structure or function that was targeted within a study.',
         min_items=1,
         title='studyTarget',
-        unique_items=True,
     )

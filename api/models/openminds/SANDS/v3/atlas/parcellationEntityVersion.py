@@ -70,7 +70,6 @@ class HasAnnotation(SiibraBaseModel):
         description='Reference to an inspiring element.',
         min_items=1,
         title='inspiredBy',
-        unique_items=True,
     )
     internal_identifier: str = Field(
         ...,
@@ -84,7 +83,6 @@ class HasAnnotation(SiibraBaseModel):
         max_items=2,
         min_items=1,
         title='laterality',
-        unique_items=True,
     )
     visualized_in: Optional[Any] = Field(
         None,
@@ -186,7 +184,6 @@ class Model(SiibraBaseModel):
         description='Reference to a parent object or legal person.',
         min_items=1,
         title='hasParent',
-        unique_items=True,
     )
     lookup_label: Optional[str] = Field(
         None,
@@ -205,7 +202,6 @@ class Model(SiibraBaseModel):
         description='Term or code used to identify something or someone registered within a particular ontology.',
         min_items=1,
         title='ontologyIdentifier',
-        unique_items=True,
     )
     relation_assessment: Optional[
         Union[

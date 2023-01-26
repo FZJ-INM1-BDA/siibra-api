@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request, Response, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,9 +13,11 @@ add_lazy_path()
 
 from . import __version__
 from .cache import get_instance as get_cache_instance, terminate, on_startup
-from .core.atlas import router
-from api.common import logger, access_logger
+from .core import prefixed_routers as core_prefixed_routers
+from .volumes import prefixed_routers as volume_prefixed_routers
+from .features import router as feature_router
 
+from api.common import logger, access_logger, AmbiguousParameters, InsufficientParameters
 
 siibra_version_header = "x-siibra-api-version"
 
@@ -25,7 +27,10 @@ siibra_api = FastAPI(
     version=__version__,
 )
 
-siibra_api.include_router(router, prefix="/atlases")
+for prefix_router in [*core_prefixed_routers, *volume_prefixed_routers]:
+    siibra_api.include_router(prefix_router.router, prefix=prefix_router.prefix)
+
+siibra_api.include_router(feature_router, prefix="/feature")
 
 # add pagination
 add_pagination(siibra_api)
@@ -214,6 +219,9 @@ async def runtime_exception_handler(request: Request, exc: RuntimeError):
         },
     )
 
+@siibra_api.exception_handler(InsufficientParameters)
+def insufficent_argument(request: Request, exc: InsufficientParameters):
+    raise HTTPException(400, str(exc))
 
 @siibra_api.exception_handler(Exception)
 async def validation_exception_handler(request: Request, exc: Exception):

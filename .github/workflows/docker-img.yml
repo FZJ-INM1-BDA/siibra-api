@@ -1,0 +1,122 @@
+name: '[docker image prod]'
+
+on:
+  push:
+    branches:
+    - master
+  release:
+    types:
+    - published
+
+env:
+  OKD_PROJECT: siibra-api
+  OKD_PROD_ENDPOINT: https://okd.hbp.eu:443
+  OKD_DEV_ENDPOINT: https://okd-dev.hbp.eu:443
+  OKD_PROD_SECRET: ${{ secrets.OKD_PROD_SECRET }}
+  OKD_DEV_SECRET: ${{ secrets.OKD_DEV_SECRET }}
+  DOCKER_REGISTRY: 'docker-registry.ebrains.eu/siibra/'
+  DOCKER_IMG: 'siibra-api'
+  DOCKER_IMAGE_TAG: 'latest'
+
+jobs:
+  build-docker-img:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        flavor: ['server', 'worker', 'all']
+        include:
+        - flavor: 'all'
+          dockerfile: 'Dockerfile'
+          tag_suffix: ''
+        - flavor: 'worker'
+          dockerfile: 'worker.dockerfile'
+          tag_suffix: '-worker'
+        - flavor: 'server'
+          dockerfile: 'server.dockerfile'
+          tag_suffix: '-server'
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: "Build docker image"
+      run: docker build -t siibra-api-tmp-img -f ${{ matrix.dockerfile }} .
+
+    - name: "Tag and Push (latest || rc)"
+      if: ${{ (github.event_name == 'push') || contains(github.ref, 'rc') }}
+      run: |
+        if [[ "$GITHUB_REF" = *"rc"* ]]
+        then
+          TAG_BASE=rc
+        else
+          TAG_BASE=latest
+        fi
+
+        NEW_TAG=${{ env.DOCKER_REGISTRY }}${{ env.DOCKER_IMG }}:${TAG_BASE}${{ matrix.tag_suffix }}
+        docker tag siibra-api-tmp-img ${NEW_TAG}
+        
+        echo "Login to docker registry"
+        docker login \
+          -u '${{ secrets.EBRAINS_DOCKER_REG_USER }}' \
+          -p '${{ secrets.EBRAINS_DOCKER_REG_TOKEN }}' \
+          docker-registry.ebrains.eu
+        
+        docker push $NEW_TAG
+
+    - name: "Tag and Push (release)"
+      if : ${{ (github.event_name == 'release') && !contains(github.ref, 'rc') }}
+      run: |
+      
+        VERSION=$(grep -Po '^__version__.*?"\K[\w.]+' api/siibra_api_config.py)
+        while [[ "$VERSION" == *"."* ]]
+        do
+          if [[ "$BREAK" == "0" ]]
+          then
+            echo "Fuse broke!"
+            exit 1
+          fi
+          VERSIONED_DOCKERTAG=${{ env.DOCKER_REGISTRY }}${{ env.DOCKER_IMG }}:${VERSION}${{ matrix.tag_suffix }}
+          echo "tagging and pushing $VERSIONED_DOCKERTAG"
+          docker tag siibra-api-tmp-img $VERSIONED_DOCKERTAG
+          docker push $VERSIONED_DOCKERTAG
+
+          echo "Push successful... Incrementing version & break"
+          VERSION=$(echo $VERSION | sed -e 's/\.\w*$//g')
+          BREAK=$(( "$BREAK" - 1 ))
+        done
+        echo "Done"
+
+  deploy-latest-on-okd:
+    needs: build-docker-img
+    if: ${{ github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: 'Login and import image'
+      run: "echo 'Login and import image'"
+
+  deploy-prod-on-okd:
+    needs: build-docker-img
+    if:  ${{ github.event_name == 'release' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        deploy-site: ['jsc', 'cscs']
+        include:
+        - deploy-site: 'jsc'
+          okd-img-stream: 'docker-registry.default.svc:5000/siibra-api/siibra-api-stable:stable'
+          okd-endpoint: https://okd.jsc.hbp.eu:443
+          okd-secrets-key: OKD_JSC_SECRET
+          okd-project: siibra-api
+
+        - deploy-site: 'cscs'
+          okd-img-stream: 'docker-registry.default.svc:5000/siibra-api/siibra-api-stable:stable'
+          okd-endpoint: https://okd.hbp.eu:443
+          okd-secrets-key: OKD_PROD_SECRET
+          okd-project: siibra-api
+    steps:
+    - name: 'Login and import-image'
+      run: echo "Login and import-image"
+      # run: |
+      #   oc login ${{ matrix.okd-endpoint }} --token=${{ secrets[matrix.okd-secrets-key] }}
+      #   oc project ${{ matrix.okd-project }}
+      #   oc import-image ${{ matrix.okd-img-stream }}

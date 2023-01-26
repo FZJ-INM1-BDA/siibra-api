@@ -1,4 +1,4 @@
-from api.models.openminds.base import ConfigBaseModel
+from api.models._commons import ConfigBaseModel
 from pydantic import Field
 
 class NpArrayDataModel(ConfigBaseModel):

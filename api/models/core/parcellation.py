@@ -1,16 +1,13 @@
-from api.models.openminds.base import SiibraAtIdModel, ConfigBaseModel
+from api.models._commons import SiibraAtIdModel, ConfigBaseModel
 from api.models.openminds.SANDS.v3.atlas.brainAtlasVersion import (
-    Model as BrainAtlasVersionModel,
+    Model as _BrainAtlasVersionModel,
     HasTerminologyVersion,
 )
 
 from typing import Optional, List
 from pydantic import Field
 
-
-SIIBRA_PARCELLATION_MODEL_TYPE = "minds/core/parcellationatlas/v1.0.0"
-BRAIN_ATLAS_VERSION_TYPE = "https://openminds.ebrains.eu/sands/BrainAtlasVersion"
-
+class BrainAtlasVersionModel(_BrainAtlasVersionModel, ConfigBaseModel, type="core/parcellation/bav"): pass
 
 class AtlasType:
     DETERMINISTIC_ATLAS = "https://openminds.ebrains.eu/instances/atlasType/deterministicAtlas"
@@ -18,16 +15,16 @@ class AtlasType:
     PROBABILISTIC_ATLAS = "https://openminds.ebrains.eu/instances/atlasType/probabilisticAtlas"
 
 
-class SiibraParcellationVersionModel(ConfigBaseModel):
+class SiibraParcellationVersionModel(ConfigBaseModel, type="core/parcellation/version"):
     name: str
     deprecated: Optional[bool]
     prev: Optional[SiibraAtIdModel]
     next: Optional[SiibraAtIdModel]
 
 
-class SiibraParcellationModel(ConfigBaseModel):
+class SiibraParcellationModel(ConfigBaseModel, type="core/parcellation"):
     id: str = Field(..., alias="@id")
-    type: str = Field(SIIBRA_PARCELLATION_MODEL_TYPE, const=True, alias="@type")
+    type: str = Field(..., alias="@type")
     name: str
     modality: Optional[str]
     brain_atlas_versions: List[BrainAtlasVersionModel] = Field(..., alias="brainAtlasVersions")

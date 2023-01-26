@@ -33,5 +33,4 @@ class Model(SiibraBaseModel):
         alias='stimulation',
         min_items=1,
         title='stimulation',
-        unique_items=True,
     )

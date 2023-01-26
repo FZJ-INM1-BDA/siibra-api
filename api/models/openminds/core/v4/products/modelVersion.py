@@ -14,7 +14,6 @@ class Copyright(SiibraBaseModel):
         description='Legal person in possession of something.',
         min_items=1,
         title='holder',
-        unique_items=True,
     )
     year: constr(regex=r'([0-9]{4})') = Field(
         ...,
@@ -30,7 +29,6 @@ class OtherContribution(SiibraBaseModel):
         description='Distinct class of what was given or supplied as a part or share.',
         min_items=1,
         title='contributionType',
-        unique_items=True,
     )
     contributor: Any = Field(
         ...,
@@ -61,7 +59,6 @@ class Model(SiibraBaseModel):
         description="The 'custodian' is a legal person who is responsible for the content and quality of the data, metadata, and/or code of a research product.",
         min_items=1,
         title='custodian',
-        unique_items=True,
     )
     description: Optional[
         constr(max_length=2000)
@@ -77,7 +74,6 @@ class Model(SiibraBaseModel):
         description='Legal person that creates or improves products or services (e.g., software, applications, etc.).',
         min_items=1,
         title='developer',
-        unique_items=True,
     )
     digital_identifier: Optional[
         Dict[str, Any]
@@ -111,7 +107,6 @@ class Model(SiibraBaseModel):
         description='Money provided by a legal person for a particular purpose.',
         min_items=1,
         title='funding',
-        unique_items=True,
     )
     homepage: Optional[Dict[str, Any]] = Field(
         None,
@@ -131,7 +126,6 @@ class Model(SiibraBaseModel):
         description='Data that is put into a process or machine.',
         min_items=1,
         title='inputData',
-        unique_items=True,
     )
     is_alternative_version_of: Optional[
         List[Any]
@@ -141,7 +135,6 @@ class Model(SiibraBaseModel):
         description='Reference to an original form where the essence was preserved, but presented in an alternative form.',
         min_items=1,
         title='isAlternativeVersionOf',
-        unique_items=True,
     )
     is_new_version_of: Optional[
         Dict[str, Any]
@@ -158,7 +151,6 @@ class Model(SiibraBaseModel):
         max_items=5,
         min_items=1,
         title='keyword',
-        unique_items=True,
     )
     license: List[Any] = Field(
         ...,
@@ -166,7 +158,6 @@ class Model(SiibraBaseModel):
         description='Grant by a party to another party as an element of an agreement between those parties that permits to do, use, or own something.',
         min_items=1,
         title='license',
-        unique_items=True,
     )
     other_contribution: Optional[
         'OtherContribution'
@@ -181,7 +172,6 @@ class Model(SiibraBaseModel):
         description='Data that comes out of, is delivered or produced by a process or machine.',
         min_items=1,
         title='outputData',
-        unique_items=True,
     )
     related_publication: Optional[List[Any]] = Field(
         None,
@@ -189,7 +179,6 @@ class Model(SiibraBaseModel):
         description='Reference to something that was made available for the general public to see or buy.',
         min_items=1,
         title='relatedPublication',
-        unique_items=True,
     )
     release_date: date = Field(
         ...,
@@ -215,7 +204,6 @@ class Model(SiibraBaseModel):
         description='Way of communication used to interact with users or customers.',
         min_items=1,
         title='supportChannel',
-        unique_items=True,
     )
     version_identifier: str = Field(
         ...,

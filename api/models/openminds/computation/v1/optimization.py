@@ -90,7 +90,6 @@ class Model(SiibraBaseModel):
         alias='tags',
         min_items=1,
         title='tags',
-        unique_items=True,
     )
     was_informed_by: Optional[
         Dict[str, Any]

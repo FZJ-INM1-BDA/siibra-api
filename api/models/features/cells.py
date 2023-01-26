@@ -1,4 +1,4 @@
-from api.models.openminds.base import ConfigBaseModel
+from api.models._commons import ConfigBaseModel
 from api.models.core.datasets import DatasetJsonModel
 from pydantic import Field
 from typing import List, Optional

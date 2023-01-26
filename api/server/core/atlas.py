@@ -11,7 +11,7 @@ from api.server.util import SapiCustomRoute
 
 router = APIRouter(route_class=SapiCustomRoute)
 
-@router.get("/", tags=["atlas"], response_model=Page[SiibraAtlasModel])
+@router.get("", tags=["atlas"], response_model=Page[SiibraAtlasModel])
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=all_atlases)
 def get_all_atlases(*, func):

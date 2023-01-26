@@ -1,6 +1,6 @@
 from pydantic import Field
 from typing import List, Optional
-from api.models.openminds.base import ConfigBaseModel
+from api.models._commons import ConfigBaseModel
 from api.models.openminds.core.v4.products.datasetVersion import(
     Model as DatasetVersionModel
 )

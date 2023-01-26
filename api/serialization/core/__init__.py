@@ -2,6 +2,7 @@ from . import (
     atlas,
     # dataset,
     space,
-    # parcellation,
-    # region
+    parcellation,
+    region,
+    _concept,
 )

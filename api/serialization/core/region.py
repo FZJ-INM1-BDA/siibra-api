@@ -1,6 +1,5 @@
 from api.models.core.region import (
     ParcellationEntityVersionModel,
-    OPENMINDS_PARCELLATION_ENTITY_VERSION_TYPE,
     HasAnnotation,
     Coordinates,
     BestViewPoint,
@@ -11,9 +10,7 @@ from api.serialization.util import (
     serialize,
     REGISTER,
 )
-import siibra
-from siibra.core import Region, Space, EbrainsDataset
-from siibra.volumes import VolumeSrc, NeuroglancerVolume, GiftiSurfaceLabeling
+from api.serialization.util.siibra import Region, Space, parcellations, spaces
 
 import hashlib
 from typing import List
@@ -21,8 +18,7 @@ import re
 
 def get_region_model_id(region: Region):
     
-    parcellations = siibra.REGISTRY[siibra.Parcellation]
-    if region.parcellation is parcellations.SUPERFICIAL_FIBRE_BUNDLES:
+    if region.parcellation is parcellations.PROBABILISTIC_SUPERFICIAL_FIBRE_BUNDLE_MAPS:
         return f"https://openminds.ebrains.eu/instances/parcellationEntityVersion/SWMA_2018_{region.name}"
     import hashlib
 
@@ -37,19 +33,20 @@ def get_region_model_id(region: Region):
 
 @serialize(Region)
 def region_to_model(region: Region, *, detail: bool=False, space: Space=None, **kwargs):
+
     if detail:
         assert any([
             Cls in REGISTER for Cls in region.parent.__class__.__mro__
         ]), "one of Region.parent.__class__.__mro__ must be in REGISTER"
+
     if space:
         assert isinstance(space, Space), "space kwarg must be of instance Space"
 
     pev = ParcellationEntityVersionModel(
         id=get_region_model_id(region),
-        type=OPENMINDS_PARCELLATION_ENTITY_VERSION_TYPE,
         has_parent=[{"@id": region.parent.id}]
-        if (region.parent is not None)
-        else None,
+            if (region.parent is not None)
+            else None,
         name=region.name,
         ontology_identifier=None,
         relation_assessment=None,
@@ -58,8 +55,8 @@ def region_to_model(region: Region, *, detail: bool=False, space: Space=None, **
         if hasattr(region, "descriptions") and len(region.descriptions) > 0
         else None,
     )
-    parcellations = siibra.REGISTRY[siibra.Parcellation]
-    spaces = siibra.REGISTRY[siibra.Space]
+
+    return pev
 
     if space is not None:
 
@@ -141,15 +138,15 @@ def region_to_model(region: Region, *, detail: bool=False, space: Space=None, **
 
         try:
 
-            # region.index.label can sometimes be None. e.g. "basal forebrain"
+            # - region.index.label can sometimes be None. e.g. "basal forebrain"
             # in such a case, do not populate visualized in
             if region.index.label is not None:
 
-                # region.index.map can sometimes be None, but label is defined
+                # - region.index.map can sometimes be None, but label is defined
                 if region.index.map is None:
 
                     # In rare instances, e.g. julich brain 2.9, "Ch 123 (Basal Forebrain)"
-                    # region.index.map is undefined (expect a single volume?)
+                    # - region.index.map is undefined (expect a single volume?)
                     # but there exist multiple volumes (in the example, one for left/ one for right hemisphere)
                     if len(vol_in_space) == 1:
                         pev.has_annotation.visualized_in = vol_to_id_dict(

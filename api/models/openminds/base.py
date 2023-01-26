@@ -1,8 +1,7 @@
 from pydantic import BaseModel, Field
 
-
-class ConfigBaseModel(BaseModel):
-
+class _BaseModel(BaseModel):
+    
     def dict(self, *arg, **kwargs):
         kwargs["by_alias"] = True
         return super().dict(*arg, **kwargs)
@@ -10,15 +9,10 @@ class ConfigBaseModel(BaseModel):
     class Config:
         allow_population_by_field_name = True
 
-
-class VocabModel(ConfigBaseModel):
+class VocabModel(_BaseModel):
     vocab: str = Field(..., alias="@vocab")
 
 
-class SiibraAtIdModel(ConfigBaseModel):
-    id: str = Field(..., alias="@id")
-
-
-class SiibraBaseModel(ConfigBaseModel):
+class SiibraBaseModel(_BaseModel):
     context: VocabModel = Field(VocabModel(vocab="https://openminds.ebrains.eu/vocab/"), alias="@context")
     

@@ -21,7 +21,6 @@ class Model(SiibraBaseModel):
         alias='anatomicalLocation',
         min_items=1,
         title='anatomicalLocation',
-        unique_items=True,
     )
     biological_sex: Optional[List[Any]] = Field(
         None,
@@ -29,7 +28,6 @@ class Model(SiibraBaseModel):
         description='Differentiation of individuals of most species (animals and plants) based on the type of gametes they produce.',
         min_items=1,
         title='biologicalSex',
-        unique_items=True,
     )
     internal_identifier: Optional[str] = Field(
         None,
@@ -44,7 +42,6 @@ class Model(SiibraBaseModel):
         max_items=2,
         min_items=1,
         title='laterality',
-        unique_items=True,
     )
     lookup_label: Optional[str] = Field(
         None,
@@ -57,7 +54,6 @@ class Model(SiibraBaseModel):
         description='Source at which something begins or rises, or from which something derives.',
         min_items=1,
         title='origin',
-        unique_items=True,
     )
     quantity: Optional[int] = Field(
         None,
@@ -71,7 +67,6 @@ class Model(SiibraBaseModel):
         description='Category of biological classification comprising related organisms or populations potentially capable of interbreeding, and being designated by a binomial that consists of the name of a genus followed by a Latin or latinized uncapitalized noun or adjective.',
         min_items=1,
         title='species',
-        unique_items=True,
     )
     studied_state: List[Any] = Field(
         ...,
@@ -79,7 +74,6 @@ class Model(SiibraBaseModel):
         description='Reference to a point in time at which something or someone was studied in a particular mode or condition.',
         min_items=1,
         title='studiedState',
-        unique_items=True,
     )
     type: List[Any] = Field(
         ...,
@@ -87,5 +81,4 @@ class Model(SiibraBaseModel):
         description='Distinct class to which a group of entities or concepts with similar characteristics or attributes belong to.',
         min_items=1,
         title='type',
-        unique_items=True,
     )

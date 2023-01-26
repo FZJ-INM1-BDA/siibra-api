@@ -51,7 +51,6 @@ class Model(SiibraBaseModel):
         description='Two or three dimensional image that particluarly represents a specific coordinate space.',
         min_items=1,
         title='defaultImage',
-        unique_items=True,
     )
     name: str = Field(
         ...,

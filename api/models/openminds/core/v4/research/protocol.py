@@ -27,7 +27,6 @@ class Model(SiibraBaseModel):
         alias='stimulation',
         min_items=1,
         title='stimulation',
-        unique_items=True,
     )
     technique: List[Any] = Field(
         ...,
@@ -35,5 +34,4 @@ class Model(SiibraBaseModel):
         description='Method of accomplishing a desired aim.',
         min_items=1,
         title='technique',
-        unique_items=True,
     )

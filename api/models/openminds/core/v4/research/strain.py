@@ -28,7 +28,6 @@ class Model(SiibraBaseModel):
         max_items=2,
         min_items=1,
         title='backgroundStrain',
-        unique_items=True,
     )
     breeding_type: Optional[Dict[str, Any]] = Field(
         None,
@@ -46,7 +45,6 @@ class Model(SiibraBaseModel):
         alias='diseaseModel',
         min_items=1,
         title='diseaseModel',
-        unique_items=True,
     )
     genetic_strain_type: Dict[str, Any] = Field(
         ...,
@@ -59,7 +57,6 @@ class Model(SiibraBaseModel):
         description='Term or code used to identify something or someone.',
         min_items=1,
         title='identifier',
-        unique_items=True,
     )
     laboratory_code: Optional[
         constr(regex=r'^[A-Z]([a-z]?)+$')
@@ -80,7 +77,6 @@ class Model(SiibraBaseModel):
         description='Term or code used to identify something or someone registered within a particular ontology.',
         min_items=1,
         title='ontologyIdentifier',
-        unique_items=True,
     )
     phenotype: Optional[str] = Field(
         None,
@@ -103,5 +99,4 @@ class Model(SiibraBaseModel):
         description='Words or expressions used in the same language that have the same or nearly the same meaning in some or all senses.',
         min_items=1,
         title='synonym',
-        unique_items=True,
     )

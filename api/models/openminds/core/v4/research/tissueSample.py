@@ -15,7 +15,6 @@ class Model(SiibraBaseModel):
         alias='anatomicalLocation',
         min_items=1,
         title='anatomicalLocation',
-        unique_items=True,
     )
     biological_sex: Optional[Dict[str, Any]] = Field(
         None,
@@ -35,7 +34,6 @@ class Model(SiibraBaseModel):
         description='Reference to the ensemble of multiple things or beings.',
         min_items=1,
         title='isPartOf',
-        unique_items=True,
     )
     laterality: Optional[List[Any]] = Field(
         None,
@@ -44,7 +42,6 @@ class Model(SiibraBaseModel):
         max_items=2,
         min_items=1,
         title='laterality',
-        unique_items=True,
     )
     lookup_label: Optional[str] = Field(
         None,
@@ -69,7 +66,6 @@ class Model(SiibraBaseModel):
         description='Reference to a point in time at which something or someone was studied in a particular mode or condition.',
         min_items=1,
         title='studiedState',
-        unique_items=True,
     )
     type: Dict[str, Any] = Field(
         ...,

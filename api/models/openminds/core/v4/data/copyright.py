@@ -16,7 +16,6 @@ class Model(SiibraBaseModel):
         description='Legal person in possession of something.',
         min_items=1,
         title='holder',
-        unique_items=True,
     )
     year: constr(regex=r'([0-9]{4})') = Field(
         ...,

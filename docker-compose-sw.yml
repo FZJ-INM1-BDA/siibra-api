@@ -8,6 +8,7 @@ services:
   siibra-api:
     depends_on:
     - redis
+    image: siibra-api:v0.4-server
     build:
       context: .
       dockerfile: server.dockerfile
@@ -22,6 +23,7 @@ services:
   siibra-api-worker:
     depends_on:
     - redis
+    image: siibra-api:v0.4-worker
     build:
       context: .
       dockerfile: worker.dockerfile

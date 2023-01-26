@@ -16,7 +16,6 @@ class Model(SiibraBaseModel):
         description='Creator of a literary or creative work, as well as a dataset publication.',
         min_items=1,
         title='author',
-        unique_items=True,
     )
     custodian: Optional[List[Any]] = Field(
         None,
@@ -24,7 +23,6 @@ class Model(SiibraBaseModel):
         description="The 'custodian' is a legal person who is responsible for the content and quality of the data, metadata, and/or code of a research product.",
         min_items=1,
         title='custodian',
-        unique_items=True,
     )
     description: constr(max_length=2000) = Field(
         ...,
@@ -52,7 +50,6 @@ class Model(SiibraBaseModel):
         description='Reference to variants of an original.',
         min_items=1,
         title='hasVersion',
-        unique_items=True,
     )
     homepage: Optional[Dict[str, Any]] = Field(
         None,

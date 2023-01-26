@@ -22,7 +22,6 @@ class Model(SiibraBaseModel):
         description="The 'custodian' is a legal person who is responsible for the content and quality of the data, metadata, and/or code of a research product.",
         min_items=1,
         title='custodian',
-        unique_items=True,
     )
     description: constr(max_length=2000) = Field(
         ...,
@@ -36,7 +35,6 @@ class Model(SiibraBaseModel):
         description='Legal person that creates or improves products or services (e.g., software, applications, etc.).',
         min_items=1,
         title='developer',
-        unique_items=True,
     )
     digital_identifier: Optional[
         Dict[str, Any]
@@ -58,7 +56,6 @@ class Model(SiibraBaseModel):
         description='Reference to variants of an original.',
         min_items=1,
         title='hasVersion',
-        unique_items=True,
     )
     homepage: Optional[Dict[str, Any]] = Field(
         None,
@@ -90,5 +87,4 @@ class Model(SiibraBaseModel):
         description='Structure or function that was targeted within a study.',
         min_items=1,
         title='studyTarget',
-        unique_items=True,
     )

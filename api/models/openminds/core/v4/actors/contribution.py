@@ -16,7 +16,6 @@ class Model(SiibraBaseModel):
         description='Distinct class of what was given or supplied as a part or share.',
         min_items=1,
         title='contributionType',
-        unique_items=True,
     )
     contributor: Dict[str, Any] = Field(
         ...,

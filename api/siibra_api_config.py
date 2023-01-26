@@ -1,8 +1,10 @@
 import os
 
+__version__ = "0.3.0"
+
 ROLE = os.environ.get("SIIBRA_API_ROLE", "all")
 
-CELERY_CHANNEL = os.environ.get("SIIBRA_API_CELERY_CHANNEL", "siibra-api")
+CELERY_CHANNEL = os.environ.get("SIIBRA_API_CELERY_CHANNEL", f"siibra-api-{__version__}")
 
 class CELERY_CONFIG:
     broker_url=os.getenv("SIIBRA_API_CELERY_BROKER", "redis://127.0.0.1:6379")
@@ -15,7 +17,7 @@ class CELERY_CONFIG:
 
 LOGGER_DIR = os.environ.get("SIIBRA_API_LOG_DIR")
 
-REDIS_HOST = os.getenv("SIIBRA_REDIS_SERVICE_HOST") or os.getenv("REDIS_SERVICE_HOST") or os.getenv("REDIS_HOST") or "localhost"
+REDIS_HOST = "redis" or os.getenv("SIIBRA_REDIS_SERVICE_HOST") or os.getenv("REDIS_SERVICE_HOST") or os.getenv("REDIS_HOST") or "localhost"
 REDIS_PORT = os.getenv("SIIBRA_REDIS_SERVICE_PORT") or os.getenv("REDIS_SERVICE_PORT") or os.getenv("REDIS_PORT") or 6379
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
 

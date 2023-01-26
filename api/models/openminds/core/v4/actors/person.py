@@ -47,7 +47,6 @@ class Model(SiibraBaseModel):
         description='Digital handle to identify objects or legal persons.',
         min_items=1,
         title='digitalIdentifier',
-        unique_items=True,
     )
     family_name: Optional[str] = Field(
         None,
