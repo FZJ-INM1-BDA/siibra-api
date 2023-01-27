@@ -1,0 +1,35 @@
+version: '3.9'
+services:
+
+  redis:
+    image: redis
+    restart: always
+
+  siibra-api:
+    depends_on:
+    - redis
+    image: siibra-api:v0.4-server
+    build:
+      context: .
+      dockerfile: server.dockerfile
+    ports:
+    - '5000:5000'
+    environment:
+      REDIS_SERVICE_HOST: redis
+      SIIBRA_API_ROLE: 'server'
+      SIIBRA_API_CELERY_BROKER: 'redis://redis:6379'
+      SIIBRA_API_CELERY_RESULT: 'redis://redis:6379'
+
+  siibra-api-worker:
+    depends_on:
+    - redis
+    image: siibra-api:v0.4-worker
+    build:
+      context: .
+      dockerfile: worker.dockerfile
+    deploy:
+      replicas: 4
+    environment:
+      SIIBRA_API_ROLE: worker
+      SIIBRA_API_CELERY_BROKER: 'redis://redis:6379'
+      SIIBRA_API_CELERY_RESULT: 'redis://redis:6379'

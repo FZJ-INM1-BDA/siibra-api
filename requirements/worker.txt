@@ -1,0 +1,2 @@
+-r siibra.txt
+celery[redis]==5.2.6

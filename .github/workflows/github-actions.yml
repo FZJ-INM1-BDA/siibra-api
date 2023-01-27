@@ -7,47 +7,40 @@ on:
     - '*'
 
 jobs:
+  model-module-import:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
+    - name: Install pydantic as the sole dependency
+      run: |
+        python -m pip install -U pip
+        pip install pydantic
+    - name: Attempt to import model, should succeed.
+      run: |
+        python -c "import api.models"
   test:
     runs-on: ubuntu-latest
     env:
-      EBRAINS_IAM_CLIENT_ID: ${{ secrets.EBRAINS_IAM_CLIENT_ID }}
-      EBRAINS_IAM_CLIENT_SECRET: ${{ secrets.EBRAINS_IAM_CLIENT_SECRET }}
-      EBRAINS_IAM_REFRESH_TOKEN: ${{ secrets.EBRAINS_IAM_REFRESH_TOKEN }}
-
       # automatically set by github action
       # only included here for clarity (if user would like to run tests locally)
       CI: true
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
-      - name: Set up Python 3.7.10
+      - name: Set up Python 3.10
         uses: actions/setup-python@v2
         with:
-          python-version: '3.7.10'
+          python-version: '3.10'
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-
           echo "Using github.ref: $GITHUB_REF"
-
-          if [[ "$GITHUB_REF" == *"feat"* ]] || [[ "$GITHUB_REF" == *"dev"* ]]
-          then
-            echo "feature branch or dev branch, use dev dep"
-            pip install -r requirements/dev.txt
-          else
-            echo "default: install prod dep"
-            pip install -r requirements/prod.txt
-          fi
+          pip install -r requirements/all.txt
 
       - name: Install test dependecies
         run: pip install pytest pytest-asyncio httpx mock coverage pytest-cov
-      - run: |
-          coverage run -m pytest -vvv
-          coverage report
-          coverage html
-      - name: Archive code coverage html report
-        uses: actions/upload-artifact@v2
-        with:
-          name: siibra-code-coverage-report
-          path: htmlcov
-
+      - name: Run tests
+        run: pytest

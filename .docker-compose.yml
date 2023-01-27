@@ -1,0 +1,23 @@
+version: '3'
+services:
+  siibra-redis:
+    image: redis
+    restart: always
+    container_name: siibra-redis
+  app:
+    container_name: siibra-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        DEV_FLAG: 1
+    ports:
+      - "5000:5000"
+    links:
+      - siibra-redis
+    environment:
+      - PORT=5000
+      - SIIBRA_ENVIRONMENT=${SIIBRA_ENVIRONMENT}
+      - EBRAINS_IAM_CLIENT_ID=${EBRAINS_IAM_CLIENT_ID}
+      - EBRAINS_IAM_CLIENT_SECRET=${EBRAINS_IAM_CLIENT_SECRET}
+      - EBRAINS_IAM_REFRESH_TOKEN=${EBRAINS_IAM_REFRESH_TOKEN}
