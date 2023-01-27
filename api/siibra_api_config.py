@@ -6,7 +6,7 @@ ROLE = os.environ.get("SIIBRA_API_ROLE", "all")
 
 CELERY_CHANNEL = os.environ.get("SIIBRA_API_CELERY_CHANNEL", f"siibra-api-{__version__}")
 
-REDIS_HOST = "redis" or os.getenv("SIIBRA_REDIS_SERVICE_HOST") or os.getenv("REDIS_SERVICE_HOST") or os.getenv("REDIS_HOST") or "localhost"
+REDIS_HOST = os.getenv("SIIBRA_REDIS_SERVICE_HOST") or os.getenv("REDIS_SERVICE_HOST") or os.getenv("REDIS_HOST") or "localhost"
 REDIS_PORT = os.getenv("SIIBRA_REDIS_SERVICE_PORT") or os.getenv("REDIS_SERVICE_PORT") or os.getenv("REDIS_PORT") or 6379
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
 
