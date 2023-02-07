@@ -19,6 +19,9 @@ services:
       SIIBRA_API_ROLE: 'server'
       SIIBRA_API_CELERY_BROKER: 'redis://redis:6379'
       SIIBRA_API_CELERY_RESULT: 'redis://redis:6379'
+      SIIBRA_CACHEDIR: '/persist_shared_vol'
+    volumes:
+      - ./persistent_vol:/persist_shared_vol
 
   siibra-api-worker:
     depends_on:
@@ -33,3 +36,6 @@ services:
       SIIBRA_API_ROLE: worker
       SIIBRA_API_CELERY_BROKER: 'redis://redis:6379'
       SIIBRA_API_CELERY_RESULT: 'redis://redis:6379'
+      SIIBRA_CACHEDIR: '/persist_shared_vol'
+    volumes:
+      - ./persistent_vol:/persist_shared_vol

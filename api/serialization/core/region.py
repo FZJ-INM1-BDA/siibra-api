@@ -51,9 +51,7 @@ def region_to_model(region: Region, *, detail: bool=False, space: Space=None, **
         ontology_identifier=None,
         relation_assessment=None,
         version_identifier=f"{region.parcellation.name} - {region.name}",
-        version_innovation=region.descriptions[0]
-        if hasattr(region, "descriptions") and len(region.descriptions) > 0
-        else None,
+        version_innovation=region.description
     )
 
     return pev

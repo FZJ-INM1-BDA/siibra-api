@@ -216,10 +216,6 @@ parameters:
   description: Randomly generated volume name. Do not overwrite
   from: '[a-z0-9]{8}'
   generate: expression
-- name: LOG_VOLUME_SERVER_VOLUME_NAME
-  description: Randomly generated volume name. Do not overwrite
-  from: '[a-z0-9]{8}'
-  generate: expression
 - name: SHARED_VOLUME_MOUNT
   description: Path where shared volume will be mounted. Applies to both server and worker pods.
   value: /siibra-api-volume

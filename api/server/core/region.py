@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from fastapi_pagination import paginate, Page
 from fastapi_versioning import version
 from typing import Optional
@@ -26,4 +26,3 @@ def get_all_regions(parcellation_id: str, func):
 @router_decorator(ROLE, func=single_region)
 def get_all_regions(parcellation_id: str, region_id: str, space_id: Optional[str], func):
     return func(parcellation_id, region_id, space_id)
-

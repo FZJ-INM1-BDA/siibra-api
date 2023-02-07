@@ -22,3 +22,7 @@ class CELERY_CONFIG:
 LOGGER_DIR = os.environ.get("SIIBRA_API_LOG_DIR")
 
 IS_CI = os.getenv("CI") is not None
+
+# Volume shared between worker and server
+import tempfile
+SIIBRA_API_SHARED_DIR = os.getenv("SIIBRA_API_SHARED_DIR") or os.getenv("SIIBRA_CACHEDIR") or tempfile.gettempdir()
