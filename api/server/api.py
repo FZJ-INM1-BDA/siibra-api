@@ -93,7 +93,6 @@ do_no_cache_query_list = [
 
 do_not_logs = (
     "/ready",
-    "/",
 )
 
 
@@ -255,3 +254,13 @@ def shutdown():
 @siibra_api.on_event("startup")
 def startup():
     on_startup()
+
+import logging
+class EndpointFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        message = record.getMessage()
+        return all(
+            message.find(do_not_log) == -1 for do_not_log in do_not_logs
+        )
+
+logging.getLogger("uvicorn.access").addFilter(EndpointFilter())

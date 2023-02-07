@@ -101,7 +101,7 @@ objects:
           livenessProbe:
             failureThreshold: 3
             httpGet:
-              path: /
+              path: /ready
               port: 5000
               scheme: HTTP
             initialDelaySeconds: 10
@@ -111,7 +111,7 @@ objects:
           readinessProbe:
             failureThreshold: 3
             httpGet:
-              path: /
+              path: /ready
               port: 5000
               scheme: HTTP
             initialDelaySeconds: 3
