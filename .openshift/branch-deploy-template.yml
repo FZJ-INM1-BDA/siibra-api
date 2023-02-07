@@ -1,30 +1,30 @@
 apiVersion: v1
 kind: Template
 metadata:
-  name: siibra-toolbox-deploy-template
+  name: siibra-api-deploy-${FLAVOR}-template
   annotations:
-    description: "Deploy siibra toolbox"
-    tags: "python,async"
+    description: "Deploy siibra api"
+    tags: "siibra-api"
 objects:
 
 # worker deployment config
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
-    name: siibra-toolbox-deploy-${TOOLBOX_NAME}-worker
+    name: siibra-api-deploy-${FLAVOR}-worker
     labels:
-      app: siibra-toolbox-deploy-${TOOLBOX_NAME}
+      app: siibra-api-deploy-${FLAVOR}
       app_role: worker
   spec:
     replicas: 3
     revisionHistoryLimit: 10
     selector:
-      deploymentconfig: siibra-toolbox-deploy-${TOOLBOX_NAME}-worker
+      deploymentconfig: siibra-api-deploy-worker
     template:
       metadata:
         labels:
-          app: siibra-toolbox-deploy-${TOOLBOX_NAME}
-          deploymentconfig: siibra-toolbox-deploy-${TOOLBOX_NAME}-worker
+          app: siibra-api-deploy-${FLAVOR}
+          deploymentconfig: siibra-api-deploy-worker
           app_role: worker
       spec:
         containers:
@@ -33,24 +33,19 @@ objects:
             valueFrom:
               secretKeyRef:
                 key: database-password
-                name: redis
-          - name: SIIBRA_TOOLBOX_NAME
-            value: ${SIIBRA_TOOLBOX_NAME}
-          - name: SIIBRA_TOOLBOX_DATA_DIR
+                name: siibra-redis
+          - name: SIIBRA_CACHEDIR
             value: ${SHARED_VOLUME_MOUNT}
-          - name: SIIBRA_TOOLBOX_LOG_DIR
+          - name: SIIBRA_API_LOG_DIR
             value: ${LOG_VOLUME_MOUNT}
 
-          image: ${TOOLBOX_WORKER_IMAGE}
+          image: ${SIIBRA_API_WORKER_IMAGE}
           imagePullPolicy: Always
-          name: siibra-toolbox-deploy-${TOOLBOX_NAME}-worker
+          name: siibra-api-deploy-${FLAVOR}-worker
           resources: {}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           volumeMounts:
-            - mountPath: /siibra_toolbox/http_wrapper/conf
-              name: volume-${CELERY_CONFIG_WORKER_VOLUME_NAME}
-              readOnly: true
             - mountPath: ${SHARED_VOLUME_MOUNT}
               name: volume-${SHARED_VOLUME_WORKER_VOLUME_NAME}
             - mountPath: ${LOG_VOLUME_MOUNT}
@@ -62,13 +57,9 @@ objects:
         securityContext: {}
         terminationGracePeriodSeconds: 30
         volumes:
-          - configMap:
-              defaultMode: 420
-              name: celery-config
-            name: volume-${CELERY_CONFIG_WORKER_VOLUME_NAME}
           - name: volume-${SHARED_VOLUME_WORKER_VOLUME_NAME}
             persistentVolumeClaim:
-              claimName: toolbox-storage
+              claimName: siibra-shared-storage
           - name: volume-${LOG_VOLUME_WORKER_VOLUME_NAME}
             persistentVolumeClaim:
               claimName: log-volume
@@ -77,20 +68,20 @@ objects:
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
-    name: siibra-toolbox-deploy-${TOOLBOX_NAME}-server
+    name: siibra-api-deploy-${FLAVOR}-server
     labels:
-      app: siibra-toolbox-deploy-${TOOLBOX_NAME}
+      app: siibra-api-deploy-${FLAVOR}
       app_role: server
   spec:
     replicas: 1
     revisionHistoryLimit: 10
     selector:
-      deploymentconfig: siibra-toolbox-deploy-${TOOLBOX_NAME}-server
+      deploymentconfig: siibra-api-deploy-server
     template:
       metadata:
         labels:
-          app: siibra-toolbox-deploy-${TOOLBOX_NAME}
-          deploymentconfig: siibra-toolbox-deploy-${TOOLBOX_NAME}-server
+          app: siibra-api-deploy-${FLAVOR}
+          deploymentconfig: siibra-api-deploy-server
           app_role: server
       spec:
         containers:
@@ -99,21 +90,19 @@ objects:
             valueFrom:
               secretKeyRef:
                 key: database-password
-                name: redis
-          - name: SIIBRA_TOOLBOX_NAME
-            value: ${SIIBRA_TOOLBOX_NAME}
-          - name: SIIBRA_TOOLBOX_DATA_DIR
+                name: siibra-redis
+          - name: SIIBRA_CACHEDIR
             value: ${SHARED_VOLUME_MOUNT}
-          - name: SIIBRA_TOOLBOX_LOG_DIR
+          - name: SIIBRA_API_LOG_DIR
             value: ${LOG_VOLUME_MOUNT}
 
-          image: ${TOOLBOX_SERVER_IMAGE}
+          image: ${SIIBRA_API_SERVER_IMAGE}
           imagePullPolicy: Always
           livenessProbe:
             failureThreshold: 3
             httpGet:
-              path: /ready
-              port: 6001
+              path: /
+              port: 5000
               scheme: HTTP
             initialDelaySeconds: 10
             periodSeconds: 10
@@ -122,25 +111,22 @@ objects:
           readinessProbe:
             failureThreshold: 3
             httpGet:
-              path: /ready
-              port: 6001
+              path: /
+              port: 5000
               scheme: HTTP
             initialDelaySeconds: 3
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 6
-          name: siibra-toolbox-deploy-${TOOLBOX_NAME}-server
+          name: siibra-api-deploy-${FLAVOR}-server
           ports:
-          - containerPort: 6001
+          - containerPort: 5000
             protocol: TCP
           resources: {}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
 
           volumeMounts:
-            - mountPath: /siibra_toolbox/http_wrapper/conf
-              name: volume-${CELERY_CONFIG_SERVER_VOLUME_NAME}
-              readOnly: true
             - mountPath: ${SHARED_VOLUME_MOUNT}
               name: volume-${SHARED_VOLUME_SERVER_VOLUME_NAME}
             - mountPath: ${LOG_VOLUME_MOUNT}
@@ -152,13 +138,9 @@ objects:
         securityContext: {}
         terminationGracePeriodSeconds: 30
         volumes:
-          - configMap:
-              defaultMode: 420
-              name: celery-config
-            name: volume-${CELERY_CONFIG_SERVER_VOLUME_NAME}
           - name: volume-${SHARED_VOLUME_SERVER_VOLUME_NAME}
             persistentVolumeClaim:
-              claimName: toolbox-storage
+              claimName: siibra-shared-storage
           - name: volume-${LOG_VOLUME_SERVER_VOLUME_NAME}
             persistentVolumeClaim:
               claimName: log-volume
@@ -168,16 +150,17 @@ objects:
   kind: Service
   metadata:
     labels:
-      app: siibra-toolbox-deploy-${TOOLBOX_NAME}
-    name: siibra-toolbox-deploy-${TOOLBOX_NAME}-service
+      app: siibra-api-deploy-${FLAVOR}
+    name: siibra-api-deploy-${FLAVOR}-service
   spec:
     ports:
-    - name: 6001-tcp
-      port: 6001
+    - name: 5000-tcp
+      port: 5000
       protocol: TCP
-      targetPort: 6001
+      targetPort: 5000
     selector:
-      deploymentconfig: siibra-toolbox-deploy-${TOOLBOX_NAME}-server
+      app: siibra-api-deploy-${FLAVOR}
+      app_role: server
     type: ClusterIP
 
 # route
@@ -185,44 +168,44 @@ objects:
   kind: Route
   metadata:
     labels:
-      app: siibra-toolbox-deploy-${TOOLBOX_NAME}
-    name: siibra-toolbox-deploy-${TOOLBOX_NAME}-route
+      app: siibra-api-deploy-${FLAVOR}
+    name: siibra-api-deploy-${FLAVOR}-route
   spec:
-    host: ${TOOLBOX_ROUTE}
+    host: ${SIIBRA_API_ROUTE}
     port:
-      targetPort: 6001-tcp
+      targetPort: 5000-tcp
     tls:
       insecureEdgeTerminationPolicy: Redirect
       termination: edge
     to:
       kind: Service
-      name: siibra-toolbox-deploy-${TOOLBOX_NAME}-service
+      name: siibra-api-deploy-${FLAVOR}-service
       weight: 100
     wildcardPolicy: None
 
 parameters:
-- name: TOOLBOX_NAME
-  description: Toolbox name
+- name: FLAVOR
+  description: Flavor of siibra-api (e.g. stable, rc, latest, etc)
   required: true
-- name: TOOLBOX_ROUTE
+- name: SIIBRA_API_ROUTE
   description: Toolbox Route, without scheme (i.e. no https?://). should be [a-z0-9][a-z0-9-][a-z0-9].apps(-dev)?.hbp.eu
   required: true
-- name: TOOLBOX_WORKER_IMAGE
+- name: SIIBRA_API_WORKER_IMAGE
   description: Docker image for the worker
   required: true
-- name: TOOLBOX_SERVER_IMAGE
+- name: SIIBRA_API_SERVER_IMAGE
   description: Docker image for the server
   required: true
 
 
-- name: CELERY_CONFIG_SERVER_VOLUME_NAME
-  description: Randomly generated volume name. Do not overwrite
-  from: '[a-z0-9]{8}'
-  generate: expression
-- name: CELERY_CONFIG_WORKER_VOLUME_NAME
-  description: Randomly generated volume name. Do not overwrite
-  from: '[a-z0-9]{8}'
-  generate: expression
+# - name: CELERY_CONFIG_SERVER_VOLUME_NAME
+#   description: Randomly generated volume name. Do not overwrite
+#   from: '[a-z0-9]{8}'
+#   generate: expression
+# - name: CELERY_CONFIG_WORKER_VOLUME_NAME
+#   description: Randomly generated volume name. Do not overwrite
+#   from: '[a-z0-9]{8}'
+#   generate: expression
 
   # RESULT VOLUME
 - name: SHARED_VOLUME_SERVER_VOLUME_NAME
@@ -239,7 +222,7 @@ parameters:
   generate: expression
 - name: SHARED_VOLUME_MOUNT
   description: Path where shared volume will be mounted. Applies to both server and worker pods.
-  value: /siibra_toolbox_volume
+  value: /siibra-api-volume
 
   # LOG VOLUME
 - name: LOG_VOLUME_WORKER_VOLUME_NAME
@@ -252,13 +235,13 @@ parameters:
   generate: expression
 - name: LOG_VOLUME_MOUNT
   description: Path where shared volume will be mounted. Applies to both server and worker pods.
-  value: /siibra_toolbox_logs
+  value: /siibra_api_logs
 
 labels:
-  template: siibra-toolbox-deploy-template
+  template: siibra-api-deploy-template
 
 # prerequisite:
-# - named persistent volume named `toolbox-storage`
+# - named persistent volume named `siibra-shared-storage`
 # - named persistent volume named `log-volume`
 # - redis secret at secretKeyRef.redis.database-password
 # - configMap.celery-config -> volume mounted to /siibra_toolbox/http_wrapper/conf (celery config)

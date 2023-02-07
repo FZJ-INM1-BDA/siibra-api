@@ -51,6 +51,11 @@ siibra_api.add_middleware(
     expose_headers=[siibra_version_header]
 )
 
+@siibra_api.get("/ready", include_in_schema=False)
+def ready():
+    # TODO ready probe
+    return "ready"
+
 @siibra_api.get("/", include_in_schema=False)
 def home(request: Request):
     """
@@ -85,6 +90,11 @@ do_not_cache_list = [
 do_no_cache_query_list = [
     "bbox="
 ]
+
+do_not_logs = (
+    "/ready",
+    "/",
+)
 
 
 @siibra_api.middleware("http")
@@ -175,6 +185,10 @@ async def add_version_header(request: Request, call_next):
 
 @siibra_api.middleware("http")
 async def access_log(request: Request, call_next):
+    
+    if request.url.path in do_not_logs:
+        return await call_next(request)
+    
     start_time = time.time()
     try:
         resp = await call_next(request)
