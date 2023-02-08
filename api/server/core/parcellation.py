@@ -8,17 +8,10 @@ from api.models.core.parcellation import SiibraParcellationModel
 from api.common import router_decorator
 from api.common.data_handlers.core.parcellation import all_parcellations, single_parcellation
 from api.server.util import SapiCustomRoute
-from api.server.core.region import router as region_router
-from api.server.volumes.parcellationmap import router as map_router
 
 TAGS = ["parcellation"]
 
 router = APIRouter(route_class=SapiCustomRoute, tags=TAGS)
-
-# must preceded the specific parcellation route
-# since matching occurs from top to bottom
-router.include_router(region_router, prefix="/{parcellation_id:lazy_path}/regions")
-router.include_router(map_router, prefix="/{parcellation_id:lazy_path}/map")
 
 @router.get("", response_model=Page[SiibraParcellationModel])
 @version(*FASTAPI_VERSION)

@@ -91,7 +91,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: 'Login and import image'
-      run: "echo 'Login and import image'"
+      run: |
+        oc login https://okd-dev.hbp.eu:443 --token=${{ secrets.OKD_DEV_SECRET }}
+        oc project siibra-api
+        oc rollout latest siibra-api-deploy-latest-server
+        oc rollout latest siibra-api-deploy-latest-worker
 
   deploy-prod-on-okd:
     needs: build-docker-img

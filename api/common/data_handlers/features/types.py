@@ -47,7 +47,7 @@ def all_features(*, space_id: str, parcellation_id: str, region_id: str, type: s
     from api.serialization.util import instance_to_model
 
     features = _get_all_features(space_id=space_id, parcellation_id=parcellation_id, region_id=region_id, type=type, **kwargs)
-    return [instance_to_model(f) for f in features]
+    return [instance_to_model(f).dict() for f in features]
 
 @data_decorator(ROLE)
 def single_feature(*, space_id: str, parcellation_id: str, region_id: str, feature_id: str, type: str, **kwargs):
@@ -55,4 +55,4 @@ def single_feature(*, space_id: str, parcellation_id: str, region_id: str, featu
 
     features = _get_all_features(space_id=space_id, parcellation_id=parcellation_id, region_id=region_id, type=type, **kwargs)
     found_feature = [f for f in features if f.id == feature_id]
-    return instance_to_model(found_feature[0], detail=True, **kwargs)
+    return instance_to_model(found_feature[0], detail=True, **kwargs).dict()

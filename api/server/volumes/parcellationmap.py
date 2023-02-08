@@ -35,7 +35,7 @@ def route_get_parcellation_labelled_map(parcellation_id: str, space_id: str, *, 
     
     headers={
         "content-type": "application/octet-stream",
-        "content-disposition": f'attachment; filename="statistical_map.nii.gz"'
+        "content-disposition": f'attachment; filename="labelled_map.nii.gz"'
     }
 
     full_filename = func(parcellation_id, space_id)

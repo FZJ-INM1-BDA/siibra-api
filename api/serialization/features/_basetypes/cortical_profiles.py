@@ -7,7 +7,10 @@ def cortical_profile_to_model(pr: CorticalProfile, detail=False, super_model_dic
     return SiibraCorticalProfileModel(
         **super_model_dict,
         unit=pr.unit,
-        boundary_positions=pr.boundary_positions,
+        boundary_positions={
+            "-".join([str(bound) for bound in boundary]): val
+            for boundary, val in pr.boundary_positions.items()
+        },
         boundaries_mapped=pr.boundaries_mapped,
         data=instance_to_model(pr.data, detail=detail, **kwargs) if detail else None
     )

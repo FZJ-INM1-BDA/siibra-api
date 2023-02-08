@@ -1,6 +1,6 @@
 from .siibra_api_typing import ROLE_TYPE
 from api.common import logger
-from functools import wraps
+from functools import wraps, partial
 
 def dummy(*args, **kwargs): pass
 
@@ -16,9 +16,7 @@ def data_decorator(role: ROLE_TYPE):
                     return fn(*args, **kwargs)
                     
                 return app.task(bind=True)(
-                    wraps(
-                        fn
-                    )(celery_task_wrapper)
+                    wraps(fn)(celery_task_wrapper)
                 )
             except ImportError as e:
                 errmsg = f"For worker role, celery must be installed as a dep"
@@ -37,7 +35,15 @@ def router_decorator(role: ROLE_TYPE, *, func):
             return_func = func
         if role == "server":
             def sync_get_result(*args, **kwargs):
-                async_result = func.apply_async(args, kwargs)
+                if isinstance(func, partial):
+                    func.func.s(*func.args, **func.keywords)
+                    _func = func.func
+                    args=[*args, *func.args]
+                    kwargs={**kwargs, **func.keywords}
+                else:
+                    _func=func
+                
+                async_result = _func.apply_async(args, kwargs)
                 return async_result.get()
             return_func = sync_get_result
         if return_func is None:

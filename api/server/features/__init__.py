@@ -18,10 +18,11 @@ from api.models.features._basetypes.volume_of_interest import (
     SiibraVoiModel
 )
 
-from .util import router, wrap_feature_type
+from .util import router, wrap_feature_type, wrap_feature_catetory
 
 from typing import Union, Optional
 from functools import partial
+from enum import Enum
 
 
 @router.get("/_types", response_model=Page[str])
@@ -33,81 +34,80 @@ def get_all_feature_types(func):
     return paginate(all_types)
 
 
-# Connectivity features
-connectivity_features = [
-    ("RegionalConnectivity", SiibraRegionalConnectivityModel),
-    ("FunctionalConnectivity", SiibraRegionalConnectivityModel),
-    ("StreamlineCounts", SiibraRegionalConnectivityModel),
-    ("StreamlineLengths", SiibraRegionalConnectivityModel),
-]
-
-for data_feature, Model in connectivity_features:
-    @wrap_feature_type(data_feature, path="", response_model=Page[Model], func=partial(all_features, space_id=None, region_id=None), tags=["RegionalConnectivity"])
-    def get_all_connectivity_features(parcellation_id: str, func):
-        return paginate(
-            func(parcellation_id=parcellation_id)
-        )
-    
-    @wrap_feature_type(data_feature, path="/{feature_id:lazy_path}", response_model=Model, func=partial(single_feature, space_id=None, region_id=None), tags=["RegionalConnectivity"])
-    def get_single_connectivity_feature(parcellation_id: str, feature_id: str, subject: str, func):
-        return func(parcellation_id=parcellation_id, feature_id=feature_id, subject=subject)
+# Regional Connectivity
+RegionalConnectivityModels = SiibraRegionalConnectivityModel
+class ConnectivityTypes(Enum):
+    FunctionalConnectivity="FunctionalConnectivity"
+    StreamlineCounts="StreamlineCounts"
+    StreamlineLengths="StreamlineLengths"
 
 
-# CorticalProfiles
-cortical_profile_features = [
-    ("CorticalProfile", SiibraCorticalProfileModel),
-    ("ReceptorDensityProfile", SiibraCorticalProfileModel),
-    ("CellDensityProfile", SiibraCorticalProfileModel),
-    ("BigBrainIntensityProfile", SiibraCorticalProfileModel),
-]
+@wrap_feature_catetory("RegionalConnectivity", path="", response_model=Page[RegionalConnectivityModels], func=partial(all_features, space_id=None, region_id=None))
+def get_all_connectivity_features(parcellation_id: str, type: Optional[ConnectivityTypes]=None, func=lambda:[]):
+    return paginate(
+        func(parcellation_id=parcellation_id, type=str(type))
+    )
+@wrap_feature_catetory("RegionalConnectivity", path="/{feature_id:lazy_path}", response_model=RegionalConnectivityModels, func=partial(single_feature, space_id=None, region_id=None))
+def get_single_connectivity_feature(parcellation_id: str, feature_id: str, subject: str, type: Optional[ConnectivityTypes]=None, func=lambda:None):
+    return func(parcellation_id=parcellation_id, feature_id=feature_id, subject=subject, type=str(type))
 
-for data_feature, Model in cortical_profile_features:
-    @wrap_feature_type(data_feature, path="", response_model=Page[Model], func=partial(all_features, space_id=None), tags=["CorticalProfile"])
-    def get_all_cortical_profiles(parcellation_id: str, region_id: str, func=lambda: []):
-        return paginate(
-            func(parcellation_id=parcellation_id, region_id=region_id)
-        )
 
-    @wrap_feature_type(data_feature, path="/{feature_id:lazy_path}", response_model=Model, func=partial(single_feature, space_id=None), tags=["CorticalProfile"])
-    def get_single_cortical_profile(parcellation_id: str, feature_id: str, region_id: str, func=lambda:None):
-        return func(parcellation_id=parcellation_id, feature_id=feature_id, region_id=region_id)
+
+# Cortical Profiles
+CortialProfileModels = SiibraCorticalProfileModel
+class CorticalProfileTypes(Enum):
+    ReceptorDensityProfile="ReceptorDensityProfile"
+    CellDensityProfile="CellDensityProfile"
+    BigBrainIntensityProfile="BigBrainIntensityProfile"
+
+@wrap_feature_catetory("CorticalProfile", path="", response_model=Page[CortialProfileModels], func=partial(all_features, space_id=None))
+def get_all_connectivity_features(parcellation_id: str, region_id: str, type: Optional[CorticalProfileTypes]=None, func=lambda:[]):
+    return paginate(
+        func(parcellation_id=parcellation_id, region_id=region_id, type=str(type))
+    )
+@wrap_feature_catetory("CorticalProfile", path="/{feature_id:lazy_path}", response_model=CortialProfileModels, func=partial(single_feature, space_id=None))
+def get_single_connectivity_feature(parcellation_id: str, region_id: str, feature_id: str, type: Optional[CorticalProfileTypes]=None, func=lambda:None):
+    return func(parcellation_id=parcellation_id, region_id=region_id, feature_id=feature_id, type=str(type))
+
+
 
 # Tabular
+TabularModels = Union[SiibraCorticalProfileModel, SiibraTabularModel, SiibraReceptorDensityFp]
 
-tabular_features = [
-    ("Tabular", Union[SiibraCorticalProfileModel,SiibraTabularModel]),
-    ("ReceptorDensityFingerprint", SiibraReceptorDensityFp),
-    ("LayerwiseBigBrainIntensities", SiibraTabularModel),
-    ("LayerwiseCellDensity", SiibraTabularModel),
-]
+class TabularTypes(Enum):
+    ReceptorDensityFingerprint="ReceptorDensityFingerprint"
+    LayerwiseBigBrainIntensities="LayerwiseBigBrainIntensities"
+    LayerwiseCellDensity="LayerwiseCellDensity"
 
-for data_feature, Model in tabular_features:
-    @wrap_feature_type(data_feature, path="", response_model=Page[Model], func=partial(all_features, space_id=None, region_id=None), tags=["Tabular"])
-    def get_all_tabular(parcellation_id: str, region_id: str, func=lambda: []):
-        return paginate(
-            func(parcellation_id=parcellation_id, region_id=region_id)
-        )
-    
-    @wrap_feature_type(data_feature, path="/{feature_id:lazy_path}", response_model=Model, func=partial(single_feature, space_id=None, region_id=None), tags=["Tabular"])
-    def get_single_tabular(parcellation_id: str, region_id: str, feature_id: str, func=lambda: None):
-        return func(parcellation_id=parcellation_id, region_id=region_id, feature_id=feature_id)
+@wrap_feature_catetory("Tabular", path="", response_model=Page[TabularModels], func=partial(all_features, space_id=None, region_id=None))
+def get_all_tabular(parcellation_id: str, region_id: str, type: Optional[TabularTypes]=None, func=lambda: []):
+    return paginate(
+        func(parcellation_id=parcellation_id, region_id=region_id, type=str(type))
+    )
+@wrap_feature_catetory("Tabular", path="/{feature_id:lazy_path}", response_model=TabularModels, func=partial(single_feature, space_id=None, region_id=None))
+def get_single_tabular(parcellation_id: str, region_id: str, feature_id: str, type: Optional[TabularTypes]=None, func=lambda: None):
+    return func(parcellation_id=parcellation_id, region_id=region_id, feature_id=feature_id, type=str(type))
 
-@wrap_feature_type("VolumeOfInterest", path="", response_model=Page[SiibraVoiModel], func=partial(all_features, parcellation_id=None, region_id=None), tags=["VolumeOfInterest"])
+
+
+# VOI
+@wrap_feature_type("VolumeOfInterest", path="", response_model=Page[SiibraVoiModel], func=partial(all_features, parcellation_id=None, region_id=None))
 def get_all_voi(space_id: str, bbox: Optional[str]=None, func=lambda: []):
     return paginate(
         func(space_id=space_id)
     )
-    
-@wrap_feature_type("VolumeOfInterest", path="/{feature_id:lazy_path}", response_model=SiibraVoiModel, func=partial(single_feature, parcellation_id=None, region_id=None), tags=["VolumeOfInterest"])
+@wrap_feature_type("VolumeOfInterest", path="/{feature_id:lazy_path}", response_model=SiibraVoiModel, func=partial(single_feature, parcellation_id=None, region_id=None))
 def get_single_voi(space_id: str, feature_id: str, bbox: Optional[str]=None, func=lambda: []):
     return func(space_id=space_id, feature_id=feature_id)
 
-@wrap_feature_type("GeneExpressions", path="", response_model=Page[SiibraTabularModel], func=partial(all_features, space_id=None), tags=["Tabular"])
+
+
+# GeneExpression
+@wrap_feature_type("GeneExpressions", path="", response_model=Page[SiibraTabularModel], func=partial(all_features, space_id=None))
 def get_all_gene(parcellation_id: str, region_id: str, gene: str, func=lambda: []):
     return paginate(
         func(parcellation_id=parcellation_id, region_id=region_id, gene=gene)
     )
-
-@wrap_feature_type("GeneExpressions", path="/{feature_id:lazy_path}", response_model=SiibraTabularModel, func=partial(single_feature, space_id=None), tags=["Tabular"])
+@wrap_feature_type("GeneExpressions", path="/{feature_id:lazy_path}", response_model=SiibraTabularModel, func=partial(single_feature, space_id=None))
 def get_all_gene(parcellation_id: str, region_id: str, feature_id: str, gene: str, func=lambda: []):
     return func(parcellation_id=parcellation_id, region_id=region_id, feature_id=feature_id, gene=gene)

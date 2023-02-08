@@ -8,15 +8,11 @@ from api.models.core.space import CommonCoordinateSpaceModel
 from api.common import router_decorator
 from api.common.data_handlers.core.space import all_spaces, single_space
 from api.server.util import SapiCustomRoute
-from api.server.volumes.parcellationmap import router as map_router
 
 TAGS = ["space"]
 
 router = APIRouter(route_class=SapiCustomRoute, tags=TAGS)
 
-# must precede the specific space route
-# since matching occurs from top to bottom
-router.include_router(map_router, prefix="/{space_id:lazy_path}/map")
 
 @router.get("", response_model=Page[CommonCoordinateSpaceModel])
 @version(*FASTAPI_VERSION)
