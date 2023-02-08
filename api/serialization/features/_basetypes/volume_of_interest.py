@@ -18,4 +18,5 @@ def voi_to_model(feat: VolumeOfInterest, **kwargs):
     return SiibraVoiModel(
         **feature_dict,
         volume=volume_super_model,
+        boundingbox=instance_to_model(feat.boundingbox),
     )
