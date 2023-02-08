@@ -9,6 +9,3 @@ def test_atlas(atlas: Atlas):
     model = instance_to_model(atlas)
     assert isinstance(model, SiibraAtlasModel)
     model.dict()
-
-
-

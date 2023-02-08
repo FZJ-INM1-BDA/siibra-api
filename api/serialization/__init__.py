@@ -5,5 +5,6 @@ from . import (
     volumes,
     _retrieval,
     _common,
+    locations,
 )
 

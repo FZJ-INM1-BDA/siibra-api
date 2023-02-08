@@ -9,6 +9,7 @@ def feature_to_model(feat: Feature, **kwargs):
         name=feat.name,
         modality=feat.modality,
         description=feat.description,
+        anchor=instance_to_model(feat.anchor, **kwargs),
         # TODO
         # hcp streamline kg id issue.
         # revert when resolved

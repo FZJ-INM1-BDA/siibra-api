@@ -1,2 +1,1 @@
-# from . import ieeg, voi, connectivity, feature
-from . import _basetypes, molecular
+from . import _basetypes, molecular, anchor
