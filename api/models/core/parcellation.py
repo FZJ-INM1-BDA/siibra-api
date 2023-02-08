@@ -7,7 +7,7 @@ from api.models.openminds.SANDS.v3.atlas.brainAtlasVersion import (
 from typing import Optional, List
 from pydantic import Field
 
-class BrainAtlasVersionModel(_BrainAtlasVersionModel, ConfigBaseModel, type="core/parcellation/bav"): pass
+class BrainAtlasVersionModel(_BrainAtlasVersionModel, ConfigBaseModel, type="parcellation_bav"): pass
 
 class AtlasType:
     DETERMINISTIC_ATLAS = "https://openminds.ebrains.eu/instances/atlasType/deterministicAtlas"
@@ -15,14 +15,14 @@ class AtlasType:
     PROBABILISTIC_ATLAS = "https://openminds.ebrains.eu/instances/atlasType/probabilisticAtlas"
 
 
-class SiibraParcellationVersionModel(ConfigBaseModel, type="core/parcellation/version"):
+class SiibraParcellationVersionModel(ConfigBaseModel, type="parcellation_version"):
     name: str
     deprecated: Optional[bool]
     prev: Optional[SiibraAtIdModel]
     next: Optional[SiibraAtIdModel]
 
 
-class SiibraParcellationModel(ConfigBaseModel, type="core/parcellation"):
+class SiibraParcellationModel(ConfigBaseModel, type="parcellation"):
     id: str = Field(..., alias="@id")
     type: str = Field(..., alias="@type")
     name: str

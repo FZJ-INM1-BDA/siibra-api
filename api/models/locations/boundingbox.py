@@ -3,7 +3,7 @@ from .location import LocationModel
 from typing import List
 from pydantic import Field
 
-class BoundingBoxModel(LocationModel, type="core/space/bbox"):
+class BoundingBoxModel(LocationModel, type="bbox"):
     center: CoordinatePointModel
     minpoint: CoordinatePointModel
     maxpoint: CoordinatePointModel

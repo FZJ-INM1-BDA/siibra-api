@@ -14,6 +14,8 @@ def instance_to_model(instance,*, use_class: Type=None, skip_classes=[], **kwarg
             raise IndexError(f"class {str(use_class)} not in register")
         return REGISTER[use_class](instance, **kwargs)
     
+    if instance is None:
+        return None
     if isinstance(instance, (str, int, float)):
         return instance
     if isinstance(instance, list):

@@ -9,7 +9,7 @@ from api.models._commons import (
 class SpeciesModel(_SpeciesModel):
     kg_v1_id: str = Field(..., alias="kgV1Id")
 
-class SiibraAtlasModel(ConfigBaseModel, type="core/atlas"):
+class SiibraAtlasModel(ConfigBaseModel, type="atlas"):
     id: str = Field(..., alias="@id")
     name: str
     spaces: List[SiibraAtIdModel]

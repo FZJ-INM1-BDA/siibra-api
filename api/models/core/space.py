@@ -4,4 +4,4 @@ from api.models.openminds.SANDS.v3.atlas.commonCoordinateSpace import (
     AxesOrigin,
 )
 
-class CommonCoordinateSpaceModel(_CommonCoordinateSpaceModel, ConfigBaseModel, type="core/space"): pass
+class CommonCoordinateSpaceModel(_CommonCoordinateSpaceModel, ConfigBaseModel, type="space"): pass

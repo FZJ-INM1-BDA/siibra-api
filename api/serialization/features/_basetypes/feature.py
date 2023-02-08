@@ -3,13 +3,13 @@ from api.serialization.util import serialize, instance_to_model
 from api.models.features._basetypes.feature import FeatureModel
 
 @serialize(Feature)
-def feature_to_model(feat: Feature, **kwargs):
+def feature_to_model(feat: Feature, detail=False, **kwargs):
     return FeatureModel(
         id=feat.id,
         name=feat.name,
         modality=feat.modality,
         description=feat.description,
-        anchor=instance_to_model(feat.anchor, **kwargs),
+        anchor=instance_to_model(feat.anchor, **kwargs) if detail else None,
         # TODO
         # hcp streamline kg id issue.
         # revert when resolved

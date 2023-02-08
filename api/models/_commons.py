@@ -21,8 +21,14 @@ class ConfigBaseModel(_BaseModel):
 
     def __init_subclass__(cls, type=None) -> None:
 
+        # the type should always following the following pattern:
+        # siibra-{siibra_python_version}/{generic}/{specific}/{specific+1}...
+        # i.e. similar to [MIME types](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types)
+        # this can allow clients to decide on which level of specificity to stop on on parsing the data
         if type:
-            cls._type = f"siibra/{SIIBRA_PYTHON_VERSION}/{type}"
+            if cls._type is None:
+                cls._type = f"siibra-{SIIBRA_PYTHON_VERSION}"
+            cls._type = f"{cls._type}/{type}"
         
         return super().__init_subclass__()
 

@@ -4,4 +4,4 @@ from api.models.openminds.SANDS.v3.miscellaneous.coordinatePoint import (
 )
 from api.models._commons import ConfigBaseModel
 
-class CoordinatePointModel(_CoordinatePointModel, ConfigBaseModel, type="core/space/point"): pass
+class CoordinatePointModel(_CoordinatePointModel, ConfigBaseModel, type="point"): pass

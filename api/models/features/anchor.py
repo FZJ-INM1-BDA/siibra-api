@@ -1,14 +1,12 @@
-from typing import Optional, Dict, List
-from api.models.features._basetypes.feature import FeatureModel
-from api.models.volumes.volume import VolumeModel
-from api.models._commons import SiibraAtIdModel, ConfigBaseModel
+from typing import Optional, List
+from api.models._commons import ConfigBaseModel
 from api.models.locations.location import LocationModel
-from api.models.core.region import ParcellationEntityModel
+from api.models.core.region import ParcellationEntityVersionModel
 
 class SiibraRegionAssignmentQual(ConfigBaseModel):
-    region: ParcellationEntityModel
+    region: ParcellationEntityVersionModel
     qualification: str
 
-class SiibraAnchorModel(FeatureModel, type="features/anchor"):
+class SiibraAnchorModel(ConfigBaseModel, type="anchor"):
     location: Optional[LocationModel]
     regions: List[SiibraRegionAssignmentQual]
