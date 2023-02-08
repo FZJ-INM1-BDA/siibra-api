@@ -159,7 +159,7 @@ class Model(SiibraBaseModel):
         min_items=1,
         title='relatedPublication',
     )
-    release_date: date = Field(
+    release_date: str = Field(
         ...,
         alias='releaseDate',
         description='Fixed date on which a product is due to become or was made available for the general public to see or buy',
