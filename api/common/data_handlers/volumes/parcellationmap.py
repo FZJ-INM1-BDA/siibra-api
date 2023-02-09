@@ -1,15 +1,24 @@
 from api.common import data_decorator, get_filename
 from api.models.volumes.volume import MapType
 from api.siibra_api_config import ROLE
+from typing import Union
 
 @data_decorator(ROLE)
-def get_map(parcellation_id: str, space_id: str, maptype: MapType):
+def get_map(parcellation_id: str, space_id: str, maptype: Union[MapType, str]):
     import siibra
     from api.serialization.util import instance_to_model
 
+    maptype_string = None
     # check maptype name and value both matches
-    assert maptype.name == maptype.value, f"str enum, expecting .name and .value to equal"
-    siibra_maptype = siibra.MapType[maptype.name]
+    if isinstance(maptype, MapType):
+        assert maptype.name == maptype.value, f"str enum, expecting .name and .value to equal"
+        maptype_string = maptype.name
+    if isinstance(maptype, str):
+        maptype_string = maptype
+    
+    assert maptype_string is not None, f"maptype is neither MapType nor str"
+    
+    siibra_maptype = siibra.MapType[maptype_string]
     assert siibra_maptype.name == maptype.name, f"Expecting maptype.name to match"
 
     return instance_to_model(
