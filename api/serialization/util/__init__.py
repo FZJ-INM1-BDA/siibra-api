@@ -18,7 +18,7 @@ def instance_to_model(instance,*, use_class: Type=None, skip_classes=[], **kwarg
         return None
     if isinstance(instance, (str, int, float)):
         return instance
-    if isinstance(instance, list):
+    if isinstance(instance, (list, tuple)):
         return [instance_to_model(item) for item in instance]
     if isinstance(instance, dict):
         if not all([isinstance(key, str) for key in instance]):
