@@ -52,7 +52,7 @@ def parcellation_to_model(parc: Parcellation, **kwargs):
                 # TODO fix
                 "@id": ""
             },
-            release_date=date(1970, 1, 1),
+            release_date=str(date(1970, 1, 1)),
             short_name=parc.name[:30],
             version_identifier=f"{parc.version} in {spc.name}",
             version_innovation="",
