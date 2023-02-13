@@ -8,7 +8,7 @@ from api.server import FASTAPI_VERSION
 from api.siibra_api_config import ROLE
 from api.models.volumes.parcellationmap import MapModel
 from api.models.volumes.volume import MapType
-from api.common import router_decorator, get_filename, logger
+from api.common import router_decorator, get_filename, logger, NotFound
 from api.common.data_handlers.volumes.parcellationmap import get_map, get_region_statistic_map, get_region_statistic_map_info, get_parcellation_labelled_map
 from api.server.util import SapiCustomRoute
 import os
@@ -23,7 +23,12 @@ router = APIRouter(route_class=SapiCustomRoute, tags=TAGS)
 def route_get_map(parcellation_id: str, space_id: str, map_type: MapType, *, func):
     if func is None:
         raise HTTPException(500, f"func: None passsed")
-    return func(parcellation_id, space_id, map_type)
+    try:
+        return func(parcellation_id, space_id, map_type)
+    except NotFound as e:
+        raise HTTPException(404, f"Colormap not found!")
+    except Exception as e:
+        raise e
 
 
 @router.get("/labelled_map.nii.gz", response_class=FileResponse, tags=TAGS)

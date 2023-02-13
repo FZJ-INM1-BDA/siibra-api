@@ -1,4 +1,4 @@
-from api.common import data_decorator, get_filename
+from api.common import data_decorator, get_filename, NotFound
 from api.models.volumes.volume import MapType
 from api.siibra_api_config import ROLE
 from typing import Union
@@ -19,10 +19,15 @@ def get_map(parcellation_id: str, space_id: str, maptype: Union[MapType, str]):
     assert maptype_string is not None, f"maptype is neither MapType nor str"
     
     siibra_maptype = siibra.MapType[maptype_string]
-    assert siibra_maptype.name == maptype.name, f"Expecting maptype.name to match"
+    assert siibra_maptype.name == maptype_string, f"Expecting maptype.name to match"
 
+    returned_map = siibra.get_map(parcellation_id, space_id, siibra_maptype)
+    
+    if returned_map is None:
+        raise NotFound
+    
     return instance_to_model(
-        siibra.get_map(parcellation_id, space_id, siibra_maptype)
+        returned_map
     ).dict()
 
 
