@@ -31,10 +31,16 @@ def route_get_map(parcellation_id: str, space_id: str, map_type: MapType, *, fun
         raise e
 
 
-@router.get("/labelled_map.nii.gz", response_class=FileResponse, tags=TAGS)
+@router.get("/labelled_map.nii.gz", response_class=FileResponse, tags=TAGS, description="""
+Returns a labelled map if region_id is not provided.
+
+Returns a mask if a region_id is provided.
+
+region_id MAY refer to ANY region on the region hierarchy, and a combined mask will be returned.
+""")
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=get_parcellation_labelled_map)
-def route_get_parcellation_labelled_map(parcellation_id: str, space_id: str, *, func):
+def route_get_parcellation_labelled_map(parcellation_id: str, space_id: str, region_id: str=None, *, func):
     if func is None:
         raise HTTPException(500, f"func: None passsed")
     
@@ -43,12 +49,16 @@ def route_get_parcellation_labelled_map(parcellation_id: str, space_id: str, *, 
         "content-disposition": f'attachment; filename="labelled_map.nii.gz"'
     }
 
-    full_filename = func(parcellation_id, space_id)
+    full_filename = func(parcellation_id, space_id, region_id)
     assert os.path.isfile(full_filename), f"file saved incorrectly"
     return FileResponse(full_filename, headers=headers)
 
 
-@router.get("/statistical_map.nii.gz", response_class=FileResponse, tags=TAGS)
+@router.get("/statistical_map.nii.gz", response_class=FileResponse, tags=TAGS, description="""
+Returns a statistic map.
+
+region_id MUST refer to leaf region on the region hierarchy.
+""")
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=get_region_statistic_map)
 def route_get_region_statistical_map(parcellation_id: str, space_id: str, region_id: str, *, func):
