@@ -26,7 +26,7 @@ def route_get_map(parcellation_id: str, space_id: str, map_type: MapType, *, fun
     try:
         return func(parcellation_id, space_id, map_type)
     except NotFound as e:
-        raise HTTPException(404, f"Colormap not found!")
+        raise HTTPException(404, f"Map not found!")
     except Exception as e:
         raise e
 

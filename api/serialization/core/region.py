@@ -54,6 +54,17 @@ def region_to_model(region: Region, *, detail: bool=False, space: Space=None, **
         version_innovation=region.description
     )
 
+    pev.has_annotation = HasAnnotation(
+        internal_identifier="",
+        criteria_quality_type={
+            # TODO check criteriaQualityType
+            "@id": "https://openminds.ebrains.eu/instances/criteriaQualityType/asserted"
+        },
+        display_color="#{0:02x}{1:02x}{2:02x}".format(*region.rgb)
+        if region.rgb
+        else None,
+    )
+
     return pev
 
     if space is not None:
