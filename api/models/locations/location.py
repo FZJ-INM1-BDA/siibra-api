@@ -1,6 +1,9 @@
 from api.models._commons import ConfigBaseModel, SiibraAtIdModel
 from pydantic import Field
+from abc import ABC
 
-class LocationModel(ConfigBaseModel, type="location"):
+class _LocationModel(ConfigBaseModel, ABC, type="location"):
     type: str = Field(..., alias="@type")
     space: SiibraAtIdModel
+
+class LocationModel(_LocationModel): pass

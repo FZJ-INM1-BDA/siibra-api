@@ -1,4 +1,3 @@
-from api.models.features._basetypes.tabular import SiibraTabularModel
+from api.models.features._basetypes.tabular import _SiibraTabularModel
 
-class SiibraGeneExpressionModel(SiibraTabularModel, type="geneexpr"):
-    pass
+class SiibraGeneExpressionModel(_SiibraTabularModel, type="geneexpr"): pass
