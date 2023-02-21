@@ -1,4 +1,4 @@
-from api.common import data_decorator, InsufficientParameters
+from api.common import data_decorator, InsufficientParameters, NotFound, AmbiguousParameters
 from api.siibra_api_config import ROLE
 
 @data_decorator(ROLE)
@@ -14,6 +14,21 @@ def all_feature_types():
         for Cls in Feature.SUBCLASSES
     ]
 
+@data_decorator(ROLE)
+def get_single_feature_from_id(feature_id: str, **kwargs):
+    import siibra
+    from api.serialization.util import instance_to_model
+    features = [
+        inst
+        for Cls in siibra.features.Feature.SUBCLASSES[siibra.features.Feature]
+        for inst in Cls.get_instances()
+        if inst.id == feature_id
+    ]
+    if len(features) == 0:
+        raise NotFound(f"feature_id {feature_id!r} not found!")
+    if len(features) >  1:
+        raise AmbiguousParameters(f"Multiple features ({str(len(features))}) with id {feature_id!r} found!")
+    return instance_to_model(features[0], detail=True, **kwargs).dict()
 
 def _get_all_features(*, space_id: str, parcellation_id: str, region_id: str, type: str, **kwargs):
     import siibra
