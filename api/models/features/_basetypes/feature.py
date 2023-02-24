@@ -7,6 +7,7 @@ from abc import ABC
 class _FeatureModel(ConfigBaseModel, ABC, type="feature"):
     id: str
     modality: str
+    category: str
     description: str
     name: str
     datasets: List[EbrainsDatasetModel]

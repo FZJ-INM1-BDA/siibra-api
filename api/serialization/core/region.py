@@ -11,6 +11,7 @@ from api.serialization.util import (
     REGISTER,
 )
 from api.serialization.util.siibra import Region, Space, parcellations, spaces
+from api.common.logger import logger
 
 import hashlib
 from typing import List
@@ -54,7 +55,21 @@ def region_to_model(region: Region, *, detail: bool=False, space: Space=None, **
         version_innovation=region.description
     )
 
+    centroid = None
+    if space:
+        centroids = region.compute_centroids(space)
+        if centroids is not None and len(centroids) > 0:
+            centroid = centroids[0]
+            if len(centroids) > 1:
+                logger.warn(f"region {region.name!r} returned multiple centroids in space {space.name!r}. Returning the first one.")
+
     pev.has_annotation = HasAnnotation(
+        best_view_point=BestViewPoint(
+            coordinate_space={
+                "@id": space.id
+            },
+            coordinates=[Coordinates(value=pt) for pt in centroid]
+        ) if centroid else None,
         internal_identifier="",
         criteria_quality_type={
             # TODO check criteriaQualityType

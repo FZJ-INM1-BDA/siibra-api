@@ -4,6 +4,8 @@ from fastapi_versioning import version
 from fastapi.exceptions import HTTPException
 from fastapi import Request
 
+from pydantic import BaseModel
+
 from api.server import FASTAPI_VERSION
 from api.siibra_api_config import ROLE
 from api.common import router_decorator
@@ -22,17 +24,44 @@ from api.models.features._basetypes.volume_of_interest import (
 
 from .util import router, wrap_feature_type, wrap_feature_catetory, TAGS
 
-from typing import Union, Optional
+from typing import Union, Optional, List, Dict
 from functools import partial
 from enum import Enum
 
 
-@router.get("/_types", response_model=Page[str])
+class FeatureMetaModel(BaseModel):
+    name: str
+    path: Optional[str]
+    query_params: Optional[List[str]]
+    path_params: Optional[List[str]]
+    category: Optional[str]
+
+class CategoryModel(BaseModel):
+    name: str
+    feature: List[FeatureMetaModel]
+
+
+def get_route(request: Request, feature_name: str):
+    for f_name in feature_name.split(".")[::-1]:
+        for route in request.app.routes:
+            if route.path.endswith(f"/{f_name}"):
+                return {
+                    'path': route.path,
+                    'query_params': [param.name for param in route.dependant.query_params],
+                    'path_params': [param.name for param in route.dependant.path_params],
+                }
+    return {}
+
+@router.get("/_types", response_model=Page[FeatureMetaModel])
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=all_feature_types)
-def get_all_feature_types(func):
+def get_all_feature_types(request: Request, func):
     all_types = func()
-    all_types.sort()
+    all_types = sorted(all_types, key=lambda obj: obj['name'])
+    all_types = [{
+        **get_route(request, item['name']),
+        **item,
+    } for item in all_types]
     return paginate(all_types)
 
 
@@ -81,24 +110,24 @@ class TabularTypes(Enum):
     LayerwiseBigBrainIntensities="LayerwiseBigBrainIntensities"
     LayerwiseCellDensity="LayerwiseCellDensity"
 
-@wrap_feature_catetory("Tabular", path="", response_model=Page[TabularModels], func=partial(all_features, space_id=None, region_id=None))
+@wrap_feature_catetory("Tabular", path="", response_model=Page[TabularModels], func=partial(all_features, space_id=None))
 def get_all_tabular(parcellation_id: str, region_id: str, type: Optional[TabularTypes]=None, func=lambda: []):
     return paginate(
         func(parcellation_id=parcellation_id, region_id=region_id, type=str(type))
     )
-@wrap_feature_catetory("Tabular", path="/{feature_id:lazy_path}", response_model=TabularModels, func=partial(single_feature, space_id=None, region_id=None))
+@wrap_feature_catetory("Tabular", path="/{feature_id:lazy_path}", response_model=TabularModels, func=partial(single_feature, space_id=None))
 def get_single_tabular(parcellation_id: str, region_id: str, feature_id: str, type: Optional[TabularTypes]=None, func=lambda: None):
     return func(parcellation_id=parcellation_id, region_id=region_id, feature_id=feature_id, type=str(type))
 
 
 
 # VOI
-@wrap_feature_type("VolumeOfInterest", path="", response_model=Page[SiibraVoiModel], func=partial(all_features, parcellation_id=None, region_id=None))
+@wrap_feature_type("Image", path="", response_model=Page[SiibraVoiModel], func=partial(all_features, parcellation_id=None, region_id=None))
 def get_all_voi(space_id: str, bbox: Optional[str]=None, func=lambda: []):
     return paginate(
         func(space_id=space_id)
     )
-@wrap_feature_type("VolumeOfInterest", path="/{feature_id:lazy_path}", response_model=SiibraVoiModel, func=partial(single_feature, parcellation_id=None, region_id=None))
+@wrap_feature_type("Image", path="/{feature_id:lazy_path}", response_model=SiibraVoiModel, func=partial(single_feature, parcellation_id=None, region_id=None))
 def get_single_voi(space_id: str, feature_id: str, bbox: Optional[str]=None, func=lambda: []):
     return func(space_id=space_id, feature_id=feature_id)
 

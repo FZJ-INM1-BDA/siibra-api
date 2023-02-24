@@ -12,5 +12,4 @@ def cortical_profile_to_model(pr: CorticalProfile, detail=False, super_model_dic
             for boundary, val in pr.boundary_positions.items()
         },
         boundaries_mapped=pr.boundaries_mapped,
-        data=instance_to_model(pr.data, detail=detail, **kwargs) if detail else None
     )

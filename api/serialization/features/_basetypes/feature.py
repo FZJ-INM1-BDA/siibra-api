@@ -7,11 +7,12 @@ def feature_to_model(feat: Feature, detail=False, **kwargs):
     return FeatureModel(
         id=feat.id,
         name=feat.name,
+        category=feat.category,
         modality=feat.modality,
         description=feat.description,
         anchor=instance_to_model(feat.anchor, **kwargs) if detail else None,
         # TODO
         # hcp streamline kg id issue.
         # revert when resolved
-        datasets=[] #[instance_to_model(ds, **kwargs) for ds in feat.datasets]
+        datasets=[instance_to_model(ds, **kwargs) for ds in feat.datasets]
     )

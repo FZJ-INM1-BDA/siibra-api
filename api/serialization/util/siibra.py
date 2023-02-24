@@ -16,17 +16,25 @@ from siibra.volumes.volume import Volume
 
 from siibra.retrieval.datasets import EbrainsDataset
 
-from siibra.features.basetypes.feature import Feature
-from siibra.features.basetypes.cortical_profile import CorticalProfile
-from siibra.features.basetypes.regional_connectivity import RegionalConnectivity
-from siibra.features.basetypes.tabular import Tabular
-from siibra.features.basetypes.volume_of_interest import VolumeOfInterest
+from siibra.features.feature import Feature
+from siibra.features.connectivity.regional_connectivity import RegionalConnectivity
+from siibra.features.tabular.cortical_profile import CorticalProfile
+from siibra.features.tabular.tabular import Tabular
+from siibra.features.image.image import Image
 
 from siibra.features.anchor import AnatomicalAnchor
 
 from siibra.features.connectivity import FunctionalConnectivity, StreamlineCounts, StreamlineLengths
-from siibra.features.cellular import BigBrainIntensityProfile, CellDensityProfile, LayerwiseBigBrainIntensities, LayerwiseCellDensity
-from siibra.features.molecular import ReceptorDensityFingerprint, ReceptorDensityProfile, GeneExpressions
+from siibra.features.tabular import (
+    BigBrainIntensityProfile,
+    CellDensityProfile,
+    LayerwiseBigBrainIntensities,
+    LayerwiseCellDensity,
+    GeneExpressions,
+    ReceptorDensityFingerprint, 
+    ReceptorDensityProfile,
+)
+
 
 from siibra.commons import MapIndex, Species, MapType
 
