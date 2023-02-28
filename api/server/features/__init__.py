@@ -78,8 +78,12 @@ def get_all_connectivity_features(parcellation_id: str, type: Optional[Connectiv
     return paginate(
         func(parcellation_id=parcellation_id, type=str(type))
     )
-@wrap_feature_catetory("RegionalConnectivity", path="/{feature_id:lazy_path}", response_model=RegionalConnectivityModels, func=partial(single_feature, space_id=None, region_id=None))
-def get_single_connectivity_feature(parcellation_id: str, feature_id: str, subject: str, type: Optional[ConnectivityTypes]=None, func=lambda:None):
+@wrap_feature_catetory("RegionalConnectivity", path="/{feature_id:lazy_path}", response_model=RegionalConnectivityModels, func=partial(single_feature, space_id=None, region_id=None), description="""
+subject is an optional param.
+If provided, the specific matrix will be return.
+If not provided, the matrix averaged between subjects will be returned.
+""")
+def get_single_connectivity_feature(parcellation_id: str, feature_id: str, subject: Optional[str]=None, type: Optional[ConnectivityTypes]=None, func=lambda:None):
     return func(parcellation_id=parcellation_id, feature_id=feature_id, subject=subject, type=str(type))
 
 

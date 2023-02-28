@@ -26,13 +26,13 @@ def wrap_feature_type(feature_type: str, *, path:str, response_model: Type, tags
         return inner
     return outer
 
-def wrap_feature_catetory(feature_category: str, *, path: str, response_model: Type, tags: List[str]=[], func=lambda:[]):
+def wrap_feature_catetory(feature_category: str, *, path: str, response_model: Type, description: str=None, tags: List[str]=[], func=lambda:[]):
     def outer(fn):
 
         # if type is not present in original fn, do not add as kwarg
         pass_type_flag = "type" in signature(fn).parameters
 
-        @router.get(f"/{feature_category}{path}", response_model=response_model, tags=tags)
+        @router.get(f"/{feature_category}{path}", response_model=response_model, tags=tags, description=description)
         @version(*FASTAPI_VERSION)
         @router_decorator(ROLE, func=func)
         @wraps(fn)

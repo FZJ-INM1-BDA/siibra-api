@@ -1,11 +1,13 @@
 import pytest
 from api.serialization.util import instance_to_model
-from api.serialization.util.siibra import Image
+from api.serialization.util.siibra import Feature, Image
 from api.models.features._basetypes.volume_of_interest import (
     SiibraVoiModel
 )
 
-features = Image.get_instances()
+features = [feat 
+            for Cls in Feature.SUBCLASSES[Image]
+            for feat in Cls.get_instances()]
 
 def test_len():
     assert len(features) > 0

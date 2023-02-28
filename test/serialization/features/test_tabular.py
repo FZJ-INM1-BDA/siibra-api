@@ -7,7 +7,7 @@ from api.serialization.util.siibra import (
     Tabular,
 )
 from api.serialization.util import instance_to_model
-from api.models.features._basetypes.tabular import SiibraTabularModel
+from api.models.features._basetypes.tabular import _SiibraTabularModel
 
 from random import random, seed
 from typing import List, Any
@@ -42,7 +42,7 @@ all_fp_features = [
 def test_fp(fp: Tabular):
     assert isinstance(fp, Tabular), f"fp should be of instance RegionalFingerprint"
     model = instance_to_model(fp)
-    assert isinstance(model, SiibraTabularModel)
+    assert isinstance(model, _SiibraTabularModel)
     model.dict()
 
 idx1 = round(random() * 5000)
