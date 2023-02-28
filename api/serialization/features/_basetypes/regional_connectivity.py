@@ -9,6 +9,6 @@ def regional_conn_to_model(conn: RegionalConnectivity, subject=None, detail=Fals
         subjects=conn.subjects,
         cohort=conn.cohort,
         matrices={
-            subject: instance_to_model(conn.get_matrix(subject), detail=detail, **kwargs)
+            subject if subject else '_average': instance_to_model(conn.get_matrix(subject), detail=detail, **kwargs)
         } if detail else None
     )
