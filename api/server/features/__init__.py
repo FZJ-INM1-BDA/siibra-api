@@ -75,8 +75,9 @@ class ConnectivityTypes(Enum):
 
 @wrap_feature_catetory("RegionalConnectivity", path="", response_model=Page[RegionalConnectivityModels], func=partial(all_features, space_id=None, region_id=None))
 def get_all_connectivity_features(parcellation_id: str, type: Optional[ConnectivityTypes]=None, func=lambda:[]):
+    type = str(type) if type else None
     return paginate(
-        func(parcellation_id=parcellation_id, type=str(type))
+        func(parcellation_id=parcellation_id, type=type)
     )
 @wrap_feature_catetory("RegionalConnectivity", path="/{feature_id:lazy_path}", response_model=RegionalConnectivityModels, func=partial(single_feature, space_id=None, region_id=None), description="""
 subject is an optional param.
@@ -84,7 +85,8 @@ If provided, the specific matrix will be return.
 If not provided, the matrix averaged between subjects will be returned under the key _average.
 """)
 def get_single_connectivity_feature(parcellation_id: str, feature_id: str, subject: Optional[str]=None, type: Optional[ConnectivityTypes]=None, func=lambda:None):
-    return func(parcellation_id=parcellation_id, feature_id=feature_id, subject=subject, type=str(type))
+    type = str(type) if type else None
+    return func(parcellation_id=parcellation_id, feature_id=feature_id, subject=subject, type=type)
 
 
 
@@ -97,12 +99,14 @@ class CorticalProfileTypes(Enum):
 
 @wrap_feature_catetory("CorticalProfile", path="", response_model=Page[CortialProfileModels], func=partial(all_features, space_id=None))
 def get_all_connectivity_features(parcellation_id: str, region_id: str, type: Optional[CorticalProfileTypes]=None, func=lambda:[]):
+    type = str(type) if type else None
     return paginate(
-        func(parcellation_id=parcellation_id, region_id=region_id, type=str(type))
+        func(parcellation_id=parcellation_id, region_id=region_id, type=type)
     )
 @wrap_feature_catetory("CorticalProfile", path="/{feature_id:lazy_path}", response_model=CortialProfileModels, func=partial(single_feature, space_id=None))
 def get_single_connectivity_feature(parcellation_id: str, region_id: str, feature_id: str, type: Optional[CorticalProfileTypes]=None, func=lambda:None):
-    return func(parcellation_id=parcellation_id, region_id=region_id, feature_id=feature_id, type=str(type))
+    type = str(type) if type else None
+    return func(parcellation_id=parcellation_id, region_id=region_id, feature_id=feature_id, type=type)
 
 
 
@@ -116,24 +120,37 @@ class TabularTypes(Enum):
 
 @wrap_feature_catetory("Tabular", path="", response_model=Page[TabularModels], func=partial(all_features, space_id=None))
 def get_all_tabular(parcellation_id: str, region_id: str, type: Optional[TabularTypes]=None, func=lambda: []):
+    type = str(type) if type else None
     return paginate(
-        func(parcellation_id=parcellation_id, region_id=region_id, type=str(type))
+        func(parcellation_id=parcellation_id, region_id=region_id, type=type)
     )
 @wrap_feature_catetory("Tabular", path="/{feature_id:lazy_path}", response_model=TabularModels, func=partial(single_feature, space_id=None))
 def get_single_tabular(parcellation_id: str, region_id: str, feature_id: str, type: Optional[TabularTypes]=None, func=lambda: None):
-    return func(parcellation_id=parcellation_id, region_id=region_id, feature_id=feature_id, type=str(type))
+    type = str(type) if type else None
+    return func(parcellation_id=parcellation_id, region_id=region_id, feature_id=feature_id, type=type)
 
 
+class ImageTypes(Enum):
+    BlockfaceVolumeOfInterest="BlockfaceVolumeOfInterest"
+    CellBodyStainedVolumeOfInterest="CellBodyStainedVolumeOfInterest"
+    CellbodyStainedSection="CellbodyStainedSection"
+    MRIVolumeOfInterest="MRIVolumeOfInterest"
+    PLIVolumeOfInterest="PLIVolumeOfInterest"
+    SegmentedVolumeOfInterest="SegmentedVolumeOfInterest"
 
 # VOI
-@wrap_feature_type("Image", path="", response_model=Page[SiibraVoiModel], func=partial(all_features, parcellation_id=None, region_id=None))
-def get_all_voi(space_id: str, bbox: Optional[str]=None, func=lambda: []):
+import json
+@wrap_feature_catetory("Image", path="", response_model=Page[SiibraVoiModel], func=partial(all_features, parcellation_id=None, region_id=None))
+def get_all_voi(space_id: str, bbox: Optional[str]=None, type: Optional[ImageTypes]=None, func=lambda: []):
+    type = str(type) if type else None
     return paginate(
-        func(space_id=space_id)
+        func(space_id=space_id, type=type)
     )
-@wrap_feature_type("Image", path="/{feature_id:lazy_path}", response_model=SiibraVoiModel, func=partial(single_feature, parcellation_id=None, region_id=None))
-def get_single_voi(space_id: str, feature_id: str, bbox: Optional[str]=None, func=lambda: []):
-    return func(space_id=space_id, feature_id=feature_id)
+
+@wrap_feature_catetory("Image", path="/{feature_id:lazy_path}", response_model=SiibraVoiModel, func=partial(single_feature, parcellation_id=None, region_id=None))
+def get_single_voi(space_id: str, feature_id: str, bbox: Optional[str]=None, type: Optional[ImageTypes]=None, func=lambda: []):
+    type = str(type) if type else None
+    return func(space_id=space_id, feature_id=feature_id, type=type)
 
 
 

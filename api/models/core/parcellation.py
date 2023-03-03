@@ -3,6 +3,7 @@ from api.models.openminds.SANDS.v3.atlas.brainAtlasVersion import (
     Model as _BrainAtlasVersionModel,
     HasTerminologyVersion,
 )
+from api.models._retrieval.datasets import EbrainsDatasetModel
 
 from typing import Optional, List
 from pydantic import Field
@@ -27,5 +28,6 @@ class SiibraParcellationModel(ConfigBaseModel, type="parcellation"):
     type: str = Field(..., alias="@type")
     name: str
     modality: Optional[str]
+    datasets: List[EbrainsDatasetModel]
     brain_atlas_versions: List[BrainAtlasVersionModel] = Field(..., alias="brainAtlasVersions")
     version: Optional[SiibraParcellationVersionModel]

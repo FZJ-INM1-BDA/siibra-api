@@ -24,6 +24,7 @@ def parcellation_to_model(parc: Parcellation, **kwargs):
         id=parc.id,
         name=parc.name,
         modality=parc.modality,
+        datasets=instance_to_model(parc.datasets, **kwargs),
         brain_atlas_versions=[BrainAtlasVersionModel(
             id=get_brain_atlas_version_id(parc, spc),
             atlas_type={
