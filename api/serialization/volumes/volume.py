@@ -15,5 +15,6 @@ def volume_to_model(vol: Volume, **kwargs) -> VolumeModel:
         fragments=vol.fragments,
         variant=vol.variant,
         provided_volumes=vol.providers,
-        space=SiibraAtIdModel(id=vol.space.id)
+        space=SiibraAtIdModel(id=vol.space.id),
+        datasets=instance_to_model(vol.datasets, **kwargs)
     )

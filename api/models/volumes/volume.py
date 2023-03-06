@@ -5,7 +5,7 @@ from api.models._commons import (
     ConfigBaseModel,
     SiibraAtIdModel,
 )
-from api.models.core.datasets import DatasetJsonModel
+from api.models._retrieval.datasets import EbrainsDatasetModel
 
 class VolumeModel(ConfigBaseModel):
     name: str
@@ -20,6 +20,8 @@ class VolumeModel(ConfigBaseModel):
     provided_volumes: Dict[str, Union[str, Dict[str, str]]] = Field(..., alias="providedVolumes")
 
     space: SiibraAtIdModel
+
+    datasets: List[EbrainsDatasetModel]
 
 # exactly matches MapType.name in siibra
 # exported here to avoid dependency on siibra
