@@ -7,7 +7,7 @@ def feature_to_model(feat: Feature, detail=False, **kwargs):
     return FeatureModel(
         id=feat.id,
         name=feat.name,
-        category=feat.category,
+        category=feat.category or "Unknown category",
         modality=feat.modality,
         description=feat.description,
         anchor=instance_to_model(feat.anchor, **kwargs) if detail else None,
