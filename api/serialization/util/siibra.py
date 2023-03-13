@@ -23,7 +23,7 @@ from siibra.features.tabular.tabular import Tabular
 from siibra.features.image.image import Image
 
 from siibra.features.anchor import AnatomicalAnchor
-
+from siibra.features.dataset.ebrains import EbrainsDataFeature
 from siibra.features.connectivity import FunctionalConnectivity, StreamlineCounts, StreamlineLengths
 from siibra.features.tabular import (
     BigBrainIntensityProfile,

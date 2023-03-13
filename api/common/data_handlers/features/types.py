@@ -35,8 +35,10 @@ def get_single_feature_from_id(feature_id: str, **kwargs):
         raise AmbiguousParameters(f"Multiple features ({str(len(features))}) with id {feature_id!r} found!")
     return instance_to_model(features[0], detail=True, **kwargs).dict()
 
-def _get_all_features(*, space_id: str, parcellation_id: str, region_id: str, type: str, **kwargs):
+def _get_all_features(*, space_id: str, parcellation_id: str, region_id: str, type: str, bbox: str=None, **kwargs):
     import siibra
+    from siibra.features.image.image import Image
+    import json
     if type is None:
         raise InsufficientParameters(f"type is a required kwarg")
     
@@ -59,8 +61,17 @@ def _get_all_features(*, space_id: str, parcellation_id: str, region_id: str, ty
     if concept is None:
         raise InsufficientParameters(f"at least one of space_id, parcellation_id and/or region_id must be defined.")
     
-    return siibra.features.get(concept, type, **kwargs)
+    features = siibra.features.get(concept, type, **kwargs)
 
+    if bbox:
+        assert isinstance(concept, siibra.core.space.Space)
+        bounding_box = concept.get_bounding_box(*json.loads(bbox))
+        features = [f
+                for f in features
+                if isinstance(f, Image) and
+                f.anchor.location.intersects(bounding_box)]
+
+    return features
 
 @data_decorator(ROLE)
 def all_features(*, space_id: str, parcellation_id: str, region_id: str, type: str, **kwargs):
