@@ -67,7 +67,7 @@ class CacheRedis:
         if type(val) == str:
             return val
         if type(val) == bytes:
-            return val.encode("utf-8")
+            return val.decode("utf-8")
         
         raise Exception(f"type {val.__class__.__name__} cannot be serialized")
 
