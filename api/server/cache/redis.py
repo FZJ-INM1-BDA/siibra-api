@@ -51,13 +51,26 @@ class CacheRedis:
         if bz64str is None:
             return None
         
-        bz64str = CacheRedis.getbytes(bz64str)
+        bz64str = CacheRedis.getstr(bz64str)
         # if cached value 
         if bz64str[0] == "{" and bz64str[-1] == "}":
             self.set_value(key, bz64str)
             return bz64str
-        return CacheRedis.decode(bz64str)
+        try:
+            return CacheRedis.decode(bz64str)
+        except:
+            print(f"decoding key value error {key}, {bz64str}")
+            return bz64str
     
+    @staticmethod
+    def getstr(val: Union[str, bytes]) -> str:
+        if type(val) == str:
+            return val
+        if type(val) == bytes:
+            return val.encode("utf-8")
+        
+        raise Exception(f"type {val.__class__.__name__} cannot be serialized")
+
     @staticmethod
     def getbytes(val: Union[str, bytes]) -> bytes:
         if type(val) == bytes:

@@ -23,17 +23,12 @@ def all_feature_types():
 def get_single_feature_from_id(feature_id: str, **kwargs):
     import siibra
     from api.serialization.util import instance_to_model
-    features = [
-        inst
-        for Cls in siibra.features.Feature.SUBCLASSES[siibra.features.Feature]
-        for inst in Cls.get_instances()
-        if inst.id == feature_id
-    ]
-    if len(features) == 0:
-        raise NotFound(f"feature_id {feature_id!r} not found!")
-    if len(features) >  1:
-        raise AmbiguousParameters(f"Multiple features ({str(len(features))}) with id {feature_id!r} found!")
-    return instance_to_model(features[0], detail=True, **kwargs).dict()
+    try:
+        feature = siibra.features.Feature.get_instace_by_id(feature_id)
+    except Exception as e:
+        raise NotFound(str(e))
+    else:
+        return instance_to_model(feature, detail=True, **kwargs).dict()
 
 def _get_all_features(*, space_id: str, parcellation_id: str, region_id: str, type: str, bbox: str=None, **kwargs):
     import siibra
