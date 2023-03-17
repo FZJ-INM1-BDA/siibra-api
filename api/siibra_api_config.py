@@ -13,7 +13,7 @@ REDIS_PASSWORD = os.getenv("SIIBRA_API_REDIS_PASSWORD")
 class CELERY_CONFIG:
     broker_url=os.getenv("SIIBRA_API_CELERY_BROKER", f"redis://{(':' + REDIS_PASSWORD + '@') if REDIS_PASSWORD else ''}{REDIS_HOST}:{REDIS_PORT}")
     result_backend=os.getenv("SIIBRA_API_CELERY_RESULT", f"redis://{(':' + REDIS_PASSWORD + '@') if REDIS_PASSWORD else ''}{REDIS_HOST}:{REDIS_PORT}")
-
+    result_expires=60
     worker_send_task_events = True
     task_send_sent_event = True
 

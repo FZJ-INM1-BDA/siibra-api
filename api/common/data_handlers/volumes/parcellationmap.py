@@ -33,7 +33,7 @@ def get_map(parcellation_id: str, space_id: str, maptype: Union[MapType, str]):
 
 def cache_region_statistic_map(parcellation_id: str, region_id: str, space_id: str):
     import os
-    full_filename = get_filename(parcellation_id, region_id, space_id, ext=".nii.gz")
+    full_filename = get_filename("statistical_map", parcellation_id, region_id, space_id, ext=".nii.gz")
     if os.path.isfile(full_filename):
         return full_filename
 
@@ -50,6 +50,15 @@ def cache_region_statistic_map(parcellation_id: str, region_id: str, space_id: s
     assert isinstance(volume_data, nib.Nifti1Image), f"{error_text}, volume provided is not of type Nifti1Image"
     
     nib.save(volume_data, full_filename)
+    import json
+    import time
+    with open(f"{full_filename}.{str(int(time.time()))}.json", "w") as fp:
+        json.dump({
+            "prefix": "statistical_map",
+            "parcellation_id": parcellation_id,
+            "region_id": region_id,
+            "space_id": space_id,
+        }, fp=fp, indent="\t")
     return full_filename
 
 @data_decorator(ROLE)
@@ -73,7 +82,7 @@ def get_region_statistic_map_info(parcellation_id: str, region_id: str, space_id
 @data_decorator(ROLE)
 def get_parcellation_labelled_map(parcellation_id: str, space_id: str, region_id:str=None):
     import os
-    full_filename = get_filename(parcellation_id, space_id, region_id if region_id else "", ext=".nii.gz")
+    full_filename = get_filename("labelled_map", parcellation_id, space_id, region_id if region_id else "", ext=".nii.gz")
     if os.path.isfile(full_filename):
         return full_filename
 
@@ -93,4 +102,13 @@ def get_parcellation_labelled_map(parcellation_id: str, space_id: str, region_id
     assert isinstance(volume_data, nib.Nifti1Image), f"{error_text}, volume provided is not of type Nifti1Image"
     
     nib.save(volume_data, full_filename)
+    import json
+    import time
+    with open(f"{full_filename}.{str(int(time.time()))}.json", "w") as fp:
+        json.dump({
+            "prefix": "labelled_map",
+            "parcellation_id": parcellation_id,
+            "space_id": space_id,
+            "region_id": region_id,
+        }, fp=fp, indent="\t")
     return full_filename

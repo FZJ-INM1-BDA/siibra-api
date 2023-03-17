@@ -14,7 +14,11 @@
 # limitations under the License.
 
 from redis import Redis
+import base64
 from threading import Timer
+import gzip
+from typing import Union
+
 from api.siibra_api_config import REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, IS_CI
 
 _host = REDIS_HOST
@@ -42,12 +46,48 @@ class CacheRedis:
     def get_value(self, key):
         if _is_ci or not self.is_connected:
             return None
-        return self._r.get(key)
+        bz64str = self._r.get(key)
+
+        if bz64str is None:
+            return None
+        
+        bz64str = CacheRedis.getbytes(bz64str)
+        # if cached value 
+        if bz64str[0] == "{" and bz64str[-1] == "}":
+            self.set_value(key, bz64str)
+            return bz64str
+        return CacheRedis.decode(bz64str)
+    
+    @staticmethod
+    def getbytes(val: Union[str, bytes]) -> bytes:
+        if type(val) == bytes:
+            return val
+        if type(val) == str:
+            return bytes(val, "utf-8")
+        
+        raise Exception(f"type {val.__class__.__name__} cannot be serialized")
+
+    @staticmethod
+    def decode(val: Union[str, bytes]) -> str:
+        bz64 = CacheRedis.getbytes(val)
+        bz = base64.b64decode(bz64)
+        b = gzip.decompress(bz)
+        return b.decode("utf-8")
+
+    @staticmethod
+    def encode(val: Union[str, bytes]) -> str:
+        b = CacheRedis.getbytes(val)
+        bz = gzip.compress(b, compresslevel=9)
+        bz64 = base64.b64encode(bz)
+        bz64str = bz64.decode("utf-8")
+        return bz64str
         
     def set_value(self, key, value):
         if _is_ci or not self.is_connected:
             return None
-        return self._r.set(key, value)
+        
+        compressed_value = CacheRedis.encode(value)
+        return self._r.set(key, compressed_value)
 
 
 def on_startup():
