@@ -14,7 +14,7 @@ from siibra.core.concept import AtlasConcept, TypePublication
 from siibra.volumes.parcellationmap import Map
 from siibra.volumes.volume import Volume
 
-from siibra.retrieval.datasets import EbrainsDataset
+from siibra.retrieval.datasets import EbrainsBaseDataset
 
 from siibra.features.feature import Feature
 from siibra.features.connectivity.regional_connectivity import RegionalConnectivity

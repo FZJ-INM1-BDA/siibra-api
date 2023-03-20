@@ -1,9 +1,9 @@
-from api.serialization.util.siibra import EbrainsDataset
+from api.serialization.util.siibra import EbrainsBaseDataset
 from api.serialization.util import serialize
 from api.models._retrieval.datasets import EbrainsDatasetModel, EbrainsDsEmbargoStatus, EbrainsDsPerson, EbrainsDsUrl
 
-@serialize(EbrainsDataset)
-def ebrains_dataset_to_model(ds: EbrainsDataset, **kwargs):
+@serialize(EbrainsBaseDataset)
+def ebrains_dataset_to_model(ds: EbrainsBaseDataset, **kwargs):
     return EbrainsDatasetModel(
         id=ds.id,
         name=ds.name,

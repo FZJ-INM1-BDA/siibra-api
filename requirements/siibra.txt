@@ -1,2 +1,2 @@
 # siibra>=0.4a35
-git+https://github.com/FZJ-INM1-BDA/siibra-python.git@13cd771f46a491895474127b5810e3e68e8df76f
+git+https://github.com/FZJ-INM1-BDA/siibra-python.git@main

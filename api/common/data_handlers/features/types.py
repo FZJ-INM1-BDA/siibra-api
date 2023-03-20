@@ -24,7 +24,7 @@ def get_single_feature_from_id(feature_id: str, **kwargs):
     import siibra
     from api.serialization.util import instance_to_model
     try:
-        feature = siibra.features.Feature.get_instace_by_id(feature_id)
+        feature = siibra.features.Feature.get_instance_by_id(feature_id)
     except Exception as e:
         raise NotFound(str(e))
     else:

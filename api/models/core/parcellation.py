@@ -31,3 +31,5 @@ class SiibraParcellationModel(ConfigBaseModel, type="parcellation"):
     datasets: List[EbrainsDatasetModel]
     brain_atlas_versions: List[BrainAtlasVersionModel] = Field(..., alias="brainAtlasVersions")
     version: Optional[SiibraParcellationVersionModel]
+    shortname: Optional[str]
+

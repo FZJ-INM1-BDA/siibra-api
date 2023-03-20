@@ -24,6 +24,6 @@ def space_to_model(spc: Space, **kwargs) -> CommonCoordinateSpaceModel:
             "@id": "https://openminds.ebrains.eu/controlledTerms/Terminology/unitOfMeasurement/um"
         },
         release_date=str(date(2015, 1, 1)),
-        short_name=spc.name,
+        short_name=spc.shortname,
         version_identifier=spc.name,
     )
