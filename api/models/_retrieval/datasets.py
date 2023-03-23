@@ -23,7 +23,7 @@ class EbrainsDatasetModel(ConfigBaseModel):
     id: str = Field(..., alias="@id")
     name: str
     urls: List[EbrainsDsUrl]
-    description: str
+    description: Optional[str]
     contributors: List[EbrainsDsPerson]
     ebrains_page: str
     custodians:  List[EbrainsDsPerson]
