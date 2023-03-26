@@ -66,6 +66,12 @@ jobs:
       if : ${{ (github.event_name == 'release') && !contains(github.ref, 'rc') }}
       run: |
       
+        echo "Login to docker registry"
+        docker login \
+          -u '${{ secrets.EBRAINS_DOCKER_REG_USER }}' \
+          -p '${{ secrets.EBRAINS_DOCKER_REG_TOKEN }}' \
+          docker-registry.ebrains.eu
+        
         VERSION=$(grep -Po '^__version__.*?"\K[\w.]+' api/siibra_api_config.py)
         while [[ "$VERSION" == *"."* ]]
         do
