@@ -16,8 +16,9 @@ from .cache import get_instance as get_cache_instance, terminate, on_startup
 from .core import prefixed_routers as core_prefixed_routers
 from .volumes import prefixed_routers as volume_prefixed_routers
 from .features import router as feature_router
+from .metrics import get_prom_metrics
 
-from api.common import logger, access_logger, AmbiguousParameters, InsufficientParameters
+from api.common import logger, access_logger, InsufficientParameters
 
 siibra_version_header = "x-siibra-api-version"
 
@@ -49,6 +50,10 @@ siibra_api.add_middleware(
     allow_origins=origins,
     allow_methods=["GET"],
     expose_headers=[siibra_version_header]
+)
+
+siibra_api.get("/metrics", include_in_schema=False)(
+    get_prom_metrics
 )
 
 @siibra_api.get("/ready", include_in_schema=False)
@@ -93,6 +98,7 @@ do_no_cache_query_list = [
 
 do_not_logs = (
     "/ready",
+    "/metrics",
 )
 
 
