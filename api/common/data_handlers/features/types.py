@@ -30,6 +30,31 @@ def get_single_feature_from_id(feature_id: str, **kwargs):
     else:
         return instance_to_model(feature, detail=True, **kwargs).dict()
 
+
+def extract_concept(*, space_id: str=None, parcellation_id: str=None, region_id: str=None, **kwargs):
+    import siibra
+    if region_id is not None:
+        if parcellation_id is None:
+            raise InsufficientParameters(f"if region_id is defined, parcellation_id must also be defined!")
+        region: siibra.core.parcellation.region.Region = siibra.get_region(parcellation_id, region_id)
+        return region
+    
+    if parcellation_id:
+        parcellation: siibra._parcellation.Parcellation = siibra.parcellations[parcellation_id]
+        return parcellation
+    
+    if space_id:
+        space: siibra._space.Space = siibra.spaces[space_id]
+        return space
+    raise InsufficientParameters(f"concept cannot be extracted")
+
+@data_decorator(ROLE)
+def get_all_all_features(*, space_id: str=None, parcellation_id: str=None, region_id: str=None, **kwargs):
+    import siibra
+    from api.serialization.util import instance_to_model
+    concept = extract_concept(space_id=space_id, parcellation_id=parcellation_id, region_id=region_id)
+    return [instance_to_model(f, **kwargs).dict() for f in siibra.features.get(concept, siibra.features.Feature)]
+
 def _get_all_features(*, space_id: str, parcellation_id: str, region_id: str, type: str, bbox: str=None, **kwargs):
     import siibra
     from siibra.features.image.image import Image
@@ -39,19 +64,7 @@ def _get_all_features(*, space_id: str, parcellation_id: str, region_id: str, ty
     
     *_, type = type.split(".")
 
-    concept = None
-    if region_id is not None:
-        if parcellation_id is None:
-            raise InsufficientParameters(f"if region_id is defined, parcellation_id must also be defined!")
-        concept = siibra.get_region(parcellation_id, region_id)
-    
-    if concept is None:
-        if parcellation_id:
-            concept = siibra.parcellations[parcellation_id]
-    
-    if concept is None:
-        if space_id:
-            concept = siibra.spaces[space_id]
+    concept = extract_concept(space_id=space_id, parcellation_id=parcellation_id, region_id=region_id)
     
     if concept is None:
         raise InsufficientParameters(f"at least one of space_id, parcellation_id and/or region_id must be defined.")

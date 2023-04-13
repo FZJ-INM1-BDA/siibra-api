@@ -2,6 +2,8 @@ import os
 
 __version__ = "0.3.0"
 
+NAME_SPACE = os.environ.get("SIIBRA_API_NAMESPACE", "siibra_api")
+
 ROLE = os.environ.get("SIIBRA_API_ROLE", "all")
 
 CELERY_CHANNEL = os.environ.get("SIIBRA_API_CELERY_CHANNEL", f"siibra-api-{__version__}")

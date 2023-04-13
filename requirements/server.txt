@@ -7,3 +7,4 @@ uvicorn[standard]
 redis
 diskcache
 celery[redis]==5.2.6
+prometheus-client
