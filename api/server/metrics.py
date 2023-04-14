@@ -32,7 +32,7 @@ def get_prom_metrics():
         raise HTTPException(404, "siibra-api is not configured to be server, so metrics page is not enabled")
 
     from api.worker.app import app
-    from prometheus_client import REGISTRY, Gauge, CollectorRegistry, generate_latest
+    from prometheus_client import Gauge, CollectorRegistry, generate_latest
     from prometheus_client.metrics_core import METRIC_NAME_RE
 
     if not METRIC_NAME_RE.match(NAME_SPACE):
@@ -59,8 +59,7 @@ def get_prom_metrics():
     _r = redis.from_url(CELERY_CONFIG.broker_url)
 
     # number of tasks in queue
-    queues = ["celery", "core", "features", "volumes"]
-    for q in queues:
+    for q in CELERY_CONFIG.task_queues.keys():
         num_task_in_q_gauge.labels(q_name=q).set(_r.llen(q))
 
     i = app.control.inspect()
