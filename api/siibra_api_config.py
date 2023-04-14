@@ -12,6 +12,8 @@ REDIS_HOST = os.getenv("SIIBRA_API_REDIS_HOST") or os.getenv("SIIBRA_REDIS_SERVI
 REDIS_PORT = os.getenv("SIIBRA_API_REDIS_PORT") or os.getenv("SIIBRA_REDIS_SERVICE_PORT") or os.getenv("REDIS_SERVICE_PORT") or os.getenv("REDIS_PORT") or 6379
 REDIS_PASSWORD = os.getenv("SIIBRA_API_REDIS_PASSWORD")
 
+QUEUE_PREFIX = f"{__version__}.{NAME_SPACE}"
+
 class CELERY_CONFIG:
     broker_url=os.getenv("SIIBRA_API_CELERY_BROKER", f"redis://{(':' + REDIS_PASSWORD + '@') if REDIS_PASSWORD else ''}{REDIS_HOST}:{REDIS_PORT}")
     result_backend=os.getenv("SIIBRA_API_CELERY_RESULT", f"redis://{(':' + REDIS_PASSWORD + '@') if REDIS_PASSWORD else ''}{REDIS_HOST}:{REDIS_PORT}")
@@ -20,10 +22,22 @@ class CELERY_CONFIG:
     task_send_sent_event = True
 
     include=['api.common.data_handlers', 'api.serialization']
+
+    # source of truth on all queues
     task_routes={
-        'api.common.data_handlers.core.*': 'core',
-        'api.common.data_handlers.features.*': 'features',
-        'api.common.data_handlers.volumes.*': 'volumes',
+        'api.common.data_handlers.core.*': f'{QUEUE_PREFIX}.core',
+        'api.common.data_handlers.features.*': f'{QUEUE_PREFIX}.features',
+        'api.common.data_handlers.volumes.*': f'{QUEUE_PREFIX}.volumes',
+    }
+
+    # define task_queues explicitly, so that if -Q is not defined, the worker
+    # will pick up all tasks
+    task_queues = {
+        'celery': {}, # default queue
+        **{
+            route: {}
+            for route in task_routes.values()
+        }   
     }
 
 LOGGER_DIR = os.environ.get("SIIBRA_API_LOG_DIR")
