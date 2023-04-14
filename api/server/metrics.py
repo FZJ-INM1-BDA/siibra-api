@@ -59,7 +59,7 @@ def get_prom_metrics():
     _r = redis.from_url(CELERY_CONFIG.broker_url)
 
     # number of tasks in queue
-    queues = ["celery"]
+    queues = ["celery", "core", "features", "volumes"]
     for q in queues:
         num_task_in_q_gauge.labels(q_name=q).set(_r.llen(q))
 
