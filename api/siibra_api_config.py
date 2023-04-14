@@ -1,6 +1,6 @@
 import os
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 NAME_SPACE = os.environ.get("SIIBRA_API_NAMESPACE", "siibra_api")
 
@@ -20,6 +20,11 @@ class CELERY_CONFIG:
     task_send_sent_event = True
 
     include=['api.common.data_handlers', 'api.serialization']
+    task_routes={
+        'api.common.data_handlers.core.*': 'core',
+        'api.common.data_handlers.features.*': 'features',
+        'api.common.data_handlers.volumes.*': 'volumes',
+    }
 
 LOGGER_DIR = os.environ.get("SIIBRA_API_LOG_DIR")
 

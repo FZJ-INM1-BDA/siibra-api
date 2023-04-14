@@ -103,6 +103,18 @@ jobs:
         oc rollout latest siibra-api-deploy-latest-server
         oc rollout latest siibra-api-deploy-latest-worker
 
+  deploy-rc-on-okd:
+    needs: build-docker-img
+    if:  ${{ github.event_name == 'release' && contains(github.ref, 'rc') }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: 'Login and import image'
+      run: |
+        oc login https://okd-dev.hbp.eu:443 --token=${{ secrets.OKD_DEV_SECRET }}
+        oc project siibra-api
+        oc rollout latest siibra-api-deploy-rc-server
+        oc rollout latest siibra-api-deploy-rc-worker
+
   deploy-prod-on-okd:
     needs: build-docker-img
     if:  ${{ github.event_name == 'release' }}
@@ -113,20 +125,18 @@ jobs:
         deploy-site: ['jsc', 'cscs']
         include:
         - deploy-site: 'jsc'
-          okd-img-stream: 'docker-registry.default.svc:5000/siibra-api/siibra-api-stable:stable'
           okd-endpoint: https://okd.jsc.hbp.eu:443
           okd-secrets-key: OKD_JSC_SECRET
           okd-project: siibra-api
 
         - deploy-site: 'cscs'
-          okd-img-stream: 'docker-registry.default.svc:5000/siibra-api/siibra-api-stable:stable'
           okd-endpoint: https://okd.hbp.eu:443
           okd-secrets-key: OKD_PROD_SECRET
           okd-project: siibra-api
     steps:
     - name: 'Login and import-image'
-      run: echo "Login and import-image"
-      # run: |
-      #   oc login ${{ matrix.okd-endpoint }} --token=${{ secrets[matrix.okd-secrets-key] }}
-      #   oc project ${{ matrix.okd-project }}
-      #   oc import-image ${{ matrix.okd-img-stream }}
+      run: |
+        oc login ${{ matrix.okd-endpoint }} --token=${{ matrix.okd-secrets-key }}
+        oc project ${{ matrix.okd-project }}
+        oc rollout latest siibra-api-deploy-latest-server
+        oc rollout latest siibra-api-deploy-latest-worker
