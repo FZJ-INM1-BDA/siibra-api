@@ -2,7 +2,7 @@ import os
 
 __version__ = "0.3.1"
 
-NAME_SPACE = os.environ.get("SIIBRA_API_NAMESPACE", "siibra_api")
+NAME_SPACE = os.environ.get("SIIBRA_API_NAMESPACE", "siibraapi")
 
 ROLE = os.environ.get("SIIBRA_API_ROLE", "all")
 
@@ -37,7 +37,7 @@ class CELERY_CONFIG:
         **{
             route: {}
             for route in task_routes.values()
-        }   
+        }
     }
 
 LOGGER_DIR = os.environ.get("SIIBRA_API_LOG_DIR")
