@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_pagination import add_pagination
 from fastapi_versioning import VersionedFastAPI
 import time
+import json
 
 from .util import add_lazy_path
 
@@ -18,7 +19,7 @@ from .volumes import prefixed_routers as volume_prefixed_routers
 from .features import router as feature_router
 from .metrics import get_prom_metrics
 
-from api.common import logger, access_logger, InsufficientParameters
+from api.common import logger, access_logger, InsufficientParameters, NotFound
 
 siibra_version_header = "x-siibra-api-version"
 
@@ -93,7 +94,8 @@ do_not_cache_list = [
 ]
 
 do_no_cache_query_list = [
-    "bbox="
+    "bbox=",
+    "find="
 ]
 
 do_not_logs = (
@@ -119,41 +121,44 @@ async def cache_response(request: Request, call_next):
 
     auth_set = request.headers.get("Authorization") is not None
 
-    # bypass cache read if:
-    # - method is not GET
-    # - x-bypass-fast-api-cache is present
-    # - if auth token is set
-    # - if any part of request.url.path matches with do_not_cache_list
-    bypass_cache_read = (
-        request.method.upper() != "GET"
-        or request.headers.get("x-bypass-fast-api-cache")
-        or auth_set
-        or any (keyword in request.url.path for keyword in do_not_cache_list)
-        or any (keyword in request.url.query for keyword in do_no_cache_query_list)
-    )
-
     # bypass cache set if:
     # - method is not GET
     # - if auth token is set
     # - if any part of request.url.path matches with do_not_cache_list
+    # - if any keyword appears in do_no_cache_query_list
     bypass_cache_set = (
         request.method.upper() != "GET" 
         or auth_set 
         or any (keyword in request.url.path for keyword in do_not_cache_list)
+        or any (keyword in request.url.query for keyword in do_no_cache_query_list)
     )
+
+    # bypass cache read if:
+    # - bypass cache set
+    # - x-bypass-fast-api-cache is present
+    bypass_cache_read = (
+        request.headers.get("x-bypass-fast-api-cache")
+    ) or bypass_cache_set
+
+    # starlette seems to normalize header to lower case
+    # so .get("origin") also works if the request has "Origin: http://..."
+    has_origin = request.headers.get("origin")
+    extra_headers = {
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": f"{siibra_version_header}",
+        siibra_version_header: __version__,
+    } if has_origin else {}
+
     cached_value = cache_instance.get_value(cache_key) if not bypass_cache_read else None
     if cached_value:
-        # starlette seems to normalize header to lower case
-        # so .get("origin") also works if the request has "Origin: http://..."
-        has_origin = request.headers.get("origin")
-        extra_headers = {
-            "access-control-allow-origin": "*",
-            "access-control-expose-headers": f"{siibra_version_header}",
-            siibra_version_header: __version__,
-        } if has_origin else {}
-
+        loaded_value = json.loads(cached_value)
+        if loaded_value.get("error"):
+            status_code = loaded_value.get("code", 500)
+        else:
+            status_code = 200
         return Response(
             cached_value,
+            status_code=status_code,
             headers={
                 "content-type": "application/json",
                 "x-fastapi-cache": "hit",
@@ -161,21 +166,39 @@ async def cache_response(request: Request, call_next):
             }
         )
 
-    response = await call_next(request)
+    
+    try:
+        response = await call_next(request)
+        status_code = 200
+        response_content_type = response.headers.get("content-type")
+        response_headers = response.headers
+        content = await read_bytes(response.body_iterator)
+    except NotFound as e:
+        status_code = 404
+        response_content_type = "application/json"
+        content = json.dumps({
+            "error": True,
+            "status_code": status_code,
+            "message": str(e)
+        }).encode("utf-8")
+        response_headers = extra_headers
+    except Exception as e:
+        response_content_type = None
+        content = str(e)
+        status_code = 500
+        response_headers = extra_headers
+        
 
     # conditions when do not cache
-    if (
+    if not (
             bypass_cache_set or
-            response.status_code >= 400 or
-            response.headers.get("content-type") != "application/json"
+            response_content_type != "application/json"
     ):
-        return response
-
-    content = await read_bytes(response.body_iterator)
-    cache_instance.set_value(cache_key, content)
+        cache_instance.set_value(cache_key, content)
     return Response(
         content,
-        headers=response.headers
+        status_code=status_code,
+        headers=response_headers
     )
 
 

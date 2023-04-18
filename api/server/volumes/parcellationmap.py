@@ -23,12 +23,7 @@ router = APIRouter(route_class=SapiCustomRoute, tags=TAGS)
 def route_get_map(parcellation_id: str, space_id: str, map_type: MapType, *, func):
     if func is None:
         raise HTTPException(500, f"func: None passsed")
-    try:
-        return func(parcellation_id, space_id, map_type)
-    except NotFound as e:
-        raise HTTPException(404, f"Map not found!")
-    except Exception as e:
-        raise e
+    return func(parcellation_id, space_id, map_type)
 
 
 @router.get("/labelled_map.nii.gz", response_class=FileResponse, tags=TAGS, description="""

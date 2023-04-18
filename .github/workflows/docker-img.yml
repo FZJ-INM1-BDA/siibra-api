@@ -100,8 +100,10 @@ jobs:
       run: |
         oc login https://okd-dev.hbp.eu:443 --token=${{ secrets.OKD_DEV_SECRET }}
         oc project siibra-api
-        oc rollout latest siibra-api-deploy-latest-server
-        oc rollout latest siibra-api-deploy-latest-worker
+        for dc in $(oc get dc -l app=siibra-api,template_version=v5 | awk '{print $1}' | tail -n +2)
+        do 
+          oc rollout latest dc/$dc
+        done
 
   deploy-rc-on-okd:
     needs: build-docker-img
