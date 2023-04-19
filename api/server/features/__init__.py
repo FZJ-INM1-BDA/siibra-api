@@ -146,6 +146,7 @@ class TabularTypes(Enum):
     ReceptorDensityFingerprint="ReceptorDensityFingerprint"
     LayerwiseBigBrainIntensities="LayerwiseBigBrainIntensities"
     LayerwiseCellDensity="LayerwiseCellDensity"
+    RegionalBOLD="RegionalBOLD"
 
 @wrap_feature_catetory("Tabular", path="", response_model=Page[TabularModels], func=partial(all_features, space_id=None))
 def get_all_tabular(parcellation_id: str, region_id: str, type: Optional[TabularTypes]=None, func=lambda: []):
@@ -166,6 +167,7 @@ class ImageTypes(Enum):
     MRIVolumeOfInterest="MRIVolumeOfInterest"
     PLIVolumeOfInterest="PLIVolumeOfInterest"
     SegmentedVolumeOfInterest="SegmentedVolumeOfInterest"
+    XPCTVolumeOfInterest="XPCTVolumeOfInterest"
 
 # VOI
 @wrap_feature_catetory("Image", path="", response_model=Page[SiibraVoiModel], func=partial(all_features, parcellation_id=None, region_id=None))

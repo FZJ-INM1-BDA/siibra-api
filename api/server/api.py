@@ -17,7 +17,7 @@ from .cache import get_instance as get_cache_instance, terminate, on_startup
 from .core import prefixed_routers as core_prefixed_routers
 from .volumes import prefixed_routers as volume_prefixed_routers
 from .features import router as feature_router
-from .metrics import get_prom_metrics
+from .metrics import metrics_endpoint, on_startup as metrics_on_startup, on_terminate as metrics_on_terminate
 
 from api.common import logger, access_logger, InsufficientParameters, NotFound
 
@@ -54,7 +54,7 @@ siibra_api.add_middleware(
 )
 
 siibra_api.get("/metrics", include_in_schema=False)(
-    get_prom_metrics
+    metrics_endpoint
 )
 
 @siibra_api.get("/ready", include_in_schema=False)
@@ -279,10 +279,12 @@ async def validation_exception_handler(request: Request, exc: Exception):
 @siibra_api.on_event("shutdown")
 def shutdown():
     terminate()
+    metrics_on_terminate()
 
 @siibra_api.on_event("startup")
 def startup():
     on_startup()
+    metrics_on_startup()
 
 import logging
 class EndpointFilter(logging.Filter):

@@ -15,10 +15,9 @@
 
 from redis import Redis
 import base64
-from threading import Timer
 import gzip
 from typing import Union
-
+from api.common.timer import RepeatTimer
 from api.siibra_api_config import REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, IS_CI
 
 _host = REDIS_HOST
@@ -26,12 +25,6 @@ _password = REDIS_PASSWORD
 _port = REDIS_PORT
 # do not use in ci
 _is_ci = IS_CI
-
-# Periodically updates the connected status
-class RepeatTimer(Timer):
-    def run(self):
-        while not self.finished.wait(self.interval):
-            self.function(*self.args, **self.kwargs)
 
 class CacheRedis:
     _r: Redis = None

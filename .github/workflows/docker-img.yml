@@ -112,14 +112,16 @@ jobs:
     steps:
     - name: 'Login and import image'
       run: |
-        oc login https://okd-dev.hbp.eu:443 --token=${{ secrets.OKD_DEV_SECRET }}
+        oc login https://okd.hbp.eu:443 --token=${{ secrets.OKD_PROD_SECRET }}
         oc project siibra-api
-        oc rollout latest siibra-api-deploy-rc-server
-        oc rollout latest siibra-api-deploy-rc-worker
+        for dc in $(oc get dc -l app=siibra-api,template_version=v5,flavor=rc | awk '{print $1}' | tail -n +2)
+        do 
+          oc rollout latest dc/$dc
+        done
 
   deploy-prod-on-okd:
     needs: build-docker-img
-    if:  ${{ github.event_name == 'release' }}
+    if:  ${{ github.event_name == 'release' && !contains(github.ref, 'rc') }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -140,5 +142,11 @@ jobs:
       run: |
         oc login ${{ matrix.okd-endpoint }} --token=${{ matrix.okd-secrets-key }}
         oc project ${{ matrix.okd-project }}
-        oc rollout latest siibra-api-deploy-latest-server
-        oc rollout latest siibra-api-deploy-latest-worker
+        
+        oc login https://okd.hbp.eu:443 --token=${{ secrets.OKD_PROD_SECRET }}
+        oc project siibra-api
+        for dc in $(oc get dc -l app=siibra-api,template_version=v5,flavor=stable | awk '{print $1}' | tail -n +2)
+        do 
+          oc rollout latest dc/$dc
+        done
+        
