@@ -20,6 +20,10 @@ class CELERY_CONFIG:
     result_expires=60
     worker_send_task_events = True
     task_send_sent_event = True
+    
+    # see https://docs.celeryq.dev/en/stable/userguide/optimizing.html#reserve-one-task-at-a-time
+    task_acks_late = True
+    worker_prefetch_multiplier = 1
 
     include=['api.common.data_handlers', 'api.serialization']
 

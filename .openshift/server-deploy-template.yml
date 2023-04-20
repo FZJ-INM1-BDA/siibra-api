@@ -15,7 +15,7 @@ objects:
       app: siibra-api
       template_version: v5
       app_role: server
-    name: siibra-api-service
+    name: siibra-api-service-${FLAVOR}
   spec:
     ports:
     - name: 5000-tcp
@@ -24,13 +24,14 @@ objects:
       targetPort: 5000
     selector:
       app: siibra-api
+      flavor: ${FLAVOR}
       app_role: server
     type: ClusterIP
 
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
-    name: siibra-api-server
+    name: siibra-api-server-${FLAVOR}
     labels:
       flavor: ${FLAVOR}
       app: siibra-api
@@ -40,13 +41,13 @@ objects:
     replicas: 1
     revisionHistoryLimit: 10
     selector:
-      deploymentconfig: siibra-api-server
+      deploymentconfig: siibra-api-server-${FLAVOR}
     template:
       metadata:
         labels:
           flavor: ${FLAVOR}
           app: siibra-api
-          deploymentconfig: siibra-api-server
+          deploymentconfig: siibra-api-server-${FLAVOR}
           template_version: v5
           app_role: server
       spec:

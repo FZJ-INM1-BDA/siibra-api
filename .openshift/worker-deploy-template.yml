@@ -49,7 +49,7 @@ objects:
 
           image: ${SIIBRA_API_WORKER_IMAGE}
           command: ["celery"]
-          args: ["-A", "api.worker.app", "worker", "-Q", "${SIIBRA_API_QUEUE}"]
+          args: ["-A", "api.worker.app", "worker", "-Q", "${SIIBRA_API_QUEUE}", "-O", "fair"]
 
           imagePullPolicy: Always
           name: worker-${CONTAINER_NAME}

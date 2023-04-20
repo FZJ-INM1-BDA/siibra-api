@@ -153,7 +153,7 @@ async def cache_response(request: Request, call_next):
     if cached_value:
         loaded_value = json.loads(cached_value)
         if loaded_value.get("error"):
-            status_code = loaded_value.get("code", 500)
+            status_code = loaded_value.get("status_code", 500)
         else:
             status_code = 200
         return Response(
