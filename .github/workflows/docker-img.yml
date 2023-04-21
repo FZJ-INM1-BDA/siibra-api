@@ -3,7 +3,7 @@ name: '[docker image]'
 on:
   push:
     branches:
-    - v1
+    - v1_EOL
 
 env:
   OKD_PROJECT: siibra-api
@@ -27,11 +27,7 @@ jobs:
     - name: 'Set DOCKER_IMAGE_TAG'
       run: |
         echo "GITHUB_REF: $GITHUB_REF"
-
-        if [ "$GITHUB_REF" = "refs/heads/v1" ]
-        then
-          DOCKER_IMAGE_TAG=$VERSION
-        fi
+        DOCKER_IMAGE_TAG=$VERSION
 
         echo "DOCKER_IMAGE_TAG: $DOCKER_IMAGE_TAG"
         echo "DOCKER_IMAGE_TAG=$DOCKER_IMAGE_TAG" >> $GITHUB_ENV
@@ -55,63 +51,3 @@ jobs:
           docker-registry.ebrains.eu
         echo "Pushing $DOCKER_BUILT_TAG"
         docker push $DOCKER_BUILT_TAG
-    
-    - name: 'Tag and Push shorthand verseions'
-      run: |
-        BREAK=5
-        while [[ "$VERSION" == *"."* ]]
-        do
-          if [[ "$BREAK" == "0" ]]
-          then
-            echo "Fuse broke!"
-            exit 1
-          fi
-          VERSIONED_DOCKERTAG=${{ env.DOCKER_REGISTRY }}${{ env.DOCKER_IMG }}:$VERSION
-          echo "tagging and pushing $VERSIONED_DOCKERTAG"
-          docker tag $DOCKER_BUILT_TAG $VERSIONED_DOCKERTAG
-          docker push $VERSIONED_DOCKERTAG
-          
-          echo "Push successful... Incrementing version & break"
-          VERSION=$(echo $VERSION | sed -e 's/\.\w*$//g')
-          BREAK=$(( "$BREAK" - 1 ))
-        done
-        echo "Done"
-
-  deploy-on-okd:
-    if: success()
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        deploy-site: ['jsc', 'cscs']
-        include:
-        - deploy-site: 'jsc'
-          okd-img-stream: 'docker-registry.default.svc:5000/siibra-api/siibra-api-stable-v1:0.1'
-          okd-endpoint: https://okd.jsc.hbp.eu:443
-          okd-secret-key: OKD_JSC_SECRET
-          okd-project: siibra-api
-        - deploy-site: 'cscs'
-          okd-img-stream: 'docker-registry.default.svc:5000/siibra-api/siibra-api-stable-v1:0.1'
-          okd-endpoint: https://okd.hbp.eu:443
-          okd-secret-key: OKD_PROD_SECRET
-          okd-project: siibra-api
-    steps:
-    - name: 'Login and deploy'
-      run: |
-        oc login ${{ matrix.okd-endpoint }} --token=${{ secrets[matrix.okd-secret-key] }}
-        oc project ${{ matrix.okd-project }}
-        oc import-image ${{ matrix.okd-img-stream }}
-
-      # - name: 'Update status badge'
-      #   if: success()
-      #   run: |
-      #     curl -v \
-      #       -X POST \
-      #       -H "Authorization: Token ${{ secrets.WORKFLOW_TOKEN }}" \
-      #       -H 'accept: application/vnd.github.v3+json' \
-      #       ${GITHUB_API_ROOT}/statuses/${GITHUB_SHA} \
-      #       -d '{
-      #         "target_url":"https://siibra-api-${{ env.SANITIZED_BRANCH_NAME }}.apps-dev.hbp.eu/",
-      #         "name": "Deployed at OKD",
-      #         "state": "success"
-      #       }'
