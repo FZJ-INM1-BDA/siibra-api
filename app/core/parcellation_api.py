@@ -71,6 +71,7 @@ def get_all_parcellations(atlas_id: str):
 
 @router.get('/{parcellation_id:lazy_path}/features/{feature_id:lazy_path}',
             tags=[*TAGS, "features"],
+            deprecated=True,
             response_model=SPyParcellationFeatureModel)
 @version(*FASTAPI_VERSION)
 def get_single_detailed_global_feature(
@@ -102,7 +103,8 @@ def get_single_detailed_global_feature(
 
 @router.get("/{parcellation_id:lazy_path}/features",
             tags=[*TAGS, "features"],
-            response_model=Page[SPyParcellationFeatureModel])
+            response_model=Page[SPyParcellationFeatureModel],
+            deprecated=True)
 @version(*FASTAPI_VERSION)
 @SapiParcellationModel.decorate_link("features")
 def get_all_global_features_for_parcellation(

@@ -80,7 +80,8 @@ def get_all_regions_from_atlas_parc_space(
 
 @router.get("/{region_id:lazy_path}/features",
             tags=[*TAGS, "features"],
-            response_model=List[UnionRegionalFeatureModels])
+            response_model=List[UnionRegionalFeatureModels],
+            deprecated=True)
 @version(*FASTAPI_VERSION)
 def get_all_regional_features_for_region(
     atlas_id: str,
@@ -108,7 +109,8 @@ def get_all_regional_features_for_region(
 
 @router.get("/{region_id:lazy_path}/features/{feature_id:lazy_path}",
             tags=[*TAGS, "features"],
-            response_model=UnionRegionalFeatureModels)
+            response_model=UnionRegionalFeatureModels,
+            deprecated=True)
 @version(*FASTAPI_VERSION)
 def get_single_detailed_regional_feature(
     atlas_id: str,

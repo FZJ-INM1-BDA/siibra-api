@@ -31,7 +31,7 @@ FeatureModels = Union[
 
 FEATURE_PATH = "/features"
 
-router = APIRouter(prefix=FEATURE_PATH)
+router = APIRouter(prefix=FEATURE_PATH, deprecated=True)
 
 TAGS = ["features"]
 

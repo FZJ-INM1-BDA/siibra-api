@@ -139,7 +139,8 @@ def get_parcellation_map_for_space(atlas_id: str, space_id: str):
 
 @router.get("/{space_id:lazy_path}/features/{feature_id:lazy_path}",
     tags=[*TAGS, "features"],
-    response_model=UnionSpatialFeatureModels)
+    response_model=UnionSpatialFeatureModels,
+    deprecated=True)
 @version(*FASTAPI_VERSION)
 def get_single_detailed_spatial_feature(
     feature_id: str,
@@ -170,7 +171,7 @@ def get_single_detailed_spatial_feature(
             detail=f"feature with id {feature_id} not found."
         )
 
-@router.get("/{space_id:lazy_path}/features", tags=[*TAGS, "features"], response_model=List[UnionSpatialFeatureModels])
+@router.get("/{space_id:lazy_path}/features", tags=[*TAGS, "features"], response_model=List[UnionSpatialFeatureModels], deprecated=True)
 @version(*FASTAPI_VERSION)
 @SapiSpaceModel.decorate_link("features")
 def get_all_spatial_features_for_space(
