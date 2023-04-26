@@ -2,13 +2,16 @@
 from fastapi_pagination import paginate, Page
 from fastapi_versioning import version
 from fastapi.exceptions import HTTPException
-from fastapi import Request
-
+from fastapi import Request, APIRouter
 from pydantic import BaseModel
+from typing import Union, Optional, List
+from functools import partial
+from enum import Enum
+import re
 
 from api.server import FASTAPI_VERSION
 from api.siibra_api_config import ROLE
-from api.common import router_decorator
+from api.common import router_decorator, async_router_decorator
 from api.common.data_handlers.features.types import all_feature_types, all_features, single_feature, get_single_feature_from_id
 from api.models.features._basetypes.regional_connectivity import SiibraRegionalConnectivityModel
 from api.models.features._basetypes.cortical_profiles import SiibraCorticalProfileModel
@@ -24,13 +27,13 @@ from api.models.features._basetypes.volume_of_interest import (
 from api.models.features.dataset.ebrains import (
     SiibraEbrainsDataFeatureModel
 )
+from api.server.util import SapiCustomRoute
+from .util import v2_wrap_feature_category
 
-from .util import router, wrap_feature_type, wrap_feature_catetory, TAGS
 
-from typing import Union, Optional, List, Dict
-from functools import partial
-from enum import Enum
-import re
+TAGS= ["feature"]
+
+router = APIRouter(route_class=SapiCustomRoute, tags=TAGS)
 
 class FeatureMetaModel(BaseModel):
     name: str
@@ -101,22 +104,27 @@ class ConnectivityTypes(Enum):
     StreamlineCounts="StreamlineCounts"
     StreamlineLengths="StreamlineLengths"
 
-
-@wrap_feature_catetory("RegionalConnectivity", path="", response_model=Page[RegionalConnectivityModels], func=partial(all_features, space_id=None, region_id=None))
-def get_all_connectivity_features(parcellation_id: str, type: Optional[ConnectivityTypes]=None, func=lambda:[]):
+@router.get("/RegionalConnectivity", response_model=Page[RegionalConnectivityModels])
+@version(*FASTAPI_VERSION)
+@v2_wrap_feature_category("RegionalConnectivity")
+@async_router_decorator(ROLE, func=partial(all_features, space_id=None, region_id=None))
+async def get_all_connectivity_features(parcellation_id: str, type: Optional[ConnectivityTypes]=None, func=lambda:[]):
     type = str(type) if type else None
     return paginate(
-        func(parcellation_id=parcellation_id, type=type)
+        await func(parcellation_id=parcellation_id, type=type)
     )
-@wrap_feature_catetory("RegionalConnectivity", path="/{feature_id:lazy_path}", response_model=RegionalConnectivityModels, func=partial(single_feature, space_id=None, region_id=None), description="""
+
+@router.get("/RegionalConnectivity/{feature_id:lazy_path}", response_model=RegionalConnectivityModels, description="""
 subject is an optional param.
 If provided, the specific matrix will be return.
 If not provided, the matrix averaged between subjects will be returned under the key _average.
 """)
-def get_single_connectivity_feature(parcellation_id: str, feature_id: str, subject: Optional[str]=None, type: Optional[ConnectivityTypes]=None, func=lambda:None):
+@version(*FASTAPI_VERSION)
+@v2_wrap_feature_category("RegionalConnectivity")
+@async_router_decorator(ROLE, func=partial(single_feature, space_id=None, region_id=None))
+async def get_single_connectivity_feature(parcellation_id: str, feature_id: str, subject: Optional[str]=None, type: Optional[ConnectivityTypes]=None, func=lambda:None):
     type = str(type) if type else None
-    return func(parcellation_id=parcellation_id, feature_id=feature_id, subject=subject, type=type)
-
+    return await func(parcellation_id=parcellation_id, feature_id=feature_id, subject=subject, type=type)
 
 
 # Cortical Profiles
@@ -126,16 +134,23 @@ class CorticalProfileTypes(Enum):
     CellDensityProfile="CellDensityProfile"
     BigBrainIntensityProfile="BigBrainIntensityProfile"
 
-@wrap_feature_catetory("CorticalProfile", path="", response_model=Page[CortialProfileModels], func=partial(all_features, space_id=None))
-def get_all_connectivity_features(parcellation_id: str, region_id: str, type: Optional[CorticalProfileTypes]=None, func=lambda:[]):
+@router.get("/CorticalProfile", response_model=Page[CortialProfileModels])
+@version(*FASTAPI_VERSION)
+@v2_wrap_feature_category("CorticalProfile")
+@async_router_decorator(ROLE, func=partial(all_features, space_id=None))
+async def get_all_connectivity_features(parcellation_id: str, region_id: str, type: Optional[CorticalProfileTypes]=None, func=lambda:[]):
     type = str(type) if type else None
     return paginate(
-        func(parcellation_id=parcellation_id, region_id=region_id, type=type)
+        await func(parcellation_id=parcellation_id, region_id=region_id, type=type)
     )
-@wrap_feature_catetory("CorticalProfile", path="/{feature_id:lazy_path}", response_model=CortialProfileModels, func=partial(single_feature, space_id=None))
-def get_single_connectivity_feature(parcellation_id: str, region_id: str, feature_id: str, type: Optional[CorticalProfileTypes]=None, func=lambda:None):
+
+@router.get("/CorticalProfile/{feature_id:lazy_path}", response_model=CortialProfileModels)
+@version(*FASTAPI_VERSION)
+@v2_wrap_feature_category("CorticalProfile")
+@async_router_decorator(ROLE, func=partial(single_feature, space_id=None))
+async def get_single_connectivity_feature(parcellation_id: str, region_id: str, feature_id: str, type: Optional[CorticalProfileTypes]=None, func=lambda:None):
     type = str(type) if type else None
-    return func(parcellation_id=parcellation_id, region_id=region_id, feature_id=feature_id, type=type)
+    return await func(parcellation_id=parcellation_id, region_id=region_id, feature_id=feature_id, type=type)
 
 
 
@@ -148,16 +163,23 @@ class TabularTypes(Enum):
     LayerwiseCellDensity="LayerwiseCellDensity"
     RegionalBOLD="RegionalBOLD"
 
-@wrap_feature_catetory("Tabular", path="", response_model=Page[TabularModels], func=partial(all_features, space_id=None))
-def get_all_tabular(parcellation_id: str, region_id: str, type: Optional[TabularTypes]=None, func=lambda: []):
+@router.get("/Tabular", response_model=Page[TabularModels])
+@version(*FASTAPI_VERSION)
+@v2_wrap_feature_category("Tabular")
+@async_router_decorator(ROLE, func=partial(all_features, space_id=None))
+async def get_all_tabular(parcellation_id: str, region_id: str, type: Optional[TabularTypes]=None, func=lambda: []):
     type = str(type) if type else None
     return paginate(
-        func(parcellation_id=parcellation_id, region_id=region_id, type=type)
+        await func(parcellation_id=parcellation_id, region_id=region_id, type=type)
     )
-@wrap_feature_catetory("Tabular", path="/{feature_id:lazy_path}", response_model=TabularModels, func=partial(single_feature, space_id=None))
-def get_single_tabular(parcellation_id: str, region_id: str, feature_id: str, type: Optional[TabularTypes]=None, func=lambda: None):
+
+@router.get("/Tabular/{feature_id:lazy_path}", response_model=TabularModels)
+@version(*FASTAPI_VERSION)
+@v2_wrap_feature_category("Tabular")
+@async_router_decorator(ROLE, func=partial(single_feature, space_id=None))
+async def get_single_tabular(parcellation_id: str, region_id: str, feature_id: str, type: Optional[TabularTypes]=None, func=lambda: None):
     type = str(type) if type else None
-    return func(parcellation_id=parcellation_id, region_id=region_id, feature_id=feature_id, type=type)
+    return await func(parcellation_id=parcellation_id, region_id=region_id, feature_id=feature_id, type=type)
 
 
 class ImageTypes(Enum):
@@ -170,39 +192,56 @@ class ImageTypes(Enum):
     XPCTVolumeOfInterest="XPCTVolumeOfInterest"
 
 # VOI
-@wrap_feature_catetory("Image", path="", response_model=Page[SiibraVoiModel], func=partial(all_features, parcellation_id=None, region_id=None))
-def get_all_voi(space_id: str, bbox: Optional[str]=None, type: Optional[ImageTypes]=None, func=lambda: []):
+@router.get("/Image", response_model=Page[SiibraVoiModel])
+@version(*FASTAPI_VERSION)
+@v2_wrap_feature_category("Image")
+@async_router_decorator(ROLE, func=partial(all_features, parcellation_id=None, region_id=None))
+async def get_all_voi(space_id: str, bbox: Optional[str]=None, type: Optional[ImageTypes]=None, func=lambda: []):
     type = str(type) if type else None
     return paginate(
-        func(space_id=space_id, type=type, bbox=bbox)
+        await func(space_id=space_id, type=type, bbox=bbox)
     )
 
-@wrap_feature_catetory("Image", path="/{feature_id:lazy_path}", response_model=SiibraVoiModel, func=partial(single_feature, parcellation_id=None, region_id=None))
-def get_single_voi(space_id: str, feature_id: str, type: Optional[ImageTypes]=None, func=lambda: []):
+@router.get("/Image/{feature_id:lazy_path}", response_model=SiibraVoiModel)
+@version(*FASTAPI_VERSION)
+@v2_wrap_feature_category("Image")
+@async_router_decorator(ROLE, func=partial(single_feature, parcellation_id=None, region_id=None))
+async def get_single_voi(space_id: str, feature_id: str, type: Optional[ImageTypes]=None, func=lambda: []):
     type = str(type) if type else None
-    return func(space_id=space_id, feature_id=feature_id, type=type)
-
+    return await func(space_id=space_id, feature_id=feature_id, type=type)
 
 
 # GeneExpression
-@wrap_feature_type("GeneExpressions", path="", response_model=Page[SiibraTabularModel], func=partial(all_features, space_id=None))
-def get_all_gene(parcellation_id: str, region_id: str, gene: str, func=lambda: []):
+@router.get("/GeneExpressions", response_model=Page[SiibraTabularModel])
+@version(*FASTAPI_VERSION)
+@async_router_decorator(ROLE, func=partial(all_features, space_id=None, type="GeneExpressions"))
+async def get_all_gene(parcellation_id: str, region_id: str, gene: str, func=lambda: []):
     return paginate(
-        func(parcellation_id=parcellation_id, region_id=region_id, gene=gene)
-    )
-@wrap_feature_type("GeneExpressions", path="/{feature_id:lazy_path}", response_model=SiibraTabularModel, func=partial(single_feature, space_id=None))
-def get_single_gene(parcellation_id: str, region_id: str, feature_id: str, gene: str, func=lambda: []):
-    return func(parcellation_id=parcellation_id, region_id=region_id, feature_id=feature_id, gene=gene)
-
-@wrap_feature_type("EbrainsDataFeature", path="", response_model=Page[SiibraEbrainsDataFeatureModel], func=partial(all_features, space_id=None))
-def get_all_ebrains_df(parcellation_id: str, region_id: str, func=lambda: []):
-    return paginate(
-        func(parcellation_id=parcellation_id, region_id=region_id)
+        await func(parcellation_id=parcellation_id, region_id=region_id, gene=gene)
     )
 
-@wrap_feature_type("EbrainsDataFeature", path="/{feature_id:lazy_path}", response_model=SiibraEbrainsDataFeatureModel, func=partial(single_feature, space_id=None))
-def get_single_ebrains_df(parcellation_id: str, region_id: str, feature_id: str, func=lambda: None):
-    return func(parcellation_id=parcellation_id, region_id=region_id, feature_id=feature_id)
+@router.get("/GeneExpressions", response_model=Page[SiibraTabularModel])
+@version(*FASTAPI_VERSION)
+@async_router_decorator(ROLE, func=partial(single_feature, space_id=None, type="GeneExpressions"))
+async def get_single_gene(parcellation_id: str, region_id: str, feature_id: str, gene: str, func=lambda: []):
+    return await func(parcellation_id=parcellation_id, region_id=region_id, feature_id=feature_id, gene=gene)
+
+
+# GeneExpression
+@router.get("/EbrainsDataFeature", response_model=Page[SiibraEbrainsDataFeatureModel])
+@version(*FASTAPI_VERSION)
+@async_router_decorator(ROLE, func=partial(all_features, space_id=None, type="EbrainsDataFeature"))
+async def get_all_ebrains_df(parcellation_id: str, region_id: str, func=lambda: []):
+    return paginate(
+        await func(parcellation_id=parcellation_id, region_id=region_id, gene=gene)
+    )
+
+@router.get("/EbrainsDataFeature", response_model=Page[SiibraEbrainsDataFeatureModel])
+@version(*FASTAPI_VERSION)
+@async_router_decorator(ROLE, func=partial(single_feature, space_id=None, type="EbrainsDataFeature"))
+async def get_single_ebrains_df(parcellation_id: str, region_id: str, feature_id: str, func=lambda: None):
+    return await func(parcellation_id=parcellation_id, region_id=region_id, feature_id=feature_id)
+
 
 
 # n.b. this Union *must* go from more specific to less specific
@@ -222,11 +261,11 @@ This endpoint allows detail of a single feature to be fetched, without the neces
 - the client needs to supply any necessary query param (e.g. subject for regional connectivity, gene for gene expression etc)
 """)
 @version(*FASTAPI_VERSION)
-@router_decorator(ROLE, func=get_single_feature_from_id)
-def get_single_feature(feature_id: str, request: Request, func):
+@async_router_decorator(ROLE, func=get_single_feature_from_id)
+async def get_single_feature(feature_id: str, request: Request, func):
     if not func:
         raise HTTPException(500, detail="get_single_feature, func not passed along")
     try:
-        return func(feature_id=feature_id, **dict(request.query_params))
+        return await func(feature_id=feature_id, **dict(request.query_params))
     except Exception as e:
         raise HTTPException(400, detail=str(e))

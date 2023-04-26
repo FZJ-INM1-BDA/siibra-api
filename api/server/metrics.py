@@ -12,7 +12,8 @@ class Singleton:
 
     @staticmethod
     def populate():
-        Singleton.cached_metrics = get_prom_metrics()
+        if ROLE == 'server':
+            Singleton.cached_metrics = get_prom_metrics()
 
 def on_startup():
     Singleton.populate()

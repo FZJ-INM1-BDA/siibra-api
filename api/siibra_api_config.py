@@ -25,6 +25,10 @@ class CELERY_CONFIG:
     task_acks_late = True
     worker_prefetch_multiplier = 1
 
+    # https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-task_time_limit
+    # Since gateway closes after 30 seconds, but give a larger window for the result to be returned and cached
+    task_time_limit = 60
+
     include=['api.common.data_handlers', 'api.serialization']
 
     # source of truth on all queues
