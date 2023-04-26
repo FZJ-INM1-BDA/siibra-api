@@ -26,8 +26,8 @@ class CELERY_CONFIG:
     worker_prefetch_multiplier = 1
 
     # https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-task_time_limit
-    # Since gateway closes after 30 seconds, but give a larger window for the result to be returned and cached
-    task_time_limit = 60
+    # some long running tasks can take a while, but should not exceed 10 minutes to run
+    task_time_limit = 600
 
     include=['api.common.data_handlers', 'api.serialization']
 
@@ -76,3 +76,5 @@ except Exception as e:
     SIIBRA_API_REMAP_PROVIDERS
     {remapped_providers}
     """)
+
+GIT_HASH = os.getenv("GIT_HASH", "unknown-hash")

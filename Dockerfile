@@ -1,4 +1,8 @@
 FROM python:3.10
+
+ARG GIT_HASH
+ENV GIT_HASH=${GIT_HASH:-unknown-hash}
+
 RUN python -m pip install -U pip
 COPY ./requirements /requirements
 RUN python -m pip install -r /requirements/all.txt

@@ -37,9 +37,11 @@ jobs:
           tag_suffix: '-server'
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: "Build docker image"
-      run: docker build -t siibra-api-tmp-img -f ${{ matrix.dockerfile }} .
+      run: |
+        GIT_HASH=$(git rev-parse --short HEAD)
+        docker build --build-arg GIT_HASH=$GIT_HASH -t siibra-api-tmp-img -f ${{ matrix.dockerfile }} .
 
     - name: "Tag and Push (latest || rc)"
       if: ${{ (github.event_name == 'push') || contains(github.ref, 'rc') }}

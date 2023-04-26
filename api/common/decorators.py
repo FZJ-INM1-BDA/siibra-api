@@ -83,7 +83,8 @@ def async_router_decorator(role: ROLE_TYPE, *, func):
                 while True:
                     if async_result.status == "SUCCESS":
                         return async_result.get()
-                    if (time.time() - timestamp) > 60:
+                    if (time.time() - timestamp) > 600:
+                        async_result.revoke()
                         raise TimeoutError
                     await asyncio.sleep(wait)
                     wait = min(wait + wait, 1) # increase sleep duration, but at most 1 sec

@@ -20,6 +20,7 @@ from .features import router as feature_router
 from .metrics import metrics_endpoint, on_startup as metrics_on_startup, on_terminate as metrics_on_terminate
 
 from api.common import logger, access_logger, InsufficientParameters, NotFound
+from api.siibra_api_config import GIT_HASH
 
 siibra_version_header = "x-siibra-api-version"
 
@@ -73,6 +74,8 @@ def home(request: Request):
     return templates.TemplateResponse(
         "index.html", context={
             "request": request,
+            "api_version": __version__,
+            "git_hash": GIT_HASH,
             "versions": ["v3_0", "v2_0", "v1_0"]
         })
 
