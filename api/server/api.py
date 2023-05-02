@@ -153,10 +153,13 @@ async def cache_response(request: Request, call_next):
     } if has_origin else {}
 
     cached_value = cache_instance.get_value(cache_key) if not bypass_cache_read else None
+
+    status_code_key = "status_code"
+
     if cached_value:
         loaded_value = json.loads(cached_value)
         if loaded_value.get("error"):
-            status_code = loaded_value.get("status_code", 500)
+            status_code = loaded_value.get(status_code_key, 500)
         else:
             status_code = 200
         return Response(
@@ -181,14 +184,18 @@ async def cache_response(request: Request, call_next):
         response_content_type = "application/json"
         content = json.dumps({
             "error": True,
-            "status_code": status_code,
+            status_code_key: status_code,
             "message": str(e)
         }).encode("utf-8")
         response_headers = extra_headers
     except Exception as e:
-        response_content_type = None
-        content = str(e)
         status_code = 500
+        response_content_type = None
+        content = json.dumps({
+            "error": True,
+            status_code_key: status_code,
+            "message": str(e)
+        }).encode("utf-8")
         response_headers = extra_headers
         
 

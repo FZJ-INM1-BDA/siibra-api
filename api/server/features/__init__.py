@@ -214,30 +214,34 @@ async def get_single_voi(space_id: str, feature_id: str, type: Optional[ImageTyp
 # GeneExpression
 @router.get("/GeneExpressions", response_model=Page[SiibraTabularModel])
 @version(*FASTAPI_VERSION)
+@v2_wrap_feature_category("GeneExpressions")
 @async_router_decorator(ROLE, func=partial(all_features, space_id=None, type="GeneExpressions"))
 async def get_all_gene(parcellation_id: str, region_id: str, gene: str, func=lambda: []):
     return paginate(
         await func(parcellation_id=parcellation_id, region_id=region_id, gene=gene)
     )
 
-@router.get("/GeneExpressions", response_model=Page[SiibraTabularModel])
+@router.get("/GeneExpressions/{feature_id:lazy_path}", response_model=Page[SiibraTabularModel])
 @version(*FASTAPI_VERSION)
+@v2_wrap_feature_category("GeneExpressions")
 @async_router_decorator(ROLE, func=partial(single_feature, space_id=None, type="GeneExpressions"))
 async def get_single_gene(parcellation_id: str, region_id: str, feature_id: str, gene: str, func=lambda: []):
     return await func(parcellation_id=parcellation_id, region_id=region_id, feature_id=feature_id, gene=gene)
 
 
-# GeneExpression
+# EbrainsDataFeature
 @router.get("/EbrainsDataFeature", response_model=Page[SiibraEbrainsDataFeatureModel])
 @version(*FASTAPI_VERSION)
+@v2_wrap_feature_category("EbrainsDataFeature")
 @async_router_decorator(ROLE, func=partial(all_features, space_id=None, type="EbrainsDataFeature"))
 async def get_all_ebrains_df(parcellation_id: str, region_id: str, func=lambda: []):
     return paginate(
-        await func(parcellation_id=parcellation_id, region_id=region_id, gene=gene)
+        await func(parcellation_id=parcellation_id, region_id=region_id)
     )
 
-@router.get("/EbrainsDataFeature", response_model=Page[SiibraEbrainsDataFeatureModel])
+@router.get("/EbrainsDataFeature/{feature_id:lazy_path}", response_model=Page[SiibraEbrainsDataFeatureModel])
 @version(*FASTAPI_VERSION)
+@v2_wrap_feature_category("EbrainsDataFeature")
 @async_router_decorator(ROLE, func=partial(single_feature, space_id=None, type="EbrainsDataFeature"))
 async def get_single_ebrains_df(parcellation_id: str, region_id: str, feature_id: str, func=lambda: None):
     return await func(parcellation_id=parcellation_id, region_id=region_id, feature_id=feature_id)

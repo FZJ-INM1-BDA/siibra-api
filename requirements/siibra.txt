@@ -1,1 +1,2 @@
-siibra>=0.4a47
+git+https://github.com/xgui3783/siibra-python.git@backportFixFeatSubClsIndex
+# siibra>=0.4a47
