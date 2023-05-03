@@ -2,33 +2,22 @@ stages:
   - test
   - deploy
 
+model-module-import:
+  image: python:3.9
+  stage: test
+  before_script:
+  - python -m pip install -U pip
+  - pip install pydantic
+  script:
+  - python -c "import api.models"
+
+
 test:
-  image: tiangolo/uvicorn-gunicorn-fastapi:python3.7
+  image: python:3.9
   stage: test
   before_script:
     - python -m pip install --upgrade pip
+    - pip install -r requirements/all.txt
+    - pip install pytest pytest-asyncio httpx mock coverage pytest-cov
   script:
-    - pip install -r requirements/dev.txt
-    - pip install pytest pytest-asyncio httpx mock coverage
-    - coverage run -m pytest
-    - coverage html -d coverage
-    - mv coverage/ public/
-  artifacts:
-    paths:
-      - public
-    expire_in: 30 days
-  only:
-    - master
-
-dev_deploy:
-  image: ebits/openshift-client
-  stage: deploy
-  only:
-    - master
-  script:
-    - |
-      oc login $OPENSHIFT_URL --token=$OPENSHIFT_TOKEN
-      oc project $OPENSHIFT_PROJECT
-      oc start-build $CI_PROJECT_NAME
-
-
+    - pytest
