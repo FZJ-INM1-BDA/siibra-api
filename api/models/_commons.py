@@ -71,7 +71,13 @@ class SeriesModel(ConfigBaseModel):
 
 class DataFrameModel(ConfigBaseModel):
     index: List[Any]
-    dtype: str
     columns: List[Any]
     ndim: int
-    data: List[List[Union[float, str, List[float]]]]
+    data: Optional[
+        # to prepare for ndim > 2, maybe we should consider using generic ndim list?
+        List[List[
+            # probably easier than introducing a dependency to a more generalist module
+            Any
+            # Optional[Union[float, str, List[float], ParcellationEntityVersionModel]]
+        ]]
+    ]

@@ -112,3 +112,17 @@ def get_parcellation_labelled_map(parcellation_id: str, space_id: str, region_id
             "region_id": region_id,
         }, fp=fp, indent="\t")
     return full_filename
+
+@data_decorator(ROLE)
+def assign_point(parcellation_id: str, space_id: str, point: str, sigma_mm: float=1.):
+    import siibra
+    from api.serialization.util import instance_to_model
+    m = siibra.get_map(parcellation_id,space_id,siibra.MapType.STATISTICAL)
+    p = siibra.Point(point, space=space_id, sigma_mm=sigma_mm)
+    df = m.assign(p)
+    
+    try:
+        return instance_to_model(df, detail=True).dict()
+    except Exception as e:
+        raise e
+    

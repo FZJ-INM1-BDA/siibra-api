@@ -8,8 +8,9 @@ from api.server import FASTAPI_VERSION
 from api.siibra_api_config import ROLE
 from api.models.volumes.parcellationmap import MapModel
 from api.models.volumes.volume import MapType
+from api.models._commons import DataFrameModel
 from api.common import router_decorator, get_filename, logger, NotFound
-from api.common.data_handlers.volumes.parcellationmap import get_map, get_region_statistic_map, get_region_statistic_map_info, get_parcellation_labelled_map
+from api.common.data_handlers.volumes.parcellationmap import get_map, get_region_statistic_map, get_region_statistic_map_info, get_parcellation_labelled_map, assign_point
 from api.server.util import SapiCustomRoute
 import os
 
@@ -82,3 +83,11 @@ def route_get_region_statistical_map(parcellation_id: str, space_id: str, region
     
     data = func(parcellation_id, region_id, space_id)
     return StatisticModelInfo(**data)
+
+@router.get("/assign", response_model=DataFrameModel, tags=[TAGS])
+@version(*FASTAPI_VERSION)
+@router_decorator(ROLE, func=assign_point)
+def router_assign_point(parcellation_id: str, space_id: str, point: str, sigma_mm: float=1., *, func):
+    if func is None:
+        raise HTTPException(500, f"func: None passsed")
+    return func(parcellation_id, space_id, point, sigma_mm)
