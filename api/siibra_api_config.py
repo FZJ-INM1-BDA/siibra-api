@@ -1,6 +1,6 @@
 import os
 
-__version__ = "0.3.2"
+__version__ = "0.3.3"
 
 NAME_SPACE = os.environ.get("SIIBRA_API_NAMESPACE", "siibraapi")
 

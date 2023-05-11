@@ -35,20 +35,10 @@ def pdseries_to_model(series: Series, **kwargs):
 
 @serialize(DataFrame)
 def pddf_to_model(df: DataFrame, detail=False, **kwargs):
-    # assert all(dtype in serializable_dtype for dtype in df.dtypes), f"df dtypes {df.dtypes} not all in serieialzable types. {', '.join([v.__name__ for v in serializable_dtype])}"
-    unique_dtypes = np.unique(df.dtypes)
-    print(unique_dtypes)
-    # for dt in unique_dtypes:
-    #     assert dt in serializable_dtype
-    # TODO maybe not relevant
-    # try:
-    #     assert unique_dtypes.size == 1
-    # except:
-    #     print(unique_dtypes)
+
     return DataFrameModel(
         index=[instance_to_model(el) for el in df.index],
         columns=[instance_to_model(el) for el in df.columns],
         ndim=df.ndim,
-        data=df.values.tolist() if detail else None,
-        dtype=str(unique_dtypes[0]) # TODO maybe not relevant
+        data=instance_to_model(df.values.tolist()) if detail else None,
     )
