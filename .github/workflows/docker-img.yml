@@ -94,6 +94,7 @@ jobs:
         echo "Done"
 
   setup-envvar:
+    runs-on: ubuntu-latest
     outputs:
       queues: ${{ steps.set-env-var.outputs.queues }}
       version: ${{ steps.set-env-var.outputs.version }}
