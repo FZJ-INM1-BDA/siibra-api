@@ -30,11 +30,17 @@ def data_decorator(role: ROLE_TYPE):
         raise RuntimeError(f"role must be 'all', 'server' or 'worker', but it is {role}")
     return outer_wrapper
 
-def router_decorator(role: ROLE_TYPE, *, func):
+def router_decorator(role: ROLE_TYPE, *, func, queue_as_async=False, **kwargs):
+    """
+    queue_as_async: bool
+    if set, will return id of the task, instead of task itself. Query the id for result.
+    """
     def outer(fn):
 
         return_func = None
         if role == "all":
+            if queue_as_async:
+                raise RuntimeError(f"If role is set to all, cannot queue_as_async")
             return_func = func
         if role == "server":
             def sync_get_result(*args, **kwargs):
@@ -47,7 +53,10 @@ def router_decorator(role: ROLE_TYPE, *, func):
                     _func=func
                 
                 async_result = _func.apply_async(args, kwargs)
-                return async_result.get()
+                if queue_as_async:
+                    return async_result.id
+                else:
+                    return async_result.get()
             return_func = sync_get_result
         if return_func is None:
             raise NotImplementedError(f"router_decorator can only be used in roles: all, server, but you selected {role}")

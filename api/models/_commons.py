@@ -1,6 +1,6 @@
 from api.models.openminds.base import _BaseModel
-from typing import Optional, List, Union, ClassVar, Any
-from pydantic import Field
+from typing import Optional, List, Union, ClassVar, Any, Literal
+from pydantic import Field, BaseModel
 from abc import ABC
 
 SIIBRA_PYTHON_VERSION = "0.4"
@@ -80,4 +80,13 @@ class DataFrameModel(ConfigBaseModel):
             Any
             # Optional[Union[float, str, List[float], ParcellationEntityVersionModel]]
         ]]
+    ]
+
+class TaskIdResp(BaseModel):
+    task_id: str
+    status: Optional[
+        Union[
+            Literal['SUCCESS'],
+            Literal['PENDING'],
+        ]
     ]
