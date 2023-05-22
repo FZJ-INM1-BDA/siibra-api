@@ -16,7 +16,7 @@ objects:
       app: siibra-api
       queue: ${SIIBRA_API_VERSION}.siibraapi${FLAVOR}.${QUEUE_NAME}
       siibraapi_version: ${SIIBRA_API_VERSION}
-      template_version: v5SII
+      template_version: v5
       app_role: worker
   spec:
     replicas: 3
@@ -27,7 +27,7 @@ objects:
       metadata:
         labels:
           flavor: ${FLAVOR}
-          app: siibra-api-worker
+          app: siibra-api
           deploymentconfig: worker-q-${SIIBRA_API_VERSION}-${QUEUE_NAME}
           queue: ${SIIBRA_API_VERSION}.siibraapi${FLAVOR}.${QUEUE_NAME}
           template_version: v5
@@ -43,7 +43,7 @@ objects:
           - name: SIIBRA_API_NAMESPACE
             value: siibraapi${FLAVOR}
           - name: SIIBRA_API_QUEUE
-            value: ${SIIBRA_API_QUEUE}
+            value: ${SIIBRA_API_VERSION}.siibraapi${FLAVOR}.${QUEUE_NAME}
           envFrom:
           - configMapRef:
               name: siibra-api-config
