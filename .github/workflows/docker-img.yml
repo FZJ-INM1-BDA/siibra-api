@@ -93,22 +93,54 @@ jobs:
         done
         echo "Done"
 
-  deploy-latest-on-okd:
+  setup-envvar:
+    outputs:
+      queues: ${{ steps.set-env-var.outputs.queues }}
+      version: ${{ steps.set-env-var.outputs.version }}
     needs: build-docker-img
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
+    - name: 'Setting env var'
+      id: set-env-var
+      run: |
+        echo queues=$(python -c 'import api.siibra_api_config as cfg; print(" ".join([f"{q!r}" for q in cfg._queues]))') >> "$GITHUB_OUTPUT"
+        echo version=$(python -c 'import api.siibra_api_config as cfg; print(cfg.__version__) >> "$GITHUB_OUTPUT"
+
+  deploy-latest-on-okd:
+    needs: setup-envvar
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
+    env:
+      QUEUES: ${{ needs.setup-envvar.outputs.queues }}
+      VERSION: ${{ needs.setup-envvar.outputs.version }}
     steps:
     - name: 'Login and import image'
       run: |
         oc login https://okd-dev.hbp.eu:443 --token=${{ secrets.OKD_DEV_SECRET }}
         oc project siibra-api
-        for dc in $(oc get dc -l app=siibra-api,template_version=v5 | awk '{print $1}' | tail -n +2)
+
+        echo "Restarting all servers"
+        for dc in $(oc get dc -l app=siibra-api,app_role=server,template_version=v5 | awk '{print $1}' | tail -n +2)
         do 
           oc rollout latest dc/$dc
         done
 
+        for queue in ${{ env.QUEUES }}
+        do
+          echo Processing worker with queue name: $queue siibraapi version ${{ env.VERSION }}
+
+          oc new-app --template=siibra-api-v5-worker-template \
+            --param SIIBRA_API_VERSION=${{ env.VERSION }} \
+            --param FLAVOR=latest \
+            --param QUEUE_NAME=$queue \
+            --param SIIBRA_API_WORKER_IMAGE=docker-registry.ebrains.eu/siibra/siibra-api:latest-worker
+        done
+
   deploy-rc-on-okd:
-    needs: build-docker-img
+    needs: setup-envvar
     if:  ${{ github.event_name == 'release' && contains(github.ref, 'rc') }}
     runs-on: ubuntu-latest
     steps:
@@ -122,7 +154,7 @@ jobs:
         done
 
   deploy-prod-on-okd:
-    needs: build-docker-img
+    needs: setup-envvar
     if:  ${{ github.event_name == 'release' && !contains(github.ref, 'rc') }}
     runs-on: ubuntu-latest
     strategy:

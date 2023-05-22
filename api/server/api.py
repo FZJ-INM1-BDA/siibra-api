@@ -16,6 +16,7 @@ from . import __version__
 from .cache import get_instance as get_cache_instance, terminate, on_startup
 from .core import prefixed_routers as core_prefixed_routers
 from .volumes import prefixed_routers as volume_prefixed_routers
+from .compounds import prefixed_routers as compound_prefixed_routers
 from .features import router as feature_router
 from .metrics import metrics_endpoint, on_startup as metrics_on_startup, on_terminate as metrics_on_terminate
 
@@ -30,7 +31,7 @@ siibra_api = FastAPI(
     version=__version__,
 )
 
-for prefix_router in [*core_prefixed_routers, *volume_prefixed_routers]:
+for prefix_router in [*core_prefixed_routers, *volume_prefixed_routers, *compound_prefixed_routers]:
     siibra_api.include_router(prefix_router.router, prefix=prefix_router.prefix)
 
 siibra_api.include_router(feature_router, prefix="/feature")
@@ -93,7 +94,8 @@ async def read_bytes(generator) -> bytes:
 
 do_not_cache_list = [
     "metrics",
-    "openapi.json"
+    "openapi.json",
+    "atlas_download"
 ]
 
 do_no_cache_query_list = [

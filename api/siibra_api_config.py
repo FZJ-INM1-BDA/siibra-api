@@ -14,6 +14,13 @@ REDIS_PASSWORD = os.getenv("SIIBRA_API_REDIS_PASSWORD")
 
 QUEUE_PREFIX = f"{__version__}.{NAME_SPACE}"
 
+_queues = [
+    "core",
+    "features",
+    "volumes",
+    "compounds",
+]
+
 class CELERY_CONFIG:
     broker_url=os.getenv("SIIBRA_API_CELERY_BROKER", f"redis://{(':' + REDIS_PASSWORD + '@') if REDIS_PASSWORD else ''}{REDIS_HOST}:{REDIS_PORT}")
     result_backend=os.getenv("SIIBRA_API_CELERY_RESULT", f"redis://{(':' + REDIS_PASSWORD + '@') if REDIS_PASSWORD else ''}{REDIS_HOST}:{REDIS_PORT}")
@@ -33,9 +40,8 @@ class CELERY_CONFIG:
 
     # source of truth on all queues
     task_routes={
-        'api.common.data_handlers.core.*': f'{QUEUE_PREFIX}.core',
-        'api.common.data_handlers.features.*': f'{QUEUE_PREFIX}.features',
-        'api.common.data_handlers.volumes.*': f'{QUEUE_PREFIX}.volumes',
+        f'api.common.data_handlers.{_queue}.*': f'{QUEUE_PREFIX}.{_queue}'
+        for _queue in _queues
     }
 
     # define task_queues explicitly, so that if -Q is not defined, the worker

@@ -10,28 +10,29 @@ objects:
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
-    name: worker-q-${SIIBRA_API_QUEUE}
+    name: worker-q-${SIIBRA_API_VERSION}-${QUEUE_NAME}
     labels:
       flavor: ${FLAVOR}
       app: siibra-api
-      queue: ${SIIBRA_API_QUEUE}
+      queue: ${SIIBRA_API_VERSION}.siibraapi${FLAVOR}.${QUEUE_NAME}
       siibraapi_version: ${SIIBRA_API_VERSION}
-      template_version: v5
+      template_version: v5SII
       app_role: worker
   spec:
     replicas: 3
     revisionHistoryLimit: 10
     selector:
-      deploymentconfig: worker-q-${SIIBRA_API_QUEUE}
+      deploymentconfig: worker-q-${SIIBRA_API_VERSION}-${QUEUE_NAME}
     template:
       metadata:
         labels:
           flavor: ${FLAVOR}
           app: siibra-api-worker
-          deploymentconfig: worker-q-${SIIBRA_API_QUEUE}
-          queue: ${SIIBRA_API_QUEUE}
+          deploymentconfig: worker-q-${SIIBRA_API_VERSION}-${QUEUE_NAME}
+          queue: ${SIIBRA_API_VERSION}.siibraapi${FLAVOR}.${QUEUE_NAME}
           template_version: v5
           app_role: worker
+          siibraapi_version: ${SIIBRA_API_VERSION}
       spec:
         containers:
         - env:
@@ -40,7 +41,7 @@ objects:
           - name: SIIBRA_API_LOG_DIR
             value: ${LOG_VOLUME_MOUNT}
           - name: SIIBRA_API_NAMESPACE
-            value: ${SIIBRA_API_NAMESPACE}
+            value: siibraapi${FLAVOR}
           - name: SIIBRA_API_QUEUE
             value: ${SIIBRA_API_QUEUE}
           envFrom:
@@ -80,20 +81,9 @@ parameters:
 - name: SIIBRA_API_WORKER_IMAGE
   description: Docker image for the worker
   required: true
-- name: SIIBRA_API_QUEUE
-  description: |
-    Queue for the worker to join.
-    Must be of the pattern [a-zA-Z0-9-.]+.
-    Typically {VERSION}.{NAMESPACE}.{CHANNEL}
-    e.g. 0.3.1.siibrapi.core
+- name: QUEUE_NAME
+  description: core,volumes,features etc
   required: true
-- name: SIIBRA_API_NAMESPACE
-  description: |
-    Namespace.
-    For k8s and metrics related reasons, must be of the pattern [a-zA-Z0-9-]+
-    For metrics related reason, must be of patter [a-zA-Z0-9_]+
-    So... use [a-zA-Z0-9]+ only!
-    Try to stick to siibraapi{FLAVOR}, e.g. siibraapilatest
 
 - name: LOG_VOLUME_WORKER_VOLUME_NAME
   description: Randomly generated volume name. Do not overwrite
