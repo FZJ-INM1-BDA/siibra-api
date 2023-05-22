@@ -42,8 +42,6 @@ objects:
             value: ${LOG_VOLUME_MOUNT}
           - name: SIIBRA_API_NAMESPACE
             value: siibraapi${FLAVOR}
-          - name: SIIBRA_API_QUEUE
-            value: ${SIIBRA_API_VERSION}.siibraapi${FLAVOR}.${QUEUE_NAME}
           envFrom:
           - configMapRef:
               name: siibra-api-config
@@ -51,7 +49,7 @@ objects:
 
           image: ${SIIBRA_API_WORKER_IMAGE}
           command: ["celery"]
-          args: ["-A", "api.worker.app", "worker", "-Q", "${SIIBRA_API_QUEUE}", "-O", "fair"]
+          args: ["-A", "api.worker.app", "worker", "-Q", "${SIIBRA_API_VERSION}.siibraapi${FLAVOR}.${QUEUE_NAME}", "-O", "fair"]
 
           imagePullPolicy: Always
           name: worker-${CONTAINER_NAME}
