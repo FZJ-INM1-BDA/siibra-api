@@ -108,7 +108,7 @@ jobs:
       id: set-env-var
       run: |
         echo queues=$(python -c 'import api.siibra_api_config as cfg; print(" ".join([f"{q!r}" for q in cfg._queues]))') >> "$GITHUB_OUTPUT"
-        echo version=$(python -c 'import api.siibra_api_config as cfg; print(cfg.__version__) >> "$GITHUB_OUTPUT"
+        echo version=$(python -c 'import api.siibra_api_config as cfg; print(cfg.__version__)') >> "$GITHUB_OUTPUT"
 
   deploy-latest-on-okd:
     needs: setup-envvar
