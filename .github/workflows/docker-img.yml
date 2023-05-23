@@ -139,10 +139,8 @@ jobs:
 
           if [[ "$existing_count" = "1" ]]
           then
-            for dc in $(oc get dc -l flavor=latest,siibraapi_version=${VERSION},app=siibra-api,app_role=worker,queue=${VERSION}.siibraapilatest.${queue})
-            do
-              oc rollout latest dc/$dc
-            done
+            dc=$(oc get dc -o=json -l flavor=latest,siibraapi_version=${VERSION},app=siibra-api,app_role=worker,queue=${VERSION}.siibraapilatest.${queue} | jq -r '.items[0].metadata.name')
+            oc rollout latest dc/$dc
           else
             oc delete all -l flavor=latest,app=siibra-api,app_role=worker,queue=${VERSION}.siibraapilatest.${queue}
             oc new-app --template=siibra-api-v5-worker-template \
