@@ -75,7 +75,7 @@ if ROLE == "server":
 
                 headers={
                     "content-type": "application/octet-stream",
-                    "content-disposition": f'attachment; filename="{path_to_file.name}.zip"'
+                    "content-disposition": f'attachment; filename="{path_to_file.name}"'
                 }
                 return FileResponse(result, headers=headers)
             else:
