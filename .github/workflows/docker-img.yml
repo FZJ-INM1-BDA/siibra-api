@@ -131,13 +131,26 @@ jobs:
 
         for queue in ${{ env.QUEUES }}
         do
-          echo Processing worker with queue name: $queue siibraapi version ${{ env.VERSION }}
+          echo Processing worker with queue name: $queue siibraapi version ${VERSION}
 
-          oc new-app --template=siibra-api-v5-worker-template \
-            --param SIIBRA_API_VERSION=${{ env.VERSION }} \
-            --param FLAVOR=latest \
-            --param QUEUE_NAME=$queue \
-            --param SIIBRA_API_WORKER_IMAGE=docker-registry.ebrains.eu/siibra/siibra-api:latest-worker
+          existing_count=$(oc get dc -o=json -l flavor=latest,siibraapi_version=${VERSION},app=siibra-api,app_role=worker,queue=${VERSION}.siibraapilatest.${queue} | jq '.items | length')
+          
+          echo Existing dc count: $existing_count
+
+          if [[ "$existing_count" = "1" ]]
+          then
+            for dc in $(oc get dc -o=json -l flavor=latest,siibraapi_version=${VERSION},app=siibra-api,app_role=worker,queue=${VERSION}.siibraapilatest.${queue})
+            do
+              oc rollout latest dc/$dc
+            done
+          else
+            oc delete all -l flavor=latest,app=siibra-api,app_role=worker,queue=${VERSION}.siibraapilatest.${queue}
+            oc new-app --template=siibra-api-v5-worker-template \
+              --param SIIBRA_API_VERSION=${VERSION} \
+              --param FLAVOR=latest \
+              --param QUEUE_NAME=$queue \
+              --param SIIBRA_API_WORKER_IMAGE=docker-registry.ebrains.eu/siibra/siibra-api:latest-worker
+          fi
         done
 
   deploy-rc-on-okd:

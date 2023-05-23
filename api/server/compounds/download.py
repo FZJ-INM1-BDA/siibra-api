@@ -1,8 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, BackgroundTasks
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 from fastapi.exceptions import HTTPException
 from fastapi_versioning import version
 from pathlib import Path
+import os
 
 from api.server.util import SapiCustomRoute
 from api.server import FASTAPI_VERSION
@@ -13,10 +14,13 @@ from api.models._commons import TaskIdResp
 
 router = APIRouter(route_class=SapiCustomRoute, tags=["download"])
 
+def cleanup(filepath: Path):
+    filepath.unlink()
+
 @router.get("")
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=download_all, queue_as_async=(ROLE=="server"))
-def prepare_download(space_id: str, parcellation_id: str, region_id: str=None, func=lambda *args, **kwargs: None):
+def prepare_download(space_id: str, parcellation_id: str, region_id: str=None, *, background: BackgroundTasks, func):
     returnval = func(space_id, parcellation_id, region_id)
     try:
         path_to_file = Path(returnval)
@@ -26,6 +30,9 @@ def prepare_download(space_id: str, parcellation_id: str, region_id: str=None, f
         # TODO returning different shape is kind of ugly
         # fix in next version
         if path_to_file.exists() and path_to_file.is_file():
+            
+            background.add_task(cleanup, path_to_file)
+
             headers={
                 "content-type": "application/octet-stream",
                 "content-disposition": f'attachment; filename="{path_to_file.name}"'
@@ -50,7 +57,7 @@ if ROLE == "server":
 
     @router.get("/{task_id:str}/download")
     @version(*FASTAPI_VERSION)
-    def get_task_id(task_id:str):
+    def get_task_id(task_id:str, background: BackgroundTasks):
         res = download_all.AsyncResult(task_id)
         
         if res.state == "FAILURE":
@@ -63,6 +70,9 @@ if ROLE == "server":
             
             path_to_file = Path(result)
             if path_to_file.exists() and path_to_file.is_file():
+
+                background.add_task(cleanup, path_to_file)
+
                 headers={
                     "content-type": "application/octet-stream",
                     "content-disposition": f'attachment; filename="{path_to_file.name}.zip"'
