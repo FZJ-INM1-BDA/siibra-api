@@ -30,39 +30,49 @@ def download_all(space_id: str, parcellation_id: str, region_id: str=None):
 
     with ZipFile(zipfilename, "w") as zipfile:
         
+        def write_model(filename, obj, **kwargs):
+            try:
+                zipfile.writestr(filename, instance_to_model(obj, **kwargs).json())
+            except Exception as e:
+                zipfile.writestr(f"{filename}.error.txt", str(e))
+            
+        
         zipfile.writestr("README.md", README.format(siibra_api_version=__version__, injected_content=f"space_id={space_id}, parcellation_id={parcellation_id}, region_id={region_id}"))
 
         try:
-            filename = "template/template.nii.gz"
+            filename = "template.nii.gz"
             space: _space.Space = siibra.spaces[space_id]
 
-            # Only fetch niftis for now
-            # TODO bug in siibra-python. for now, try nii first, if None, try zip/nii
-            # see https://github.com/FZJ-INM1-BDA/siibra-python/issues/386
-            space_vol = space.get_template().fetch(format="nii") or space.get_template().fetch(format="zip/nii")
+            # this should fetch anything (surface, nifti, ng precomputed)
+            space_vol = space.get_template().fetch()
             zipfile.writestr(filename, gzip.compress(space_vol.to_bytes()))
         except Exception as e:
             zipfile.writestr(f"{filename}.error.txt", str(e))
         
+        write_model('template.json', space, detail=True)
+
         try:
-            filename = "parcellation/parcellation.nii.gz"
+            filename = "parcellation.nii.gz"
             space: _space.Space = siibra.spaces[space_id]
             parcellation: _parcellation.Parcellation = siibra.parcellations[parcellation_id]
-
             parc_vol = parcellation.get_map(space, siibra.MapType.LABELLED).fetch()
             zipfile.writestr(filename, gzip.compress(parc_vol.to_bytes()))
         except Exception as e:
             zipfile.writestr(f"{filename}.error.txt", str(e))
 
+        write_model('parcellation.json', parcellation, detail=True)
+
         if region_id:
             try:
-                filename = "region/region.nii.gz"
+                filename = "region.nii.gz"
                 space: _space.Space = siibra.spaces[space_id]
                 region = parcellation.get_region(region_id) if region_id else None
                 regional_map = region.fetch_regional_map(space, siibra.MapType.STATISTICAL)
                 zipfile.writestr(filename, gzip.compress(regional_map.to_bytes()))
             except Exception as e:
                 zipfile.writestr(f"{filename}.error.txt", str(e))
+
+            write_model('region.json', regional_map, detail=True)
 
     return str(zipfilename)
 
