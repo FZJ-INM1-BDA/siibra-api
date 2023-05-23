@@ -139,7 +139,7 @@ jobs:
 
           if [[ "$existing_count" = "1" ]]
           then
-            for dc in $(oc get dc -o=json -l flavor=latest,siibraapi_version=${VERSION},app=siibra-api,app_role=worker,queue=${VERSION}.siibraapilatest.${queue})
+            for dc in $(oc get dc -l flavor=latest,siibraapi_version=${VERSION},app=siibra-api,app_role=worker,queue=${VERSION}.siibraapilatest.${queue})
             do
               oc rollout latest dc/$dc
             done
