@@ -10,7 +10,7 @@ objects:
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
-    name: worker-q-${SIIBRA_API_VERSION}-${QUEUE_NAME}
+    name: worker-q-${SIIBRA_API_VERSION}-${FLAVOR}-${QUEUE_NAME}
     labels:
       flavor: ${FLAVOR}
       app: siibra-api
@@ -22,13 +22,13 @@ objects:
     replicas: 3
     revisionHistoryLimit: 10
     selector:
-      deploymentconfig: worker-q-${SIIBRA_API_VERSION}-${QUEUE_NAME}
+      deploymentconfig: worker-q-${SIIBRA_API_VERSION}-${FLAVOR}-${QUEUE_NAME}
     template:
       metadata:
         labels:
           flavor: ${FLAVOR}
           app: siibra-api
-          deploymentconfig: worker-q-${SIIBRA_API_VERSION}-${QUEUE_NAME}
+          deploymentconfig: worker-q-${SIIBRA_API_VERSION}-${FLAVOR}-${QUEUE_NAME}
           queue: ${SIIBRA_API_VERSION}.siibraapi${FLAVOR}.${QUEUE_NAME}
           template_version: v5
           app_role: worker
