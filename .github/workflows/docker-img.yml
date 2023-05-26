@@ -113,98 +113,34 @@ jobs:
   deploy-latest-on-okd:
     needs: setup-envvar
     if: ${{ github.event_name == 'push' }}
-    runs-on: ubuntu-latest
-    env:
-      QUEUES: ${{ needs.setup-envvar.outputs.queues }}
-      VERSION: ${{ needs.setup-envvar.outputs.version }}
-      FLAVOR: latest
-      WORKER_IMAGE: docker-registry.ebrains.eu/siibra/siibra-api:latest-worker
-    steps:
-    - name: 'Login and import image'
-      run: |
-        oc login https://okd-dev.hbp.eu:443 --token=${{ secrets.OKD_DEV_SECRET }}
-        oc project siibra-api
 
-        echo "Restarting all servers"
-        for dc in $(oc get dc -l app=siibra-api,app_role=server,flavor=${{ env.FLAVOR }},template_version=v5 | awk '{print $1}' | tail -n +2)
-        do 
-          oc rollout latest dc/$dc
-        done
-
-        for queue in ${{ env.QUEUES }}
-        do
-          echo Processing worker with queue name: $queue siibraapi version ${VERSION}
-
-          existing_count=$(oc get dc -o=json -l flavor=${{ env.FLAVOR }},siibraapi_version=${VERSION},app=siibra-api,app_role=worker,queue=${VERSION}.siibraapi${{ env.FLAVOR }}.${queue} | jq '.items | length')
-          
-          echo Existing dc count: $existing_count
-
-          if [[ "$existing_count" = "1" ]]
-          then
-            dc=$(oc get dc -o=json -l flavor=${{ env.FLAVOR }},siibraapi_version=${VERSION},app=siibra-api,app_role=worker,queue=${VERSION}.siibraapi${{ env.FLAVOR }}.${queue} | jq -r '.items[0].metadata.name')
-            oc rollout latest dc/$dc
-          else
-            oc delete all -l flavor=latest,app=siibra-api,app_role=worker,queue=${VERSION}.siibraapi${{ env.FLAVOR }}.${queue}
-            oc new-app --template=siibra-api-v5-worker-template \
-              --param SIIBRA_API_VERSION=${VERSION} \
-              --param FLAVOR=${{ env.FLAVOR }} \
-              --param QUEUE_NAME=$queue \
-              --param SIIBRA_API_WORKER_IMAGE=${{ env.WORKER_IMAGE }}
-          fi
-        done
+    uses: ./.github/workflows/deploy-on-okd.yml
+    with:
+      okd_endpoint: https://okd-dev.hbp.eu:443
+      flavor: latest
+      queues: ${{ needs.setup-envvar.outputs.queues }}
+      version: ${{ needs.setup-envvar.outputs.version }}
+      workerimage: docker-registry.ebrains.eu/siibra/siibra-api:latest-worker
+    secrets:
+      okd_token: ${{ secrets.OKD_DEV_SECRET }}
 
   deploy-rc-on-okd:
     needs: setup-envvar
     if:  ${{ github.event_name == 'release' && contains(github.ref, 'rc') }}
-    runs-on: ubuntu-latest
-    env:
-      QUEUES: ${{ needs.setup-envvar.outputs.queues }}
-      VERSION: ${{ needs.setup-envvar.outputs.version }}
-      FLAVOR: rc
-      WORKER_IMAGE: docker-registry.ebrains.eu/siibra/siibra-api:rc-worker
-    steps:
-    - name: 'Login and import image'
-      run: |
-        oc login https://okd.hbp.eu:443 --token=${{ secrets.OKD_PROD_SECRET }}
-        oc project siibra-api
-
-        echo "Restarting all servers"
-        for dc in $(oc get dc -l app=siibra-api,app_role=server,flavor=${{ env.FLAVOR }},template_version=v5 | awk '{print $1}' | tail -n +2)
-        do 
-          oc rollout latest dc/$dc
-        done
-
-        for queue in ${{ env.QUEUES }}
-        do
-          echo Processing worker with queue name: $queue siibraapi version ${VERSION}
-
-          existing_count=$(oc get dc -o=json -l flavor=${{ env.FLAVOR }},siibraapi_version=${VERSION},app=siibra-api,app_role=worker,queue=${VERSION}.siibraapi${{ env.FLAVOR }}.${queue} | jq '.items | length')
-          
-          echo Existing dc count: $existing_count
-
-          if [[ "$existing_count" = "1" ]]
-          then
-            dc=$(oc get dc -o=json -l flavor=${{ env.FLAVOR }},siibraapi_version=${VERSION},app=siibra-api,app_role=worker,queue=${VERSION}.siibraapi${{ env.FLAVOR }}.${queue} | jq -r '.items[0].metadata.name')
-            oc rollout latest dc/$dc
-          else
-            oc delete all -l flavor=latest,app=siibra-api,app_role=worker,queue=${VERSION}.siibraapi${{ env.FLAVOR }}.${queue}
-            oc new-app --template=siibra-api-v5-worker-template \
-              --param SIIBRA_API_VERSION=${VERSION} \
-              --param FLAVOR=${{ env.FLAVOR }} \
-              --param QUEUE_NAME=$queue \
-              --param SIIBRA_API_WORKER_IMAGE=${{ env.WORKER_IMAGE }}
-          fi
-        done
+    
+    uses: ./.github/workflows/deploy-on-okd.yml
+    with:
+      okd_endpoint: https://okd.hbp.eu:443
+      flavor: rc
+      queues: ${{ needs.setup-envvar.outputs.queues }}
+      version: ${{ needs.setup-envvar.outputs.version }}
+      workerimage: docker-registry.ebrains.eu/siibra/siibra-api:rc-worker
+    secrets:
+      okd_token: ${{ secrets.OKD_PROD_SECRET }}
 
   deploy-prod-on-okd:
     needs: setup-envvar
     if:  ${{ github.event_name == 'release' && !contains(github.ref, 'rc') }}
-    runs-on: ubuntu-latest
-    env:
-      QUEUES: ${{ needs.setup-envvar.outputs.queues }}
-      VERSION: ${{ needs.setup-envvar.outputs.version }}
-      FLAVOR: stable
-      WORKER_IMAGE: docker-registry.ebrains.eu/siibra/siibra-api:0.3-worker
     strategy:
       fail-fast: false
       matrix:
@@ -212,46 +148,16 @@ jobs:
         include:
         - deploy-site: 'jsc'
           okd-endpoint: https://okd.jsc.hbp.eu:443
-          okd-secrets-key: OKD_JSC_SECRET
-          okd-project: siibra-api
 
         - deploy-site: 'cscs'
           okd-endpoint: https://okd.hbp.eu:443
-          okd-secrets-key: OKD_PROD_SECRET
-          okd-project: siibra-api
-    steps:
-    - name: 'Login and import-image'
-      run: |
-        oc login ${{ matrix.okd-endpoint }} --token=${{ matrix.okd-secrets-key }}
-        oc project ${{ matrix.okd-project }}
-        
-        oc login https://okd.hbp.eu:443 --token=${{ secrets.OKD_PROD_SECRET }}
-        oc project siibra-api
-
-        echo "Restarting all servers"
-        for dc in $(oc get dc -l app=siibra-api,app_role=server,flavor=${{ env.FLAVOR }},template_version=v5 | awk '{print $1}' | tail -n +2)
-        do 
-          oc rollout latest dc/$dc
-        done
-
-        for queue in ${{ env.QUEUES }}
-        do
-          echo Processing worker with queue name: $queue siibraapi version ${VERSION}
-
-          existing_count=$(oc get dc -o=json -l flavor=${{ env.FLAVOR }},siibraapi_version=${VERSION},app=siibra-api,app_role=worker,queue=${VERSION}.siibraapi${{ env.FLAVOR }}.${queue} | jq '.items | length')
           
-          echo Existing dc count: $existing_count
-
-          if [[ "$existing_count" = "1" ]]
-          then
-            dc=$(oc get dc -o=json -l flavor=${{ env.FLAVOR }},siibraapi_version=${VERSION},app=siibra-api,app_role=worker,queue=${VERSION}.siibraapi${{ env.FLAVOR }}.${queue} | jq -r '.items[0].metadata.name')
-            oc rollout latest dc/$dc
-          else
-            oc delete all -l flavor=latest,app=siibra-api,app_role=worker,queue=${VERSION}.siibraapi${{ env.FLAVOR }}.${queue}
-            oc new-app --template=siibra-api-v5-worker-template \
-              --param SIIBRA_API_VERSION=${VERSION} \
-              --param FLAVOR=${{ env.FLAVOR }} \
-              --param QUEUE_NAME=$queue \
-              --param SIIBRA_API_WORKER_IMAGE=${{ env.WORKER_IMAGE }}
-          fi
-        done
+    uses: ./.github/workflows/deploy-on-okd.yml
+    with:
+      okd_endpoint: ${{ matrix.okd-endpoint }}
+      flavor: stable
+      queues: ${{ needs.setup-envvar.outputs.queues }}
+      version: ${{ needs.setup-envvar.outputs.version }}
+      workerimage: docker-registry.ebrains.eu/siibra/siibra-api:0.3-worker
+    secrets:
+      okd_token: ${{ matrix.deploy-site == 'jsc' && secrets.OKD_JSC_SECRET || secrets.OKD_PROD_SECRET }}
