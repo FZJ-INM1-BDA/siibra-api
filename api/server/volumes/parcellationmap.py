@@ -87,7 +87,7 @@ def route_get_region_statistical_map(parcellation_id: str, space_id: str, region
 @router.get("/assign", response_model=DataFrameModel, tags=[TAGS])
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=assign_point)
-def router_assign_point(parcellation_id: str, space_id: str, point: str, sigma_mm: float=1., *, func):
+def router_assign_point(parcellation_id: str, space_id: str, point: str, sigma_mm: float=0., *, func):
     if func is None:
         raise HTTPException(500, f"func: None passsed")
     return func(parcellation_id, space_id, point, sigma_mm)

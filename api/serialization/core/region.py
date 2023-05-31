@@ -91,7 +91,7 @@ bigbrain_jba29_ngid = {
 
 def get_region_model_id(region: Region):
     
-    if region.parcellation is parcellations['Atlas of superficial white matter fibre bundles']:
+    if region.parcellation is parcellations['SUPERFICIAL_FIBRE_BUNDLES']:
         return f"https://openminds.ebrains.eu/instances/parcellationEntityVersion/SWMA_2018_{region.name}"
     import hashlib
 
