@@ -99,16 +99,12 @@ def get_all_feature_types(request: Request, func):
 
 # Regional Connectivity
 RegionalConnectivityModels = SiibraRegionalConnectivityModel
-class ConnectivityTypes(Enum):
-    FunctionalConnectivity="FunctionalConnectivity"
-    StreamlineCounts="StreamlineCounts"
-    StreamlineLengths="StreamlineLengths"
 
 @router.get("/RegionalConnectivity", response_model=Page[RegionalConnectivityModels])
 @version(*FASTAPI_VERSION)
 @v2_wrap_feature_category("RegionalConnectivity")
 @async_router_decorator(ROLE, func=partial(all_features, space_id=None, region_id=None))
-async def get_all_connectivity_features(parcellation_id: str, type: Optional[ConnectivityTypes]=None, func=lambda:[]):
+async def get_all_connectivity_features(parcellation_id: str, type: Optional[str]=None, func=lambda:[]):
     type = str(type) if type else None
     return paginate(
         await func(parcellation_id=parcellation_id, type=type)
@@ -122,23 +118,19 @@ If not provided, the matrix averaged between subjects will be returned under the
 @version(*FASTAPI_VERSION)
 @v2_wrap_feature_category("RegionalConnectivity")
 @async_router_decorator(ROLE, func=partial(single_feature, space_id=None, region_id=None))
-async def get_single_connectivity_feature(parcellation_id: str, feature_id: str, subject: Optional[str]=None, type: Optional[ConnectivityTypes]=None, func=lambda:None):
+async def get_single_connectivity_feature(parcellation_id: str, feature_id: str, subject: Optional[str]=None, type: Optional[str]=None, func=lambda:None):
     type = str(type) if type else None
     return await func(parcellation_id=parcellation_id, feature_id=feature_id, subject=subject, type=type)
 
 
 # Cortical Profiles
 CortialProfileModels = SiibraCorticalProfileModel
-class CorticalProfileTypes(Enum):
-    ReceptorDensityProfile="ReceptorDensityProfile"
-    CellDensityProfile="CellDensityProfile"
-    BigBrainIntensityProfile="BigBrainIntensityProfile"
 
 @router.get("/CorticalProfile", response_model=Page[CortialProfileModels])
 @version(*FASTAPI_VERSION)
 @v2_wrap_feature_category("CorticalProfile")
 @async_router_decorator(ROLE, func=partial(all_features, space_id=None))
-async def get_all_connectivity_features(parcellation_id: str, region_id: str, type: Optional[CorticalProfileTypes]=None, func=lambda:[]):
+async def get_all_connectivity_features(parcellation_id: str, region_id: str, type: Optional[str]=None, func=lambda:[]):
     type = str(type) if type else None
     return paginate(
         await func(parcellation_id=parcellation_id, region_id=region_id, type=type)
@@ -148,7 +140,7 @@ async def get_all_connectivity_features(parcellation_id: str, region_id: str, ty
 @version(*FASTAPI_VERSION)
 @v2_wrap_feature_category("CorticalProfile")
 @async_router_decorator(ROLE, func=partial(single_feature, space_id=None))
-async def get_single_connectivity_feature(parcellation_id: str, region_id: str, feature_id: str, type: Optional[CorticalProfileTypes]=None, func=lambda:None):
+async def get_single_connectivity_feature(parcellation_id: str, region_id: str, feature_id: str, type: Optional[str]=None, func=lambda:None):
     type = str(type) if type else None
     return await func(parcellation_id=parcellation_id, region_id=region_id, feature_id=feature_id, type=type)
 
@@ -157,17 +149,11 @@ async def get_single_connectivity_feature(parcellation_id: str, region_id: str, 
 # Tabular
 TabularModels = Union[SiibraCorticalProfileModel, SiibraReceptorDensityFp, SiibraTabularModel]
 
-class TabularTypes(Enum):
-    ReceptorDensityFingerprint="ReceptorDensityFingerprint"
-    LayerwiseBigBrainIntensities="LayerwiseBigBrainIntensities"
-    LayerwiseCellDensity="LayerwiseCellDensity"
-    RegionalBOLD="RegionalBOLD"
-
 @router.get("/Tabular", response_model=Page[TabularModels])
 @version(*FASTAPI_VERSION)
 @v2_wrap_feature_category("Tabular")
 @async_router_decorator(ROLE, func=partial(all_features, space_id=None))
-async def get_all_tabular(parcellation_id: str, region_id: str, type: Optional[TabularTypes]=None, func=lambda: []):
+async def get_all_tabular(parcellation_id: str, region_id: str, type: Optional[str]=None, func=lambda: []):
     type = str(type) if type else None
     return paginate(
         await func(parcellation_id=parcellation_id, region_id=region_id, type=type)
@@ -177,26 +163,17 @@ async def get_all_tabular(parcellation_id: str, region_id: str, type: Optional[T
 @version(*FASTAPI_VERSION)
 @v2_wrap_feature_category("Tabular")
 @async_router_decorator(ROLE, func=partial(single_feature, space_id=None))
-async def get_single_tabular(parcellation_id: str, region_id: str, feature_id: str, type: Optional[TabularTypes]=None, func=lambda: None):
+async def get_single_tabular(parcellation_id: str, region_id: str, feature_id: str, type: Optional[str]=None, func=lambda: None):
     type = str(type) if type else None
     return await func(parcellation_id=parcellation_id, region_id=region_id, feature_id=feature_id, type=type)
 
-
-class ImageTypes(Enum):
-    BlockfaceVolumeOfInterest="BlockfaceVolumeOfInterest"
-    CellBodyStainedVolumeOfInterest="CellBodyStainedVolumeOfInterest"
-    CellbodyStainedSection="CellbodyStainedSection"
-    MRIVolumeOfInterest="MRIVolumeOfInterest"
-    PLIVolumeOfInterest="PLIVolumeOfInterest"
-    SegmentedVolumeOfInterest="SegmentedVolumeOfInterest"
-    XPCTVolumeOfInterest="XPCTVolumeOfInterest"
 
 # VOI
 @router.get("/Image", response_model=Page[SiibraVoiModel])
 @version(*FASTAPI_VERSION)
 @v2_wrap_feature_category("Image")
 @async_router_decorator(ROLE, func=partial(all_features, parcellation_id=None, region_id=None))
-async def get_all_voi(space_id: str, bbox: Optional[str]=None, type: Optional[ImageTypes]=None, func=lambda: []):
+async def get_all_voi(space_id: str, bbox: Optional[str]=None, type: Optional[str]=None, func=lambda: []):
     type = str(type) if type else None
     return paginate(
         await func(space_id=space_id, type=type, bbox=bbox)
@@ -206,7 +183,7 @@ async def get_all_voi(space_id: str, bbox: Optional[str]=None, type: Optional[Im
 @version(*FASTAPI_VERSION)
 @v2_wrap_feature_category("Image")
 @async_router_decorator(ROLE, func=partial(single_feature, parcellation_id=None, region_id=None))
-async def get_single_voi(space_id: str, feature_id: str, type: Optional[ImageTypes]=None, func=lambda: []):
+async def get_single_voi(space_id: str, feature_id: str, type: Optional[str]=None, func=lambda: []):
     type = str(type) if type else None
     return await func(space_id=space_id, feature_id=feature_id, type=type)
 
