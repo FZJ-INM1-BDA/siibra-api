@@ -114,10 +114,10 @@ def get_parcellation_labelled_map(parcellation_id: str, space_id: str, region_id
     return full_filename
 
 @data_decorator(ROLE)
-def assign_point(parcellation_id: str, space_id: str, point: str, sigma_mm: float=1.):
+def assign_point(parcellation_id: str, space_id: str, point: str, assignment_type: str, sigma_mm: float):
     import siibra
     from api.serialization.util import instance_to_model
-    m = siibra.get_map(parcellation_id,space_id,siibra.MapType.STATISTICAL)
+    m = siibra.get_map(parcellation_id, space_id, assignment_type)
     p = siibra.Point(point, space=space_id, sigma_mm=sigma_mm)
     df = m.assign(p)
     
