@@ -74,39 +74,44 @@ def download_all(space_id: str, parcellation_id: str, region_id: str=None):
         zipfile.writestr("README.md", readme_txt)
         zipfile.writestr("LICENCE.txt", LICENSE)
         try:
+            space_filename = None
+
             space: _space.Space = siibra.spaces[space_id]
-            filename = f"{space.key}.nii.gz"
+            space_filename = f"{space.key}.nii.gz"
 
             # this should fetch anything (surface, nifti, ng precomputed)
             space_vol = space.get_template().fetch()
-            zipfile.writestr(filename, gzip.compress(space_vol.to_bytes()))
+            zipfile.writestr(space_filename, gzip.compress(space_vol.to_bytes()))
+            write_desc(f'{space_filename}.info.md', space)
         except Exception as e:
-            zipfile.writestr(f"{filename}.error.txt", str(e))
+            zipfile.writestr(f"{space_filename or 'UNKNOWN_SPACE'}.error.txt", str(e))
         
-        write_desc(f'{filename}.info.md', space)
 
         try:
+            parc_filename = None
             space: _space.Space = siibra.spaces[space_id]
             parcellation: _parcellation.Parcellation = siibra.parcellations[parcellation_id]
-            parc_vol = parcellation.get_map(space, siibra.MapType.LABELLED).fetch()
-            filename = f"{parcellation.key}.nii.gz"
-            zipfile.writestr(filename, gzip.compress(parc_vol.to_bytes()))
-        except Exception as e:
-            zipfile.writestr(f"{filename}.error.txt", str(e))
+            parc_filename = f"{parcellation.key}.nii.gz"
 
-        write_desc(f'{filename}.info.md', parcellation)
+            parc_vol = parcellation.get_map(space, siibra.MapType.LABELLED).fetch()
+            zipfile.writestr(parc_filename, gzip.compress(parc_vol.to_bytes()))
+            write_desc(f'{parc_filename}.info.md', parcellation)
+        except Exception as e:
+            zipfile.writestr(f"{parc_filename or 'UNKNOWN_PARCELLATION'}.error.txt", str(e))
+
 
         if region_id:
             try:
+                region_filename = None
                 space: _space.Space = siibra.spaces[space_id]
                 region = parcellation.get_region(region_id) if region_id else None
+                region_filename = f"{region.key}.nii.gz"
                 regional_map = region.fetch_regional_map(space, siibra.MapType.STATISTICAL)
-                filename = f"{region.key}.nii.gz"
-                zipfile.writestr(filename, gzip.compress(regional_map.to_bytes()))
+                zipfile.writestr(region_filename, gzip.compress(regional_map.to_bytes()))
+                write_desc(f'{region_filename}.info.md', region)
             except Exception as e:
-                zipfile.writestr(f"{filename}.error.txt", str(e))
+                zipfile.writestr(f"{region_filename or 'UNKNOWN_REGION'}.error.txt", str(e))
 
-            write_desc(f'{filename}.info.md', region)
 
     return str(zipfilename)
 
