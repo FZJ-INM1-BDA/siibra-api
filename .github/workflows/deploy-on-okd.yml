@@ -50,11 +50,12 @@ jobs:
             dc=$(oc get dc -o=json -l flavor=${{ inputs.flavor }},siibraapi_version=${{ inputs.version }},app=siibra-api,app_role=worker,queue=${{ inputs.version }}.siibraapi${{ inputs.flavor }}.${queue} | jq -r '.items[0].metadata.name')
             oc rollout latest dc/$dc
           else
-            oc delete all -l flavor=latest,app=siibra-api,app_role=worker,queue=${{ inputs.version }}.siibraapi${{ inputs.flavor }}.${queue}
             oc new-app --template=siibra-api-v5-worker-template \
               --param SIIBRA_API_VERSION=${{ inputs.version }} \
               --param FLAVOR=${{ inputs.flavor }} \
               --param QUEUE_NAME=$queue \
               --param SIIBRA_API_WORKER_IMAGE=${{ inputs.workerimage }}
+
+            oc delete all -l flavor=${{ inputs.flavor }},app=siibra-api,app_role=worker,queue_name=${queue},siibraapi_version!=${{ inputs.version }}
           fi
         done
