@@ -26,11 +26,12 @@ jobs:
   trigger-deploy:
     runs-on: ubuntu-latest
     steps:
-    - name: 'Login and import image'
+    - name: 'Login'
       run: |
         oc login ${{ inputs.okd_endpoint }} --token=${{ secrets.okd_token }}
         oc project siibra-api
-
+    - name: 'Login and import image'
+      run: |
         echo "Restarting all servers"
         for dc in $(oc get dc -l app=siibra-api,app_role=server,flavor=${{ inputs.flavor }},template_version=v5 | awk '{print $1}' | tail -n +2)
         do 
@@ -56,6 +57,9 @@ jobs:
               --param QUEUE_NAME=$queue \
               --param SIIBRA_API_WORKER_IMAGE=${{ inputs.workerimage }}
 
-            oc delete all -l flavor=${{ inputs.flavor }},app=siibra-api,app_role=worker,queue_name=${queue},siibraapi_version!=${{ inputs.version }}
           fi
         done
+    - name: 'Remove unneeded resources'
+      run: |
+        oc get all -l flavor=${{ inputs.flavor }},app=siibra-api,app_role=worker,siibraapi_version!=${{ inputs.version }}
+        oc delete all -l flavor=${{ inputs.flavor }},app=siibra-api,app_role=worker,siibraapi_version!=${{ inputs.version }} &
