@@ -25,5 +25,5 @@ class EbrainsDatasetModel(ConfigBaseModel):
     urls: List[EbrainsDsUrl]
     description: Optional[str]
     contributors: List[EbrainsDsPerson]
-    ebrains_page: str
+    ebrains_page: Optional[str]
     custodians:  List[EbrainsDsPerson]
