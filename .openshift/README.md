@@ -151,6 +151,5 @@ Per [deployment template](./branch-deploy-template.yml), a number of parameters 
 | name | required | desc | 
 | --- | --- | --- |
 | `SESSION_SECRET` | | Random strings to encrypt sessions. Not currently used. |
-| `DOCKER_IMAGE_TAG` | true | Dictates which image tag to pull. Currently, possible values are `{latest\|rc\|stable}`. |
 | `DEPLOY_FLAVOUR` | true | Acts similar to deploy ID. Distinguishes one deployment from another. Currently, possible values are `{latest\|rc\|stable}`. Also affects routes: `siibra-api-{DEPLOY_FLAVOUR}.apps{DEPLOY_SITE_POSTFIX}.hbp.eu` |
 | `DEPLOY_SITE_POSTFIX` | | Dictates if postfix, if any, should be added to the route: `siibra-api-{DEPLOY_FLAVOUR}.apps{DEPLOY_SITE_POSTFIX}.hbp.eu`. Defaults to `''` (empty string). Possible value: `-dev`|

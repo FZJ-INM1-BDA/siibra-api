@@ -1,9 +1,2 @@
-requests
-fastapi
-fastapi-versioning
-fastapi-pagination
-jinja2
-uvicorn[standard]
-redis
-diskcache
+-r partial-all.txt
 -r siibra.txt

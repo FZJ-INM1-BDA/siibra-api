@@ -16,7 +16,6 @@ env:
   OKD_DEV_SECRET: ${{ secrets.OKD_DEV_SECRET }}
   DOCKER_REGISTRY: 'docker-registry.ebrains.eu/siibra/'
   DOCKER_IMG: 'siibra-api'
-  DOCKER_IMAGE_TAG: 'latest'
 
 jobs:
   build-docker-img:
@@ -41,6 +40,9 @@ jobs:
     - name: "Build docker image"
       run: |
         GIT_HASH=$(git rev-parse --short HEAD)
+        cached_image=${{ env.DOCKER_REGISTRY }}${{ env.DOCKER_IMG }}:latest${{ matrix.tag_suffix }}
+        echo "Pulling $cached_image to populate cached layers."
+        docker pull $cached_image
         docker build --build-arg GIT_HASH=$GIT_HASH -t siibra-api-tmp-img -f ${{ matrix.dockerfile }} .
 
     - name: "Tag and Push (latest || rc)"
