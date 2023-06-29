@@ -17,7 +17,7 @@ def get_config_dir_short_hash(path_to_config: str):
             return head_content[:6]
 
         if head_content.startswith("ref: "):
-            path_to_ref = Path(".git", head_content.replace("ref: ", "").strip())
+            path_to_ref = Path(path_to_config) / '.git' / head_content.replace("ref: ", "").strip()
             if path_to_ref.is_file():
                 with open(path_to_ref, "r") as fp:
                     ref_content = fp.read()
