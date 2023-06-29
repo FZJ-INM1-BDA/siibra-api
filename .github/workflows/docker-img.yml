@@ -76,7 +76,7 @@ jobs:
           -p '${{ secrets.EBRAINS_DOCKER_REG_TOKEN }}' \
           docker-registry.ebrains.eu
         
-        VERSION=$(grep -Po '^__version__.*?"\K[\w.]+' api/siibra_api_config.py)
+        VERSION=$(cat api/VERSION)
         while [[ "$VERSION" == *"."* ]]
         do
           if [[ "$BREAK" == "0" ]]

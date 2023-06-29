@@ -28,7 +28,9 @@ _config_hash = SIIBRA_USE_CONFIGURATION and get_config_dir_short_hash(SIIBRA_USE
 
 # allowing potentially other hashes to be populated here.
 # e.g. siibra-python hash, siibra-api hash
-__version__ = (_config_hash and f"c.{_config_hash}") or "0.3.9"
+with open(Path(__file__).parent / 'VERSION', 'r') as fp:
+    __version__ = fp.read()
+__version__ = (_config_hash and f"c.{_config_hash}") or __version__
 
 NAME_SPACE = os.environ.get("SIIBRA_API_NAMESPACE", "siibraapi")
 
