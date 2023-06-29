@@ -1,6 +1,34 @@
 import os
+from pathlib import Path
+import re
 
-__version__ = "0.3.9"
+SIIBRA_USE_CONFIGURATION = os.getenv("SIIBRA_USE_CONFIGURATION")
+
+# Rather than using git rev-parse --short HEAD
+# Directly crawl through the git file system
+# So siibra-api does not have to rely on target system having git installed
+def get_config_dir_short_hash(path_to_config: str):
+    head_file = Path(path_to_config) / '.git' / 'HEAD'
+    if head_file.is_file():
+        with open(head_file, "r") as fp:
+            head_content = fp.read()
+        
+        if re.match(r'^[a-f0-9]+$', head_content):
+            return head_content[:6]
+
+        if head_content.startswith("ref: "):
+            path_to_ref = Path(".git", head_content.replace("ref: ", "").strip())
+            if path_to_ref.is_file():
+                with open(path_to_ref, "r") as fp:
+                    ref_content = fp.read()
+                    if re.match(r'^[a-f0-9]+$', ref_content):
+                        return ref_content[:6]
+
+_config_hash = SIIBRA_USE_CONFIGURATION and get_config_dir_short_hash(SIIBRA_USE_CONFIGURATION)
+
+# allowing potentially other hashes to be populated here.
+# e.g. siibra-python hash, siibra-api hash
+__version__ = (_config_hash and f"c.{_config_hash}") or "0.3.9"
 
 NAME_SPACE = os.environ.get("SIIBRA_API_NAMESPACE", "siibraapi")
 
