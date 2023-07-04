@@ -14,10 +14,11 @@ jobs:
     - uses: actions/setup-python@v4
       with:
         python-version: '3.10'
-    - name: Update pip
-      run: python -m pip install -U pip
     - name: Install pydantic as the sole dependency
-      run: python -m pip install pydantic>=1.10,<2.0
+      run: |
+        python -m pip install -U pip
+        echo "pydantic<2" > requirements.txt
+        pip install -r requirements.txt
     - name: Attempt to import model, should succeed.
       run: python -c "import api.models"
   server:
