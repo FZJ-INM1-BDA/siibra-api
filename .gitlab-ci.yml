@@ -7,7 +7,7 @@ model-module-import:
   stage: test
   before_script:
   - python -m pip install -U pip
-  - pip install pydantic
+  - pip install pydantic<2
   script:
   - python -c "import api.models"
 
