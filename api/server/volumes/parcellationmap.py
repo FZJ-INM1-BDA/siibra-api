@@ -10,7 +10,7 @@ from api.models.volumes.parcellationmap import MapModel
 from api.models.volumes.volume import MapType
 from api.models._commons import DataFrameModel
 from api.common import router_decorator, get_filename, logger, NotFound
-from api.common.data_handlers.volumes.parcellationmap import get_map, get_region_statistic_map, get_region_statistic_map_info, get_parcellation_labelled_map, assign_point
+from api.common.data_handlers.volumes.parcellationmap import get_map, get_region_statistic_map, get_region_statistic_map_info, get_parcellation_labelled_map, assign_point, get_resampled_map
 from api.server.util import SapiCustomRoute
 import os
 
@@ -25,6 +25,24 @@ def route_get_map(parcellation_id: str, space_id: str, map_type: MapType, *, fun
     if func is None:
         raise HTTPException(500, f"func: None passsed")
     return func(parcellation_id, space_id, map_type)
+
+@router.get("/resampled_template", response_class=FileResponse, tags=TAGS, description="""
+Return a resampled template volume, based on labelled parcellation map.
+""")
+@version(*FASTAPI_VERSION)
+@router_decorator(ROLE, func=get_resampled_map)
+def get_resampled_map(parcellation_id: str, space_id: str, *, func):
+    if func is None:
+        raise HTTPException(500, f"func: None passsed")
+    
+    headers={
+        "content-type": "application/octet-stream",
+        "content-disposition": f'attachment; filename="labelled_map.nii.gz"'
+    }
+
+    full_filename = func(parcellation_id=parcellation_id, space_id=space_id)
+    assert os.path.isfile(full_filename), f"file saved incorrectly"
+    return FileResponse(full_filename, headers=headers)
 
 
 @router.get("/labelled_map.nii.gz", response_class=FileResponse, tags=TAGS, description="""

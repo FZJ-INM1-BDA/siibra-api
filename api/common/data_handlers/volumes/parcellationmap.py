@@ -125,4 +125,29 @@ def assign_point(parcellation_id: str, space_id: str, point: str, assignment_typ
         return instance_to_model(df, detail=True).dict()
     except Exception as e:
         raise e
+
+@data_decorator(ROLE)
+def get_resampled_map(parcellation_id: str, space_id: str):
+    import os
+    full_filename = get_filename("resampled_map", parcellation_id, space_id, ext=".nii.gz")
+    if os.path.isfile(full_filename):
+        return full_filename
     
+    import siibra
+    import nibabel as nib
+    parcellation: siibra.core.parcellation.Parcellation = siibra.parcellations[parcellation_id]
+    parcellation_map = parcellation.get_map(siibra.spaces[space_id], siibra.MapType.LABELLED)
+    nii = parcellation_map.get_resampled_template()
+
+    assert isinstance(nii, nib.Nifti1Image), f"resample failed... returned not of type nii"
+    
+    import time
+    import json
+    nib.save(nii, full_filename)
+    with open(f"{full_filename}.{str(int(time.time()))}.json", "w") as fp:
+        json.dump({
+            "prefix": "resampled_map",
+            "parcellation_id": parcellation_id,
+            "space_id": space_id,
+        }, indent="\t", fp=fp)
+    return full_filename

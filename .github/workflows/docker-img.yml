@@ -139,6 +139,35 @@ jobs:
       workerimage: docker-registry.ebrains.eu/siibra/siibra-api:rc-worker
     secrets:
       okd_token: ${{ secrets.OKD_PROD_SECRET }}
+  
+
+  data-validation-config-hash:
+    if: ${{ github.event_name == 'release' && contains(github.ref, 'rc') }}
+    runs-on: ubuntu-latest
+    outputs:
+      CONFIG_SHORT_REV: ${{ steps.parse-rev.outputs.CONFIG_SHORT_REV }}
+    steps:
+    - id: parse-rev
+      name: Get short rev of HEAD at master 
+      run: |
+        git clone https://jugit.fz-juelich.de/t.dickscheid/brainscapes-configurations.git
+        CONFIG_SHORT_REV=$(git -C brainscapes-configurations rev-parse --short=6 HEAD)
+        echo CONFIG_SHORT_REV=$CONFIG_SHORT_REV >> $GITHUB_OUTPUT
+  
+  deploy-rc-on-data-validation:
+    needs:
+    - setup-envar
+    - data-validation-config-hash
+    if: ${{ github.event_name == 'release' && contains(github.ref, 'rc') }}
+    uses: ./.github/workflows/deploy-on-okd.yml
+    with:
+      okd_endpoint: https://okd.jsc.hbp.eu:443
+      flavor: rc
+      queues: ${{ needs.setup-envvar.outputs.queues }}
+      version: c.${{ needs.data-validation-config-hash.outputs.CONFIG_SHORT_REV }}
+      workerimage: docker-registry.ebrains.eu/siibra/siibra-api:rc-worker
+    secrets:
+      okd_token: ${{ secrets.OKD_JSC_SECRET }}
 
   deploy-prod-on-okd:
     needs: setup-envvar
