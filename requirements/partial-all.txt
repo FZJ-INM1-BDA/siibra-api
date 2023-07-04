@@ -1,3 +1,4 @@
+pydantic<2
 requests
 fastapi
 fastapi-versioning

@@ -1,2 +1,2 @@
 celery[redis]==5.2.6
-pydantic
+pydantic<2
