@@ -7,7 +7,7 @@ class _BaseModel(BaseModel):
         return super().dict(*arg, **kwargs)
 
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
 
 class VocabModel(_BaseModel):
     vocab: str = Field(..., alias="@vocab")
