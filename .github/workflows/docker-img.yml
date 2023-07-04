@@ -156,7 +156,7 @@ jobs:
   
   deploy-rc-on-data-validation:
     needs:
-    - setup-envar
+    - setup-envvar
     - data-validation-config-hash
     if: ${{ github.event_name == 'release' && contains(github.ref, 'rc') }}
     uses: ./.github/workflows/deploy-on-okd.yml
