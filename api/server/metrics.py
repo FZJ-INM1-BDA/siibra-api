@@ -35,22 +35,24 @@ def get_prom_metrics():
     }
     num_task_in_q_gauge = Gauge(f"num_task_in_q",
                                 "Number of tasks in queue (not yet picked up by workers)",
-                                labelnames=("q_name","gen_timestamp"),
+                                labelnames=("q_name",),
                                 **common_kwargs)
     num_worker_gauge = Gauge("num_workers", "Number of workers", **common_kwargs)
     scheduled_gauge = Gauge("scheduled_tasks","Number of scheduled tasks",  labelnames=("hostname",), **common_kwargs)
     active_gauge = Gauge("active_tasks", "Number of active tasks", labelnames=("hostname",), **common_kwargs)
     reserved_gauge = Gauge("reserved_tasks", "Number of reserved tasks", labelnames=("hostname",), **common_kwargs)
-    
+    last_pinged = Gauge("last_pinged", "Last pinged time", labelnames=[], **common_kwargs)
 
     # assuming we are using redis as broker
     import redis
 
     _r = redis.from_url(CELERY_CONFIG.broker_url)
 
+    last_pinged.set_to_current_time()
+
     # number of tasks in queue
     for q in CELERY_CONFIG.task_queues.keys():
-        num_task_in_q_gauge.labels(q_name=q, gen_timestamp=time.ctime()).set(_r.llen(q))
+        num_task_in_q_gauge.labels(q_name=q).set(_r.llen(q))
 
     i = app.control.inspect()
 
