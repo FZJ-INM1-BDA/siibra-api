@@ -53,3 +53,7 @@ def atlas_to_model(atlas: Atlas) -> SiibraAtlasModel:
         parcellations=[SiibraAtIdModel(id=parc.id) for parc in atlas.parcellations],
         species=str(atlas.species),
     )
+
+__all__ = [
+    "atlas_to_model"
+]

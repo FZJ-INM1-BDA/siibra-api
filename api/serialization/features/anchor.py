@@ -1,15 +1,26 @@
 from api.serialization.util.siibra import (
     AnatomicalAnchor,
+    AnatomicalAssignment,
     Region,
 )
 from api.models.features.anchor import (
     SiibraAnchorModel,
     SiibraRegionAssignmentQual,
+    SiibraAnatomicalAssignmentModel,
 )
 from api.serialization.util import (
     serialize,
     instance_to_model
 )
+
+@serialize(AnatomicalAssignment)
+def assignment_to_model(asgmt: AnatomicalAssignment, detail=False, **kwargs):
+    return SiibraAnatomicalAssignmentModel(
+        query_structure=instance_to_model(asgmt.query_structure, detail=detail, **kwargs),
+        assigned_structure=instance_to_model(asgmt.assigned_structure, detail=detail, **kwargs),
+        qualification=asgmt.qualification.name,
+        explanation=asgmt.explanation,
+    )
 
 @serialize(AnatomicalAnchor)
 def anchor_to_model(anchor: AnatomicalAnchor, detail=False, **kwargs):
@@ -18,5 +29,7 @@ def anchor_to_model(anchor: AnatomicalAnchor, detail=False, **kwargs):
         regions=[SiibraRegionAssignmentQual(
             region=instance_to_model(region, use_class=Region, **kwargs),
             qualification=qualification.name
-        ) for region, qualification in anchor.regions.items()]
+        ) for region, qualification in anchor.regions.items()],
+        last_match_description=anchor.last_match_description,
+        last_match_result=instance_to_model(anchor.last_match_result, detail=detail, **kwargs)
     )

@@ -16,10 +16,33 @@ markdown_extensions:
 
 plugins:
   - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            paths:
+            - '.'
+            show_bases: false
+            show_root_heading: true
+            show_root_members_full_path: true
+            show_object_full_path : true
+            show_submodules: true
+            show_if_no_docstring : true
+            show_docstring_attributes : false
+            filters:
+            - "!kwargs"
 
 nav:
   - Home: 'index.md'
-#  - System requirements: 'requirements.md'
+  - api:
+    - api.server: 'api.server.md'
+    - api.worker: 'api.worker.md'
+    - api.models: 'api.models.md'
+    - api.serialization: 'api.serialization.md'
+    - api.common: 'api.common.md'
+    - api.common.data_handlers: 'api.common.data_handlers.md' 
   - User documentation: 'use-cases.md'
-#  - Release notes:
-#      - v1.0.0: 'releases/v1.0.0.md'
+
+watch:
+  - docs
+  - api

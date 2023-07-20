@@ -14,7 +14,9 @@ def add_lazy_path():
 
     For example:
 
-    "GET /atlases/juelich%2Fiav%2Fatlas%2Fv1.0.0%2F1/parcellations/minds%2Fcore%2Fparcellationatlas%2Fv1.0.0%2F94c1125b-b87e-45e4-901c-00daee7f2579-290/regions/Area%20hOc1%20%28V1%2C%2017%2C%20CalcS%29%20right/features/siibra%2Ffeatures%2Fcells%2Fhttps%3A%2F%2Fopenminds.ebrains.eu%2Fcore%2FDatasetVersion%2Fc1438d1996d1d2c86baa05496ba28fc5"
+    ```
+    GET /atlases/juelich%2Fiav%2Fatlas%2Fv1.0.0%2F1/parcellations/minds%2Fcore%2Fparcellationatlas%2Fv1.0.0%2F94c1125b-b87e-45e4-901c-00daee7f2579-290/regions/Area%20hOc1%20%28V1%2C%2017%2C%20CalcS%29%20right/features/siibra%2Ffeatures%2Fcells%2Fhttps%3A%2F%2Fopenminds.ebrains.eu%2Fcore%2FDatasetVersion%2Fc1438d1996d1d2c86baa05496ba28fc5
+    ```
 
     or 
 

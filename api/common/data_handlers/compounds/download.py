@@ -87,17 +87,18 @@ def download_all(space_id: str, parcellation_id: str, region_id: str=None):
             zipfile.writestr(f"{space_filename or 'UNKNOWN_SPACE'}.error.txt", str(e))
         
 
-        try:
-            parc_filename = None
-            space: _space.Space = siibra.spaces[space_id]
-            parcellation: _parcellation.Parcellation = siibra.parcellations[parcellation_id]
-            parc_filename = f"{parcellation.key}.nii.gz"
+        if not region_id:
+            try:
+                parc_filename = None
+                space: _space.Space = siibra.spaces[space_id]
+                parcellation: _parcellation.Parcellation = siibra.parcellations[parcellation_id]
+                parc_filename = f"{parcellation.key}.nii.gz"
 
-            parc_vol = parcellation.get_map(space, siibra.MapType.LABELLED).fetch()
-            zipfile.writestr(parc_filename, gzip.compress(parc_vol.to_bytes()))
-            write_desc(f'{parc_filename}.info.md', parcellation)
-        except Exception as e:
-            zipfile.writestr(f"{parc_filename or 'UNKNOWN_PARCELLATION'}.error.txt", str(e))
+                parc_vol = parcellation.get_map(space, siibra.MapType.LABELLED).fetch()
+                zipfile.writestr(parc_filename, gzip.compress(parc_vol.to_bytes()))
+                write_desc(f'{parc_filename}.info.md', parcellation)
+            except Exception as e:
+                zipfile.writestr(f"{parc_filename or 'UNKNOWN_PARCELLATION'}.error.txt", str(e))
 
 
         if region_id:

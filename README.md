@@ -29,6 +29,8 @@ In addition to the documentation of each API endpoint, a playground is provided 
 
 [Swagger API](https://siibra-api-stable.apps.hbp.eu/v1_0/docs#/)
 
+Developer documentation is available at [https://siibra-api.readthedocs.io/](https://siibra-api.readthedocs.io/).
+
 ## Configuration
 
 siibra-api can be configured by:

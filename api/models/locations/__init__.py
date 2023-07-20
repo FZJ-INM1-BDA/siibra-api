@@ -1,1 +1,1 @@
-from . import boundingbox, location, point
+from . import *
