@@ -5,6 +5,7 @@ from api.models.locations.point import (
     CoordinatePointModel,
 )
 from api.models.core.region import ParcellationEntityVersionModel
+from pydantic import Field
 
 class SiibraRegionAssignmentQual(ConfigBaseModel):
     """
@@ -30,5 +31,5 @@ class SiibraAnchorModel(ConfigBaseModel, type="anchor"):
     """
     location: Optional[Union[LocationModel, CoordinatePointModel]]
     regions: List[SiibraRegionAssignmentQual]
-    last_match_description: str
-    last_match_result: List[SiibraAnatomicalAssignmentModel]
+    last_match_description: str=""
+    last_match_result: List[SiibraAnatomicalAssignmentModel]=Field(default_factory=list)
