@@ -30,6 +30,6 @@ def anchor_to_model(anchor: AnatomicalAnchor, detail=False, **kwargs):
             region=instance_to_model(region, use_class=Region, **kwargs),
             qualification=qualification.name
         ) for region, qualification in anchor.regions.items()],
-        last_match_description=anchor.last_match_description,
-        last_match_result=instance_to_model(anchor.last_match_result, detail=detail, **kwargs)
+        last_match_description=anchor.last_match_description or "",
+        last_match_result=instance_to_model(anchor.last_match_result or [], detail=detail, **kwargs)
     )
