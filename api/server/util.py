@@ -1,6 +1,7 @@
 from fastapi.routing import APIRoute
 
 class SapiCustomRoute(APIRoute):
+    """SapiCustomRoute, custom route class. This is so that `func` param is not interpreted to be a part of swagger-api."""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.dependant.query_params = [ query_param
@@ -9,8 +10,7 @@ class SapiCustomRoute(APIRoute):
         ]
 
 def add_lazy_path():
-    """
-    adds lazy_path path converter for starlette route
+    """adds lazy_path path converter for starlette route
 
     For example:
 
@@ -30,7 +30,9 @@ def add_lazy_path():
     ```
 
     default path converter (eager) will:
+
     1/ deserialize URI encoded characters, resulting in:
+    
     ```python
     "/atlases/{atlas_id}/parcellations/{parc_id}/regions/{region_id}/features/{feat_id}".format(
         atlas_id="juelich/iav/atlas/v1.0.0/1",
@@ -39,6 +41,7 @@ def add_lazy_path():
         feat_id="siibra/features/cells/https://openminds.ebrains.eu/core/DatasetVersion/c1438d1996d1d2c86baa05496ba28fc5",
     )
     ```
+    
     2/ try to eager match, resulting in errorenous parsing of the path:
 
     ```python

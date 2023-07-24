@@ -40,7 +40,18 @@ citations:
 LICENSE = """Please check the respective citations regarding licenses to use these data."""
 
 @data_decorator(ROLE)
-def download_all(space_id: str, parcellation_id: str, region_id: str=None):
+def download_all(space_id: str, parcellation_id: str, region_id: str=None) -> str:
+    """Create a download bundle (zip) for the provided specification
+    
+    Args:
+        space_id: lookup id of the space requested
+        parcellation_id: lookup_id of the parcellation requested
+        region_id: lookup_id of the region requested
+    
+    Returns:
+        Path to the zip file
+
+    """
     zipfilename = Path(SIIBRA_API_SHARED_DIR, f"atlas-download-{str(uuid4())}.zip")
 
     import siibra
@@ -115,9 +126,3 @@ def download_all(space_id: str, parcellation_id: str, region_id: str=None):
 
 
     return str(zipfilename)
-
-class RequiredParamMissing(Exception): pass
-
-__all__ = [
-    "download_all"
-]

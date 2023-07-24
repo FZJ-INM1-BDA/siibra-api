@@ -7,9 +7,16 @@ from api.serialization.util.siibra import Space, BoundingBox, Point
 from datetime import date
 
 @serialize(Space)
-def space_to_model(spc: Space, **kwargs) -> CommonCoordinateSpaceModel:
+def space_to_model(space: Space, **kwargs) -> CommonCoordinateSpaceModel:
+    """Serialize space object into CommonCoordinateSpaceModel
+    
+    Args:
+        space: space object to be serialized
+        
+    Returns:
+        CommonCoordinateSpaceModel"""
     return CommonCoordinateSpaceModel(
-        id=spc.id,
+        id=space.id,
         anatomical_axes_orientation={
             "@id": "https://openminds.ebrains.eu/vocab/anatomicalAxesOrientation/XYZ"
         },
@@ -18,12 +25,12 @@ def space_to_model(spc: Space, **kwargs) -> CommonCoordinateSpaceModel:
             AxesOrigin(value=0),
             AxesOrigin(value=0),
         ],
-        default_image=[instance_to_model(vol) for vol in spc.volumes],
-        full_name=spc.name,
+        default_image=[instance_to_model(vol) for vol in space.volumes],
+        full_name=space.name,
         native_unit={
             "@id": "https://openminds.ebrains.eu/controlledTerms/Terminology/unitOfMeasurement/um"
         },
         release_date=str(date(2015, 1, 1)),
-        short_name=spc.shortname,
-        version_identifier=spc.name,
+        short_name=space.shortname,
+        version_identifier=space.name,
     )

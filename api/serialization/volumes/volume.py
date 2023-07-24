@@ -11,7 +11,17 @@ import copy
 # recursively remap provider url
 # n.b. this function mutates the original dict
 # i.e. only pass a deep copy
-def remap_provider(obj: Dict[str, Union[dict, str]]):
+def remap_provider(obj: Dict[str, Union[dict, str]]) -> None:
+    """Mutate and remap providers.
+    
+    n.b. will mutate provided dictionary. Use copy.copy to avoid unexpected behaviors
+    
+    Args:
+        obj: provider dictionary to be mutated
+    
+    Returns:
+        None
+    """
     if len(SIIBRA_API_REMAP_PROVIDERS) == 0:
         return obj
     for key, value in obj.items():
@@ -24,6 +34,16 @@ def remap_provider(obj: Dict[str, Union[dict, str]]):
 
 @serialize(Volume)
 def volume_to_model(vol: Volume, **kwargs) -> VolumeModel:
+    """Serialize Volume instance.
+
+    If `SIIBRA_API_REMAP_PROVIDERS` is provided in config, will remap the provider URLs accordingly.
+    
+    Args:
+        vol: Volume instance
+    
+    Returns:
+        VolumeModel
+    """
     copied_prov = copy.copy(vol.providers)
     remap_provider(copied_prov)
     

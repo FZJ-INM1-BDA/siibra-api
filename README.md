@@ -27,7 +27,7 @@ The documentation of the api and all endpoints is done by swagger.
 
 In addition to the documentation of each API endpoint, a playground is provided for direct testing.
 
-[Swagger API](https://siibra-api-stable.apps.hbp.eu/v1_0/docs#/)
+[Swagger API](https://siibra-api-stable.apps.hbp.eu/v3_0/docs#/)
 
 Developer documentation is available at [https://siibra-api.readthedocs.io/](https://siibra-api.readthedocs.io/).
 

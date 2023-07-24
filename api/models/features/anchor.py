@@ -16,9 +16,7 @@ class SiibraRegionAssignmentQual(ConfigBaseModel):
 
 
 class SiibraAnatomicalAssignmentModel(ConfigBaseModel, type="anatomical_assignment"):
-    """
-    SiibraAnatomicalAssignmentModel
-    """
+    """SiibraAnatomicalAssignmentModel"""
     qualification: str
     query_structure: Union[LocationModel, ParcellationEntityVersionModel]
     assigned_structure: Union[LocationModel, ParcellationEntityVersionModel]
@@ -26,9 +24,7 @@ class SiibraAnatomicalAssignmentModel(ConfigBaseModel, type="anatomical_assignme
 
 
 class SiibraAnchorModel(ConfigBaseModel, type="anchor"):
-    """
-    SiibraAnchorModel
-    """
+    """SiibraAnchorModel"""
     location: Optional[Union[LocationModel, CoordinatePointModel]]
     regions: List[SiibraRegionAssignmentQual]
     last_match_description: str=""

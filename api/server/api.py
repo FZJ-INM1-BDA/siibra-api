@@ -18,9 +18,9 @@ from .core import prefixed_routers as core_prefixed_routers
 from .volumes import prefixed_routers as volume_prefixed_routers
 from .compounds import prefixed_routers as compound_prefixed_routers
 from .features import router as feature_router
-from .metrics import metrics_endpoint, on_startup as metrics_on_startup, on_terminate as metrics_on_terminate
+from .metrics import prom_metrics_resp, on_startup as metrics_on_startup, on_terminate as metrics_on_terminate
 
-from api.common import logger, access_logger, InsufficientParameters, NotFound
+from api.common import logger, access_logger, NotFound, SapiBaseException
 from api.siibra_api_config import GIT_HASH
 
 siibra_version_header = "x-siibra-api-version"
@@ -36,7 +36,6 @@ for prefix_router in [*core_prefixed_routers, *volume_prefixed_routers, *compoun
 
 siibra_api.include_router(feature_router, prefix="/feature")
 
-# add pagination
 add_pagination(siibra_api)
 
 # Versioning for api endpoints
@@ -55,23 +54,22 @@ siibra_api.add_middleware(
     expose_headers=[siibra_version_header]
 )
 
-siibra_api.get("/metrics", include_in_schema=False)(
-    metrics_endpoint
-)
+@siibra_api.get("/metrics", include_in_schema=False)
+def get_metrics():
+    """Get prometheus metrics"""
+    return prom_metrics_resp()
+
 
 @siibra_api.get("/ready", include_in_schema=False)
-def ready():
-    # TODO ready probe
+def get_ready():
+    """Ready probe
+    
+    TODO: implement me"""
     return "ready"
 
 @siibra_api.get("/", include_in_schema=False)
-def home(request: Request):
-    """
-    Return the template for the siibra landing page.
-
-    :param request: fastApi Request object
-    :return: the rendered index.html template
-    """
+def get_home(request: Request):
+    """Return the template for the siibra landing page."""
     return templates.TemplateResponse(
         "index.html", context={
             "request": request,
@@ -110,15 +108,17 @@ do_not_logs = (
 
 
 @siibra_api.middleware("http")
-async def cache_response(request: Request, call_next):
-    """
-    Cache requests to redis, to improve response time.
+async def middleware_cache_response(request: Request, call_next):
+    """Cache requests to redis, to improve response time.
 
     Cached content is returned with a new response. In this NO other following middleware will be called
 
-    :param request: current request
-    :param call_next: next middleware function
-    :return: current response or a new Response with cached content
+    Args:
+        request: current request
+        call_next: next middleware function
+    
+    Returns
+        current response or a new Response with cached content
     """
     cache_instance = get_cache_instance()
 
@@ -215,16 +215,15 @@ async def cache_response(request: Request, call_next):
 
 
 @siibra_api.middleware("http")
-async def add_version_header(request: Request, call_next):
-    """
-    Add the latest application version as a custom header
-    """
+async def middleware_add_version_header(request: Request, call_next):
+    """Add siibra-api version as a custom header"""
     response = await call_next(request)
     response.headers[siibra_version_header] = __version__
     return response
 
 @siibra_api.middleware("http")
-async def access_log(request: Request, call_next):
+async def middleware_access_log(request: Request, call_next):
+    """Access log middleware"""
     
     if request.url.path in do_not_logs:
         return await call_next(request)
@@ -254,17 +253,12 @@ async def access_log(request: Request, call_next):
         logger.critical(e)
 
 @siibra_api.exception_handler(RuntimeError)
-async def runtime_exception_handler(request: Request, exc: RuntimeError):
-    """
-    Handling RuntimeErrors.
+async def exception_runtime(request: Request, exc: RuntimeError) -> JSONResponse:
+    """Handling RuntimeErrors.
     Most of the RuntimeErrors are thrown by the siibra-python library when other Services are not responding.
     To be more resilient and not throw a simple and unplanned HTTP 500 response, this handler will return an HTTP 503
-    status.
-    :param request: Needed but fastapi definition, but not used
-    :param exc: RuntimeError
-    :return: HTTP status 503 with a custom message
-    """
-    logger.warning(f"Runtime Error: {str(exc)}")
+    status."""
+    logger.warning(f"Error handler: exception_runtime: {str(exc)}")
     return JSONResponse(
         status_code=503,
         content={
@@ -273,13 +267,16 @@ async def runtime_exception_handler(request: Request, exc: RuntimeError):
         },
     )
 
-@siibra_api.exception_handler(InsufficientParameters)
-def insufficent_argument(request: Request, exc: InsufficientParameters):
+@siibra_api.exception_handler(SapiBaseException)
+def exception_sapi(request: Request, exc: SapiBaseException):
+    """Handle sapi errors"""
+    logger.warning(f"Error handler: exception_sapi: {str(exc)}")
     raise HTTPException(400, str(exc))
 
 @siibra_api.exception_handler(Exception)
-async def validation_exception_handler(request: Request, exc: Exception):
-    logger.warning(f"Exception: {str(exc)}")
+async def exception_other(request: Request, exc: Exception):
+    """Catch all exception handler"""
+    logger.warning(f"Error handler: exception_other: {str(exc)}")
     return JSONResponse(
         status_code=500,
         content={
@@ -290,20 +287,23 @@ async def validation_exception_handler(request: Request, exc: Exception):
 
 @siibra_api.on_event("shutdown")
 def shutdown():
+    """On shutdown"""
     terminate()
     metrics_on_terminate()
 
 @siibra_api.on_event("startup")
 def startup():
+    """On startup"""
     on_startup()
     metrics_on_startup()
 
 import logging
-class EndpointFilter(logging.Filter):
+class EndpointLoggingFilter(logging.Filter):
+    """Custom logger filter. Do not log metrics, ready endpoint."""
     def filter(self, record: logging.LogRecord) -> bool:
         message = record.getMessage()
         return all(
             message.find(do_not_log) == -1 for do_not_log in do_not_logs
         )
 
-logging.getLogger("uvicorn.access").addFilter(EndpointFilter())
+logging.getLogger("uvicorn.access").addFilter(EndpointLoggingFilter())

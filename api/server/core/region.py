@@ -14,19 +14,23 @@ from api.server.util import SapiCustomRoute
 from api.server.features import FeatureIdResponseModel
 
 TAGS = ["region"]
+"""HTTP region routes tags"""
 
 router = APIRouter(route_class=SapiCustomRoute, tags=TAGS)
+"""HTTP region routes router"""
 
 @router.get("", response_model=Page[ParcellationEntityVersionModel])
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=all_regions)
 def get_all_regions(parcellation_id: str, find:str=None, func=lambda:[]):
+    """HTTP get all regions"""
     return paginate(func(parcellation_id, find=find))
 
 @router.get("/{region_id:lazy_path}/features", response_model=Page[FeatureIdResponseModel])
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=partial(get_all_all_features, space=None))
 def get_all_regions(parcellation_id: str, region_id: str, func=lambda:[]):
+    """HTTP get all features of a single region"""
     return paginate(
         func(parcellation_id=parcellation_id, region_id=region_id)
     )
@@ -35,4 +39,5 @@ def get_all_regions(parcellation_id: str, region_id: str, func=lambda:[]):
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=single_region)
 def get_all_regions(parcellation_id: str, region_id: str, space_id: Optional[str]=None, func=lambda:None):
+    """HTTP get a single region"""
     return func(parcellation_id, region_id, space_id)

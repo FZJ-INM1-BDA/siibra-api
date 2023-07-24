@@ -5,6 +5,7 @@ from api.models.volumes.volume import VolumeModel
 from typing import List, Dict
 
 class MapModel(_SiibraAtlasConcept):
+    """MapModel"""
     species: str
     indices: Dict[str, List[MapIndexModel]]
     volumes: List[VolumeModel]

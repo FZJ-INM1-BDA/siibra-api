@@ -5,6 +5,10 @@ from typing import List, Optional
 from abc import ABC
 
 class _FeatureModel(ConfigBaseModel, ABC, type="feature"):
+    """AbstractBaseModel
+    
+    see [api.models._commons.ConfigBaseModel][]"""
+    
     id: str
     modality: str
     category: str
@@ -13,4 +17,6 @@ class _FeatureModel(ConfigBaseModel, ABC, type="feature"):
     datasets: List[EbrainsDatasetModel]
     anchor: Optional[SiibraAnchorModel]
 
-class FeatureModel(_FeatureModel): pass
+class FeatureModel(_FeatureModel):
+    """FeatureModel"""
+    pass

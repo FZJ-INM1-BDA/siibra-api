@@ -4,6 +4,7 @@ from typing import List
 from pydantic import Field
 
 class BoundingBoxModel(_LocationModel, type="bbox"):
+    """BoundingBoxModel"""
     center: CoordinatePointModel
     minpoint: CoordinatePointModel
     maxpoint: CoordinatePointModel

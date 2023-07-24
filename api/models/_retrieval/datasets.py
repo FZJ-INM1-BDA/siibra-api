@@ -2,24 +2,22 @@ from pydantic import Field
 from api.models._commons import (
     ConfigBaseModel,
 )
-from typing import List, Union, Optional
+from typing import List, Optional
 
 class EbrainsDsUrl(ConfigBaseModel):
+    """EbrainsDsUrl"""
     url: str
 
 class EbrainsDsPerson(ConfigBaseModel):
+    """EbrainsDsPerson"""
     id: str = Field(..., alias="@id")
     schema_shortname: Optional[str] = Field(..., alias="schema.org/shortName")
     identifier: str
     shortName: str
     name: str
 
-class EbrainsDsEmbargoStatus(ConfigBaseModel):
-    id: str = Field(..., alias="@id")
-    name: str
-    identifier: Union[List[str], str]
-
 class EbrainsDatasetModel(ConfigBaseModel):
+    """EbrainsDatasetModel"""
     id: str = Field(..., alias="@id")
     name: str
     urls: List[EbrainsDsUrl]

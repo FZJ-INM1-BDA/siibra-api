@@ -1,5 +1,7 @@
-# import all siibra imports here
-# if path changes in the future, we only need to change it here
+"""This module serves as the single import point of all siibra dependencies.
+
+If siibra paths changes in the future, they only need to be updated here."""
+
 
 from siibra.locations.location import Location
 from siibra.locations.point import Point

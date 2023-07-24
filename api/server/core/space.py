@@ -10,14 +10,16 @@ from api.common.data_handlers.core.space import all_spaces, single_space
 from api.server.util import SapiCustomRoute
 
 TAGS = ["space"]
+"""HTTP space routes tags"""
 
 router = APIRouter(route_class=SapiCustomRoute, tags=TAGS)
-
+"""HTTP space routes router"""
 
 @router.get("", response_model=Page[CommonCoordinateSpaceModel])
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=all_spaces)
 def get_all_spaces(*, func):
+    """HTTP get all spaces"""
     if func is None:
         raise HTTPException(500, f"func: None passed")
     return paginate(func())
@@ -26,6 +28,7 @@ def get_all_spaces(*, func):
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=single_space)
 def get_single_space(space_id: str, *, func):
+    """HTTP get a single space"""
     if func is None:
         raise HTTPException(500, f"func: None passsed")
     return func(space_id)

@@ -4,6 +4,11 @@ from typing import Optional
 from abc import ABC
 
 class _SiibraTabularModel(_FeatureModel, ABC, type="tabular"):
+    """AbstractBaseModel
+    
+    see [api.models._commons.ConfigBaseModel][]"""
     data: Optional[DataFrameModel]
 
-class SiibraTabularModel(_SiibraTabularModel): pass
+class SiibraTabularModel(_SiibraTabularModel):
+    """SiibraTabularModel"""
+    pass

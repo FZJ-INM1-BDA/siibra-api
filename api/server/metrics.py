@@ -1,30 +1,32 @@
 from fastapi import HTTPException
 from fastapi.responses import PlainTextResponse
 from api.siibra_api_config import ROLE, CELERY_CONFIG, NAME_SPACE
-from functools import wraps
-import time
 from api.common.timer import RepeatTimer
 
 
 class Singleton:
+    """Timer singleton"""
     cached_metrics=None
     timer: RepeatTimer=None
 
     @staticmethod
     def populate():
         if ROLE == 'server':
-            Singleton.cached_metrics = get_prom_metrics()
+            Singleton.cached_metrics = refresh_prom_metrics()
 
 def on_startup():
+    """On startup"""
     Singleton.populate()
     Singleton.timer = RepeatTimer(60, Singleton.populate)
     Singleton.timer.start()
     
 def on_terminate():
+    """On terminate"""
     if Singleton.timer is not None:
         Singleton.timer.cancel()
 
-def get_prom_metrics():
+def refresh_prom_metrics():
+    """Refresh metrics."""
     from api.worker.app import app
     from prometheus_client import Gauge, CollectorRegistry, generate_latest
 
@@ -74,7 +76,8 @@ def get_prom_metrics():
 
     return generate_latest(registry)
 
-def metrics_endpoint():
+def prom_metrics_resp():
+    """Return PlainTextResponse of metrics"""
     if ROLE != "server":
         raise HTTPException(404, "siibra-api is not configured to be server, so metrics page is not enabled")
     

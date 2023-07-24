@@ -14,7 +14,17 @@ from api.serialization.util import (
 )
 
 @serialize(AnatomicalAssignment)
-def assignment_to_model(asgmt: AnatomicalAssignment, detail=False, **kwargs):
+def assignment_to_model(asgmt: AnatomicalAssignment, detail: bool=False, **kwargs) -> SiibraAnatomicalAssignmentModel:
+    """Serialize AnatommicalAssignment instance
+
+    Args:
+        asgmt: siibra AnatomicalAssignment instance
+        detail: detail flag.
+    
+    Returns:
+        SiibraAnatomicalAssignmentModel
+
+    """
     return SiibraAnatomicalAssignmentModel(
         query_structure=instance_to_model(asgmt.query_structure, detail=detail, **kwargs),
         assigned_structure=instance_to_model(asgmt.assigned_structure, detail=detail, **kwargs),

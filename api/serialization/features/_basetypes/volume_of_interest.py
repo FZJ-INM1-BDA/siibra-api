@@ -9,7 +9,16 @@ from api.serialization.util import (
 
 # serializing voi is... somewhat complicated, so doing it manually
 @serialize(Image, pass_super_model=False)
-def voi_to_model(feat: Image, **kwargs):
+def voi_to_model(feat: Image, **kwargs) -> SiibraVoiModel:
+    """Serialize siibra Image instance
+    
+    Serializing Image instance turns out to be rather complex, so doing it manually.
+    
+    Args:
+        feat: instance of siibra Image
+    
+    Returns:
+        SiibraVoiModel"""
     feature_super_model = instance_to_model(feat, use_class=Feature)
     volume_super_model = instance_to_model(feat, use_class=Volume)
 

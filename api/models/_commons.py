@@ -5,13 +5,6 @@ from abc import ABC
 
 SIIBRA_PYTHON_VERSION = "0.4"
 
-# n.b.
-# fastapi response model is not perfect. e.g.:
-# class B(BaseModel): pass
-# class A(B): pass
-# if an endpoint tries to return Union[A, B], it will get reduced to B
-# To combat this, we ensure *none* return types are subclassed
-# However, some classes are directly subclassed from openminds. They are ignored.
 ignore_cls=(
     "BrainAtlasVersionModel",
     "ParcellationEntityVersionModel",
@@ -22,6 +15,7 @@ class SiibraAtIdModel(_BaseModel):
     id: str = Field(..., alias="@id")
 
 class ConfigBaseModel(_BaseModel):
+    """ConfigBaseModel"""
 
     _type: ClassVar[str] = None
     type: Optional[str] = Field(..., alias="@type")
@@ -32,9 +26,42 @@ class ConfigBaseModel(_BaseModel):
             kwargs["type"] = __pydantic_self__.__class__._type
         super().__init__(**data, **kwargs)
 
-    def __init_subclass__(cls, type=None) -> None:
+    def __init_subclass__(cls, type: str=None) -> None:
+        """On init subclass, configure _type accordingly.
 
-        # see n.b. note above
+        The type should always following the following pattern:
+
+        ```
+        siibra-{siibra_python_version}/{generic}/{specific}/{specific+1}...
+        ```
+
+        Similar to [MIME types](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types)
+        This can allow clients to decide on which level of specificity to stop on parsing the data.
+
+        Additionally, fastapi response model type infer is not perfect. 
+
+        e.g.
+
+        ```python
+        class B(BaseModel): pass
+        class A(B): pass
+        response_model = Union[A, B]
+        ```
+        
+        Fastapi will reduce the above will be reduced to `B`.
+
+        To circumvent the problem, all super classes must start with `_`. 
+
+        Since we cannot directly control openminds, we ignore openminds types.
+
+        Args:
+            type: type of the new class
+        
+        Raises:
+            AssertionError: if a super class does not start with `_`
+            AssertionError: if a super class does not subclass ABC
+        """
+
         if cls.__name__ not in ignore_cls:
             for mro_cls in cls.__mro__[1:]:
                 
@@ -47,10 +74,6 @@ class ConfigBaseModel(_BaseModel):
                 assert mro_cls.__name__[0] == "_", f"{cls.__name__!r} init subclass failure, {mro_cls.__name__!r} is illegal. Subclassed model MUST starts with underscore. Otherwise pydantic may confuse which model to use to serialize."
                 assert issubclass(mro_cls, ABC), f"{cls.__name__!r} init subclass failure, {mro_cls.__name__!r} must be subclassed from ABC."
         
-        # the type should always following the following pattern:
-        # siibra-{siibra_python_version}/{generic}/{specific}/{specific+1}...
-        # i.e. similar to [MIME types](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types)
-        # this can allow clients to decide on which level of specificity to stop on on parsing the data
         if type:
             if cls._type is None:
                 cls._type = f"siibra-{SIIBRA_PYTHON_VERSION}"
@@ -59,17 +82,20 @@ class ConfigBaseModel(_BaseModel):
         return super().__init_subclass__()
 
 class MapIndexModel(ConfigBaseModel):
+    """MapIndexModel"""
     volume: int
     label: Optional[int]
     fragment: Optional[str]
 
 class SeriesModel(ConfigBaseModel):
+    """SeriesModel"""
     name: Optional[str]
     dtype: str
     index: List[Union[str, int, float]]
     data: List[float]
 
 class DataFrameModel(ConfigBaseModel):
+    """DataFrameModel"""
     index: List[Any]
     columns: List[Any]
     ndim: int
@@ -83,6 +109,7 @@ class DataFrameModel(ConfigBaseModel):
     ]
 
 class TaskIdResp(BaseModel):
+    """TaskIdResp"""
     task_id: str
     status: Optional[
         Union[

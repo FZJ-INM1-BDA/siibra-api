@@ -13,14 +13,20 @@ from api.common.data_handlers.compounds.download import download_all
 from api.models._commons import TaskIdResp
 
 router = APIRouter(route_class=SapiCustomRoute, tags=["download"])
+"""HTTP download bundle router"""
 
 def cleanup(filepath: Path):
+    """On downloaded callback
+    
+    Args:
+        filepath: Path to cleanup"""
     filepath.unlink()
 
 @router.get("")
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=download_all, queue_as_async=(ROLE=="server"))
-def prepare_download(space_id: str, parcellation_id: str, region_id: str=None, *, background: BackgroundTasks, func):
+def get_download_bundle(space_id: str, parcellation_id: str, region_id: str=None, *, background: BackgroundTasks, func):
+    """Prepare the bundle. Given a specification, prepare/bundle according to the specification."""
     returnval = func(space_id, parcellation_id, region_id)
     try:
         path_to_file = Path(returnval)
@@ -43,7 +49,8 @@ def prepare_download(space_id: str, parcellation_id: str, region_id: str=None, *
 if ROLE == "server":
     @router.get("/{task_id:str}")
     @version(*FASTAPI_VERSION)
-    def get_task_id(task_id:str):
+    def get_download_progress(task_id:str):
+        """Get download task progress with task_id"""
         res = download_all.AsyncResult(task_id)
         if res.state == "FAILURE":
             result = res.get()
@@ -57,7 +64,8 @@ if ROLE == "server":
 
     @router.get("/{task_id:str}/download")
     @version(*FASTAPI_VERSION)
-    def get_task_id(task_id:str, background: BackgroundTasks):
+    def get_download_result(task_id:str, background: BackgroundTasks):
+        """Download the bundle"""
         res = download_all.AsyncResult(task_id)
         
         if res.state == "FAILURE":

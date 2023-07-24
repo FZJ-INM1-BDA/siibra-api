@@ -2,7 +2,4 @@
     options:
         filters:
         - "!openminds"
-        - "!_"
         - "!kwargs"
-        
-        

@@ -1,10 +1,24 @@
 from api.common import data_decorator, get_filename, NotFound
 from api.models.volumes.volume import MapType
 from api.siibra_api_config import ROLE
-from typing import Union
+from typing import Union, Dict, List
 
 @data_decorator(ROLE)
-def get_map(parcellation_id: str, space_id: str, maptype: Union[MapType, str]):
+def get_map(parcellation_id: str, space_id: str, maptype: Union[MapType, str]) -> Dict:
+    """Get a map instance, based on specification
+    
+    Args:
+        parcellation_id: lookup id of the parcellation of the map
+        space_id: lookup id of the space of the map
+        maptype: maptype, either LABELLED or STATISTICAL
+    
+    Returns:
+        Requested map instance, serialized into dict
+    
+    Raises:
+        AssertionError: if the supplied maptype is invalid type
+        NotFound: Map with the specification not found
+    """
     import siibra
     from api.serialization.util import instance_to_model
 

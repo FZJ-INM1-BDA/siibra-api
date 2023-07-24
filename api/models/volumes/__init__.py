@@ -1,1 +1,4 @@
-from . import volume
+from . import (
+    volume,
+    parcellationmap,
+)
