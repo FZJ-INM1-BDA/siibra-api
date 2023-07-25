@@ -62,4 +62,4 @@ jobs:
     - name: 'Remove unneeded resources'
       run: |
         oc get all -l flavor=${{ inputs.flavor }},app=siibra-api,app_role=worker,siibraapi_version!=${{ inputs.version }}
-        oc delete all -l flavor=${{ inputs.flavor }},app=siibra-api,app_role=worker,siibraapi_version!=${{ inputs.version }} & sleep 5
+        oc delete all -l flavor=${{ inputs.flavor }},app=siibra-api,app_role=worker,siibraapi_version!=${{ inputs.version }} & sleep 30

@@ -1,14 +1,36 @@
-{WIP PLACEHOLDER}
+One of the metrics that are currently been optimised is the weighted throughput.
 
-## Current architectural designs
+In this context, weighted throughput is measured by the response time of the routes offered by the deployed siibra-api, weighted by the route's business criticalness. 
 
-{WIP PLACEHOLDER}
+In an effort to optimise weighted throughput, additional complexity to the service architecture will inevitably be introduced. The added complexity compromises the maintainability of siibra-api, and discourages external contributions.
 
-### all-in-one
+To balance these two factors, siibra-api can be configured to run as all-in-one service or server-worker service.
 
-In an all in one 
+## all-in-one
 
-#### module dependency graph
+The all-in-one configuration provides a simple, easy to debug instance of siibra-api. 
+
+As uvicorn spawns four worker threads by default, this configuration is ideal for local development.
+
+### How to activate
+
+```bash
+# By default, if SIIBRA_API_ROLE is unset, 'all' is the fallback value
+# export SIIBRA_API_ROLE=all
+uvicorn api.server.api
+```
+
+### Pro & Con
+
+Pro:
+
+Easier to setup, easier to debug. Fewer moving parts, less likely to "break".
+
+Con:
+
+Does not scale easily. On production, available workers can easily be overwhelmed by more computationally expensive, less business critical queries, resulting in degredation in response time.
+
+### module dependency graph
 
 ```mermaid
 flowchart TD
@@ -28,7 +50,7 @@ flowchart TD
 	serialization --> |build| models
 ```
 
-#### architectural diagram
+### architectural diagram
 
 ```mermaid
 flowchart TD
@@ -44,29 +66,42 @@ flowchart TD
     OpenshiftServer --> |responds| Internet
 ```
 
+## server-worker
 
-#### How to activate
+siibra-api can be configured to run with a server-worker architeture. This allows the deployed app be more robust on a production environment.
 
+!!! note
+    In order to achieve roughly the same performance, at least 4 worker nodes needs to be spawned.
+
+### How to activate
+
+server:
 ```bash
-export SIIBRA_API_ROLE=all
+export SIIBRA_API_ROLE=server
 uvicorn api.server.api
 ```
 
-#### Pro & Con
+worker(s): (feel free to spawn as many instance as resource allows/you wish)
+```bash
+export SIIBRA_API_ROLE=worker
+# listen on all queues by:
+celery -A api.worker.app worker -l INFO
+# or listen to specific queues by:
+celery -A api.worker.app worker -l INFO -Q 0.3.11.siibraapilatest.core
+```
+
+### Pro & Con
 
 Pro:
 
-Easy to setup, easy to debug. Fewer moving parts, less likely to "break".
+Robust, customizable, scale easily. Allow business critical routes/jobs to be prioritised.
 
 Con:
 
-Does not scale easily. On production, available workers can easily be overwhelmed, resulting in 
+Complex to setup, overhead (via message broker).
 
-### server-worker
 
-On the contrary, the design that offers some flexibility is the server-worker design.
-
-#### Module dependency graph
+### Module dependency graph
 
 ```mermaid
 flowchart TD
@@ -90,7 +125,7 @@ flowchart TD
 	serialization --> |build| models
 ```
 
-#### architectural diagram
+### architectural diagram
 
 ```mermaid
 flowchart TD

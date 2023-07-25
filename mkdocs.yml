@@ -51,9 +51,11 @@ nav:
   - home: 'index.md'
   - architecture: 
     - 'overview': 'architecture.overview.md'
+    - 'architecture: caching': 'architecture.caching.md'
     - 'architecture: throughput': 'architecture.throughput.md'
   - develop: 'develop.md'
   - api references:
+    - api.config: 'api.config.md'
     - api.server: 'api.server.md'
     - api.worker: 'api.worker.md'
     - api.models: 'api.models.md'
