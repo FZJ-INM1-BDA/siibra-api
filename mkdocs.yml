@@ -1,5 +1,5 @@
 site_name: Siibra-Api Developer Documentation
-
+repo_url: https://github.com/fzj-inm1-bda/siibra-api
 theme:
   name: 'material'
 

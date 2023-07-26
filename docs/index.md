@@ -1,3 +1,5 @@
+![siibra api logo](siibra-api.jpeg)
+
 # siibra-api
 
 siibra-api provides REST access to siibra-python features.

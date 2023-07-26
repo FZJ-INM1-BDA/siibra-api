@@ -113,17 +113,7 @@ do_not_logs = (
 
 @siibra_api.middleware("http")
 async def middleware_cache_response(request: Request, call_next):
-    """Cache requests to redis, to improve response time.
-
-    Cached content is returned with a new response. In this NO other following middleware will be called
-
-    Args:
-        request: current request
-        call_next: next middleware function
-    
-    Returns
-        current response or a new Response with cached content
-    """
+    """Cache requests to redis, to improve response time."""
     cache_instance = get_cache_instance()
 
     cache_key = f"[{__version__}] {request.url.path}{str(request.url.query)}"

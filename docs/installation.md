@@ -10,11 +10,11 @@ export SIIBRA_API_IMAGE_VERSION="latest" || "0.3" || "0.3.11"
 # Pull the all-in-one image from docker registry
 docker pull docker-registry.ebrains.eu/siibra/siibra-api:${SIIBRA_API_IMAGE_VERSION}
 
-# To pull the server image from docker registery
+# To pull the server image from docker registry
 # docker pull docker-registry.ebrains.eu/siibra/siibra-api:${SIIBRA_API_IMAGE_VERSION}-server
 
-# To pull the server image from docker registery
-# docker pull docker-registry.ebrains.eu/siibra/siibra-api:${SIIBRA_API_IMAGE_VERSION}-server
+# To pull the worker image from docker registry
+# docker pull docker-registry.ebrains.eu/siibra/siibra-api:${SIIBRA_API_IMAGE_VERSION}-worker
 ```
 
 ## From source
