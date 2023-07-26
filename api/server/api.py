@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, Response, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -7,6 +7,10 @@ from fastapi_pagination import add_pagination
 from fastapi_versioning import VersionedFastAPI
 import time
 import json
+from starlette.routing import Match, Route, Mount
+from starlette.types import Scope
+from typing import Union
+import inspect
 
 from .util import add_lazy_path
 
@@ -126,14 +130,18 @@ async def middleware_cache_response(request: Request, call_next):
 
     auth_set = request.headers.get("Authorization") is not None
 
+    accept_header = request.headers.get("Accept")
+    query_code_flag = accept_header == "text/x-sapi-python"
+
     # bypass cache set if:
     # - method is not GET
     # - if auth token is set
     # - if any part of request.url.path matches with do_not_cache_list
     # - if any keyword appears in do_no_cache_query_list
     bypass_cache_set = (
-        request.method.upper() != "GET" 
-        or auth_set 
+        request.method.upper() != "GET"
+        or auth_set
+        or query_code_flag
         or any (keyword in request.url.path for keyword in do_not_cache_list)
         or any (keyword in request.url.query for keyword in do_no_cache_query_list)
     )
@@ -213,6 +221,62 @@ async def middleware_cache_response(request: Request, call_next):
         headers=response_headers
     )
 
+def lookup_handler_fn(arm: Union[FastAPI, Mount, Route], scope: Scope):
+    """Lookup (recursively if necessary) to find the Route responsible for a given scope."""
+    if isinstance(arm, (FastAPI, Mount)):
+        for route in arm.routes:
+            match, child_scope = route.matches(scope)
+            if match == Match.FULL:
+                child_match = lookup_handler_fn(route, { **scope, **child_scope })
+                if child_match:
+                    return child_match
+    if isinstance(arm, Route):
+        match, child_scope = arm.matches(scope)
+        if match == Match.FULL:
+            return arm, child_scope
+    return None
+
+
+@siibra_api.middleware("http")
+async def middleware_get_python_code(request: Request, call_next):
+    """If Accept header is set to text/x-sapi-python, return the python code as plain text response."""
+    accept_header = request.headers.get("Accept")
+
+    if accept_header == "text/x-sapi-python":
+        returned_val = lookup_handler_fn(request.app, request.scope)
+        if not returned_val:
+            return PlainTextResponse("handler_fn lookup failed!", 404)
+        
+        arm, scope = returned_val
+        targets = [
+            closure.cell_contents
+            for closure in arm.endpoint.__closure__
+            if callable(closure.cell_contents) and closure.cell_contents.__name__ != arm.endpoint.__name__
+        ]
+        if len(targets) == 0:
+            return PlainTextResponse("not found", 404)
+        if len(targets) > 1:
+            return PlainTextResponse(f"Expecting a callable, got {len(targets)}", 401)
+        
+        target = targets[0]
+        ignore_keys = ("page", "size",)
+        args = {
+            key: value
+            for key, value in ({
+                **dict(request.query_params),
+                **scope.get("path_params")
+            }).items()
+            if key not in ignore_keys
+        }
+
+        header = f"""args={json.dumps(args, indent=2)}\n\n"""
+        footer = f"\n\n{target.__name__}(**args)\n\n"
+
+        return PlainTextResponse(f"{header}{inspect.getsource(target)}{footer}", 200, {
+            "Content-Type": "text/x-sapi-python"
+        })
+    
+    return await call_next(request)
 
 @siibra_api.middleware("http")
 async def middleware_add_version_header(request: Request, call_next):
