@@ -2,13 +2,13 @@ version: '3.9'
 services:
 
   redis:
-    image: redis
+    image: redis:latest
     restart: always
 
   siibra-api:
     depends_on:
     - redis
-    image: siibra-api:v0.4-server
+    image: docker-registry.ebrains.eu/siibra/siibra-api:${SIIBRA_API_IMAGE_VERSION}-server
     build:
       context: .
       dockerfile: server.dockerfile
@@ -21,12 +21,12 @@ services:
       SIIBRA_API_CELERY_RESULT: 'redis://redis:6379'
       SIIBRA_CACHEDIR: '/persist_shared_vol'
     volumes:
-      - ./persistent_vol:/persist_shared_vol
+      - persistent_vol:/persist_shared_vol
 
   siibra-api-worker:
     depends_on:
     - redis
-    image: siibra-api:v0.4-worker
+    image: docker-registry.ebrains.eu/siibra/siibra-api:${SIIBRA_API_IMAGE_VERSION}-worker
     build:
       context: .
       dockerfile: worker.dockerfile
@@ -38,4 +38,6 @@ services:
       SIIBRA_API_CELERY_RESULT: 'redis://redis:6379'
       SIIBRA_CACHEDIR: '/persist_shared_vol'
     volumes:
-      - ./persistent_vol:/persist_shared_vol
+      - persistent_vol:/persist_shared_vol
+volumes:
+  persistent_vol:

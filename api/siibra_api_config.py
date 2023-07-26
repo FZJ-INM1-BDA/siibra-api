@@ -1,3 +1,10 @@
+"""This module houses the configuration of siibra-api.
+
+This should be the only place where user can influence the configuration of siibra-api.
+
+As siibra-api will attempt to load this module, user can either configure siibra-api with environment variables,
+or overwrite the this file directly (with docker volume mount, for example)."""
+
 import os
 from pathlib import Path
 import re

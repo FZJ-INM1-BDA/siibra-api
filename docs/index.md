@@ -8,6 +8,5 @@ The main goal is to abstract the python functionalities in a way that they can b
 ## Links
 
 - git: <http://github.com/fzj-inm1-bda/siibra-api/>
-- production: <https://siibra-api-stable.apps.hbp.eu/v3_0/docs>
-- siibra-explorer: <https://atlases.ebrains.eu/viewer/>
-- siibra-python: <https://readthedocs.org/projects/siibra-python/>
+- swagger: <https://siibra-api-stable.apps.hbp.eu/v3_0/docs>
+- redoc: <https://siibra-api-stable.apps.hbp.eu/v3_0/redoc>

@@ -12,14 +12,6 @@ The all-in-one configuration provides a simple, easy to debug instance of siibra
 
 As uvicorn spawns four worker threads by default, this configuration is ideal for local development.
 
-### How to activate
-
-```bash
-# By default, if SIIBRA_API_ROLE is unset, 'all' is the fallback value
-# export SIIBRA_API_ROLE=all
-uvicorn api.server.api
-```
-
 ### Pro & Con
 
 Pro:
@@ -72,23 +64,6 @@ siibra-api can be configured to run with a server-worker architeture. This allow
 
 !!! note
     In order to achieve roughly the same performance, at least 4 worker nodes needs to be spawned.
-
-### How to activate
-
-server:
-```bash
-export SIIBRA_API_ROLE=server
-uvicorn api.server.api
-```
-
-worker(s): (feel free to spawn as many instance as resource allows/you wish)
-```bash
-export SIIBRA_API_ROLE=worker
-# listen on all queues by:
-celery -A api.worker.app worker -l INFO
-# or listen to specific queues by:
-celery -A api.worker.app worker -l INFO -Q 0.3.11.siibraapilatest.core
-```
 
 ### Pro & Con
 

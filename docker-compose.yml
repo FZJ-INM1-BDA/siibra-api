@@ -2,13 +2,13 @@ version: '3'
 services:
 
   redis:
-    image: redis
+    image: redis:latest
     restart: always
 
   siibra-api:
     depends_on:
     - redis
-    image: siibra-api:v0.4-all
+    image: docker-registry.ebrains.eu/siibra/siibra-api:${SIIBRA_API_IMAGE_VERSION}
     build:
       context: .
       dockerfile: Dockerfile
