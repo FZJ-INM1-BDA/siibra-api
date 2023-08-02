@@ -7,9 +7,11 @@ from api.models._commons import (
 )
 
 class SpeciesModel(_SpeciesModel):
+    """SpeciesModel"""
     kg_v1_id: str = Field(..., alias="kgV1Id")
 
 class SiibraAtlasModel(ConfigBaseModel, type="atlas"):
+    """SiibraAtlasModel"""
     id: str = Field(..., alias="@id")
     name: str
     spaces: List[SiibraAtIdModel]

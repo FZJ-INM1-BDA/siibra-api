@@ -1,17 +1,30 @@
 from api.common import data_decorator, InsufficientParameters, NotFound, AmbiguousParameters
 from api.siibra_api_config import ROLE
-
-def get_hierarchy_type(Cls):
-    from siibra.features import Feature
-    return ".".join([
-        BaseCls.__name__
-        for BaseCls in Cls.__mro__
-        if issubclass(BaseCls, Feature)
-    ][::-1])
+from typing import List, Type, Any, Dict
 
 @data_decorator(ROLE)
-def all_feature_types():
+def all_feature_types() -> List[Dict[str, str]]:
+    """Get all feature types
+    
+    Returns:
+        List of all features, including their name, and inheritance from Feature"""
     from siibra.features import Feature
+
+    
+    def get_hierarchy_type(Cls: Type[Any]) -> str:
+        """Get inherited class in the form of `Feature.{LessGenericCls}.{SpecificCls}.{Cls}`
+        
+        Args:
+            Cls: subclass of Feature
+        
+        Returns:
+            string representing class hierarchy"""
+        return ".".join([
+            BaseCls.__name__
+            for BaseCls in Cls.__mro__
+            if issubclass(BaseCls, Feature)
+        ][::-1])
+
     return [
         {
             'name': get_hierarchy_type(Cls),

@@ -19,4 +19,6 @@ class _SiibraAtlasConcept(ConfigBaseModel, ABC):
     publications: List[SiibraPublication]
     datasets: List[EbrainsDatasetModel]
 
-class SiibraAtlasConcept(_SiibraAtlasConcept): pass
+class SiibraAtlasConcept(_SiibraAtlasConcept):
+    """SiibraAtlasConcept"""
+    pass

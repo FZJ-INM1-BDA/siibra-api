@@ -1,6 +1,7 @@
 from fastapi.routing import APIRoute
 
 class SapiCustomRoute(APIRoute):
+    """SapiCustomRoute, custom route class. This is so that `func` param is not interpreted to be a part of swagger-api."""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.dependant.query_params = [ query_param
@@ -9,12 +10,13 @@ class SapiCustomRoute(APIRoute):
         ]
 
 def add_lazy_path():
-    """
-    adds lazy_path path converter for starlette route
+    """adds lazy_path path converter for starlette route
 
     For example:
 
-    "GET /atlases/juelich%2Fiav%2Fatlas%2Fv1.0.0%2F1/parcellations/minds%2Fcore%2Fparcellationatlas%2Fv1.0.0%2F94c1125b-b87e-45e4-901c-00daee7f2579-290/regions/Area%20hOc1%20%28V1%2C%2017%2C%20CalcS%29%20right/features/siibra%2Ffeatures%2Fcells%2Fhttps%3A%2F%2Fopenminds.ebrains.eu%2Fcore%2FDatasetVersion%2Fc1438d1996d1d2c86baa05496ba28fc5"
+    ```
+    GET /atlases/juelich%2Fiav%2Fatlas%2Fv1.0.0%2F1/parcellations/minds%2Fcore%2Fparcellationatlas%2Fv1.0.0%2F94c1125b-b87e-45e4-901c-00daee7f2579-290/regions/Area%20hOc1%20%28V1%2C%2017%2C%20CalcS%29%20right/features/siibra%2Ffeatures%2Fcells%2Fhttps%3A%2F%2Fopenminds.ebrains.eu%2Fcore%2FDatasetVersion%2Fc1438d1996d1d2c86baa05496ba28fc5
+    ```
 
     or 
 
@@ -28,7 +30,9 @@ def add_lazy_path():
     ```
 
     default path converter (eager) will:
+
     1/ deserialize URI encoded characters, resulting in:
+    
     ```python
     "/atlases/{atlas_id}/parcellations/{parc_id}/regions/{region_id}/features/{feat_id}".format(
         atlas_id="juelich/iav/atlas/v1.0.0/1",
@@ -37,6 +41,7 @@ def add_lazy_path():
         feat_id="siibra/features/cells/https://openminds.ebrains.eu/core/DatasetVersion/c1438d1996d1d2c86baa05496ba28fc5",
     )
     ```
+    
     2/ try to eager match, resulting in errorenous parsing of the path:
 
     ```python

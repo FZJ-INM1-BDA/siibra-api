@@ -13,7 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging, os
+"""Logging module.
+
+if `LOGGER_DIR` is defined in config, will also use `TimedRotatingFileHandler` to write
+to `LOGGER_DIR`.
+"""
+
+import logging
 from logging.handlers import TimedRotatingFileHandler
 from api.siibra_api_config import LOGGER_DIR
 

@@ -10,13 +10,16 @@ from api.common.data_handlers.core.parcellation import all_parcellations, single
 from api.server.util import SapiCustomRoute
 
 TAGS = ["parcellation"]
+"""HTTP parcellation routes tags"""
 
 router = APIRouter(route_class=SapiCustomRoute, tags=TAGS)
+"""HTTP parcellation routes router"""
 
 @router.get("", response_model=Page[SiibraParcellationModel])
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=all_parcellations)
 def get_all_parcellations(func):
+    """HTTP get all parcellations"""
     if func is None:
         raise HTTPException(500, f"func: None passed")
     return paginate(func())
@@ -25,6 +28,7 @@ def get_all_parcellations(func):
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=single_parcellation)
 def get_single_parcellation(parcellation_id: str, *, func):
+    """HTTP get a single parcellation"""
     if func is None:
         raise HTTPException(500, f"func: None passsed")
     return func(parcellation_id)

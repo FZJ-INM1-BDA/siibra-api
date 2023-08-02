@@ -13,4 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from . import core, features, volumes, app
+
+"""This module is a collection of pydantic models, which siibra instances will serialize into.
+
+This is a deliberate design decision, since this could provide the type hinting with the least amount of dependency.
+
+Processes import from this module must **not** require siibra installed."""
+

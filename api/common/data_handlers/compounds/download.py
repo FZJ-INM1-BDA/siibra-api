@@ -40,7 +40,18 @@ citations:
 LICENSE = """Please check the respective citations regarding licenses to use these data."""
 
 @data_decorator(ROLE)
-def download_all(space_id: str, parcellation_id: str, region_id: str=None):
+def download_all(space_id: str, parcellation_id: str, region_id: str=None) -> str:
+    """Create a download bundle (zip) for the provided specification
+    
+    Args:
+        space_id: lookup id of the space requested
+        parcellation_id: lookup_id of the parcellation requested
+        region_id: lookup_id of the region requested
+    
+    Returns:
+        Path to the zip file
+
+    """
     zipfilename = Path(SIIBRA_API_SHARED_DIR, f"atlas-download-{str(uuid4())}.zip")
 
     import siibra
@@ -87,17 +98,18 @@ def download_all(space_id: str, parcellation_id: str, region_id: str=None):
             zipfile.writestr(f"{space_filename or 'UNKNOWN_SPACE'}.error.txt", str(e))
         
 
-        try:
-            parc_filename = None
-            space: _space.Space = siibra.spaces[space_id]
-            parcellation: _parcellation.Parcellation = siibra.parcellations[parcellation_id]
-            parc_filename = f"{parcellation.key}.nii.gz"
+        if not region_id:
+            try:
+                parc_filename = None
+                space: _space.Space = siibra.spaces[space_id]
+                parcellation: _parcellation.Parcellation = siibra.parcellations[parcellation_id]
+                parc_filename = f"{parcellation.key}.nii.gz"
 
-            parc_vol = parcellation.get_map(space, siibra.MapType.LABELLED).fetch()
-            zipfile.writestr(parc_filename, gzip.compress(parc_vol.to_bytes()))
-            write_desc(f'{parc_filename}.info.md', parcellation)
-        except Exception as e:
-            zipfile.writestr(f"{parc_filename or 'UNKNOWN_PARCELLATION'}.error.txt", str(e))
+                parc_vol = parcellation.get_map(space, siibra.MapType.LABELLED).fetch()
+                zipfile.writestr(parc_filename, gzip.compress(parc_vol.to_bytes()))
+                write_desc(f'{parc_filename}.info.md', parcellation)
+            except Exception as e:
+                zipfile.writestr(f"{parc_filename or 'UNKNOWN_PARCELLATION'}.error.txt", str(e))
 
 
         if region_id:
@@ -114,9 +126,3 @@ def download_all(space_id: str, parcellation_id: str, region_id: str=None):
 
 
     return str(zipfilename)
-
-class RequiredParamMissing(Exception): pass
-
-__all__ = [
-    "download_all"
-]

@@ -15,13 +15,16 @@ from api.server.util import SapiCustomRoute
 import os
 
 TAGS=["maps"]
+"""HTTP map tags"""
 
 router = APIRouter(route_class=SapiCustomRoute, tags=TAGS)
+"""HTTP map router"""
 
 @router.get("", response_model=MapModel)
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=get_map)
-def route_get_map(parcellation_id: str, space_id: str, map_type: MapType, *, func):
+def get_siibra_map(parcellation_id: str, space_id: str, map_type: MapType, *, func):
+    """Get map according to specification"""
     if func is None:
         raise HTTPException(500, f"func: None passsed")
     return func(parcellation_id, space_id, map_type)
@@ -32,6 +35,7 @@ Return a resampled template volume, based on labelled parcellation map.
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=get_resampled_map)
 def get_resampled_map(parcellation_id: str, space_id: str, *, func):
+    """Get resampled map according to specification"""
     if func is None:
         raise HTTPException(500, f"func: None passsed")
     
@@ -54,7 +58,8 @@ region_id MAY refer to ANY region on the region hierarchy, and a combined mask w
 """)
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=get_parcellation_labelled_map)
-def route_get_parcellation_labelled_map(parcellation_id: str, space_id: str, region_id: str=None, *, func):
+def get_parcellation_labelled_map(parcellation_id: str, space_id: str, region_id: str=None, *, func):
+    """Get labelled map according to specification"""
     if func is None:
         raise HTTPException(500, f"func: None passsed")
     
@@ -75,7 +80,8 @@ region_id MUST refer to leaf region on the region hierarchy.
 """)
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=get_region_statistic_map)
-def route_get_region_statistical_map(parcellation_id: str, space_id: str, region_id: str, *, func):
+def get_region_statistical_map(parcellation_id: str, space_id: str, region_id: str, *, func):
+    """Get statistical map according to specification"""
     if func is None:
         raise HTTPException(500, f"func: None passsed")
     
@@ -95,7 +101,8 @@ class StatisticModelInfo(BaseModel):
 @router.get("/statistical_map.info.json", response_model=StatisticModelInfo, tags=TAGS)
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=get_region_statistic_map_info)
-def route_get_region_statistical_map(parcellation_id: str, space_id: str, region_id: str, *, func):
+def get_region_statistical_map_metadata(parcellation_id: str, space_id: str, region_id: str, *, func):
+    """Get metadata of statistical map according to specification"""
     if func is None:
         raise HTTPException(500, f"func: None passsed")
     
@@ -105,7 +112,8 @@ def route_get_region_statistical_map(parcellation_id: str, space_id: str, region
 @router.get("/assign", response_model=DataFrameModel, tags=[TAGS])
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=assign_point)
-def router_assign_point(parcellation_id: str, space_id: str, point: str, assignment_type: str="statistical", sigma_mm: float=0., *, func):
+def get_assign_point(parcellation_id: str, space_id: str, point: str, assignment_type: str="statistical", sigma_mm: float=0., *, func):
+    """Perform assignment according to specification"""
     if func is None:
         raise HTTPException(500, f"func: None passsed")
     return func(parcellation_id, space_id, point, assignment_type, sigma_mm)

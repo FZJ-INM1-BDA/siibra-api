@@ -6,4 +6,6 @@ class _LocationModel(ConfigBaseModel, ABC, type="location"):
     type: str = Field(..., alias="@type")
     space: SiibraAtIdModel
 
-class LocationModel(_LocationModel): pass
+class LocationModel(_LocationModel):
+    """LocationModel"""
+    pass

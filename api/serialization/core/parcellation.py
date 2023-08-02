@@ -19,7 +19,15 @@ def get_brain_atlas_version_name(parc: Parcellation, space: Space) -> str:
 
 
 @serialize(Parcellation)
-def parcellation_to_model(parc: Parcellation, **kwargs):
+def parcellation_to_model(parc: Parcellation, **kwargs) -> SiibraParcellationModel:
+    """Serialize Parcellation into SiibraParcellationModel
+
+    Args:
+        parc: Parcellation
+    
+    Returns:
+        SiibraParcellationModel
+    """
     return SiibraParcellationModel(
         id=parc.id,
         name=parc.name,
@@ -64,7 +72,16 @@ def parcellation_to_model(parc: Parcellation, **kwargs):
 
 
 @serialize(ParcellationVersion)
-def parcversion_to_model(version: ParcellationVersion, **kwargs):
+def parcversion_to_model(version: ParcellationVersion, **kwargs) -> SiibraParcellationVersionModel:
+    """Serialize ParcellationVersion into SiibraParcellationVersionModel
+    
+    Args:
+        version: ParcellationVersion
+    
+    Returns:
+        SiibraParcellationVersionModel
+
+    """
     return SiibraParcellationVersionModel(
         name=version.name,
         deprecated=version.deprecated,

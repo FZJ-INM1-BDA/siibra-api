@@ -23,10 +23,13 @@ from api.siibra_api_config import REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, IS_CI
 _host = REDIS_HOST
 _password = REDIS_PASSWORD
 _port = REDIS_PORT
-# do not use in ci
-_is_ci = IS_CI
 
-class CacheRedis:
+_is_ci = IS_CI
+"""Do not use cache if IS_CI set via config"""
+
+class CacheGzipRedis:
+    """GzipRedis. This store gzip then b64 encode the gzipped result."""
+
     _r: Redis = None
     _is_connected = False
     _timer: RepeatTimer = None
@@ -36,7 +39,14 @@ class CacheRedis:
     def is_connected(self):
         return self._is_connected
 
-    def get_value(self, key):
+    def get_value(self, key: str) -> str:
+        """Get stored value acording to key
+        
+        Args:
+            key: str
+        
+        Returns:
+            stored value"""
         if _is_ci or not self.is_connected:
             return None
         bz64str = self._r.get(key)
@@ -44,19 +54,29 @@ class CacheRedis:
         if bz64str is None:
             return None
         
-        bz64str = CacheRedis.getstr(bz64str)
+        bz64str = CacheGzipRedis.getstr(bz64str)
         # if cached value 
         if bz64str[0] == "{" and bz64str[-1] == "}":
             self.set_value(key, bz64str)
             return bz64str
         try:
-            return CacheRedis.decode(bz64str)
+            return CacheGzipRedis.decode(bz64str)
         except:
             print(f"decoding key value error {key}, {bz64str}")
             return bz64str
     
     @staticmethod
     def getstr(val: Union[str, bytes]) -> str:
+        """Convert str|bytes into str
+        
+        Args:
+            val: value to be stringified
+        
+        Returns:
+            string in utf-8 encoding
+        
+        Raises:
+            Exception: neither str or bytes are provided"""
         if type(val) == str:
             return val
         if type(val) == bytes:
@@ -66,6 +86,16 @@ class CacheRedis:
 
     @staticmethod
     def getbytes(val: Union[str, bytes]) -> bytes:
+        """Convert str|bytes into bytes
+
+        Args:
+            val: value to be stringified
+        
+        Returns:
+            bytes
+        
+        Raises:
+            Exception: neither str or bytes are provided"""
         if type(val) == bytes:
             return val
         if type(val) == str:
@@ -75,14 +105,29 @@ class CacheRedis:
 
     @staticmethod
     def decode(val: Union[str, bytes]) -> str:
-        bz64 = CacheRedis.getbytes(val)
+        """decode gzipped b64 encoded string
+        
+        Args:
+            val: value to be decoded
+        
+        Returns:
+            decoded value"""
+        bz64 = CacheGzipRedis.getbytes(val)
         bz = base64.b64decode(bz64)
         b = gzip.decompress(bz)
         return b.decode("utf-8")
 
     @staticmethod
     def encode(val: Union[str, bytes]) -> str:
-        b = CacheRedis.getbytes(val)
+        """encode value into gzipped b64
+        
+        Args:
+            val: value to be encoded
+        
+        Returns:
+            string representing gzipped, b64 of the original string
+        """
+        b = CacheGzipRedis.getbytes(val)
         bz = gzip.compress(b, compresslevel=9)
         bz64 = base64.b64encode(bz)
         bz64str = bz64.decode("utf-8")
@@ -92,23 +137,24 @@ class CacheRedis:
         if _is_ci or not self.is_connected:
             return None
         
-        compressed_value = CacheRedis.encode(value)
+        compressed_value = CacheGzipRedis.encode(value)
         return self._r.set(key, compressed_value)
 
 
 def on_startup():
-    CacheRedis._r = Redis(host=_host, port=_port, password=_password)
+    """On startup call"""
+    CacheGzipRedis._r = Redis(host=_host, port=_port, password=_password)
     def _heartbeat():
         try:
-            CacheRedis._r.ping()
-            CacheRedis._is_connected = True
+            CacheGzipRedis._r.ping()
+            CacheGzipRedis._is_connected = True
         except Exception:
-            CacheRedis._is_connected = False
+            CacheGzipRedis._is_connected = False
 
-    CacheRedis._timer = RepeatTimer(5, _heartbeat)
-    CacheRedis._timer.start()
+    CacheGzipRedis._timer = RepeatTimer(5, _heartbeat)
+    CacheGzipRedis._timer.start()
 
 def terminate():
-    if CacheRedis._timer is not None:
-        CacheRedis._timer.cancel()
-
+    """On terminate call"""
+    if CacheGzipRedis._timer is not None:
+        CacheGzipRedis._timer.cancel()

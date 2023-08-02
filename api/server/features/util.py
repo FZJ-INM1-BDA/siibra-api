@@ -2,10 +2,16 @@ from functools import wraps
 from inspect import signature, iscoroutinefunction
 
 
-def v2_wrap_feature_category(feature_category: str):
+def wrap_feature_category(feature_category: str):
+    """Wrap feature category
+    
+    Args:
+        feature_category: string representing the type to be passed as keyword argument
+    """
     def outer(fn):
-        # if type is not present in original fn, do not add as kwarg
+        
         pass_type_flag = "type" in signature(fn).parameters
+        """if type is not present in original fn, do not add as kwarg"""
         
         if iscoroutinefunction(fn):
             @wraps(fn)

@@ -8,6 +8,7 @@ from typing import List, Optional
 from pydantic import Field
 
 class CommonCoordinateSpaceModel(_CommonCoordinateSpaceModel, ConfigBaseModel, type="space"):
+    """CommonCoordinateSpaceModel"""
     default_image: Optional[List[VolumeModel]] = Field(
         None,
         alias='defaultImage',

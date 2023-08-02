@@ -4,10 +4,23 @@ from functools import wraps, partial
 import inspect
 import asyncio
 import time
+from api.common.exceptions import (
+    FaultyRoleException,
+)
 
 def dummy(*args, **kwargs): pass
 
 def data_decorator(role: ROLE_TYPE):
+    """data decorator
+
+    Extensively used in api.common.data_handlers. Most of the business logic, including data fetching, serialization, etc.
+    
+    Args:
+        role: Role of this process
+    
+    Raises:
+        ImportError: Celery not installed, but role is set to either `worker` or `server`
+    """
     def outer_wrapper(fn):
         if role == "all":
             return fn
@@ -23,24 +36,29 @@ def data_decorator(role: ROLE_TYPE):
                 )
             except ImportError as e:
                 errmsg = f"For worker role, celery must be installed as a dep"
-                print(errmsg)
                 logger.critical(errmsg)
-                raise NotImplementedError(e)
-        # TODO, perhaps use 'all' as a fallback?
-        raise RuntimeError(f"role must be 'all', 'server' or 'worker', but it is {role}")
+                raise ImportError(errmsg) from e
+        raise FaultyRoleException(f"role must be 'all', 'server' or 'worker', but it is {role}")
     return outer_wrapper
 
-def router_decorator(role: ROLE_TYPE, *, func, queue_as_async=False, **kwargs):
-    """
-    queue_as_async: bool
-    if set, will return id of the task, instead of task itself. Query the id for result.
+def router_decorator(role: ROLE_TYPE, *, func, queue_as_async: bool=False, **kwargs):
+    """Sync Router Decorator
+
+    Args:
+        role: role of this process
+        func: function to be queued, or called, based on role
+        queue_as_async: if set, will return id of the task, instead of task itself. Query the id for result.
+    
+    Raises:
+        FaultyRoleException: if role is set to `all` and `queue_as_async` is set
+        FaultyRoleException: if role is set to other than `all` or `server`
     """
     def outer(fn):
 
         return_func = None
         if role == "all":
             if queue_as_async:
-                raise RuntimeError(f"If role is set to all, cannot queue_as_async")
+                raise FaultyRoleException(f"If role is set to all, cannot queue_as_async")
             return_func = func
         if role == "server":
             def sync_get_result(*args, **kwargs):
@@ -59,7 +77,7 @@ def router_decorator(role: ROLE_TYPE, *, func, queue_as_async=False, **kwargs):
                     return async_result.get()
             return_func = sync_get_result
         if return_func is None:
-            raise NotImplementedError(f"router_decorator can only be used in roles: all, server, but you selected {role}")
+            raise FaultyRoleException(f"router_decorator can only be used in roles: all, server, but you selected {role}")
         
         @wraps(fn)
         def inner(*args, **kwargs):
@@ -68,6 +86,16 @@ def router_decorator(role: ROLE_TYPE, *, func, queue_as_async=False, **kwargs):
     return outer
 
 def async_router_decorator(role: ROLE_TYPE, *, func):
+    """Async Router decorator
+
+    Args:
+        role: role of this process
+        func: function to be queued, or called, based on role
+    Raises:
+        AssertionError: if wrapped function is not async
+        TimeoutError: if the async process took more than 600sec to complete
+        FaultyRoleException: if role is set to other than `all` or `server`
+    """
     def outer(fn):
         assert inspect.iscoroutinefunction(fn), f"async_router_decorator can only be used to decorate async functions"
 
@@ -100,7 +128,7 @@ def async_router_decorator(role: ROLE_TYPE, *, func):
             return_func = async_get_result
 
         if return_func is None:
-            raise NotImplementedError(f"router_decorator can only be used in roles: all, server, but you selected {role}")
+            raise FaultyRoleException(f"router_decorator can only be used in roles: all, server, but you selected {role}")
         
         @wraps(fn)
         async def inner(*args, **kwargs):

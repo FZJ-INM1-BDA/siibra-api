@@ -8,6 +8,7 @@ from api.models._commons import (
 from api.models._retrieval.datasets import EbrainsDatasetModel
 
 class VolumeModel(ConfigBaseModel):
+    """VolumeModel"""
     name: str
     formats: List[str]
     
@@ -23,8 +24,10 @@ class VolumeModel(ConfigBaseModel):
 
     datasets: List[EbrainsDatasetModel]
 
-# exactly matches MapType.name in siibra
-# exported here to avoid dependency on siibra
+
 class MapType(str, Enum):
+    """MapType
+    
+    Exact match to MapType in siibra, to avoid dependency on siibra"""
     LABELLED = "LABELLED"
     STATISTICAL = "STATISTICAL"

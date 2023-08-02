@@ -2,6 +2,9 @@ from api.models._commons import ConfigBaseModel
 from pydantic import Field
 
 class NpArrayDataModel(ConfigBaseModel):
+    """deprecated
+    
+    NpArrayDataModel"""
     
     content_type: str = Field("application/octet-stream")
     content_encoding: str = Field("gzip; base64")

@@ -17,6 +17,7 @@ class AtlasType:
 
 
 class SiibraParcellationVersionModel(ConfigBaseModel, type="parcellation_version"):
+    """SiibraParcellationVersionModel"""
     name: str
     deprecated: Optional[bool]
     prev: Optional[SiibraAtIdModel]
@@ -24,6 +25,7 @@ class SiibraParcellationVersionModel(ConfigBaseModel, type="parcellation_version
 
 
 class SiibraParcellationModel(ConfigBaseModel, type="parcellation"):
+    """SiibraParcellationModel"""
     id: str = Field(..., alias="@id")
     type: str = Field(..., alias="@type")
     name: str

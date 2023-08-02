@@ -9,7 +9,9 @@ from api.models.openminds.SANDS.v3.atlas.parcellationEntity import (
 )
 from api.models._commons import ConfigBaseModel
 
-class ParcellationEntityVersionModel(_ParcellationEntityVersionModel, ConfigBaseModel, type="region"):pass
+class ParcellationEntityVersionModel(_ParcellationEntityVersionModel, ConfigBaseModel, type="region"):
+    """ParcellationEntityVersionModel"""
+    pass
 
 class UnitOfMeasurement:
     MILLIMETER = "https://openminds.ebrains.eu/instances/unitOfMeasurement/millimeter"

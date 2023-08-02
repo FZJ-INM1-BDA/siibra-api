@@ -9,6 +9,17 @@ from api.serialization.util import (
 )
 
 def get_species_data(species_str: str) -> SpeciesModel:
+    """Translating string to SpeciesModel
+    
+    Args:
+        species_str: species string
+    
+    Returns:
+        SpeciesModel
+    
+    Raises:
+        ValueError: If string does not decode
+    """
     if species_str == 'human':
         return SpeciesModel(
             type="https://openminds.ebrains.eu/controlledTerms/Species",
@@ -45,7 +56,16 @@ def get_species_data(species_str: str) -> SpeciesModel:
     raise ValueError(f'species with spec {species_str} cannot be decoded')
 
 @serialize(Atlas)
-def atlas_to_model(atlas: Atlas) -> SiibraAtlasModel:
+def atlas_to_model(atlas: Atlas, *, detail: bool=False, **kwargs) -> SiibraAtlasModel:
+    """Serializes an atlas into SiibraAtlasModel
+
+    Args:
+        atlas: Atlas
+        detail: detail flag
+    
+    Returns:
+        SiibraAtlasModel
+    """
     return SiibraAtlasModel(
         id=atlas.id,
         name=atlas.name,

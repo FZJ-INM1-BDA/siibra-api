@@ -5,7 +5,15 @@ from pandas import Series, DataFrame
 import numpy as np
 
 @serialize(MapIndex)
-def mapindex_to_model(mapindex: MapIndex, **kwargs):
+def mapindex_to_model(mapindex: MapIndex, **kwargs) -> MapIndexModel:
+    """Serialize MapIndex instance
+    
+    Args:
+        mapindex: instance to be serialized
+    
+    Returns:
+        MapIndexModel
+        """
     return MapIndexModel(
         volume=mapindex.volume or 0,
         label=mapindex.label,
@@ -24,8 +32,21 @@ serializable_dtype = (
 )
 
 @serialize(Series)
-def pdseries_to_model(series: Series, **kwargs):
-    assert series.dtype in serializable_dtype, f"series dtype {series.dtype} not in serializable type: {', '.join([v.__name__ for v in serializable_dtype])}"
+def pdseries_to_model(series: Series, **kwargs) -> SeriesModel:
+    """Serialize pandas series.
+    
+    Args:
+        series: Series instance to be serialized
+    
+    Returns:
+        SeriesModel
+    
+    Raises:
+        AssertionError: if dtype is not serializable
+    """
+
+    assert series.dtype in serializable_dtype, f"series dtype {series.dtype}" + \
+        "not in serializable type: {', '.join([v.__name__ for v in serializable_dtype])}"
     return SeriesModel(
         name=series.name,
         dtype=str(series.dtype),
@@ -34,8 +55,16 @@ def pdseries_to_model(series: Series, **kwargs):
     )
 
 @serialize(DataFrame)
-def pddf_to_model(df: DataFrame, detail=False, **kwargs):
-
+def pddf_to_model(df: DataFrame, detail: str=False, **kwargs) -> DataFrameModel:
+    """Serialize pandas dataframe
+    
+    Args:
+        df: DataFrame instance to be serialized
+        detail: defailt flag. If not set, data attribute will not be populated.
+    
+    Returns:
+        DataFrameModel
+    """
     return DataFrameModel(
         index=[instance_to_model(el) for el in df.index],
         columns=[instance_to_model(el) for el in df.columns],

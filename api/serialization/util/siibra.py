@@ -1,5 +1,7 @@
-# import all siibra imports here
-# if path changes in the future, we only need to change it here
+"""This module serves as the single import point of all siibra dependencies.
+
+If siibra paths changes in the future, they only need to be updated here."""
+
 
 from siibra.locations.location import Location
 from siibra.locations.point import Point
@@ -22,7 +24,7 @@ from siibra.features.tabular.cortical_profile import CorticalProfile
 from siibra.features.tabular.tabular import Tabular
 from siibra.features.image.image import Image
 
-from siibra.features.anchor import AnatomicalAnchor
+from siibra.features.anchor import AnatomicalAnchor, AnatomicalAssignment
 from siibra.features.dataset.ebrains import EbrainsDataFeature
 from siibra.features.connectivity import FunctionalConnectivity, StreamlineCounts, StreamlineLengths
 from siibra.features.tabular import (

@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, Response, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -7,6 +7,10 @@ from fastapi_pagination import add_pagination
 from fastapi_versioning import VersionedFastAPI
 import time
 import json
+from starlette.routing import Match, Route, Mount
+from starlette.types import Scope
+from typing import Union
+import inspect
 
 from .util import add_lazy_path
 
@@ -18,9 +22,9 @@ from .core import prefixed_routers as core_prefixed_routers
 from .volumes import prefixed_routers as volume_prefixed_routers
 from .compounds import prefixed_routers as compound_prefixed_routers
 from .features import router as feature_router
-from .metrics import metrics_endpoint, on_startup as metrics_on_startup, on_terminate as metrics_on_terminate
+from .metrics import prom_metrics_resp, on_startup as metrics_on_startup, on_terminate as metrics_on_terminate
 
-from api.common import logger, access_logger, InsufficientParameters, NotFound
+from api.common import logger, access_logger, NotFound, SapiBaseException
 from api.siibra_api_config import GIT_HASH
 
 siibra_version_header = "x-siibra-api-version"
@@ -36,7 +40,6 @@ for prefix_router in [*core_prefixed_routers, *volume_prefixed_routers, *compoun
 
 siibra_api.include_router(feature_router, prefix="/feature")
 
-# add pagination
 add_pagination(siibra_api)
 
 # Versioning for api endpoints
@@ -55,23 +58,22 @@ siibra_api.add_middleware(
     expose_headers=[siibra_version_header]
 )
 
-siibra_api.get("/metrics", include_in_schema=False)(
-    metrics_endpoint
-)
+@siibra_api.get("/metrics", include_in_schema=False)
+def get_metrics():
+    """Get prometheus metrics"""
+    return prom_metrics_resp()
+
 
 @siibra_api.get("/ready", include_in_schema=False)
-def ready():
-    # TODO ready probe
+def get_ready():
+    """Ready probe
+    
+    TODO: implement me"""
     return "ready"
 
 @siibra_api.get("/", include_in_schema=False)
-def home(request: Request):
-    """
-    Return the template for the siibra landing page.
-
-    :param request: fastApi Request object
-    :return: the rendered index.html template
-    """
+def get_home(request: Request):
+    """Return the template for the siibra landing page."""
     return templates.TemplateResponse(
         "index.html", context={
             "request": request,
@@ -110,21 +112,16 @@ do_not_logs = (
 
 
 @siibra_api.middleware("http")
-async def cache_response(request: Request, call_next):
-    """
-    Cache requests to redis, to improve response time.
-
-    Cached content is returned with a new response. In this NO other following middleware will be called
-
-    :param request: current request
-    :param call_next: next middleware function
-    :return: current response or a new Response with cached content
-    """
+async def middleware_cache_response(request: Request, call_next):
+    """Cache requests to redis, to improve response time."""
     cache_instance = get_cache_instance()
 
     cache_key = f"[{__version__}] {request.url.path}{str(request.url.query)}"
 
     auth_set = request.headers.get("Authorization") is not None
+
+    accept_header = request.headers.get("Accept")
+    query_code_flag = accept_header == "text/x-sapi-python"
 
     # bypass cache set if:
     # - method is not GET
@@ -132,8 +129,9 @@ async def cache_response(request: Request, call_next):
     # - if any part of request.url.path matches with do_not_cache_list
     # - if any keyword appears in do_no_cache_query_list
     bypass_cache_set = (
-        request.method.upper() != "GET" 
-        or auth_set 
+        request.method.upper() != "GET"
+        or auth_set
+        or query_code_flag
         or any (keyword in request.url.path for keyword in do_not_cache_list)
         or any (keyword in request.url.query for keyword in do_no_cache_query_list)
     )
@@ -213,18 +211,73 @@ async def cache_response(request: Request, call_next):
         headers=response_headers
     )
 
+def lookup_handler_fn(arm: Union[FastAPI, Mount, Route], scope: Scope):
+    """Lookup (recursively if necessary) to find the Route responsible for a given scope."""
+    if isinstance(arm, (FastAPI, Mount)):
+        for route in arm.routes:
+            match, child_scope = route.matches(scope)
+            if match == Match.FULL:
+                child_match = lookup_handler_fn(route, { **scope, **child_scope })
+                if child_match:
+                    return child_match
+    if isinstance(arm, Route):
+        match, child_scope = arm.matches(scope)
+        if match == Match.FULL:
+            return arm, child_scope
+    return None
+
 
 @siibra_api.middleware("http")
-async def add_version_header(request: Request, call_next):
-    """
-    Add the latest application version as a custom header
-    """
+async def middleware_get_python_code(request: Request, call_next):
+    """If Accept header is set to text/x-sapi-python, return the python code as plain text response."""
+    accept_header = request.headers.get("Accept")
+
+    if accept_header == "text/x-sapi-python":
+        returned_val = lookup_handler_fn(request.app, request.scope)
+        if not returned_val:
+            return PlainTextResponse("handler_fn lookup failed!", 404)
+        
+        arm, scope = returned_val
+        targets = [
+            closure.cell_contents
+            for closure in arm.endpoint.__closure__
+            if callable(closure.cell_contents) and closure.cell_contents.__name__ != arm.endpoint.__name__
+        ]
+        if len(targets) == 0:
+            return PlainTextResponse("not found", 404)
+        if len(targets) > 1:
+            return PlainTextResponse(f"Expecting a callable, got {len(targets)}", 401)
+        
+        target = targets[0]
+        ignore_keys = ("page", "size",)
+        args = {
+            key: value
+            for key, value in ({
+                **dict(request.query_params),
+                **scope.get("path_params")
+            }).items()
+            if key not in ignore_keys
+        }
+
+        header = f"""args={json.dumps(args, indent=2)}\n\n"""
+        footer = f"\n\n{target.__name__}(**args)\n\n"
+
+        return PlainTextResponse(f"{header}{inspect.getsource(target)}{footer}", 200, {
+            "Content-Type": "text/x-sapi-python"
+        })
+    
+    return await call_next(request)
+
+@siibra_api.middleware("http")
+async def middleware_add_version_header(request: Request, call_next):
+    """Add siibra-api version as a custom header"""
     response = await call_next(request)
     response.headers[siibra_version_header] = __version__
     return response
 
 @siibra_api.middleware("http")
-async def access_log(request: Request, call_next):
+async def middleware_access_log(request: Request, call_next):
+    """Access log middleware"""
     
     if request.url.path in do_not_logs:
         return await call_next(request)
@@ -254,17 +307,12 @@ async def access_log(request: Request, call_next):
         logger.critical(e)
 
 @siibra_api.exception_handler(RuntimeError)
-async def runtime_exception_handler(request: Request, exc: RuntimeError):
-    """
-    Handling RuntimeErrors.
+async def exception_runtime(request: Request, exc: RuntimeError) -> JSONResponse:
+    """Handling RuntimeErrors.
     Most of the RuntimeErrors are thrown by the siibra-python library when other Services are not responding.
     To be more resilient and not throw a simple and unplanned HTTP 500 response, this handler will return an HTTP 503
-    status.
-    :param request: Needed but fastapi definition, but not used
-    :param exc: RuntimeError
-    :return: HTTP status 503 with a custom message
-    """
-    logger.warning(f"Runtime Error: {str(exc)}")
+    status."""
+    logger.warning(f"Error handler: exception_runtime: {str(exc)}")
     return JSONResponse(
         status_code=503,
         content={
@@ -273,13 +321,16 @@ async def runtime_exception_handler(request: Request, exc: RuntimeError):
         },
     )
 
-@siibra_api.exception_handler(InsufficientParameters)
-def insufficent_argument(request: Request, exc: InsufficientParameters):
+@siibra_api.exception_handler(SapiBaseException)
+def exception_sapi(request: Request, exc: SapiBaseException):
+    """Handle sapi errors"""
+    logger.warning(f"Error handler: exception_sapi: {str(exc)}")
     raise HTTPException(400, str(exc))
 
 @siibra_api.exception_handler(Exception)
-async def validation_exception_handler(request: Request, exc: Exception):
-    logger.warning(f"Exception: {str(exc)}")
+async def exception_other(request: Request, exc: Exception):
+    """Catch all exception handler"""
+    logger.warning(f"Error handler: exception_other: {str(exc)}")
     return JSONResponse(
         status_code=500,
         content={
@@ -290,20 +341,23 @@ async def validation_exception_handler(request: Request, exc: Exception):
 
 @siibra_api.on_event("shutdown")
 def shutdown():
+    """On shutdown"""
     terminate()
     metrics_on_terminate()
 
 @siibra_api.on_event("startup")
 def startup():
+    """On startup"""
     on_startup()
     metrics_on_startup()
 
 import logging
-class EndpointFilter(logging.Filter):
+class EndpointLoggingFilter(logging.Filter):
+    """Custom logger filter. Do not log metrics, ready endpoint."""
     def filter(self, record: logging.LogRecord) -> bool:
         message = record.getMessage()
         return all(
             message.find(do_not_log) == -1 for do_not_log in do_not_logs
         )
 
-logging.getLogger("uvicorn.access").addFilter(EndpointFilter())
+logging.getLogger("uvicorn.access").addFilter(EndpointLoggingFilter())

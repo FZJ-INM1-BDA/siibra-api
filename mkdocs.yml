@@ -1,5 +1,5 @@
-site_name: Siibra-Api User Documentation
-
+site_name: Siibra-Api Developer Documentation
+repo_url: https://github.com/fzj-inm1-bda/siibra-api
 theme:
   name: 'material'
 
@@ -14,12 +14,59 @@ markdown_extensions:
   - footnotes
   - mdx_truly_sane_lists
 
+  # adopted from https://squidfunk.github.io/mkdocs-material/reference/code-blocks/#configuration
+  # allowing code highlighting
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+
+  # adopted from https://squidfunk.github.io/mkdocs-material/reference/diagrams/#configuration
+  # allow mermaid diagram rendering
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
 plugins:
   - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            paths:
+            - '.'
+            show_bases: false
+            show_root_heading: true
+            show_root_members_full_path: false
+            show_object_full_path : false
+            show_submodules: true
+            filters:
+            - "!kwargs"
 
 nav:
-  - Home: 'index.md'
-#  - System requirements: 'requirements.md'
-  - User documentation: 'use-cases.md'
-#  - Release notes:
-#      - v1.0.0: 'releases/v1.0.0.md'
+  - home: 'index.md'
+  - getting started:
+    - requirements: 'requirements.md'
+    - installation: 'installation.md'
+    - run: 'run.md'
+  - architecture: 
+    - 'overview': 'architecture.overview.md'
+    - 'architecture: caching': 'architecture.caching.md'
+    - 'architecture: throughput': 'architecture.throughput.md'
+  - develop: 'develop.md'
+  - api references:
+    - api.siibra_api_config: 'api.siibra_api_config.md'
+    - api.server: 'api.server.md'
+    - api.worker: 'api.worker.md'
+    - api.models: 'api.models.md'
+    - api.serialization: 'api.serialization.md'
+    - api.common: 'api.common.md'
+    - api.common.data_handlers: 'api.common.data_handlers.md' 
+
+watch:
+  - docs
+  - api

@@ -1,3 +1,10 @@
+"""This module houses the configuration of siibra-api.
+
+This should be the only place where user can influence the configuration of siibra-api.
+
+As siibra-api will attempt to load this module, user can either configure siibra-api with environment variables,
+or overwrite the this file directly (with docker volume mount, for example)."""
+
 import os
 from pathlib import Path
 import re
@@ -31,18 +38,28 @@ _config_hash = SIIBRA_USE_CONFIGURATION and get_config_dir_short_hash(SIIBRA_USE
 with open(Path(__file__).parent / 'VERSION', 'r') as fp:
     __version__ = fp.read()
 __version__ = (_config_hash and f"c.{_config_hash}") or __version__
+"""siibra api version"""
 
 NAME_SPACE = os.environ.get("SIIBRA_API_NAMESPACE", "siibraapi")
+"""NAME_SPACE"""
 
 ROLE = os.environ.get("SIIBRA_API_ROLE", "all")
+"""ROLE"""
 
 CELERY_CHANNEL = os.environ.get("SIIBRA_API_CELERY_CHANNEL", f"siibra-api-{__version__}")
+"""CELERY_CHANNEL"""
 
 REDIS_HOST = os.getenv("SIIBRA_API_REDIS_HOST") or os.getenv("SIIBRA_REDIS_SERVICE_HOST") or os.getenv("REDIS_SERVICE_HOST") or os.getenv("REDIS_HOST") or "localhost"
+"""REDIS_HOST"""
+
 REDIS_PORT = os.getenv("SIIBRA_API_REDIS_PORT") or os.getenv("SIIBRA_REDIS_SERVICE_PORT") or os.getenv("REDIS_SERVICE_PORT") or os.getenv("REDIS_PORT") or 6379
+"""REDIS_PORT"""
+
 REDIS_PASSWORD = os.getenv("SIIBRA_API_REDIS_PASSWORD")
+"""REDIS_PASSWORD"""
 
 QUEUE_PREFIX = f"{__version__}.{NAME_SPACE}"
+"""QUEUE_PREFIX"""
 
 _queues = [
     "core",
@@ -52,6 +69,7 @@ _queues = [
 ]
 
 class CELERY_CONFIG:
+    """CELERY_CONFIG"""
     broker_url=os.getenv("SIIBRA_API_CELERY_BROKER", f"redis://{(':' + REDIS_PASSWORD + '@') if REDIS_PASSWORD else ''}{REDIS_HOST}:{REDIS_PORT}")
     result_backend=os.getenv("SIIBRA_API_CELERY_RESULT", f"redis://{(':' + REDIS_PASSWORD + '@') if REDIS_PASSWORD else ''}{REDIS_HOST}:{REDIS_PORT}")
     result_expires=60
@@ -114,3 +132,4 @@ except Exception as e:
     """)
 
 GIT_HASH = os.getenv("GIT_HASH", "unknown-hash")
+"""GIT_HASH"""
