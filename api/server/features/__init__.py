@@ -12,7 +12,9 @@ import re
 from api.server import FASTAPI_VERSION
 from api.siibra_api_config import ROLE
 from api.common import router_decorator, async_router_decorator
-from api.common.data_handlers.features.types import all_feature_types, all_features, single_feature, get_single_feature_from_id
+from api.common.data_handlers.features.types import (
+    all_feature_types, all_features, single_feature, get_single_feature_from_id, get_single_feature_plot_from_id
+)
 from api.models.features._basetypes.regional_connectivity import SiibraRegionalConnectivityModel
 from api.models.features._basetypes.cortical_profiles import SiibraCorticalProfileModel
 from api.models.features.molecular.receptor_density_fingerprint import (
@@ -27,6 +29,7 @@ from api.models.features._basetypes.volume_of_interest import (
 from api.models.features.dataset.ebrains import (
     SiibraEbrainsDataFeatureModel
 )
+from api.common.exceptions import NotFound
 from api.server.util import SapiCustomRoute
 from .util import wrap_feature_category
 from typing import List, Dict
@@ -283,3 +286,29 @@ async def get_single_feature(feature_id: str, request: Request, func):
         return await func(feature_id=feature_id, **dict(request.query_params))
     except Exception as e:
         raise HTTPException(400, detail=str(e))
+
+class PlotlyTemplate(Enum):
+    plotly="plotly"
+    plotly_white="plotly_white"
+    plotly_dark="plotly_dark"
+    ggplot2="ggplot2"
+    seaborn="seaborn"
+    simple_white="simple_white"
+    none="none"
+
+
+@router.get("/{feature_id:lazy_path}/plotly", description="""
+Get the plotly specification of the plot.
+            
+For the appearance of the template, see [https://plotly.com/python/templates/](https://plotly.com/python/templates/)
+""")
+@async_router_decorator(ROLE, func=get_single_feature_plot_from_id)
+async def get_single_feature_plot(feature_id: str, request: Request, func, template: PlotlyTemplate=PlotlyTemplate.plotly):
+    """Get plotly spec from feature_id"""
+    try:
+        kwargs = {**dict(request.query_params), 'template': template.value if isinstance(template, PlotlyTemplate) else template}
+        return await func(feature_id=feature_id, **kwargs)
+    except NotFound as e:
+        raise HTTPException(404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(500, detail=str(e))

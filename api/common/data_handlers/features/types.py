@@ -43,6 +43,25 @@ def get_single_feature_from_id(feature_id: str, **kwargs):
     else:
         return instance_to_model(feature, detail=True, **kwargs).dict()
 
+@data_decorator(ROLE)
+def get_single_feature_plot_from_id(feature_id: str, template="plotly", **kwargs):
+    import siibra
+    from plotly.io import to_json
+    import json
+
+    try:
+        feature = siibra.features.Feature.get_instance_by_id(feature_id)
+    except Exception as e:
+        raise NotFound from e
+
+    try:
+        plotly_fig = feature.plot(backend="plotly", template=template)
+        json_str = to_json(plotly_fig)
+        return json.loads(json_str)
+
+    except NotImplementedError:
+        raise NotFound(f"feature with id {feature_id} is found, but the plot function has not been implemented")
+
 
 def extract_concept(*, space_id: str=None, parcellation_id: str=None, region_id: str=None, **kwargs):
     import siibra

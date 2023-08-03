@@ -179,6 +179,27 @@ async def middleware_cache_response(request: Request, call_next):
         response_content_type = response.headers.get("content-type")
         response_headers = response.headers
         content = await read_bytes(response.body_iterator)
+
+        if response.status_code == 404:
+            status_code = 404
+            response_content_type = "application/json"
+            content = json.dumps({
+                "error": True,
+                status_code_key: status_code,
+                "message": content.decode()
+            }).encode("utf-8")
+            response_headers = extra_headers
+
+        elif response.status_code >= 400:
+            status_code = response.status_code
+            response_content_type = None
+            content = json.dumps({
+                "error": True,
+                status_code_key: status_code,
+                "message": content.decode()
+            }).encode("utf-8")
+            response_headers = extra_headers
+        
     except NotFound as e:
         status_code = 404
         response_content_type = "application/json"
