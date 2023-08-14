@@ -16,7 +16,7 @@ from .util import add_lazy_path
 
 add_lazy_path()
 
-from . import __version__
+from . import __version__, cache_header
 from .cache import get_instance as get_cache_instance, terminate, on_startup
 from .core import prefixed_routers as core_prefixed_routers
 from .volumes import prefixed_routers as volume_prefixed_routers
@@ -138,9 +138,9 @@ async def middleware_cache_response(request: Request, call_next):
 
     # bypass cache read if:
     # - bypass cache set
-    # - x-bypass-fast-api-cache is present
+    # - x-bypass-fastapi-cache is present
     bypass_cache_read = (
-        request.headers.get("x-bypass-fast-api-cache")
+        request.headers.get("x-bypass-fastapi-cache")
     ) or bypass_cache_set
 
     # starlette seems to normalize header to lower case
@@ -167,7 +167,7 @@ async def middleware_cache_response(request: Request, call_next):
             status_code=status_code,
             headers={
                 "content-type": "application/json",
-                "x-fastapi-cache": "hit",
+                cache_header: "hit",
                 **extra_headers,
             }
         )
@@ -221,10 +221,7 @@ async def middleware_cache_response(request: Request, call_next):
         
 
     # conditions when do not cache
-    if not (
-            bypass_cache_set or
-            response_content_type != "application/json"
-    ):
+    if (not bypass_cache_set) and response_content_type == "application/json":
         cache_instance.set_value(cache_key, content)
     return Response(
         content,
@@ -310,7 +307,7 @@ async def middleware_access_log(request: Request, call_next):
         access_logger.info(f"{request.method.upper()} {str(request.url)}", extra={
             "resp_status": str(resp.status_code),
             "process_time_ms": str(round(process_time)),
-            "hit_cache": "cache_hit" if resp.headers.get("x-fastapi-cache") == "hit" else "cache_miss"
+            "hit_cache": "cache_hit" if resp.headers.get(cache_header) == "hit" else "cache_miss"
         })
         return resp
     

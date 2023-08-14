@@ -58,7 +58,7 @@ objects:
           - name: SIIBRA_API_LOG_DIR
             value: ${LOG_VOLUME_MOUNT}
           - name: SIIBRA_API_NAMESPACE
-            value: ${SIIBRA_API_NAMESPACE}
+            value: siibraapi${FLAVOR}
           envFrom:
           - configMapRef:
               name: siibra-api-config
@@ -94,14 +94,6 @@ parameters:
 - name: SIIBRA_API_SERVER_IMAGE
   description: Docker image for the worker
   required: true
-- name: SIIBRA_API_NAMESPACE
-  description: |
-    Namespace.
-    For k8s and metrics related reasons, must be of the pattern [a-zA-Z0-9-]+
-    For metrics related reason, must be of patter [a-zA-Z0-9_]+
-    So... use [a-zA-Z0-9]+ only!
-    Try to stick to siibraapi{FLAVOR}, e.g. siibraapilatest
-
 - name: LOG_VOLUME_WORKER_VOLUME_NAME
   description: Randomly generated volume name. Do not overwrite
   from: '[a-z0-9]{8}'

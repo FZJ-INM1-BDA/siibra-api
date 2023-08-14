@@ -82,7 +82,7 @@
 #     ("put",[], False),
 #     ("option",[], False),
 #     ("range",[], False),
-#     ("get",[(b"x-bypass-fast-api-cache", b"true")], False)
+#     ("get",[(b"x-bypass-fastapi-cache", b"true")], False)
 # ])
 
 # @pytest.mark.parametrize(*test_header_params)

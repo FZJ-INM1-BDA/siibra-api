@@ -1,7 +1,7 @@
 from api.common import data_decorator, get_filename, NotFound
 from api.models.volumes.volume import MapType
 from api.siibra_api_config import ROLE
-from typing import Union, Dict, List
+from typing import Union, Dict, Tuple
 
 @data_decorator(ROLE)
 def get_map(parcellation_id: str, space_id: str, maptype: Union[MapType, str]) -> Dict:
@@ -45,11 +45,21 @@ def get_map(parcellation_id: str, space_id: str, maptype: Union[MapType, str]) -
     ).dict()
 
 
-def cache_region_statistic_map(parcellation_id: str, region_id: str, space_id: str):
+def cache_region_statistic_map(parcellation_id: str, region_id: str, space_id: str) -> Tuple[str, bool]:
+    """Retrieve and save regional statistical map (if necessary), and then return the path of the map.
+
+    Args:
+        parcellation_id: lookup id of the parcellation of the map
+        region_id: lookup id of the region of the map
+        space_id: lookup id of the space of the map
+    
+    Returns:
+        path to statistical map, if a cached file is returned
+    """
     import os
     full_filename = get_filename("statistical_map", parcellation_id, region_id, space_id, ext=".nii.gz")
     if os.path.isfile(full_filename):
-        return full_filename
+        return full_filename, True
 
     import siibra
     import nibabel as nib
@@ -73,15 +83,35 @@ def cache_region_statistic_map(parcellation_id: str, region_id: str, space_id: s
             "region_id": region_id,
             "space_id": space_id,
         }, fp=fp, indent="\t")
-    return full_filename
+    return full_filename, False
 
 @data_decorator(ROLE)
 def get_region_statistic_map(parcellation_id: str, region_id: str, space_id: str):
+    """Retrieve and save regional statistical map (if necessary), and then return the path of the map.
+
+    Args:
+        parcellation_id: lookup id of the parcellation of the map
+        region_id: lookup id of the region of the map
+        space_id: lookup id of the space of the map
+    
+    Returns:
+        path to statistical map, if a cached file is returned
+    """
     return cache_region_statistic_map(parcellation_id, region_id, space_id)
 
 @data_decorator(ROLE)
 def get_region_statistic_map_info(parcellation_id: str, region_id: str, space_id: str):
-    full_filename = cache_region_statistic_map(parcellation_id, region_id, space_id)
+    """Retrieve and save regional statistical map (if necessary), and then return the path of the map.
+
+    Args:
+        parcellation_id: lookup id of the parcellation of the map
+        region_id: lookup id of the region of the map
+        space_id: lookup id of the space of the map
+    
+    Returns:
+        dict of min an max of the statistical map
+    """
+    full_filename, _cache_flag = cache_region_statistic_map(parcellation_id, region_id, space_id)
     
     import nibabel as nib
     import numpy as np
@@ -95,10 +125,20 @@ def get_region_statistic_map_info(parcellation_id: str, region_id: str, space_id
 
 @data_decorator(ROLE)
 def get_parcellation_labelled_map(parcellation_id: str, space_id: str, region_id:str=None):
+    """Retrieve and save labelled map / regional mask (if necessary), and then return the path of the map.
+
+    Args:
+        parcellation_id: lookup id of the parcellation of the map
+        region_id: lookup id of the region of the map
+        space_id: lookup id of the space of the map
+    
+    Returns:
+        path to labelled map/regional mask, if a cached file is returned
+    """
     import os
     full_filename = get_filename("labelled_map", parcellation_id, space_id, region_id if region_id else "", ext=".nii.gz")
     if os.path.isfile(full_filename):
-        return full_filename
+        return full_filename, True
 
     import siibra
     import nibabel as nib
@@ -125,7 +165,7 @@ def get_parcellation_labelled_map(parcellation_id: str, space_id: str, region_id
             "space_id": space_id,
             "region_id": region_id,
         }, fp=fp, indent="\t")
-    return full_filename
+    return full_filename, False
 
 @data_decorator(ROLE)
 def assign_point(parcellation_id: str, space_id: str, point: str, assignment_type: str, sigma_mm: float):
@@ -142,10 +182,19 @@ def assign_point(parcellation_id: str, space_id: str, point: str, assignment_typ
 
 @data_decorator(ROLE)
 def get_resampled_map(parcellation_id: str, space_id: str):
+    """Retrieve and save a labelled map, resampled in space (if necessary), and then return the path of the map.
+
+    Args:
+        parcellation_id: lookup id of the parcellation of the map
+        space_id: lookup id of the target space of the sampled map
+    
+    Returns:
+        path to statistical map, if a cached file is returned
+    """
     import os
     full_filename = get_filename("resampled_map", parcellation_id, space_id, ext=".nii.gz")
     if os.path.isfile(full_filename):
-        return full_filename
+        return full_filename, True
     
     import siibra
     import nibabel as nib
@@ -164,4 +213,4 @@ def get_resampled_map(parcellation_id: str, space_id: str):
             "parcellation_id": parcellation_id,
             "space_id": space_id,
         }, indent="\t", fp=fp)
-    return full_filename
+    return full_filename, False

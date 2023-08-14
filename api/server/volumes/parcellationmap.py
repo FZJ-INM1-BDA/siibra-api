@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 from fastapi_versioning import version
 
-from api.server import FASTAPI_VERSION
+from api.server import FASTAPI_VERSION, cache_header
 from api.siibra_api_config import ROLE
 from api.models.volumes.parcellationmap import MapModel
 from api.models.volumes.volume import MapType
@@ -44,7 +44,9 @@ def get_resampled_map(parcellation_id: str, space_id: str, *, func):
         "content-disposition": f'attachment; filename="labelled_map.nii.gz"'
     }
 
-    full_filename = func(parcellation_id=parcellation_id, space_id=space_id)
+    full_filename, cache_flag = func(parcellation_id=parcellation_id, space_id=space_id)
+    if cache_flag:
+        headers[cache_header] = "hit"
     assert os.path.isfile(full_filename), f"file saved incorrectly"
     return FileResponse(full_filename, headers=headers)
 
@@ -68,7 +70,9 @@ def get_parcellation_labelled_map(parcellation_id: str, space_id: str, region_id
         "content-disposition": f'attachment; filename="labelled_map.nii.gz"'
     }
 
-    full_filename = func(parcellation_id, space_id, region_id)
+    full_filename, cache_flag = func(parcellation_id, space_id, region_id)
+    if cache_flag:
+        headers[cache_header] = "hit"
     assert os.path.isfile(full_filename), f"file saved incorrectly"
     return FileResponse(full_filename, headers=headers)
 
@@ -90,7 +94,9 @@ def get_region_statistical_map(parcellation_id: str, space_id: str, region_id: s
         "content-disposition": f'attachment; filename="statistical_map.nii.gz"'
     }
 
-    full_filename = func(parcellation_id, region_id, space_id)
+    full_filename, cache_flag = func(parcellation_id, region_id, space_id)
+    if cache_flag:
+        headers[cache_header] = "hit"
     assert os.path.isfile(full_filename), f"file saved incorrectly"
     return FileResponse(full_filename, headers=headers)
 

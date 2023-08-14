@@ -39,7 +39,7 @@ objects:
         containers:
         - env:
           - name: SIIBRA_CACHEDIR
-            value: ${SHARED_VOLUME_MOUNT}
+            value: ${SHARED_VOLUME_MOUNT}/${SIIBRA_API_VERSION}
           - name: SIIBRA_API_LOG_DIR
             value: ${LOG_VOLUME_MOUNT}
           - name: SIIBRA_API_NAMESPACE
@@ -59,24 +59,22 @@ objects:
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           volumeMounts:
-            - mountPath: ${SHARED_VOLUME_MOUNT}
-              name: volume-${SHARED_VOLUME_WORKER_VOLUME_NAME}
-            - mountPath: ${LOG_VOLUME_MOUNT}
-              name: volume-${LOG_VOLUME_WORKER_VOLUME_NAME}
-
+          - mountPath: ${SHARED_VOLUME_MOUNT}
+            name: volume-${SHARED_VOLUME_WORKER_VOLUME_NAME}
+          - mountPath: ${LOG_VOLUME_MOUNT}
+            name: volume-${LOG_VOLUME_WORKER_VOLUME_NAME}
         dnsPolicy: ClusterFirst
         restartPolicy: Always
         schedulerName: default-scheduler
         securityContext: {}
         terminationGracePeriodSeconds: 30
         volumes:
-          - name: volume-${SHARED_VOLUME_WORKER_VOLUME_NAME}
-            persistentVolumeClaim:
-              claimName: siibra-shared-storage-2
-          - name: volume-${LOG_VOLUME_WORKER_VOLUME_NAME}
-            persistentVolumeClaim:
-              claimName: log-volume
-
+        - name: volume-${SHARED_VOLUME_WORKER_VOLUME_NAME}
+          persistentVolumeClaim:
+            claimName: siibra-shared-storage-2
+        - name: volume-${LOG_VOLUME_WORKER_VOLUME_NAME}
+          persistentVolumeClaim:
+            claimName: log-volume
 parameters:
 - name: SIIBRA_API_WORKER_IMAGE
   description: Docker image for the worker
