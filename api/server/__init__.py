@@ -10,5 +10,5 @@ The names of functions will be reflective if their purpose:
 
 """
 
-from .const import __version__, FASTAPI_VERSION
+from .const import __version__, FASTAPI_VERSION, cache_header
 from .api import siibra_api as api

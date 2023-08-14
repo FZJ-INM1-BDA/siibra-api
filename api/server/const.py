@@ -5,3 +5,5 @@ FASTAPI_VERSION = (3, 0)
 """siibra-api version"""
 
 PrefixedRouter = namedtuple("PrefixedRouter", ["prefix", "router"])
+
+cache_header = "x-fastapi-cache"
