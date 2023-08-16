@@ -5,6 +5,7 @@ from api.models.locations.point import (
     CoordinatePointModel,
 )
 from api.models.core.region import ParcellationEntityVersionModel
+from api.models.core.parcellation import SiibraParcellationModel
 from pydantic import Field
 
 class SiibraRegionAssignmentQual(ConfigBaseModel):
@@ -18,8 +19,8 @@ class SiibraRegionAssignmentQual(ConfigBaseModel):
 class SiibraAnatomicalAssignmentModel(ConfigBaseModel, type="anatomical_assignment"):
     """SiibraAnatomicalAssignmentModel"""
     qualification: str
-    query_structure: Union[LocationModel, ParcellationEntityVersionModel]
-    assigned_structure: Union[LocationModel, ParcellationEntityVersionModel]
+    query_structure: Union[LocationModel, ParcellationEntityVersionModel, SiibraParcellationModel]
+    assigned_structure: Union[LocationModel, ParcellationEntityVersionModel, SiibraParcellationModel]
     explanation: str
 
 
