@@ -7,6 +7,9 @@ import time
 from api.common.exceptions import (
     FaultyRoleException,
 )
+from typing import Dict, Callable, Tuple
+
+name_to_fns_map: Dict[str, Tuple[Callable, Callable]] = {}
 
 def dummy(*args, **kwargs): pass
 
@@ -55,6 +58,11 @@ def router_decorator(role: ROLE_TYPE, *, func, queue_as_async: bool=False, **kwa
     """
     def outer(fn):
 
+        global name_to_fns_map
+
+        assert fn.__name__ not in name_to_fns_map, f"{fn.__name__} already in name_to_fns_map"
+        name_to_fns_map[fn.__name__] = (fn, func)
+
         return_func = None
         if role == "all":
             if queue_as_async:
@@ -97,6 +105,11 @@ def async_router_decorator(role: ROLE_TYPE, *, func):
         FaultyRoleException: if role is set to other than `all` or `server`
     """
     def outer(fn):
+        global name_to_fns_map
+
+        assert fn.__name__ not in name_to_fns_map, f"{fn.__name__} already in name_to_fns_map"
+        name_to_fns_map[fn.__name__] = (fn, func)
+        
         assert inspect.iscoroutinefunction(fn), f"async_router_decorator can only be used to decorate async functions"
 
         return_func = None

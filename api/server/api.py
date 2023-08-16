@@ -7,10 +7,6 @@ from fastapi_pagination import add_pagination
 from fastapi_versioning import VersionedFastAPI
 import time
 import json
-from starlette.routing import Match, Route, Mount
-from starlette.types import Scope
-from typing import Union
-import inspect
 
 from .util import add_lazy_path
 
@@ -23,9 +19,10 @@ from .volumes import prefixed_routers as volume_prefixed_routers
 from .compounds import prefixed_routers as compound_prefixed_routers
 from .features import router as feature_router
 from .metrics import prom_metrics_resp, on_startup as metrics_on_startup, on_terminate as metrics_on_terminate
+from .code_snippet import get_sourcecode
 
-from api.common import logger, access_logger, NotFound, SapiBaseException
-from api.siibra_api_config import GIT_HASH
+from ..common import logger, access_logger, NotFound, SapiBaseException, name_to_fns_map
+from ..siibra_api_config import GIT_HASH
 
 siibra_version_header = "x-siibra-api-version"
 
@@ -229,20 +226,6 @@ async def middleware_cache_response(request: Request, call_next):
         headers=response_headers
     )
 
-def lookup_handler_fn(arm: Union[FastAPI, Mount, Route], scope: Scope):
-    """Lookup (recursively if necessary) to find the Route responsible for a given scope."""
-    if isinstance(arm, (FastAPI, Mount)):
-        for route in arm.routes:
-            match, child_scope = route.matches(scope)
-            if match == Match.FULL:
-                child_match = lookup_handler_fn(route, { **scope, **child_scope })
-                if child_match:
-                    return child_match
-    if isinstance(arm, Route):
-        match, child_scope = arm.matches(scope)
-        if match == Match.FULL:
-            return arm, child_scope
-    return None
 
 
 @siibra_api.middleware("http")
@@ -251,38 +234,11 @@ async def middleware_get_python_code(request: Request, call_next):
     accept_header = request.headers.get("Accept")
 
     if accept_header == "text/x-sapi-python":
-        returned_val = lookup_handler_fn(request.app, request.scope)
-        if not returned_val:
-            return PlainTextResponse("handler_fn lookup failed!", 404)
-        
-        arm, scope = returned_val
-        targets = [
-            closure.cell_contents
-            for closure in arm.endpoint.__closure__
-            if callable(closure.cell_contents) and closure.cell_contents.__name__ != arm.endpoint.__name__
-        ]
-        if len(targets) == 0:
-            return PlainTextResponse("not found", 404)
-        if len(targets) > 1:
-            return PlainTextResponse(f"Expecting a callable, got {len(targets)}", 401)
-        
-        target = targets[0]
-        ignore_keys = ("page", "size",)
-        args = {
-            key: value
-            for key, value in ({
-                **dict(request.query_params),
-                **scope.get("path_params")
-            }).items()
-            if key not in ignore_keys
-        }
-
-        header = f"""args={json.dumps(args, indent=2)}\n\n"""
-        footer = f"\n\n{target.__name__}(**args)\n\n"
-
-        return PlainTextResponse(f"{header}{inspect.getsource(target)}{footer}", 200, {
-            "Content-Type": "text/x-sapi-python"
-        })
+        try:
+            src = get_sourcecode(request)
+            return PlainTextResponse(src)
+        except NotFound as e:
+            return PlainTextResponse(str(e), 404)
     
     return await call_next(request)
 

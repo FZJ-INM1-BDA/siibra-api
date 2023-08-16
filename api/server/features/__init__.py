@@ -155,7 +155,7 @@ CortialProfileModels = SiibraCorticalProfileModel
 @version(*FASTAPI_VERSION)
 @wrap_feature_category("CorticalProfile")
 @async_router_decorator(ROLE, func=partial(all_features, space_id=None))
-async def get_all_connectivity_features(parcellation_id: str, region_id: str, type: Optional[str]=None, func=lambda:[]):
+async def get_all_corticalprofile_features(parcellation_id: str, region_id: str, type: Optional[str]=None, func=lambda:[]):
     """Get all CorticalProfile features"""
     type = str(type) if type else None
     return paginate(
@@ -166,7 +166,7 @@ async def get_all_connectivity_features(parcellation_id: str, region_id: str, ty
 @version(*FASTAPI_VERSION)
 @wrap_feature_category("CorticalProfile")
 @async_router_decorator(ROLE, func=partial(single_feature, space_id=None))
-async def get_single_connectivity_feature(parcellation_id: str, region_id: str, feature_id: str, type: Optional[str]=None, func=lambda:None):
+async def get_single_corticalprofile_feature(parcellation_id: str, region_id: str, feature_id: str, type: Optional[str]=None, func=lambda:None):
     """Get a single CorticalProfile feature"""
     type = str(type) if type else None
     return await func(parcellation_id=parcellation_id, region_id=region_id, feature_id=feature_id, type=type)
