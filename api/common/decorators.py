@@ -133,6 +133,10 @@ def async_router_decorator(role: ROLE_TYPE, *, func):
                 while True:
                     if async_result.status == "SUCCESS":
                         return async_result.get()
+                    if async_result.status == "FAILURE":
+                        # on failure, getting the result will raise the exception
+                        async_result.get()
+                        raise Exception("unknown exception")
                     if (time.time() - timestamp) > 600:
                         async_result.revoke()
                         raise TimeoutError
