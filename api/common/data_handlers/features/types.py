@@ -1,4 +1,4 @@
-from api.common import data_decorator, InsufficientParameters, NotFound, AmbiguousParameters
+from api.common import data_decorator, InsufficientParameters, NotFound, AmbiguousParameters, logger
 from api.siibra_api_config import ROLE
 from typing import List, Type, Any, Dict
 
@@ -85,7 +85,19 @@ def get_all_all_features(*, space_id: str=None, parcellation_id: str=None, regio
     import siibra
     from api.serialization.util import instance_to_model
     concept = extract_concept(space_id=space_id, parcellation_id=parcellation_id, region_id=region_id)
-    return [instance_to_model(f, **kwargs).dict() for f in siibra.features.get(concept, siibra.features.Feature)]
+    features = siibra.features.get(concept, siibra.features.Feature)
+
+    re_features = []
+    for f in features:
+        try:
+            re_features.append(
+                instance_to_model(f, **kwargs).dict()
+            )
+        except Exception as e:
+            err_str = str(e).replace('\n', ' ')
+            logger.warning(f"feature failed to be serialized. Params: space_id={space_id}, parcellation_id={parcellation_id}, region_id={region_id}. feature id: {f.id}. error: {err_str}")
+    return re_features
+
 
 def _get_all_features(*, space_id: str, parcellation_id: str, region_id: str, type: str, bbox: str=None, **kwargs):
     import siibra
@@ -118,7 +130,18 @@ def all_features(*, space_id: str, parcellation_id: str, region_id: str, type: s
     from api.serialization.util import instance_to_model
 
     features = _get_all_features(space_id=space_id, parcellation_id=parcellation_id, region_id=region_id, type=type, **kwargs)
-    return [instance_to_model(f, detail=False).dict() for f in features]
+
+    re_features = []
+    for f in features:
+        try:
+            re_features.append(
+                instance_to_model(f, detail=False).dict()
+            )
+        except Exception as e:
+            err_str = str(e).replace('\n', ' ')
+            logger.warning(f"feature failed to be serialized. Params: space_id={space_id}, parcellation_id={parcellation_id}, region_id={region_id}. feature id: {f.id}, error: {err_str}")
+    return re_features
+
 
 @data_decorator(ROLE)
 def single_feature(*, space_id: str, parcellation_id: str, region_id: str, feature_id: str, type: str, **kwargs):
