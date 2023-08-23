@@ -10,7 +10,7 @@ class _FeatureModel(ConfigBaseModel, ABC, type="feature"):
     see [api.models._commons.ConfigBaseModel][]"""
     
     id: str
-    modality: str
+    modality: Optional[str] # ebrains dataset do not have modality populated
     category: str
     description: str
     name: str
