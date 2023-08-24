@@ -36,6 +36,8 @@ jobs:
           tag_suffix: '-server'
 
     steps:
+    - name: "Sanity check github.ref"
+      run: echo GITHUB_REF - $GITHUB_REF - github.ref - ${{ github.ref }}
     - uses: actions/checkout@v3
     - name: "Build docker image"
       run: |
