@@ -26,6 +26,9 @@ jobs:
     services:
       redis:
         image: redis
+        ports:
+          # Opens tcp port 6379 on the host and service container
+          - 6379:6379
     env:
       SIIBRA_API_REDIS_HOST: redis
       SIIBRA_API_REDIS_PORT: 6379
