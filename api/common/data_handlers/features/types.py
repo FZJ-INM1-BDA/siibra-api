@@ -1,6 +1,8 @@
 from api.common import data_decorator, InsufficientParameters, NotFound, AmbiguousParameters, logger
-from api.siibra_api_config import ROLE
+from api.siibra_api_config import ROLE, SIIBRA_API_SHARED_DIR
 from typing import List, Type, Any, Dict
+from hashlib import md5
+from pathlib import Path
 
 @data_decorator(ROLE)
 def all_feature_types() -> List[Dict[str, str]]:
@@ -61,6 +63,26 @@ def get_single_feature_plot_from_id(feature_id: str, template="plotly", **kwargs
 
     except NotImplementedError:
         raise NotFound(f"feature with id {feature_id} is found, but the plot function has not been implemented")
+
+@data_decorator(ROLE)
+def get_single_feature_download_zip_path(feature_id: str, **kwargs):
+    assert feature_id, f"feature_id must be defined"
+    hash = md5(feature_id.encode("utf-8"))
+    for key, value in kwargs.items():
+        hash.update(f"{key}:{value}".encode("utf-8"))
+    hex_digest = hash.hexdigest()
+
+    filename = f"fdl-{hex_digest}.zip"
+    full_filename = Path(SIIBRA_API_SHARED_DIR, filename)
+    if full_filename.is_file():
+        return str(full_filename)
+    import siibra
+    try:
+        feat = siibra.features.Feature.get_instance_by_id(feature_id)
+        feat.export(str(full_filename))
+        return str(full_filename)
+    except Exception as e:
+        raise NotFound from e
 
 
 def extract_concept(*, space_id: str=None, parcellation_id: str=None, region_id: str=None, **kwargs):

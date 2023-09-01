@@ -1,8 +1,8 @@
-
 from fastapi_pagination import paginate, Page
 from fastapi_versioning import version
 from fastapi.exceptions import HTTPException
 from fastapi import Request, APIRouter
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import Union, Optional, List
 from functools import partial
@@ -13,7 +13,8 @@ from api.server import FASTAPI_VERSION
 from api.siibra_api_config import ROLE
 from api.common import router_decorator, async_router_decorator
 from api.common.data_handlers.features.types import (
-    all_feature_types, all_features, single_feature, get_single_feature_from_id, get_single_feature_plot_from_id
+    all_feature_types, all_features, single_feature, get_single_feature_from_id, get_single_feature_plot_from_id,
+    get_single_feature_download_zip_path,
 )
 from api.models.features._basetypes.regional_connectivity import SiibraRegionalConnectivityModel
 from api.models.features._basetypes.cortical_profiles import SiibraCorticalProfileModel
@@ -308,6 +309,21 @@ async def get_single_feature_plot(feature_id: str, request: Request, func, templ
     try:
         kwargs = {**dict(request.query_params), 'template': template.value if isinstance(template, PlotlyTemplate) else template}
         return await func(feature_id=feature_id, **kwargs)
+    except NotFound as e:
+        raise HTTPException(404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(500, detail=str(e))
+
+@router.get("/{feature_id:lazy_path}/download", description="""
+Get a zip archive of the downloadables from a feature.
+""")
+@async_router_decorator(ROLE, func=get_single_feature_download_zip_path)
+async def get_single_feature_download(feature_id: str, request: Request, func):
+    """Get download zip"""
+    try:
+        kwargs = dict(request.query_params)
+        path_to_zip = await func(feature_id=feature_id, **kwargs)
+        return FileResponse(path_to_zip, filename=f"download-{feature_id}.zip")
     except NotFound as e:
         raise HTTPException(404, detail=str(e))
     except Exception as e:
