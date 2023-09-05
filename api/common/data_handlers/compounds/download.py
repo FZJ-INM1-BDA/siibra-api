@@ -40,7 +40,7 @@ citations:
 LICENSE = """Please check the respective citations regarding licenses to use these data."""
 
 @data_decorator(ROLE)
-def download_all(space_id: str, parcellation_id: str, region_id: str=None) -> str:
+def download_all(space_id: str, parcellation_id: str, region_id: str=None, feature_id: str=None) -> str:
     """Create a download bundle (zip) for the provided specification
     
     Args:
@@ -59,6 +59,16 @@ def download_all(space_id: str, parcellation_id: str, region_id: str=None) -> st
     from siibra.core import space as _space, parcellation as _parcellation, concept as _concept
 
     with ZipFile(zipfilename, "w") as zipfile:
+
+        if feature_id:
+            try:
+                path_to_feature_export = Path(SIIBRA_API_SHARED_DIR, f"export-{feature_id}.zip")
+                if not path_to_feature_export.exists():
+                    feature = siibra.features.Feature.get_instance_by_id(feature_id)
+                    feature.export(path_to_feature_export)
+                zipfile.write(path_to_feature_export, f"export-{feature_id}.zip")
+            except Exception as e:
+                zipfile.writestr(f"{feature_id}.error.txt", f"Feature exporting failed: {str(e)}")
         
         def write_model(filename, obj, **kwargs):
             try:
