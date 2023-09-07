@@ -3,6 +3,7 @@ from api.siibra_api_config import ROLE, SIIBRA_API_SHARED_DIR
 from typing import List, Type, Any, Dict
 from hashlib import md5
 from pathlib import Path
+from zipfile import ZipFile
 
 @data_decorator(ROLE)
 def all_feature_types() -> List[Dict[str, str]]:
@@ -79,10 +80,18 @@ def get_single_feature_download_zip_path(feature_id: str, **kwargs):
     import siibra
     try:
         feat = siibra.features.Feature.get_instance_by_id(feature_id)
+    except Exception as e:
+        logger.error(f"Error finding single feature {feature_id=}, {str(e)}")
+        raise NotFound from e
+    try:
         feat.export(str(full_filename))
         return str(full_filename)
     except Exception as e:
-        raise NotFound from e
+        logger.error(f"Error export single feature {feature_id=}, {str(e)}")
+        error_filename = full_filename.with_suffix(".error.zip")
+        with ZipFile(error_filename, "w") as zf:
+            zf.writestr("error.txt", f"Error exporting file for feature_id: {feature_id}: {str(e)}")
+        return str(error_filename)
 
 
 def extract_concept(*, space_id: str=None, parcellation_id: str=None, region_id: str=None, **kwargs):
