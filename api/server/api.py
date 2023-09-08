@@ -55,6 +55,18 @@ siibra_api.add_middleware(
     expose_headers=[siibra_version_header]
 )
 
+# some plugins may strip origin header for privacy reasons
+# so if origin is unavailable, append it to trick corsmiddleware to activate
+@siibra_api.middleware("http")
+async def append_origin_header(request: Request, call_next):
+    headers = dict(request.scope["headers"])
+    origin = request.headers.get("origin")
+    new_headers = [(k, v) for k, v in headers.items()]
+    if not origin:
+        new_headers.append((b"origin", b"unknownorigin.dev"))
+    request.scope["headers"] = new_headers
+    return await call_next(request)
+
 @siibra_api.get("/metrics", include_in_schema=False)
 def get_metrics():
     """Get prometheus metrics"""
@@ -142,12 +154,15 @@ async def middleware_cache_response(request: Request, call_next):
 
     # starlette seems to normalize header to lower case
     # so .get("origin") also works if the request has "Origin: http://..."
-    has_origin = request.headers.get("origin")
+
+    # N.B. do not append cors header based on origin
+    # some plugins may strip origin header for privacy reasons
+    # has_origin = request.headers.get("origin")
     extra_headers = {
         "access-control-allow-origin": "*",
         "access-control-expose-headers": f"{siibra_version_header}",
         siibra_version_header: __version__,
-    } if has_origin else {}
+    }
 
     cached_value = cache_instance.get_value(cache_key) if not bypass_cache_read else None
 
