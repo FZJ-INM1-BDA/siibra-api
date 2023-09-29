@@ -27,11 +27,12 @@ def ebrains_dataset_to_model(ds: EbrainsBaseDataset, **kwargs) -> EbrainsDataset
 def generic_dataset_to_model(ds: GenericDataset, **kwargs) -> EbrainsDatasetModel:
     """Serialize generic dataset"""
     return EbrainsDatasetModel(
-        id=md5(ds.name).hexdigest(),
+        id=md5(ds.name.encode("utf-8")).hexdigest(),
         name=ds.name,
         urls=[EbrainsDsUrl(**url) for url in ds.urls],
         description=ds.description,
         contributors=[EbrainsDsPerson(id=person.get("name"),
+                                      schema_shortname=person.get("name"),
                                       identifier=person.get("name"),
                                       shortName=person.get("name"),
                                       name=person.get("name"))
