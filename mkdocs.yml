@@ -57,7 +57,9 @@ nav:
     - 'overview': 'architecture.overview.md'
     - 'architecture: caching': 'architecture.caching.md'
     - 'architecture: throughput': 'architecture.throughput.md'
-  - develop: 'develop.md'
+  - develop:
+    - 'start developer server': 'develop.md'
+    - 'example: adding CompoundFeature serialization': 'develop.example.adding_serialization.md'
   - api references:
     - api.siibra_api_config: 'api.siibra_api_config.md'
     - api.server: 'api.server.md'
