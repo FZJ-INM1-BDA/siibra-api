@@ -4,14 +4,33 @@ from api.models.openminds.SANDS.v3.atlas.parcellationEntityVersion import (
     BestViewPoint,
     HasAnnotation,
 )
-from api.models.openminds.SANDS.v3.atlas.parcellationEntity import (
-    Model as ParcellationEntityModel,
-)
 from api.models._commons import ConfigBaseModel
+from api.models.core.parcellation import SiibraParcellationModel
+from enum import Enum
 
 class ParcellationEntityVersionModel(_ParcellationEntityVersionModel, ConfigBaseModel, type="region"):
     """ParcellationEntityVersionModel"""
     pass
 
-class UnitOfMeasurement:
-    MILLIMETER = "https://openminds.ebrains.eu/instances/unitOfMeasurement/millimeter"
+class Qualification(str, Enum):
+    """Qualification
+    
+    Exactly match to Qualification in siibra.core.relation_quantification.Quantification"""
+    EXACT = "EXACT"
+    OVERLAPS = "OVERLAPS"
+    CONTAINED = "CONTAINED"
+    CONTAINS = "CONTAINS"
+    APPROXIMATE = "APPROXIMATE"
+    HOMOLOGOUS = "HOMOLOGOUS"
+    OTHER_VERSION = "OTHER_VERSION"
+
+
+class RegionRelationAsmtModel(ConfigBaseModel, type="regionRelationAssessment"):
+    qualification: Qualification
+    query_structure: ParcellationEntityVersionModel
+    assigned_structure: ParcellationEntityVersionModel
+
+    # necessary, as assigned_structure (region)
+    # as far as siibra-python is concerned, is usseless
+    # without the parcellation
+    assigned_structure_parcellation: SiibraParcellationModel

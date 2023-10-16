@@ -72,3 +72,5 @@ jobs:
         run: pip install pytest pytest-asyncio httpx mock coverage pytest-cov
       - name: Run tests
         run: pytest
+      - name: Run e2e
+        run: pytest e2e_test

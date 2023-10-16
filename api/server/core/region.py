@@ -6,9 +6,9 @@ from functools import partial
 
 from api.server import FASTAPI_VERSION
 from api.siibra_api_config import ROLE
-from api.models.core.region import ParcellationEntityVersionModel
+from api.models.core.region import ParcellationEntityVersionModel, RegionRelationAsmtModel
 from api.common import router_decorator
-from api.common.data_handlers.core.region import all_regions, single_region
+from api.common.data_handlers.core.region import all_regions, single_region, get_related_regions
 from api.common.data_handlers.features.types import get_all_all_features
 from api.server.util import SapiCustomRoute
 from api.server.features import FeatureIdResponseModel
@@ -34,7 +34,15 @@ def get_all_features_region(parcellation_id: str, region_id: str, func=lambda:[]
     return paginate(
         func(parcellation_id=parcellation_id, region_id=region_id)
     )
-
+@router.get("/{region_id:lazy_path}/related", response_model=Page[RegionRelationAsmtModel])
+@version(*FASTAPI_VERSION)
+@router_decorator(ROLE, func=get_related_regions)
+def get_related_region(parcellation_id: str, region_id: str, func=lambda:[]):
+    """HTTP get_related_regions of the specified region"""
+    return paginate(
+        func(parcellation_id=parcellation_id, region_id=region_id)
+    )
+    
 @router.get("/{region_id:lazy_path}", response_model=ParcellationEntityVersionModel)
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=single_region)

@@ -39,3 +39,20 @@ def single_region(parcellation_id: str, region_id: str, space_id: str=None):
         siibra.get_region(parcellation_id, region_id),
         space=space
     ).dict()
+
+@data_decorator(ROLE)
+def get_related_regions(parcellation_id: str, region_id: str):
+    """Get related regions, including the relationship qualification.
+    
+    Args:
+        parcellation_id: id of the parcellation, under which the regions will be fetched
+        region_id: lookup id of the region
+    
+    Returns:
+        List of RegionalRelationshipAssessments, serialized"""
+    import siibra
+    from api.serialization.util import instance_to_model
+    
+    region = siibra.get_region(parcellation_id, region_id)
+    all_assessments = [ass for ass in region.get_related_regions()]
+    return [instance_to_model(ass).dict() for ass in all_assessments]

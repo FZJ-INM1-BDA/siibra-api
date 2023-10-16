@@ -6,9 +6,19 @@ from api.common.exceptions import (
     ClsNotRegisteredException,
     NonStrKeyException,
 )
-from typing import Any, Dict
+from typing import Any, Dict, _GenericAlias
 
 REGISTER: Dict[Type, Callable[..., ConfigBaseModel]] = {}
+
+def sanitize_cls(Cls):
+    if isinstance(Cls, _GenericAlias):
+        return Cls
+    
+    assert inspect.isclass(Cls), f"Expecting {str(Cls)} to be a class, but is not."
+    return Cls
+
+def is_generic_instance(inst):
+    return hasattr(inst, "__orig_class__")
 
 def instance_to_model(instance: Any, * , use_class: Type=None, skip_classes: List[Type]=[], **kwargs: Dict[str, Any]):
     """Serialize instance into model, according to register.
@@ -27,7 +37,12 @@ def instance_to_model(instance: Any, * , use_class: Type=None, skip_classes: Lis
         ClsNotRegisteredException: if no suitable serialization can be found for `instance.__class__`
         NonStrKeyException: if instance contains a dictionary, which do not have str as keys
     """
+    if is_generic_instance(instance):
+        if use_class:
+            assert use_class == instance.__orig_class__, f"instance {str(instance)} is a instance of generic type. use_class must == instance.__orig_class__"
+        use_class = instance.__orig_class__
     if use_class:
+        use_class = sanitize_cls(use_class)
         if use_class not in REGISTER:
             raise ClsNotRegisteredException(f"class {str(use_class)} not in register")
         return REGISTER[use_class](instance, **kwargs)
@@ -60,7 +75,7 @@ def serialize(Cls: Type[Any], pass_super_model: Dict[str, Any]=False, **kwargs):
         Cls: Class to be serialized
         pass_super_model: flag if the serialized super class should be provided via `super_model_dict`
     """
-    assert inspect.isclass(Cls)
+    Cls = sanitize_cls(Cls)
     def outer(func: Callable):
         # TODO need to arrange the iteration from most specific to most generic
         def _func(*args, **kwargs):
