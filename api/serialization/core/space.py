@@ -33,4 +33,5 @@ def space_to_model(space: Space, **kwargs) -> CommonCoordinateSpaceModel:
         release_date=str(date(2015, 1, 1)),
         short_name=space.shortname,
         version_identifier=space.name,
+        datasets=[instance_to_model(ds) for ds in (space.datasets or [])]
     )
