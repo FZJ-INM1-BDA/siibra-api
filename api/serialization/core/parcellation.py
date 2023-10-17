@@ -19,7 +19,7 @@ def get_brain_atlas_version_name(parc: Parcellation, space: Space) -> str:
 
 
 @serialize(Parcellation)
-def parcellation_to_model(parc: Parcellation, **kwargs) -> SiibraParcellationModel:
+def parcellation_to_model(parc: Parcellation, *, min_flag=False, **kwargs) -> SiibraParcellationModel:
     """Serialize Parcellation into SiibraParcellationModel
 
     Args:
@@ -28,6 +28,14 @@ def parcellation_to_model(parc: Parcellation, **kwargs) -> SiibraParcellationMod
     Returns:
         SiibraParcellationModel
     """
+
+    if min_flag:
+        return SiibraParcellationModel(
+            id=parc.id,
+            name=parc.name,
+            datasets=[],
+            brainAtlasVersions=[],
+        )
     return SiibraParcellationModel(
         id=parc.id,
         name=parc.name,

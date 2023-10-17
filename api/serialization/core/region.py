@@ -3,14 +3,15 @@ from api.models.core.region import (
     HasAnnotation,
     Coordinates,
     BestViewPoint,
-    ParcellationEntityModel,
-    UnitOfMeasurement,
+    RegionRelationAsmtModel,
+    Qualification,
 )
 from api.serialization.util import (
     serialize,
     REGISTER,
+    instance_to_model
 )
-from api.serialization.util.siibra import Region, Space, parcellations
+from api.serialization.util.siibra import Region, Space, parcellations, RegionRelationAssessments
 from api.common.logger import logger
 
 
@@ -102,7 +103,7 @@ def get_region_model_id(region: Region):
     return f"https://openminds.ebrains.eu/instances/parcellationEntityVersion/{get_unique_id(region.id + str(region.parent or 'None') + str(region.children))}"
 
 @serialize(Region)
-def region_to_model(region: Region, *, detail: bool=False, space: Space=None, **kwargs) -> ParcellationEntityVersionModel:
+def region_to_model(region: Region, *, min_flag: bool=False, detail: bool=False, space: Space=None, **kwargs) -> ParcellationEntityVersionModel:
     """Serialize Region
     
     Args:
@@ -138,6 +139,9 @@ def region_to_model(region: Region, *, detail: bool=False, space: Space=None, **
         version_identifier=f"{region.parcellation.name} - {region.name}",
         version_innovation=region.description
     )
+
+    if min_flag:
+        return pev
 
     centroid = None
     if space:
@@ -180,3 +184,16 @@ def region_to_model(region: Region, *, detail: bool=False, space: Space=None, **
             ]
 
     return pev
+
+@serialize(RegionRelationAssessments)
+def region_relation_ass_to_model(ass: RegionRelationAssessments, detail=False, **kwargs):
+
+    qualification = ass.qualification
+    assigned_structure = ass.assigned_structure
+    assigned_structure_parcellation = assigned_structure.parcellation
+    return RegionRelationAsmtModel(
+        qualification=Qualification[qualification.name],
+        assigned_structure=instance_to_model(assigned_structure, min_flag=True, detail=False, **kwargs),
+        assigned_structure_parcellation=instance_to_model(assigned_structure_parcellation, min_flag=True, detail=False, **kwargs),
+        query_structure=instance_to_model(ass.query_structure, min_flag=True, detail=False, **kwargs)
+    )

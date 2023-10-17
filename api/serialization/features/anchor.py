@@ -37,7 +37,7 @@ def anchor_to_model(anchor: AnatomicalAnchor, detail=False, **kwargs):
     return SiibraAnchorModel(
         location=instance_to_model(anchor.location, detail=detail, **kwargs),
         regions=[SiibraRegionAssignmentQual(
-            region=instance_to_model(region, use_class=Region, **kwargs),
+            region=instance_to_model(region, use_class=Region, min_flag=True, **kwargs),
             qualification=qualification.name
         ) for region, qualification in anchor.regions.items()],
         last_match_description=anchor.last_match_description or "",

@@ -60,6 +60,7 @@ nav:
   - develop:
     - 'start developer server': 'develop.md'
     - 'example: adding CompoundFeature serialization': 'develop.example.adding_serialization.md'
+    - 'example: adding related region endpoint': 'develop.example.adding_related_regions.md'
   - api references:
     - api.siibra_api_config: 'api.siibra_api_config.md'
     - api.server: 'api.server.md'

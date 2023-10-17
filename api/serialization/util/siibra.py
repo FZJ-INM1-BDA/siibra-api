@@ -7,7 +7,7 @@ from siibra.locations.location import Location
 from siibra.locations.point import Point
 from siibra.locations.boundingbox import BoundingBox
 
-from siibra.core.region import Region
+from siibra.core.region import Region, RegionRelationAssessments
 from siibra.core.atlas import Atlas
 from siibra.core.space import Space
 from siibra.core.parcellation import Parcellation, ParcellationVersion
