@@ -20,3 +20,8 @@ class _FeatureModel(ConfigBaseModel, ABC, type="feature"):
 class FeatureModel(_FeatureModel):
     """FeatureModel"""
     pass
+
+
+class CompoundFeatureModel(_FeatureModel, type="compound_feature"):
+    """CompoundFeatureModel"""
+    subfeature_keys: List[str]

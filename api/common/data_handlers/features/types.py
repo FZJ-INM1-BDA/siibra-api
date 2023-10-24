@@ -40,7 +40,7 @@ def get_single_feature_from_id(feature_id: str, **kwargs):
     import siibra
     from api.serialization.util import instance_to_model
     try:
-        feature = siibra.features.Feature.get_instance_by_id(feature_id)
+        feature = siibra.features.Feature._get_instance_by_id(feature_id)
     except Exception as e:
         raise NotFound(str(e))
     else:
@@ -53,7 +53,7 @@ def get_single_feature_plot_from_id(feature_id: str, template="plotly", **kwargs
     import json
 
     try:
-        feature = siibra.features.Feature.get_instance_by_id(feature_id)
+        feature = siibra.features.Feature._get_instance_by_id(feature_id)
     except Exception as e:
         raise NotFound from e
 
@@ -79,7 +79,7 @@ def get_single_feature_download_zip_path(feature_id: str, **kwargs):
         return str(full_filename)
     import siibra
     try:
-        feat = siibra.features.Feature.get_instance_by_id(feature_id)
+        feat = siibra.features.Feature._get_instance_by_id(feature_id)
     except Exception as e:
         logger.error(f"Error finding single feature {feature_id=}, {str(e)}")
         raise NotFound from e

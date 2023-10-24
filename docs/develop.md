@@ -21,6 +21,8 @@ uvicorn api.server:api --host 127.0.0.1 --port 5000 --reload
 ```
 
 ## With docker-compose
+0) Delete if there is a siibra-api docker image.
+1) Change the siibra requirement by chosing the new tag or install from a branch git+https://github.com/FZJ-INM1-BDA/siibra-python.git@BranchName
 ```sh
 docker-compose -f ./docker-compose-dev.yml up
 ```

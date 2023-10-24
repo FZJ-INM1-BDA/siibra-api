@@ -19,6 +19,7 @@ from siibra.volumes.volume import Volume
 from siibra.retrieval.datasets import EbrainsBaseDataset, GenericDataset
 
 from siibra.features.feature import Feature
+from siibra.features.feature import CompoundFeature
 from siibra.features.connectivity.regional_connectivity import RegionalConnectivity
 from siibra.features.tabular.cortical_profile import CorticalProfile
 from siibra.features.tabular.tabular import Tabular

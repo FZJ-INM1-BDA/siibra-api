@@ -1,2 +1,2 @@
-siibra==0.4a74
+git+https://github.com/FZJ-INM1-BDA/siibra-python.git@feat_compoundFeat
 plotly
