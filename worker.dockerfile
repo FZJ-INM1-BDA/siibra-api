@@ -11,4 +11,7 @@ USER nobody
 
 ENV SIIBRA_API_ROLE=worker
 
+HEALTHCHECK --interval=60s --timeout=10s --start-period=120s --retries=3 \
+    CMD [ "python", "worker_health.py" ]
+
 ENTRYPOINT celery -A api.worker.app worker -l INFO

@@ -17,4 +17,7 @@ EXPOSE 5000
 
 ENV SIIBRA_API_ROLE=server
 
+HEALTHCHECK --start-interval=10s --timeout=3s --retries=3 \
+    CMD ["python", "server_health.py"]
+
 ENTRYPOINT uvicorn api.server:api --host 0.0.0.0 --port 5000 --workers 4

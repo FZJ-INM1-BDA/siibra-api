@@ -60,7 +60,7 @@ def get_source_from_fn(fn: Callable) -> Tuple[str, str, List[str], Dict[str, str
         global_src = getsource(global_func)
         src = f"""\n{global_src}\n{src}\n"""
         
-    return src, func_name, fn1.args, fn1.keywords
+    return src, func_name, args, kwargs
 
 
 def lookup_handler_fn(arm: Union[FastAPI, Mount, Route], scope: Scope):
