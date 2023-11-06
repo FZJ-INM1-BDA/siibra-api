@@ -15,7 +15,7 @@ USER nobody
 
 EXPOSE 5000
 
-HEALTHCHECK --start-interval=120s --timeout=3s \
+HEALTHCHECK --start-period=120s --timeout=3s \
     CMD curl http://localhost:5000/v3_0/atlases || exit 1
 
 ENV SIIBRA_API_ROLE=all
