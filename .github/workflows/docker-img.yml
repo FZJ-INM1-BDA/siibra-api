@@ -152,7 +152,7 @@ jobs:
     - id: parse-rev
       name: Get short rev of HEAD at master 
       run: |
-        git clone https://jugit.fz-juelich.de/t.dickscheid/brainscapes-configurations.git
+        git clone -b v0.4EOL https://jugit.fz-juelich.de/t.dickscheid/brainscapes-configurations.git
         CONFIG_SHORT_REV=$(git -C brainscapes-configurations rev-parse --short=6 HEAD)
         echo CONFIG_SHORT_REV=$CONFIG_SHORT_REV >> $GITHUB_OUTPUT
   

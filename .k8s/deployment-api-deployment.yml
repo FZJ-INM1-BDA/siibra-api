@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: siibra-api
+  name: api-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: siibra-api
+      flavor: prod
+      role: server
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: siibra-api
+        flavor: prod
+        role: server
+    spec:
+      containers:
+      - envFrom:
+        - configMapRef:
+            name: siibra-api-common
+        image: docker-registry.ebrains.eu/siibra/siibra-api:0.3-server
+        name: siibra-api-prod-server
+        ports:
+        - containerPort: 5000
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 400m
+            memory: 256Mi
+          requests:
+            cpu: 200m
+            memory: 128Mi
+        volumeMounts:
+        - mountPath: /siibra-api-volume
+          name: data-volume
+        - mountPath: /siibra_api_logs
+          name: log-volume
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      volumes:
+      - name: log-volume
+        persistentVolumeClaim:
+          claimName: log-volume-claim
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: data-volume-claim
