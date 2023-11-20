@@ -1,0 +1,120 @@
+# Default values for siibra-api.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+sapiVersion: "0.3.15" # "latest" or "0.3.15"
+sapiWorkerQueues: ["core", "features", "volumes", "compounds"]
+sapiFlavor: "prod" # could be prod, rc, latest, etc
+
+image:
+  repository: docker-registry.ebrains.eu/siibra/siibra-api
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 5000
+
+ingress:
+  enabled: true
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: siibra-api-prod.apps.tc.humanbrainproject.eu
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+   - secretName: siibra-api-prod-secret
+     hosts:
+       - siibra-api-prod.apps.tc.humanbrainproject.eu
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+resourcesServerPod:
+  limits:
+    cpu: 200m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+resourcesWorkerPod:
+  limits:
+    cpu: 500m
+    memory: 2Gi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+# Additional volumes on the output Deployment definition.
+volumes:
+  - name: log-volume
+    persistentVolumeClaim:
+      claimName: log-volume-claim
+  - name: data-volume
+    persistentVolumeClaim:
+      claimName: data-volume-claim
+
+
+# Additional volumeMounts on the output Deployment definition.
+volumeMounts: 
+  - mountPath: /siibra-api-volume
+    name: data-volume
+  - mountPath: /siibra_api_logs
+    name: log-volume
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

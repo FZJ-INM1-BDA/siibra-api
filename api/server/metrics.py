@@ -1,29 +1,53 @@
 from fastapi import HTTPException
 from fastapi.responses import PlainTextResponse
-from api.siibra_api_config import ROLE, CELERY_CONFIG, NAME_SPACE
+from typing import List, Dict
+from subprocess import run
+import os
+from api.siibra_api_config import ROLE, CELERY_CONFIG, NAME_SPACE, MONITOR_FIRSTLVL_DIR
 from api.common.timer import RepeatTimer
 
 
 class Singleton:
     """Timer singleton"""
     cached_metrics=None
-    timer: RepeatTimer=None
+    cached_du: Dict[str, str] = {}
+    timers: List[RepeatTimer] = []
 
     @staticmethod
-    def populate():
+    def populate_celery():
         if ROLE == 'server':
             Singleton.cached_metrics = refresh_prom_metrics()
 
+    @staticmethod
+    def timed_du():
+        if ROLE == 'server' and MONITOR_FIRSTLVL_DIR:
+            # n.b. cannot use shutil.disk_usage . It seems it 
+            # queries mount used/free and not directory
+            dirs = os.listdir(MONITOR_FIRSTLVL_DIR)
+            for dir in dirs:
+                result = run(["du", "-s", f"{MONITOR_FIRSTLVL_DIR}/{dir}"], capture_output=True, text=True)
+                size_b, *_ = result.stdout.split("\t")
+                Singleton.cached_du[dir] = int(size_b)
+            
+
 def on_startup():
     """On startup"""
-    Singleton.populate()
-    Singleton.timer = RepeatTimer(60, Singleton.populate)
-    Singleton.timer.start()
+    Singleton.populate_celery()
+    Singleton.timed_du()
+
+    Singleton.timers = [
+        RepeatTimer(60, Singleton.populate_celery),
+        RepeatTimer(600, Singleton.timed_du),
+    ]
+
+    for timer in Singleton.timers:
+        timer.start()
+
     
 def on_terminate():
     """On terminate"""
-    if Singleton.timer is not None:
-        Singleton.timer.cancel()
+    for timer in Singleton.timers:
+        timer.cancel()
 
 def refresh_prom_metrics():
     """Refresh metrics."""
@@ -35,6 +59,14 @@ def refresh_prom_metrics():
         'registry':registry,
         'namespace':NAME_SPACE,
     }
+
+    du = Gauge(f"firstlvl_folder_disk_usage",
+               "Bytes used by first level folders",
+               labelnames=("folder_name",),
+               **common_kwargs)
+    for folder_name, size_b in Singleton.cached_du.items():
+        du.labels(folder_name=folder_name).set(size_b)
+
     num_task_in_q_gauge = Gauge(f"num_task_in_q",
                                 "Number of tasks in queue (not yet picked up by workers)",
                                 labelnames=("q_name",),

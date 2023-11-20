@@ -1,0 +1,36 @@
+name: Trigger deploy with helm
+on:
+  workflow_call:
+    inputs:
+      DEPLOYMENT_NAME:
+        required: true
+        type: string
+
+    secrets:
+      KUBECONFIG:
+        required: true
+
+jobs:
+  trigger-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: 'Deploy'
+      run: |
+        kubecfg_path=${{ runner.temp }}/.kube_config
+        version=$(echo api/VERSION)
+        
+        echo "${{ secrets.KUBECONFIG }}" > $kubecfg_path
+        helm --kubeconfig=$kubecfg_path status ${{ inputs.DEPLOYMENT_NAME }}
+        helm_status=$(echo $?)
+
+        if [[ $helm_status = "0" ]]
+        then
+          echo "tag ${{ inputs.DEPLOYMENT_NAME }} found. Update"
+          helm --set sapiVersion=${version} --kubeconfig=$kubecfg_path upgrade ${{ inputs.DEPLOYMENT_NAME }} .helm/siibra-api/
+        else
+          echo "tag ${{ inputs.DEPLOYMENT_NAME }} not found. Install"
+          helm --set sapiVersion=${version} --kubeconfig=$kubecfg_path install ${{ inputs.DEPLOYMENT_NAME }} .helm/siibra-api/
+        fi
+
+        rm $kubecfg_path
