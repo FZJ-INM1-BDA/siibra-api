@@ -2,7 +2,9 @@ apiVersion: v1
 data:
   REDIS_HOST: cache-redis-service
   SIIBRA_API_LOG_DIR: /siibra_api_logs
-  SIIBRA_CACHEDIR: /siibra-api-volume
+  SKIP_CACHEINIT_MAINTENANCE: "1"
+  MONITOR_FIRSTLVL_DIR: /siibra-api-volume
+  # SIIBRA_CACHEDIR: /siibra-api-volume
 kind: ConfigMap
 metadata:
   name: siibra-api-common
