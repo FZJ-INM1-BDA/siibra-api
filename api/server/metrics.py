@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 from api.siibra_api_config import ROLE, CELERY_CONFIG, NAME_SPACE, MONITOR_FIRSTLVL_DIR
 from api.common.timer import RepeatTimer
-from api.common.logger import logger
+from api.common import logger
 
 class Singleton:
     """Timer singleton"""
