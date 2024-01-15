@@ -5,5 +5,6 @@ from api.models._commons import DataFrameModel
 class SiibraRegionalConnectivityModel(_FeatureModel, type="regional_connectivity"):
     """SiibraRegionalConnectivityModel"""
     cohort: str
-    subjects: List[str]
-    matrices: Optional[Dict[str, DataFrameModel]]
+    subject: str
+    feature: Optional[str]
+    matrix: Optional[DataFrameModel]

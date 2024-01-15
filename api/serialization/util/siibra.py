@@ -37,7 +37,12 @@ from siibra.features.tabular import (
     ReceptorDensityProfile,
 )
 
+from siibra.features.feature import (
+    CompoundFeature
+)
 
 from siibra.commons import MapIndex, Species, MapType
 
 from siibra import parcellations, spaces, atlases
+
+import siibra

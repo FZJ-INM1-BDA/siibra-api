@@ -1,7 +1,7 @@
 from api.serialization.util import serialize, instance_to_model
 from api.serialization.util.siibra import MapIndex
-from api.models._commons import MapIndexModel, SeriesModel, DataFrameModel
-from pandas import Series, DataFrame
+from api.models._commons import MapIndexModel, SeriesModel, DataFrameModel, TimedeltaModel
+from pandas import Series, DataFrame, Timedelta
 import numpy as np
 
 @serialize(MapIndex)
@@ -55,7 +55,7 @@ def pdseries_to_model(series: Series, **kwargs) -> SeriesModel:
     )
 
 @serialize(DataFrame)
-def pddf_to_model(df: DataFrame, detail: str=False, **kwargs) -> DataFrameModel:
+def pddf_to_model(df: DataFrame, detail: bool=False, **kwargs) -> DataFrameModel:
     """Serialize pandas dataframe
     
     Args:
@@ -70,4 +70,10 @@ def pddf_to_model(df: DataFrame, detail: str=False, **kwargs) -> DataFrameModel:
         columns=[instance_to_model(el) for el in df.columns],
         ndim=df.ndim,
         data=instance_to_model(df.values.tolist()) if detail else None,
+    )
+
+@serialize(Timedelta)
+def pdtd_to_model(dti: Timedelta, detail: bool=False, **kwargs) -> TimedeltaModel:
+    return TimedeltaModel(
+        total_seconds=dti.total_seconds()
     )

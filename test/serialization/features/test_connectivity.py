@@ -6,11 +6,11 @@ import os
 
 jba29 = parcellations['2.9']
 
-streamline_counts = [f for f in StreamlineCounts.get_instances()]
-streamline_lengths = [f for f in StreamlineLengths.get_instances()]
-functional_conn = [f for f in FunctionalConnectivity.get_instances()]
+streamline_counts = [f for f in StreamlineCounts._get_instances()]
+streamline_lengths = [f for f in StreamlineLengths._get_instances()]
+functional_conn = [f for f in FunctionalConnectivity._get_instances()]
 
-all_connectivity = [
+all_connectivity: list[RegionalConnectivity] = [
     *streamline_counts,
     *streamline_lengths,
     *functional_conn,
@@ -25,15 +25,14 @@ def test_conn(conn: RegionalConnectivity):
 
 if not os.getenv("FAST_RUN"):
     @pytest.mark.parametrize("conn,subject",
-                            [(f, s)
+                            [(f, f.subject)
                                 for f in all_connectivity
-                                if jba29 in f.anchor.parcellations
-                                for s in f.subjects],
+                                if jba29 in f.anchor.parcellations],
                             ids=lambda arg: f"name: {arg.name!r} paradigm: {arg.paradigm if hasattr(arg, 'paradigmn') else ''}"
                                 if isinstance(arg, RegionalConnectivity)
                                 else f"subject: {arg!r}")
     def test_conn_subject(conn: RegionalConnectivity, subject: str):
         model = instance_to_model(conn, subject=subject, detail=True)
         assert isinstance(model, SiibraRegionalConnectivityModel)
-        assert model.matrices is not None
+        assert model.matrix is not None
         model.dict()

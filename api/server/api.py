@@ -7,6 +7,7 @@ from fastapi_pagination import add_pagination
 from fastapi_versioning import VersionedFastAPI
 import time
 import json
+from hashlib import md5
 
 from .util import add_lazy_path
 
@@ -21,7 +22,7 @@ from .features import router as feature_router
 from .metrics import prom_metrics_resp, on_startup as metrics_on_startup, on_terminate as metrics_on_terminate
 from .code_snippet import get_sourcecode
 
-from ..common import logger, access_logger, NotFound, SapiBaseException, name_to_fns_map
+from ..common import general_logger, access_logger, NotFound, SapiBaseException, name_to_fns_map
 from ..siibra_api_config import GIT_HASH
 
 siibra_version_header = "x-siibra-api-version"
@@ -125,7 +126,8 @@ async def middleware_cache_response(request: Request, call_next):
     """Cache requests to redis, to improve response time."""
     cache_instance = get_cache_instance()
 
-    cache_key = f"[{__version__}] {request.url.path}{str(request.url.query)}"
+    hashed_path = md5(f"{request.url.path}{str(request.url.query)}".encode("utf-8")).hexdigest()
+    cache_key = f"[{__version__}] {hashed_path}"
 
     auth_set = request.headers.get("Authorization") is not None
 
@@ -293,7 +295,7 @@ async def middleware_access_log(request: Request, call_next):
             "hit_cache": "cache_miss"
         })
     except Exception as e:
-        logger.critical(e)
+        general_logger.critical(e)
 
 @siibra_api.exception_handler(RuntimeError)
 async def exception_runtime(request: Request, exc: RuntimeError) -> JSONResponse:
@@ -301,7 +303,7 @@ async def exception_runtime(request: Request, exc: RuntimeError) -> JSONResponse
     Most of the RuntimeErrors are thrown by the siibra-python library when other Services are not responding.
     To be more resilient and not throw a simple and unplanned HTTP 500 response, this handler will return an HTTP 503
     status."""
-    logger.warning(f"Error handler: exception_runtime: {str(exc)}")
+    general_logger.warning(f"Error handler: exception_runtime: {str(exc)}")
     return JSONResponse(
         status_code=503,
         content={
@@ -313,13 +315,13 @@ async def exception_runtime(request: Request, exc: RuntimeError) -> JSONResponse
 @siibra_api.exception_handler(SapiBaseException)
 def exception_sapi(request: Request, exc: SapiBaseException):
     """Handle sapi errors"""
-    logger.warning(f"Error handler: exception_sapi: {str(exc)}")
+    general_logger.warning(f"Error handler: exception_sapi: {str(exc)}")
     raise HTTPException(400, str(exc))
 
 @siibra_api.exception_handler(Exception)
 async def exception_other(request: Request, exc: Exception):
     """Catch all exception handler"""
-    logger.warning(f"Error handler: exception_other: {str(exc)}")
+    general_logger.warning(f"Error handler: exception_other: {str(exc)}")
     return JSONResponse(
         status_code=500,
         content={

@@ -108,6 +108,11 @@ class DataFrameModel(ConfigBaseModel):
         ]]
     ]
 
+class TimedeltaModel(ConfigBaseModel):
+    """TimedeltaModel"""
+    total_seconds: float
+
+
 class TaskIdResp(BaseModel):
     """TaskIdResp"""
     task_id: str

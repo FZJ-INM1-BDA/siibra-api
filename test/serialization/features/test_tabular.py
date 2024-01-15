@@ -24,9 +24,9 @@ def get_random_n(n: int, lls: List[List[Any]]):
         for ls in lls
     ]
 
-celldensity = LayerwiseCellDensity.get_instances()
-bb_intensities = LayerwiseBigBrainIntensities.get_instances()
-receptor_fp_features = ReceptorDensityFingerprint.get_instances()
+celldensity = LayerwiseCellDensity._get_instances()
+bb_intensities = LayerwiseBigBrainIntensities._get_instances()
+receptor_fp_features = ReceptorDensityFingerprint._get_instances()
 
 all_fp_features = [
     *bb_intensities[10:],

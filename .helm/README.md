@@ -1,6 +1,6 @@
 # Deployment
 
-This document is intended for a documentation on how siibra-explorer can be deployed to a [kubernetes (k8s)](https://kubernetes.io/) cluster via [helm](https://helm.sh/).
+This document is intended for a documentation on how siibra-api can be deployed to a [kubernetes (k8s)](https://kubernetes.io/) cluster via [helm](https://helm.sh/).
 
 ## Active deployments
 

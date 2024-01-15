@@ -3,9 +3,10 @@ from fastapi.responses import PlainTextResponse
 from typing import List, Dict
 from subprocess import run
 import os
+from pathlib import Path
 from api.siibra_api_config import ROLE, CELERY_CONFIG, NAME_SPACE, MONITOR_FIRSTLVL_DIR
 from api.common.timer import RepeatTimer
-
+from api.common import general_logger
 
 class Singleton:
     """Timer singleton"""
@@ -23,11 +24,20 @@ class Singleton:
         if ROLE == 'server' and MONITOR_FIRSTLVL_DIR:
             # n.b. cannot use shutil.disk_usage . It seems it 
             # queries mount used/free and not directory
-            dirs = os.listdir(MONITOR_FIRSTLVL_DIR)
+            try:
+                dirs = os.listdir(MONITOR_FIRSTLVL_DIR)
+            except Exception as e:
+                general_logger.warn(f"Failed to listdir of {MONITOR_FIRSTLVL_DIR}: {str(e)}")
+                return
+            
             for dir in dirs:
-                result = run(["du", "-s", f"{MONITOR_FIRSTLVL_DIR}/{dir}"], capture_output=True, text=True)
-                size_b, *_ = result.stdout.split("\t")
-                Singleton.cached_du[dir] = int(size_b)
+                path_to_dir = Path(MONITOR_FIRSTLVL_DIR) / dir
+                try:
+                    result = run(["du", "-s", str(path_to_dir)], capture_output=True, text=True)
+                    size_b, *_ = result.stdout.split("\t")
+                    Singleton.cached_du[dir] = int(size_b)
+                except Exception as e:
+                    general_logger.warn(f"Failed to check du of {str(path_to_dir)}: {str(e)}")
             
 
 def on_startup():
