@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 from api.siibra_api_config import ROLE, CELERY_CONFIG, NAME_SPACE, MONITOR_FIRSTLVL_DIR
 from api.common.timer import RepeatTimer
-from api.common import logger
+from api.common import general_logger
 
 class Singleton:
     """Timer singleton"""
@@ -27,7 +27,7 @@ class Singleton:
             try:
                 dirs = os.listdir(MONITOR_FIRSTLVL_DIR)
             except Exception as e:
-                logger.warn(f"Failed to listdir of {MONITOR_FIRSTLVL_DIR}: {str(e)}")
+                general_logger.warn(f"Failed to listdir of {MONITOR_FIRSTLVL_DIR}: {str(e)}")
                 return
             
             for dir in dirs:
@@ -37,7 +37,7 @@ class Singleton:
                     size_b, *_ = result.stdout.split("\t")
                     Singleton.cached_du[dir] = int(size_b)
                 except Exception as e:
-                    logger.warn(f"Failed to check du of {str(path_to_dir)}: {str(e)}")
+                    general_logger.warn(f"Failed to check du of {str(path_to_dir)}: {str(e)}")
             
 
 def on_startup():

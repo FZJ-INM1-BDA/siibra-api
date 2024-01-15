@@ -1,4 +1,4 @@
-from api.common import data_decorator, InsufficientParameters, NotFound, AmbiguousParameters, logger
+from api.common import data_decorator, InsufficientParameters, NotFound, AmbiguousParameters, general_logger
 from api.siibra_api_config import ROLE, SIIBRA_API_SHARED_DIR
 from typing import List, Type, Any, Dict
 from hashlib import md5
@@ -108,13 +108,13 @@ def get_single_feature_download_zip_path(feature_id: str, **kwargs):
     try:
         feat = siibra.features.Feature._get_instance_by_id(feature_id)
     except Exception as e:
-        logger.error(f"Error finding single feature {feature_id=}, {str(e)}")
+        general_logger.error(f"Error finding single feature {feature_id=}, {str(e)}")
         raise NotFound from e
     try:
         feat.export(str(full_filename))
         return str(full_filename)
     except Exception as e:
-        logger.error(f"Error export single feature {feature_id=}, {str(e)}")
+        general_logger.error(f"Error export single feature {feature_id=}, {str(e)}")
         error_filename = full_filename.with_suffix(".error.zip")
         with ZipFile(error_filename, "w") as zf:
             zf.writestr("error.txt", f"Error exporting file for feature_id: {feature_id}: {str(e)}")
@@ -153,7 +153,7 @@ def get_all_all_features(*, space_id: str=None, parcellation_id: str=None, regio
             )
         except Exception as e:
             err_str = str(e).replace('\n', ' ')
-            logger.warning(f"feature failed to be serialized. Params: space_id={space_id}, parcellation_id={parcellation_id}, region_id={region_id}. feature id: {f.id}. error: {err_str}")
+            general_logger.warning(f"feature failed to be serialized. Params: space_id={space_id}, parcellation_id={parcellation_id}, region_id={region_id}. feature id: {f.id}. error: {err_str}")
     return re_features
 
 
@@ -184,7 +184,7 @@ def all_features(*, space_id: str, parcellation_id: str, region_id: str, type: s
             )
         except Exception as e:
             err_str = str(e).replace('\n', ' ')
-            logger.warning(f"feature failed to be serialized. Params: space_id={space_id}, parcellation_id={parcellation_id}, region_id={region_id}. feature id: {f.id}, error: {err_str}")
+            general_logger.warning(f"feature failed to be serialized. Params: space_id={space_id}, parcellation_id={parcellation_id}, region_id={region_id}. feature id: {f.id}, error: {err_str}")
     return re_features
 
 
