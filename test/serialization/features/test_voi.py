@@ -6,8 +6,8 @@ from api.models.features._basetypes.volume_of_interest import (
 )
 
 features = [feat 
-            for Cls in Feature.SUBCLASSES[Image]
-            for feat in Cls.get_instances()]
+            for Cls in Feature._SUBCLASSES[Image]
+            for feat in Cls._get_instances()]
 
 def test_len():
     assert len(features) > 0

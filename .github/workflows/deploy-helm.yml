@@ -18,7 +18,7 @@ jobs:
     - name: 'Deploy'
       run: |
         kubecfg_path=${{ runner.temp }}/.kube_config
-        version=$(echo api/VERSION)
+        version=$(cat api/VERSION)
         
         echo "${{ secrets.KUBECONFIG }}" > $kubecfg_path
         helm --kubeconfig=$kubecfg_path status ${{ inputs.DEPLOYMENT_NAME }}

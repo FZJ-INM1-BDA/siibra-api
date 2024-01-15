@@ -4,12 +4,13 @@ from api.serialization.util.siibra import (
 from api.models.features.molecular.receptor_density_fingerprint import (
     SiibraReceptorDensityFp
 )
+
 import pytest
 from api.serialization.util import (
     instance_to_model
 )
 
-receptor_fp_feats = ReceptorDensityFingerprint.get_instances()
+receptor_fp_feats = ReceptorDensityFingerprint._get_instances()
 
 def test_length():
     assert len(receptor_fp_feats) > 0

@@ -7,6 +7,7 @@ from fastapi_pagination import add_pagination
 from fastapi_versioning import VersionedFastAPI
 import time
 import json
+from hashlib import md5
 
 from .util import add_lazy_path
 
@@ -125,7 +126,8 @@ async def middleware_cache_response(request: Request, call_next):
     """Cache requests to redis, to improve response time."""
     cache_instance = get_cache_instance()
 
-    cache_key = f"[{__version__}] {request.url.path}{str(request.url.query)}"
+    hashed_path = md5(f"{request.url.path}{str(request.url.query)}".encode("utf-8")).hexdigest()
+    cache_key = f"[{__version__}] {hashed_path}"
 
     auth_set = request.headers.get("Authorization") is not None
 

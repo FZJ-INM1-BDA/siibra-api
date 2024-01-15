@@ -27,5 +27,5 @@ def voi_to_model(feat: Image, **kwargs) -> SiibraVoiModel:
     return SiibraVoiModel(
         **feature_dict,
         volume=volume_super_model,
-        boundingbox=instance_to_model(feat.boundingbox),
+        boundingbox=instance_to_model(feat.get_boundingbox()),
     )

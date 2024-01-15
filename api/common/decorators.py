@@ -1,5 +1,5 @@
 from .siibra_api_typing import ROLE_TYPE
-from api.common import logger
+from api.common.logger import logger
 from functools import wraps, partial
 import inspect
 import asyncio
@@ -32,6 +32,8 @@ def data_decorator(role: ROLE_TYPE):
                 from api.worker import app
                 
                 def celery_task_wrapper(self, *args, **kwargs):
+                    if role == "worker":
+                        logger.info(f"Task Received: {fn.__name__=}, {args=}, {kwargs=}")
                     return fn(*args, **kwargs)
                     
                 return app.task(bind=True)(

@@ -13,7 +13,7 @@ from api.server import FASTAPI_VERSION
 from api.siibra_api_config import ROLE
 from api.common import router_decorator, async_router_decorator
 from api.common.data_handlers.features.types import (
-    all_feature_types, all_features, single_feature, get_single_feature_from_id, get_single_feature_plot_from_id,
+    all_feature_types, all_features, single_feature, get_single_feature_from_id, get_single_feature_plot_from_id, get_single_feature_intents_from_id,
     get_single_feature_download_zip_path,
 )
 from api.models.features._basetypes.regional_connectivity import SiibraRegionalConnectivityModel
@@ -24,11 +24,17 @@ from api.models.features.molecular.receptor_density_fingerprint import (
 from api.models.features._basetypes.tabular import (
     SiibraTabularModel
 )
+from api.models.features._basetypes.feature import (
+    CompoundFeatureModel
+)
 from api.models.features._basetypes.volume_of_interest import (
     SiibraVoiModel
 )
 from api.models.features.dataset.ebrains import (
     SiibraEbrainsDataFeatureModel
+)
+from api.models.intents.colorization import (
+    ColorizationIntent
 )
 from api.common.exceptions import NotFound
 from api.server.util import SapiCustomRoute
@@ -122,35 +128,31 @@ def get_all_feature_types(request: Request, func):
 
 
 # Regional Connectivity
-RegionalConnectivityModels = SiibraRegionalConnectivityModel
+RegionalConnectivityModels = Union[SiibraRegionalConnectivityModel, CompoundFeatureModel]
 
 @router.get("/RegionalConnectivity", response_model=Page[RegionalConnectivityModels])
 @version(*FASTAPI_VERSION)
 @wrap_feature_category("RegionalConnectivity")
-@async_router_decorator(ROLE, func=partial(all_features, space_id=None, region_id=None))
-async def get_all_connectivity_features(parcellation_id: str, type: Optional[str]=None, func=lambda:[]):
+@async_router_decorator(ROLE, func=partial(all_features, space_id=None))
+async def get_all_connectivity_features(parcellation_id: str, region_id: str=None, type: Optional[str]=None, func=lambda:[]):
     """Get all connectivity features"""
     type = str(type) if type else None
     return paginate(
-        await func(parcellation_id=parcellation_id, type=type)
+        await func(parcellation_id=parcellation_id, region_id=region_id, type=type)
     )
 
-@router.get("/RegionalConnectivity/{feature_id:lazy_path}", response_model=RegionalConnectivityModels, description="""
-subject is an optional param.
-If provided, the specific matrix will be return.
-If not provided, the matrix averaged between subjects will be returned under the key _average.
-""")
+@router.get("/RegionalConnectivity/{feature_id:lazy_path}", response_model=RegionalConnectivityModels)
 @version(*FASTAPI_VERSION)
 @wrap_feature_category("RegionalConnectivity")
-@async_router_decorator(ROLE, func=partial(single_feature, space_id=None, region_id=None))
-async def get_single_connectivity_feature(parcellation_id: str, feature_id: str, subject: Optional[str]=None, type: Optional[str]=None, func=lambda:None):
+@async_router_decorator(ROLE, func=partial(single_feature, space_id=None))
+async def get_single_connectivity_feature(parcellation_id: str, feature_id: str, region_id:str=None, type: Optional[str]=None, func=lambda:None):
     """Get single connectivity feature"""
     type = str(type) if type else None
-    return await func(parcellation_id=parcellation_id, feature_id=feature_id, subject=subject, type=type)
+    return await func(parcellation_id=parcellation_id, feature_id=feature_id, region_id=region_id, type=type)
 
 
 # Cortical Profiles
-CortialProfileModels = SiibraCorticalProfileModel
+CortialProfileModels = Union[SiibraCorticalProfileModel, CompoundFeatureModel]
 
 @router.get("/CorticalProfile", response_model=Page[CortialProfileModels])
 @version(*FASTAPI_VERSION)
@@ -175,7 +177,10 @@ async def get_single_corticalprofile_feature(parcellation_id: str, region_id: st
 
 
 # Tabular
-TabularModels = Union[SiibraCorticalProfileModel, SiibraReceptorDensityFp, SiibraTabularModel]
+# FastAPI returning model validation seems to go from first to last, until a suitable model is found.
+# as a result, the MOST specific model should be placed at the most front position
+# or FastAPI might reduce a complex model to a simpler one.
+TabularModels = Union[CompoundFeatureModel, SiibraCorticalProfileModel, SiibraReceptorDensityFp, SiibraTabularModel]
 
 @router.get("/Tabular", response_model=Page[TabularModels])
 @version(*FASTAPI_VERSION)
@@ -203,7 +208,7 @@ async def get_single_tabular(parcellation_id: str, region_id: str, feature_id: s
 @version(*FASTAPI_VERSION)
 @wrap_feature_category("Image")
 @async_router_decorator(ROLE, func=partial(all_features, parcellation_id=None, region_id=None))
-async def get_all_voi(space_id: str, bbox: Optional[str]=None, type: Optional[str]=None, func=lambda: []):
+async def get_all_voi(space_id: str, bbox: str, type: Optional[str]=None, func=lambda: []):
     """Get all Image features"""
     type = str(type) if type else None
     return paginate(
@@ -309,6 +314,19 @@ async def get_single_feature_plot(feature_id: str, request: Request, func, templ
     try:
         kwargs = {**dict(request.query_params), 'template': template.value if isinstance(template, PlotlyTemplate) else template}
         return await func(feature_id=feature_id, **kwargs)
+    except NotFound as e:
+        raise HTTPException(404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(500, detail=str(e))
+    
+@router.get("/{feature_id:lazy_path}/intents", response_model=Page[ColorizationIntent])
+@async_router_decorator(ROLE, func=get_single_feature_intents_from_id)
+async def get_single_feature_intents(feature_id: str, request: Request, func):
+    """Get feature intents from feature_id"""
+    try:
+        return paginate(
+            await func(feature_id=feature_id, **dict(request.query_params))
+        )
     except NotFound as e:
         raise HTTPException(404, detail=str(e))
     except Exception as e:
