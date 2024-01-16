@@ -19,6 +19,7 @@ from .core import prefixed_routers as core_prefixed_routers
 from .volumes import prefixed_routers as volume_prefixed_routers
 from .compounds import prefixed_routers as compound_prefixed_routers
 from .features import router as feature_router
+from .volcabularies import router as vocabolaries_router
 from .metrics import prom_metrics_resp, on_startup as metrics_on_startup, on_terminate as metrics_on_terminate
 from .code_snippet import get_sourcecode
 
@@ -37,6 +38,7 @@ for prefix_router in [*core_prefixed_routers, *volume_prefixed_routers, *compoun
     siibra_api.include_router(prefix_router.router, prefix=prefix_router.prefix)
 
 siibra_api.include_router(feature_router, prefix="/feature")
+siibra_api.include_router(vocabolaries_router, prefix="/vocabularies")
 
 add_pagination(siibra_api)
 
