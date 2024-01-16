@@ -1,5 +1,7 @@
 This document will record the process to reimplement the `/genes` endpoint, which was briefly removed during the refactor of `/v2_0` to `/v3_0`. This should serve as an informative document, the process adds a top level module, which needs to be included for the server/worker architecture to work properly.
 
+See [commit](https://github.com/FZJ-INM1-BDA/siibra-api/commit/ee5c542845684358f8619281853893e46993b255)
+
 ## Adding the new import
 
 `api.serialization.util.siibra` Serves as the one and single entrypoint to siibra package. To access the new variable `GENE_NAMES`, import it here.

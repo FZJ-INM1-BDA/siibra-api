@@ -1,5 +1,7 @@
 siibra v0.5 introduced compound features. New serialization strategies and models need to be introduced in order to take full advantage of the introduction of compound features.
 
+See the [commit](https://github.com/FZJ-INM1-BDA/siibra-api/commit/6723cfa3e612de66022150b6d5e645caddbc3e7a)
+
 ## Import the new class
 
 `api.serialization.util.siibra` Serves as the one and single entrypoint to siibra package. To access the new class `CompoundFeature`, import it here.
