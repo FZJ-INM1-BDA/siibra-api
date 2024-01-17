@@ -3,7 +3,7 @@ from typing import Optional, List, Union, ClassVar, Any, Literal
 from pydantic import Field, BaseModel
 from abc import ABC
 
-SIIBRA_PYTHON_VERSION = "0.4"
+SIIBRA_PYTHON_VERSION = "1.0"
 
 ignore_cls=(
     "BrainAtlasVersionModel",

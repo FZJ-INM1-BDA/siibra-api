@@ -5,7 +5,7 @@
 replicaCount: 1
 
 sapiVersion: "0.3.15" # "latest" or "0.3.15"
-sapiWorkerQueues: ["core", "features", "volumes", "compounds"]
+sapiWorkerQueues: ["core", "features", "volumes", "compounds", "vocabularies"]
 sapiFlavor: "prod" # could be prod, rc, latest, etc
 
 image:

@@ -45,4 +45,6 @@ from siibra.commons import MapIndex, Species, MapType
 
 from siibra import parcellations, spaces, atlases
 
+from siibra.vocabularies import GENE_NAMES
+
 import siibra
