@@ -1,3 +1,3 @@
 # siibra==1.0a4
-git+https://github.com/FZJ-INM1-BDA/siibra-python.git@5789433407a70f921b7e03055533f043750c08c9
+git+https://github.com/FZJ-INM1-BDA/siibra-python.git@d5fa00f
 plotly
