@@ -147,7 +147,7 @@ def get_parcellation_labelled_map(parcellation_id: str, space_id: str, region_id
     volume_data = None
     if region_id is not None:
         region = siibra.get_region(parcellation_id, region_id)
-        volume_data = region.fetch_regional_map(space_id, siibra.MapType.LABELLED)
+        volume_data = region.get_regional_map(space_id, siibra.MapType.LABELLED).fetch()
     else:
         labelled_map = siibra.get_map(parcellation_id, space_id, siibra.MapType.LABELLED)
         assert labelled_map is not None, f"{error_text} returns None"

@@ -128,7 +128,7 @@ def download_all(space_id: str, parcellation_id: str, region_id: str=None, featu
                 space: _space.Space = siibra.spaces[space_id]
                 region = siibra.get_region(parcellation_id, region_id)
                 region_filename = f"{region.key}.nii.gz"
-                regional_map = region.fetch_regional_map(space, siibra.MapType.STATISTICAL)
+                regional_map = region.get_regional_map(space, siibra.MapType.STATISTICAL).fetch()
                 zipfile.writestr(region_filename, gzip.compress(regional_map.to_bytes()))
                 write_desc(f'{region_filename}.info.md', region)
             except Exception as e:
