@@ -207,7 +207,7 @@ async def get_single_tabular(parcellation_id: str, region_id: str, feature_id: s
 @router.get("/Image", response_model=Page[SiibraVoiModel])
 @version(*FASTAPI_VERSION)
 @wrap_feature_category("Image")
-@async_router_decorator(ROLE, func=partial(all_features, parcellation_id=None, region_id=None))
+@async_router_decorator(ROLE, func=partial(all_features, parcellation_id=None, region_id=None, restrict_space=True))
 async def get_all_voi(space_id: str, bbox: str, type: Optional[str]=None, func=lambda: []):
     """Get all Image features"""
     type = str(type) if type else None

@@ -1,3 +1,2 @@
-# siibra==1.0a4
-git+https://github.com/FZJ-INM1-BDA/siibra-python.git@d5fa00f
+siibra==1.0a5
 plotly
