@@ -57,12 +57,12 @@ def instance_to_model(instance: Any, * , use_class: Type=None, skip_classes: Lis
             return None
         return instance
     if isinstance(instance, (list, tuple)):
-        return [instance_to_model(item) for item in instance]
+        return [instance_to_model(item, **kwargs) for item in instance]
     if isinstance(instance, dict):
         if not all([isinstance(key, str) for key in instance]):
             raise NonStrKeyException(f"Attempting to serialize dict with non str keys! {instance}")
         return {
-            key: instance_to_model(value)
+            key: instance_to_model(value, **kwargs)
             for key, value in instance.items()
         }
     for Cls in instance.__class__.__mro__:
