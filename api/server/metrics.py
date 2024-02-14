@@ -83,7 +83,7 @@ def refresh_prom_metrics():
                                 **common_kwargs)
     num_worker_gauge = Gauge("num_workers",
                              "Number of workers",
-                             label_names=("hostname", "q_name", "ok"), **common_kwargs)
+                             labelnames=("hostname", "q_name", "ok"), **common_kwargs)
     scheduled_gauge = Gauge("scheduled_tasks","Number of scheduled tasks",  labelnames=("hostname",), **common_kwargs)
     active_gauge = Gauge("active_tasks", "Number of active tasks", labelnames=("hostname",), **common_kwargs)
     reserved_gauge = Gauge("reserved_tasks", "Number of reserved tasks", labelnames=("hostname",), **common_kwargs)
