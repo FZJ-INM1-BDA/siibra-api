@@ -56,17 +56,17 @@ spec:
           - "-O"
           - "fair"
           livenessProbe:
-            initialDelaySeconds: 180
+            initialDelaySeconds: 20
             periodSeconds: 60
             timeoutSeconds: 30
             failureThreshold: 3
             exec:
               command: ["/bin/bash", "-c", "cd /worker && python worker_health.py"]
           readinessProbe:
-            initialDelaySeconds: 120
+            initialDelaySeconds: 10
             periodSeconds: 60
             timeoutSeconds: 30
-            failureThreshold: 3
+            failureThreshold: 12
             exec:
               command: ["/bin/bash", "-c", "cd /worker && python worker_health.py"]
           envFrom:

@@ -4,7 +4,7 @@ from typing import List, Dict
 from subprocess import run
 import os
 from pathlib import Path
-from api.siibra_api_config import ROLE, CELERY_CONFIG, NAME_SPACE, MONITOR_FIRSTLVL_DIR
+from api.siibra_api_config import ROLE, CELERY_CONFIG, NAME_SPACE, MONITOR_FIRSTLVL_DIR, queues
 from api.common.timer import RepeatTimer
 from api.common import general_logger
 
@@ -81,7 +81,9 @@ def refresh_prom_metrics():
                                 "Number of tasks in queue (not yet picked up by workers)",
                                 labelnames=("q_name",),
                                 **common_kwargs)
-    num_worker_gauge = Gauge("num_workers", "Number of workers", **common_kwargs)
+    num_worker_gauge = Gauge("num_workers",
+                             "Number of workers",
+                             label_names=("hostname", "q_name", "ok"), **common_kwargs)
     scheduled_gauge = Gauge("scheduled_tasks","Number of scheduled tasks",  labelnames=("hostname",), **common_kwargs)
     active_gauge = Gauge("active_tasks", "Number of active tasks", labelnames=("hostname",), **common_kwargs)
     reserved_gauge = Gauge("reserved_tasks", "Number of reserved tasks", labelnames=("hostname",), **common_kwargs)
@@ -105,7 +107,15 @@ def refresh_prom_metrics():
     if result is None:
         num_worker_gauge.set(0)
     else:
-        num_worker_gauge.set(len(result))
+        for worker_hostname, resp in result.items():
+            for queue in queues:
+                if queue in worker_hostname:
+                    break
+            else:
+                queue = "celery"
+            num_worker_gauge.labels(hostname=worker_hostname.replace("celery@", ""),
+                                    ok=resp.get("ok"),
+                                    q_name=queue).set(len(result))
 
     for workername, queue in (i.scheduled() or {}).items():
         scheduled_gauge.labels(hostname=workername).set(len(queue))

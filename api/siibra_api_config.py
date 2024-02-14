@@ -64,7 +64,7 @@ QUEUE_PREFIX = f"{__version__}.{NAME_SPACE}"
 MONITOR_FIRSTLVL_DIR = os.getenv("MONITOR_FIRSTLVL_DIR")
 """MONITOR_FIRSTLVL_DIR"""
 
-_queues = [
+queues = [
     "core",
     "features",
     "volumes",
@@ -92,8 +92,8 @@ class CELERY_CONFIG:
 
     # source of truth on all queues
     task_routes={
-        f'api.common.data_handlers.{_queue}.*': f'{QUEUE_PREFIX}.{_queue}'
-        for _queue in _queues
+        f'api.common.data_handlers.{queue}.*': f'{QUEUE_PREFIX}.{queue}'
+        for queue in queues
     }
 
     # define task_queues explicitly, so that if -Q is not defined, the worker
@@ -121,16 +121,15 @@ try:
     remapped_providers = os.getenv("SIIBRA_API_REMAP_PROVIDERS")
     if remapped_providers:
         for mapping in remapped_providers.split("\n"):
-            regex_string = r"^(?P<from_host>(https?://)?[\w0-9./]+(:[0-9]+)?):(?P<to_host>(https?://)?[\w0-9./]+(:[0-9]+)?)$"
-            match = re.match(regex_string, mapping)
-            assert match
-            SIIBRA_API_REMAP_PROVIDERS[match.group("from_host")] = match.group("to_host")
+            assert "::" in mapping, f"No double colon found!"
+            from_host, to_host = mapping.split("::", 1)
+            SIIBRA_API_REMAP_PROVIDERS[from_host] = to_host
         
 except Exception as e:
-    print(f"""Cannot parse SIIBRA_API_REMAP_PROVIDERS properly.
-    SIIBRA_API_REMAP_PROVIDERS must be comma separated values, with colon indicating mapping
+    print(f"""Cannot parse SIIBRA_API_REMAP_PROVIDERS properly {str(e)}.
+    SIIBRA_API_REMAP_PROVIDERS must be newline separated values, with double colon indicating mapping
     e.g.
-    me.local:localhost
+    me.local::localhost
     SIIBRA_API_REMAP_PROVIDERS
     {remapped_providers}
     """)
