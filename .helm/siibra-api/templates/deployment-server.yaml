@@ -33,7 +33,7 @@ spec:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.sapiVersion }}-server"
+          image: "{{ .Values.image.repository }}:{{ include "siibra-api.root-img" . }}-server"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
@@ -59,6 +59,8 @@ spec:
           env:
             - name: SIIBRA_CACHEDIR
               value: "/siibra-api-volume/{{ .Values.sapiVersion }}"
+            - name: SIIBRA_API_NAMESPACE
+              value: {{ $.Values.sapiFlavor }}
           resources:
             {{- toYaml .Values.resourcesServerPod | nindent 12 }}
           {{- with .Values.volumeMounts }}

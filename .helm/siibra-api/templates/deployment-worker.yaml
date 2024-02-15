@@ -44,7 +44,7 @@ spec:
         - name: {{ $.Chart.Name }}
           securityContext:
             {{- toYaml $.Values.securityContext | nindent 12 }}
-          image: "{{ $.Values.image.repository }}:{{ $.Values.sapiVersion }}-worker"
+          image: "{{ $.Values.image.repository }}:{{ include "siibra-api.root-img" $ }}-worker"
           imagePullPolicy: {{ $.Values.image.pullPolicy }}
           command: ["celery"]
           args:
@@ -75,6 +75,8 @@ spec:
           env:
             - name: SIIBRA_CACHEDIR
               value: "/siibra-api-volume/{{ $.Values.sapiVersion }}"
+            - name: SIIBRA_API_NAMESPACE
+              value: {{ $.Values.sapiFlavor }}
           resources:
             {{- toYaml $.Values.resourcesWorkerPod | nindent 12 }}
           {{- with $.Values.volumeMounts }}

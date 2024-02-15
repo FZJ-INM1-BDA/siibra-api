@@ -1,0 +1,20 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: siibra-api-rc
+spec:
+  commonName: siibra-api-rc.apps.tc.humanbrainproject.eu
+  isCA: false
+  dnsNames:
+  - siibra-api-rc.apps.tc.humanbrainproject.eu
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-production-issuer-1
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  renewBefore: 120h
+  secretName: siibra-api-rc-secret
+  usages:
+  - server auth

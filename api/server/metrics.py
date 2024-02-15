@@ -4,6 +4,7 @@ from typing import List, Dict
 from subprocess import run
 import os
 from pathlib import Path
+from collections import defaultdict
 from api.siibra_api_config import ROLE, CELERY_CONFIG, NAME_SPACE, MONITOR_FIRSTLVL_DIR, queues
 from api.common.timer import RepeatTimer
 from api.common import general_logger
@@ -31,6 +32,8 @@ class Singleton:
                 return
             
             for dir in dirs:
+                if dir == "lost+found":
+                    continue
                 path_to_dir = Path(MONITOR_FIRSTLVL_DIR) / dir
                 try:
                     result = run(["du", "-s", str(path_to_dir)], capture_output=True, text=True)
@@ -83,7 +86,7 @@ def refresh_prom_metrics():
                                 **common_kwargs)
     num_worker_gauge = Gauge("num_workers",
                              "Number of workers",
-                             labelnames=("hostname", "q_name", "ok"), **common_kwargs)
+                             labelnames=("version", "namespace", "queue"), **common_kwargs)
     scheduled_gauge = Gauge("scheduled_tasks","Number of scheduled tasks",  labelnames=("hostname",), **common_kwargs)
     active_gauge = Gauge("active_tasks", "Number of active tasks", labelnames=("hostname",), **common_kwargs)
     reserved_gauge = Gauge("reserved_tasks", "Number of reserved tasks", labelnames=("hostname",), **common_kwargs)
@@ -103,19 +106,20 @@ def refresh_prom_metrics():
     i = app.control.inspect()
 
     # number of active workers
-    result = i.ping()
-    if result is None:
-        num_worker_gauge.set(0)
-    else:
-        for worker_hostname, resp in result.items():
-            for queue in queues:
-                if queue in worker_hostname:
-                    break
-            else:
-                queue = "celery"
-            num_worker_gauge.labels(hostname=worker_hostname.replace("celery@", ""),
-                                    ok=resp.get("ok"),
-                                    q_name=queue).set(len(result))
+    result = app.control.inspect().active_queues()
+    
+    tally = defaultdict(0)
+    for hostname in result:
+        for queue in result[hostname]:
+            routing_key = queue.get("routing_key")
+            *_, namespace, queue = routing_key
+            version = ".".join(_)
+            tally[(version, namespace, queue)] += 1
+
+    for ((version, namespace, queue), total) in tally.items():
+        num_worker_gauge.labels(version=version,
+                                namespace=namespace,
+                                queue=queue).set(total)
 
     for workername, queue in (i.scheduled() or {}).items():
         scheduled_gauge.labels(hostname=workername).set(len(queue))
