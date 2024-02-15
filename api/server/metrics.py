@@ -108,7 +108,7 @@ def refresh_prom_metrics():
     # number of active workers
     result = app.control.inspect().active_queues()
     
-    tally = defaultdict(0)
+    tally = defaultdict(int)
     for hostname in result:
         for queue in result[hostname]:
             routing_key = queue.get("routing_key")
