@@ -109,7 +109,7 @@ def refresh_prom_metrics():
     result = app.control.inspect().active_queues()
     
     tally = defaultdict(int)
-    for hostname in result:
+    for hostname in (result or {}):
         for queue in result[hostname]:
             routing_key = queue.get("routing_key")
             *_, namespace, queue = routing_key
