@@ -112,7 +112,7 @@ def refresh_prom_metrics():
     for hostname in (result or {}):
         for queue in result[hostname]:
             routing_key = queue.get("routing_key")
-            *_, namespace, queue = routing_key
+            *_, namespace, queue = routing_key.split(".")
             version = ".".join(_)
             tally[(version, namespace, queue)] += 1
 
