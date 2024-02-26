@@ -221,7 +221,7 @@ jobs:
         while true
         do
           sleep 10
-          POD_PHASE=$(kubectl --kubeconfig=$kubecfg_path get pod busybox -o json | jq -r '.status.phase')
+          POD_PHASE=$(kubectl --kubeconfig=$kubecfg_path get pod warmup-pod -o json | jq -r '.status.phase')
 
           echo Possible phases: Pending, Running, Succeeded, Failed, Unknown
           echo Found phase: $POD_PHASE
