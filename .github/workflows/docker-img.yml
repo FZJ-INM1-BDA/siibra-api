@@ -207,7 +207,7 @@ jobs:
         kubecfg_path=${{ runner.temp }}/.kube_config
         echo "${{ secrets.KUBECONFIG }}" > $kubecfg_path
 
-        kubectl --kubeconfig=$kubecfg_path delete pod/warmup-pod
+        kubectl --kubeconfig=$kubecfg_path delete pod/warmup-pod || echo "Pod pod/warmup-pod not found." 
 
         # TODO Flaky
         # see .helm/siibra-api/templates/_helpers.tpl how siibra-api.cache-dir is defined
