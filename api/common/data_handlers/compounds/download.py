@@ -64,8 +64,8 @@ def download_all(space_id: str, parcellation_id: str, region_id: str=None, featu
             try:
                 path_to_feature_export = Path(SIIBRA_API_SHARED_DIR, f"export-{feature_id}.zip")
                 if not path_to_feature_export.exists():
-                    feature = siibra.features.Feature.get_instance_by_id(feature_id)
-                    feature.export(path_to_feature_export)
+                    feature = siibra.features.Feature._get_instance_by_id(feature_id)
+                    feature.to_zip(path_to_feature_export)
                 zipfile.write(path_to_feature_export, f"export-{feature_id}.zip")
             except Exception as e:
                 zipfile.writestr(f"{feature_id}.error.txt", f"Feature exporting failed: {str(e)}")

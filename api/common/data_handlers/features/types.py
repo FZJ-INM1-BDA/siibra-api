@@ -110,15 +110,9 @@ def get_single_feature_download_zip_path(feature_id: str, **kwargs):
     except Exception as e:
         general_logger.error(f"Error finding single feature {feature_id=}, {str(e)}")
         raise NotFound from e
-    try:
-        feat.export(str(full_filename))
-        return str(full_filename)
-    except Exception as e:
-        general_logger.error(f"Error export single feature {feature_id=}, {str(e)}")
-        error_filename = full_filename.with_suffix(".error.zip")
-        with ZipFile(error_filename, "w") as zf:
-            zf.writestr("error.txt", f"Error exporting file for feature_id: {feature_id}: {str(e)}")
-        return str(error_filename)
+
+    feat.to_zip(str(full_filename))
+    return str(full_filename)
 
 
 def extract_concept(*, space_id: str=None, parcellation_id: str=None, region_id: str=None, bbox: str=None, **kwargs):
