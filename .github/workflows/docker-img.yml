@@ -207,7 +207,7 @@ jobs:
         kubecfg_path=${{ runner.temp }}/.kube_config
         echo "${{ secrets.KUBECONFIG }}" > $kubecfg_path
 
-        kubectl delete pod/warmup-pod
+        kubectl --kubeconfig=$kubecfg_path delete pod/warmup-pod
 
         # TODO Flaky
         # see .helm/siibra-api/templates/_helpers.tpl how siibra-api.cache-dir is defined
@@ -216,12 +216,12 @@ jobs:
         WARM_CACHE_YML=$(envsubst < .helm/adhoc/warm-cache.yaml)
         echo WARM_CACHE_YML: $WARM_CACHE_YML
 
-        echo $WARM_CACHE_YML | kubectl apply -f -
+        echo $WARM_CACHE_YML | kubectl --kubeconfig=$kubecfg_path apply -f -
         
         while true
         do
           sleep 10
-          POD_PHASE=$(kubectl get pod busybox -o json | jq -r '.status.phase')
+          POD_PHASE=$(kubectl --kubeconfig=$kubecfg_path get pod busybox -o json | jq -r '.status.phase')
 
           echo Possible phases: Pending, Running, Succeeded, Failed, Unknown
           echo Found phase: $POD_PHASE
@@ -246,8 +246,8 @@ jobs:
     steps:
     - run: |
         REDIS_POD=$(kubectl get pod -l app=cache-redis | grep Running | awk '{print $1}')
-        echo kubectl exec $REDIS_POD -- /bin/ash -c "redis-cli redis-cli --scan --pattern "*${{ needs.setup-envvar.outputs.version }}*" | while IFS= read -r line; do redis-cli del "$line"; done"
-        kubectl exec $REDIS_POD -- /bin/ash -c "redis-cli redis-cli --scan --pattern "*${{ needs.setup-envvar.outputs.version }}*" | while IFS= read -r line; do redis-cli del "$line"; done"
+        echo kubectl --kubeconfig=SECRET exec $REDIS_POD -- /bin/ash -c "redis-cli redis-cli --scan --pattern "*${{ needs.setup-envvar.outputs.version }}*" | while IFS= read -r line; do redis-cli del "$line"; done"
+        kubectl --kubeconfig=$kubecfg_path exec $REDIS_POD -- /bin/ash -c "redis-cli redis-cli --scan --pattern "*${{ needs.setup-envvar.outputs.version }}*" | while IFS= read -r line; do redis-cli del "$line"; done"
 
   deploy-rc-via-helm:
     needs: warmup-rc-at-helm
