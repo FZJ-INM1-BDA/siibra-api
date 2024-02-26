@@ -214,9 +214,9 @@ jobs:
 
         SIIBRA_CACHEDIR=/siibra-api-volume/${{ needs.setup-envvar.outputs.version }}-rc/
         WARM_CACHE_YML=$(envsubst < .helm/adhoc/warm-cache.yaml)
-        echo WARM_CACHE_YML: $WARM_CACHE_YML
+        echo -e "WARM_CACHE_YML: \n$WARM_CACHE_YML"
 
-        echo $WARM_CACHE_YML | kubectl --kubeconfig=$kubecfg_path apply -f -
+        echo -e "$WARM_CACHE_YML" | kubectl --kubeconfig=$kubecfg_path apply -f -
         
         while true
         do
