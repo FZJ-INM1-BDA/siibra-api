@@ -27,10 +27,19 @@ jobs:
         if [[ $helm_status = "0" ]]
         then
           echo "tag ${{ inputs.DEPLOYMENT_NAME }} found. Update"
-          helm --set sapiVersion=${version} --kubeconfig=$kubecfg_path upgrade ${{ inputs.DEPLOYMENT_NAME }} .helm/siibra-api/
+          helm --set sapiVersion=${version} \
+            --kubeconfig=$kubecfg_path \
+            --history-max=3 \
+            upgrade \
+            ${{ inputs.DEPLOYMENT_NAME }} \
+            .helm/siibra-api/
         else
           echo "tag ${{ inputs.DEPLOYMENT_NAME }} not found. Install"
-          helm --set sapiVersion=${version} --kubeconfig=$kubecfg_path install ${{ inputs.DEPLOYMENT_NAME }} .helm/siibra-api/
+          helm --set sapiVersion=${version} \
+            --kubeconfig=$kubecfg_path \
+            install \
+            ${{ inputs.DEPLOYMENT_NAME }} \
+            .helm/siibra-api/
         fi
 
         rm $kubecfg_path

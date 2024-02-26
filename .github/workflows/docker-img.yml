@@ -196,7 +196,68 @@ jobs:
     secrets:
       okd_token: ${{ matrix.deploy-site == 'jsc' && secrets.OKD_JSC_SECRET || secrets.OKD_PROD_SECRET }}
 
+  warmup-rc-at-helm:
+    needs: setup-envvar
+    if:  ${{ github.event_name == 'release' && contains(github.ref, 'rc') }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - timeout-minutes: 15 # should not take more than 15 minutes to warmup cache
+      run: |
+        kubecfg_path=${{ runner.temp }}/.kube_config
+        echo "${{ secrets.KUBECONFIG }}" > $kubecfg_path
 
+        kubectl delete pod/warmup-pod
+
+        # TODO Flaky
+        # see .helm/siibra-api/templates/_helpers.tpl how siibra-api.cache-dir is defined
+
+        SIIBRA_CACHEDIR=/siibra-api-volume/${{ needs.setup-envvar.outputs.version }}-rc/
+        WARM_CACHE_YML=$(envsubst < .helm/adhoc/warm-cache.yaml)
+        echo WARM_CACHE_YML: $WARM_CACHE_YML
+
+        echo $WARM_CACHE_YML | kubectl apply -f -
+        
+        while true
+        do
+          sleep 10
+          POD_PHASE=$(kubectl get pod busybox -o json | jq -r '.status.phase')
+
+          echo Possible phases: Pending, Running, Succeeded, Failed, Unknown
+          echo Found phase: $POD_PHASE
+
+          if [[ "$POD_PHASE" == "Failed" ]] || [[ "$POD_PHASE" == "Unknown" ]]
+          then
+            exit 1
+          fi
+
+          if [[ "$POD_PHASE" == "Succeeded" ]]
+          then
+            exit 0
+          fi
+        done
+  
+  clear-rc-redis-cache:
+    runs-on: 'ubuntu'
+    timeout-minutes: 1 # should not take more than 1 minute to clear the cache
+    needs:
+    - warmup-rc-at-helm
+    - setup-envvar
+    steps:
+    - run: |
+        REDIS_POD=$(kubectl get pod -l app=cache-redis | grep Running | awk '{print $1}')
+        echo kubectl exec $REDIS_POD -- /bin/ash -c "redis-cli redis-cli --scan --pattern "*${{ needs.setup-envvar.outputs.version }}*" | while IFS= read -r line; do redis-cli del "$line"; done"
+        kubectl exec $REDIS_POD -- /bin/ash -c "redis-cli redis-cli --scan --pattern "*${{ needs.setup-envvar.outputs.version }}*" | while IFS= read -r line; do redis-cli del "$line"; done"
+
+  deploy-rc-via-helm:
+    needs: warmup-rc-at-helm
+    if:  ${{ github.event_name == 'release' && contains(github.ref, 'rc') }}
+    uses: ./.github/workflows/deploy-helm.yml
+    with:
+      DEPLOYMENT_NAME: rc
+    secrets:
+      KUBECONFIG: ${{ secrets.KUBECONFIG }}
+  
   deploy-prod-via-helm:
     needs: setup-envvar
     if:  ${{ github.event_name == 'release' && !contains(github.ref, 'rc') }}

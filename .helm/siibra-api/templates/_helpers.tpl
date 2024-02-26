@@ -5,6 +5,9 @@ Expand the name of the chart.
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
+{{/*
+Define root image
+*/}}
 {{- define "siibra-api.root-img" -}}
 {{- if eq .Values.sapiFlavor "rc" }}
 {{- "rc" }}
@@ -12,6 +15,25 @@ Expand the name of the chart.
 {{- .Values.sapiVersion }}
 {{- end }}
 {{- end }}
+
+
+{{/*
+Define cache-dir. append -rc if is rc
+This is because, on deploy staging it will rm -rf cache-dir.
+This should prevent misconfiguration from deleting prod cache
+*/}}
+{{- define "siibra-api.cache-dir" -}}
+{{- if eq .Values.sapiFlavor "rc" }}
+{{/*
+N.B. *any* update here *needs* to be reflected in
+.github/workflows/docker-img.yml#jobs>warmup-rc-at-helm
+*/}}
+{{- printf "%s-%s" .Values.sapiVersion "rc" }}
+{{- else }}
+{{- .Values.sapiVersion }}
+{{- end }}
+{{- end }}
+
 
 {{/*
 Create a default fully qualified app name.
