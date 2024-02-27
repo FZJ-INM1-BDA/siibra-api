@@ -261,6 +261,10 @@ jobs:
     - warmup-rc-at-helm
     - setup-envvar
     steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/composite-set-k8s-cred
+      with:
+        secrets: ${{ secrets.KUBECONFIG }}
     - run: |
         REDIS_POD=$(kubectl get pod -l app=cache-redis | grep Running | awk '{print $1}')
         echo kubectl exec $REDIS_POD -- /bin/ash -c "redis-cli redis-cli --scan --pattern '*\[${{ needs.setup-envvar.outputs.version }}\]*' | while IFS= read -r line; do redis-cli del "$line"; done"

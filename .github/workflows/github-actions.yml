@@ -6,6 +6,10 @@ on:
     branches:
     - '*'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.sha }}
+  cancel-in-progress: true
+
 jobs:
   model-module-import:
     runs-on: ubuntu-latest
