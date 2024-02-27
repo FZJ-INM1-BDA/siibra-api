@@ -10,36 +10,77 @@ on:
       KUBECONFIG:
         required: true
 
+env:
+  RC_INGRESS_HOST: '[{"host": "siibra-api-rc.apps.tc.humanbrainproject.eu", "paths": [{ "path": "/", "pathType": "Prefix" }]}]'
+  RC_INGRESS_TLS: '[{"secretName": "siibra-api-rc-secret", "hosts": ["siibra-api-rc.apps.tc.humanbrainproject.eu"]}]'
+
 jobs:
-  trigger-deploy:
+  set-vars:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: 'Deploy'
-      run: |
-        kubecfg_path=${{ runner.temp }}/.kube_config
-        version=$(cat api/VERSION)
+    - uses: actions/checkout@v4
+    - uses: './.github/workflows/composite-set-k8s-cred'
+      with:
+        secrets: ${{ secrets.KUBECONFIG }}
         
-        echo "${{ secrets.KUBECONFIG }}" > $kubecfg_path
-        helm --kubeconfig=$kubecfg_path status ${{ inputs.DEPLOYMENT_NAME }}
-        helm_status=$(echo $?)
+    - name: 'Get status'
+      run: |
+        helm status ${{ inputs.DEPLOYMENT_NAME }}
+        HELM_STATUS=$(echo $?)
+        echo "HELM_STATUS: $HELM_STATUS"
+        echo "HELM_STATUS=$HELM_STATUS" >> $GITHUB_ENV
 
-        if [[ $helm_status = "0" ]]
+    - name: Set Vars
+      run: |
+        SAPI_VERSION=$(cat api/VERSION)
+        git_hash=$(git rev-parse --short HEAD)
+        
+        echo "SAPI_VERSION: $SAPI_VERSION"
+        echo "GIT_HASH: $GIT_HASH"
+
+        if [[ -z "$SAPI_VERSION" ]]
         then
-          echo "tag ${{ inputs.DEPLOYMENT_NAME }} found. Update"
-          helm --set sapiVersion=${version} \
-            --kubeconfig=$kubecfg_path \
-            --history-max=3 \
-            upgrade \
-            ${{ inputs.DEPLOYMENT_NAME }} \
-            .helm/siibra-api/
-        else
-          echo "tag ${{ inputs.DEPLOYMENT_NAME }} not found. Install"
-          helm --set sapiVersion=${version} \
-            --kubeconfig=$kubecfg_path \
-            install \
-            ${{ inputs.DEPLOYMENT_NAME }} \
-            .helm/siibra-api/
+          echo "SAPI_VERSION cannot be found $SAPI_VERSION"
+          exit 1
+        fi
+        
+        if [[ -z "$GIT_HASH" ]]
+        then
+          echo "GIT_HASH cannot be found $GIT_HASH"
+          exit 1
         fi
 
-        rm $kubecfg_path
+        echo "SAPI_VERSION=$SAPI_VERSION" >> $GITHUB_ENV
+        echo "GIT_HASH=$GIT_HASH" >> $GITHUB_ENV
+        
+    - name: 'deploy rc'
+      if: ${{ inputs.DEPLOYMENT_NAME == 'rc' }}
+      run: |
+        if [[ "$HELM_STATUS" == "0" ]]
+        then
+          helm --set sapiVersion=$version \
+            --reuse-values \
+            --set podLabels.hash="$GIT_HASH" \
+            --set image.pullPolicy=Always \
+            upgrade rc .helm/siibra-api/
+        else
+          helm --set sapiVersion=$version \
+            --set sapiFlavor=rc --set-json ingress.hosts='${{ env.RC_INGRESS_HOST }}'\
+            --set-json ingress.tls='${{ env.RC_INGRESS_TLS }}' \
+            --set podLabels.hash="$GIT_HASH" \
+            --set image.pullPolicy=Always \
+            install rc .helm/siibra-api/
+        fi
+
+    - name: 'deploy prod'
+      if: ${{ inputs.DEPLOYMENT_NAME == 'prod' }}
+      run: |
+        if [[ "$HELM_STATUS" == "0" ]]
+        then
+          helm --set sapiVersion=$version \
+            --reuse-values \
+            upgrade rc .helm/siibra-api/
+        else 
+          helm --set sapiVersion=$version \
+            install rc .helm/siibra-api/
+        fi

@@ -74,7 +74,7 @@ spec:
                 name: siibra-api-common
           env:
             - name: SIIBRA_CACHEDIR
-              value: "/siibra-api-volume/{{ include "siibra-api.cache-dir" $ }}"
+              value: "/siibra-api-volume/{{- include "siibra-api.cache-dir" $ -}}"
             - name: SIIBRA_API_NAMESPACE
               value: {{ $.Values.sapiFlavor }}
           resources:
