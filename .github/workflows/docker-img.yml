@@ -263,8 +263,8 @@ jobs:
     steps:
     - run: |
         REDIS_POD=$(kubectl get pod -l app=cache-redis | grep Running | awk '{print $1}')
-        echo kubectl --kubeconfig=SECRET exec $REDIS_POD -- /bin/ash -c "redis-cli redis-cli --scan --pattern '*\[${{ needs.setup-envvar.outputs.version }}\]*' | while IFS= read -r line; do redis-cli del "$line"; done"
-        kubectl --kubeconfig=$kubecfg_path exec $REDIS_POD -- /bin/ash -c "redis-cli redis-cli --scan --pattern '*\[${{ needs.setup-envvar.outputs.version }}\]*' | while IFS= read -r line; do redis-cli del "$line"; done"
+        echo kubectl exec $REDIS_POD -- /bin/ash -c "redis-cli redis-cli --scan --pattern '*\[${{ needs.setup-envvar.outputs.version }}\]*' | while IFS= read -r line; do redis-cli del "$line"; done"
+        kubectl exec $REDIS_POD -- /bin/ash -c "redis-cli redis-cli --scan --pattern '*\[${{ needs.setup-envvar.outputs.version }}\]*' | while IFS= read -r line; do redis-cli del "$line"; done"
 
   deploy-rc-via-helm:
     needs: warmup-rc-at-helm

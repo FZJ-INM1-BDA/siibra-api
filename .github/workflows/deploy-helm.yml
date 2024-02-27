@@ -33,7 +33,7 @@ jobs:
     - name: Set Vars
       run: |
         SAPI_VERSION=$(cat api/VERSION)
-        git_hash=$(git rev-parse --short HEAD)
+        GIT_HASH=$(git rev-parse --short HEAD)
         
         echo "SAPI_VERSION: $SAPI_VERSION"
         echo "GIT_HASH: $GIT_HASH"
