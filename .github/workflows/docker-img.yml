@@ -215,7 +215,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: .github/workflows/composite-set-k8s-cred
+    - uses: ./.github/workflows/composite-set-k8s-cred
       with:
         secrets: ${{ secrets.KUBECONFIG }}
     - timeout-minutes: 15 # should not take more than 15 minutes to warmup cache
@@ -280,7 +280,7 @@ jobs:
     timeout-minutes: 15 # should not take more than 15 minutes to copy cache
     steps:
     - uses: actions/checkout@v4
-    - uses: .github/workflows/composite-set-k8s-cred
+    - uses: ./.github/workflows/composite-set-k8s-cred
       with:
         secrets: ${{ secrets.KUBECONFIG }}
     - name: 'set FROM_DIR TO_DIR'
