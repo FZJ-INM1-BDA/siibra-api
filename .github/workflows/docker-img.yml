@@ -285,7 +285,7 @@ jobs:
         secrets: ${{ secrets.KUBECONFIG }}
     - name: 'set FROM_DIR TO_DIR'
       run: |
-        VERSION=${{ setup-envar.outputs.version }}
+        VERSION=${{ needs.setup-envar.outputs.version }}
 
         # TODO use label exclusively in the future
         POD=$(kubectl get pod -l role=server | grep rc-siibra-api | awk '{print $1}')
