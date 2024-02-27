@@ -274,7 +274,7 @@ jobs:
   
   # prod
   copy-by-helm:
-    needs: setup-envar
+    needs: setup-envvar
     if:  ${{ github.event_name == 'release' && !contains(github.ref, 'rc') }}
     runs-on: ubuntu-latest
     timeout-minutes: 15 # should not take more than 15 minutes to copy cache
@@ -285,7 +285,7 @@ jobs:
         secrets: ${{ secrets.KUBECONFIG }}
     - name: 'set FROM_DIR TO_DIR'
       run: |
-        VERSION=${{ needs.setup-envar.outputs.version }}
+        VERSION=${{ needs.setup-envvar.outputs.version }}
 
         # TODO use label exclusively in the future
         POD=$(kubectl get pod -l role=server | grep rc-siibra-api | awk '{print $1}')
