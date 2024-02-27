@@ -12,6 +12,6 @@ runs:
     run: |
       kubecfg_path=${{ runner.temp }}/.kube_config
       install -m 600 $kubecfg_path
-      echo "${{ secrets.KUBECONFIG }}" > $kubecfg_path
+      echo "${{ inputs.secrets }}" > $kubecfg_path
       echo "KUBECONFIG=$kubecfg_path:$KUBECONFIG" >> $GITHUB_ENV
     shell: bash
