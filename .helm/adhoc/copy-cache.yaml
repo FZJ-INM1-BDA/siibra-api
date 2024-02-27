@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: copy-cache
+  name: copy-cache
+spec:
+  containers:
+  - name: copy-container
+    image: docker-registry.ebrains.eu/siibra/siibra-api:0.3-server
+    command:
+    - /bin/ash
+    args:
+    - -c
+    - "echo FROM_DIR: $FROM_DIR TO_DIR: $TO_DIR && cp -r $FROM_DIR $TO_DIR"
+    resources:
+      limits:
+        cpu: 200m
+        memory: 200Mi
+      requests:
+        cpu: 200m
+        memory: 200Mi
+    volumeMounts:
+    - mountPath: /siibra-api-volume
+      name: data-volume
+  restartPolicy: Never
+  volumes:
+  - name: data-volume
+    persistentVolumeClaim:
+      claimName: data-volume-claim

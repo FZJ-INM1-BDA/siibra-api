@@ -10,7 +10,7 @@ jobs:
   model-module-import:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: actions/setup-python@v4
       with:
         python-version: '3.10'
@@ -34,7 +34,7 @@ jobs:
       SIIBRA_API_REDIS_PORT: 6379
       SIIBRA_API_ROLE: server
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: actions/setup-python@v4
       with:
         python-version: '3.10'
@@ -56,8 +56,7 @@ jobs:
       # only included here for clarity (if user would like to run tests locally)
       CI: true
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python 3.10
         uses: actions/setup-python@v4
         with:

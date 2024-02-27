@@ -23,7 +23,7 @@ This is because, on deploy staging it will rm -rf cache-dir.
 This should prevent misconfiguration from deleting prod cache
 */}}
 {{- define "siibra-api.cache-dir" -}}
-{{- if eq .Values.sapiFlavor "rc" }}
+{{- if eq .Values.sapiFlavor "rc" -}}
 {{/*
 N.B. *any* update here *needs* to be reflected in
 .github/workflows/docker-img.yml#jobs>warmup-rc-at-helm
@@ -71,6 +71,7 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 app: siibra-api
+app-flavor: {{ .Values.sapiFlavor }}
 {{- end }}
 
 {{/*

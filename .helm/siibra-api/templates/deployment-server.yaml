@@ -58,9 +58,9 @@ spec:
                 name: siibra-api-common
           env:
             - name: SIIBRA_CACHEDIR
-              value: "/siibra-api-volume/{{ include "siibra-api.cache-dir" . }}"
+              value: "/siibra-api-volume/{{- include "siibra-api.cache-dir" . -}}"
             - name: SIIBRA_API_NAMESPACE
-              value: {{ $.Values.sapiFlavor }}
+              value: {{ .Values.sapiFlavor }}
           resources:
             {{- toYaml .Values.resourcesServerPod | nindent 12 }}
           {{- with .Values.volumeMounts }}

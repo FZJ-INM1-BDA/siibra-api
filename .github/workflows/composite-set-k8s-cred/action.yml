@@ -1,0 +1,17 @@
+name: Set k8s cred
+author: 'Xiao Gui <xgui3783@gmail.com>'
+description: 'Populates the k8s secret'
+inputs:
+  secrets:
+    description: "k8s cfg string"
+    required: true
+runs:
+  using: composite
+  steps:
+  - id: 'set-id'
+    run: |
+      kubecfg_path=${{ runner.temp }}/.kube_config
+      install -m 600 $kubecfg_path
+      echo "${{ secrets.KUBECONFIG }}" > $kubecfg_path
+      echo "KUBECONFIG=$kubecfg_path:$KUBECONFIG" >> $GITHUB_ENV
+    shell: bash

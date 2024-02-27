@@ -12,7 +12,7 @@ spec:
     - python
     args:
     - -c
-    - import siibra; siibra.cache.clear(); siibra.warm_cache()
+    - import siibra; siibra.cache.clear(); siibra.warm_cache(999)
     resources:
       limits:
         cpu: 900m
