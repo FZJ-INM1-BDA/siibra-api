@@ -1,0 +1,22 @@
+version: '3.0'
+services:
+  api:
+    container_name: siibra-api
+    image: docker-registry.ebrains.eu/siibra/siibra-api:latest
+    ports:
+    - "5000:5000"
+    environment:
+      SIIBRA_CACHEDIR: /siibra-api-volume
+      SIIBRA_USE_CONFIGURATION: /siibra-configuration
+    volumes:
+      - ./siibra-api-volume:/siibra-api-volume
+      - ./siibra-configuration:/siibra-configuration
+  explorer:
+    container_name: siibra-explorer
+    image: docker-registry.ebrains.eu/siibra/siibra-explorer:staging
+    environment:
+      OVERWRITE_API_ENDPOINT: https://zam10189.zam.kfa-juelich.de/api/v3_0
+      EXPERIMENTAL_FLAG: '1'
+      HOST_PATHNAME: '/explorer'
+    ports:
+    - "8080:8080"
