@@ -8,6 +8,13 @@ metadata:
     queuename: {{ . }}
     {{- include "siibra-api.labels" $ | nindent 4 }}
 spec:
+  strategy:
+    type: RollingUpdate
+    # This rolling update setup allow k8s to scale down before bringing up new pods.
+    # This should be more resource conservative, whilst sacrificing some availability during update.
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
 
   {{- if not $.Values.autoscaling.enabled }}
   replicas: {{ $.Values.replicaCount }}
@@ -56,16 +63,10 @@ spec:
           - "-O"
           - "fair"
           livenessProbe:
-            initialDelaySeconds: 20
-            periodSeconds: 60
-            timeoutSeconds: 30
-            failureThreshold: 3
-            exec:
-              command: ["/bin/bash", "-c", "cd /worker && python worker_health.py"]
-          readinessProbe:
-            initialDelaySeconds: 10
-            periodSeconds: 60
-            timeoutSeconds: 30
+            # each pod has 20 seconds to become lively (which by definition is ready)
+            initialDelaySeconds: 2
+            periodSeconds: 10
+            timeoutSeconds: 4
             failureThreshold: 12
             exec:
               command: ["/bin/bash", "-c", "cd /worker && python worker_health.py"]

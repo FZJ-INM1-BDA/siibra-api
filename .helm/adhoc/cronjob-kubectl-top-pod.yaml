@@ -1,0 +1,37 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cronjob-pod-usage
+spec:
+  # run everyminute
+  schedule: "* * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: cronjob-pod-usage
+            image: docker-registry.ebrains.eu/monitoring/kubectl:v1.29.2
+            imagePullPolicy: Always
+            command:
+            - /bin/ash
+            - -c
+            - "kubectl top pod > /siibra-api-volume/metrics.txt"
+            volumeMounts:
+              - mountPath: /siibra-api-volume
+                name: data-volume
+              - mountPath: /var/tmp/kube/
+                name: kubectl-config
+                readOnly: true
+            env:
+            - name: KUBECONFIG
+              value: /var/tmp/kube/config
+
+          restartPolicy: OnFailure
+          volumes:
+          - name: data-volume
+            persistentVolumeClaim:
+              claimName: data-volume-claim
+          - name: kubectl-config
+            secret:
+              secretName: kubectl-config

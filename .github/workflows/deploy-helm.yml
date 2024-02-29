@@ -58,18 +58,19 @@ jobs:
       run: |
         if [[ "$HELM_STATUS" == "0" ]]
         then
-          helm --set sapiVersion=$version \
+          helm upgrade --set sapiVersion=$SAPI_VERSION \
             --reuse-values \
             --set podLabels.hash="$GIT_HASH" \
             --set image.pullPolicy=Always \
-            upgrade rc .helm/siibra-api/
+            --history-max 3 \
+            rc .helm/siibra-api/
         else
-          helm --set sapiVersion=$version \
+          helm install --set sapiVersion=$SAPI_VERSION \
             --set sapiFlavor=rc --set-json ingress.hosts='${{ env.RC_INGRESS_HOST }}'\
             --set-json ingress.tls='${{ env.RC_INGRESS_TLS }}' \
             --set podLabels.hash="$GIT_HASH" \
             --set image.pullPolicy=Always \
-            install rc .helm/siibra-api/
+            rc .helm/siibra-api/
         fi
 
     - name: 'deploy prod'
@@ -77,10 +78,12 @@ jobs:
       run: |
         if [[ "$HELM_STATUS" == "0" ]]
         then
-          helm --set sapiVersion=$version \
+          helm upgrade \
+            --set sapiVersion=$SAPI_VERSION \
             --reuse-values \
-            upgrade rc .helm/siibra-api/
+            prod .helm/siibra-api/
         else 
-          helm --set sapiVersion=$version \
-            install rc .helm/siibra-api/
+          helm install \
+            --set sapiVersion=$SAPI_VERSION \
+            prod .helm/siibra-api/
         fi

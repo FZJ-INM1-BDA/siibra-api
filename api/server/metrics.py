@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from fastapi.responses import PlainTextResponse
-from typing import List, Dict
+from typing import List, Dict, Tuple
 from subprocess import run
 import os
 from pathlib import Path
@@ -15,14 +15,61 @@ class Singleton:
     cached_du: Dict[str, str] = {}
     timers: List[RepeatTimer] = []
 
+    res_mtime: float = None
+    cached_res_usage: Dict[str, Tuple[float, float]] = {}
+
     @staticmethod
     def populate_celery():
         if ROLE == 'server':
             Singleton.cached_metrics = refresh_prom_metrics()
 
+
     @staticmethod
-    def timed_du():
+    def parse_cpu(text: str) -> float:
+        if text.endswith("m"):
+            return float(text.replace("m", ""))
+        raise ValueError(f"Cannot parse cpu text {text}")
+
+    @staticmethod        
+    def parse_memory(text: str) -> float:
+        if text.endswith("Mi"):
+            return float(text.replace("Mi", "")) * 1024 * 1024
+        raise ValueError(f"Cannot parse memory text {text}")
+
+    @staticmethod
+    def parse_text(text: str):
+        titles = ["NAME", "CPU", "MEMORY"]
+        
+        Singleton.cached_res_usage.clear()
+
+        for line in text.splitlines():
+            if all(t in line for t in titles):
+                continue
+            podname, cpuusage, memoryusage = line.split()
+            try:
+                Singleton.cached_res_usage[podname] = (
+                    str(Singleton.parse_cpu(cpuusage)),
+                    str(Singleton.parse_memory(memoryusage)),
+                )
+            except Exception as e:
+                general_logger.error(f"Cannot parse line: {str(e)}")
+            
+    @staticmethod
+    def timed_get_metrics():
         if ROLE == 'server' and MONITOR_FIRSTLVL_DIR:
+            Singleton.res_mtime = None
+            try:
+                metrics_path = Path(MONITOR_FIRSTLVL_DIR) / "metrics.txt"
+                metric_text = metrics_path.read_text()
+                Singleton.res_mtime = metrics_path.lstat().st_mtime
+                Singleton.parse_text(metric_text)
+                
+            except FileNotFoundError as e:
+                ...
+            except Exception as e:
+                general_logger.error(f"Reading metrics.txt error: {str(e)}")
+            
+
             # n.b. cannot use shutil.disk_usage . It seems it 
             # queries mount used/free and not directory
             try:
@@ -46,11 +93,11 @@ class Singleton:
 def on_startup():
     """On startup"""
     Singleton.populate_celery()
-    Singleton.timed_du()
+    Singleton.timed_get_metrics()
 
     Singleton.timers = [
         RepeatTimer(60, Singleton.populate_celery),
-        RepeatTimer(600, Singleton.timed_du),
+        RepeatTimer(600, Singleton.timed_get_metrics),
     ]
 
     for timer in Singleton.timers:
@@ -72,6 +119,25 @@ def refresh_prom_metrics():
         'registry':registry,
         'namespace':NAME_SPACE,
     }
+
+    cpu_usage = Gauge("resource_usage_cpu",
+                      "CPU usage by pods",
+                      labelnames=("podname",),
+                      **common_kwargs)
+    
+    memory_usage = Gauge("resource_usage_memory",
+                      "RAM usage by pods",
+                      labelnames=("podname",),
+                      **common_kwargs)
+    
+    for podname, (cpu, ram) in Singleton.cached_res_usage.items():
+        cpu_usage.labels(podname=podname).set(cpu)
+        memory_usage.labels(podname=podname).set(ram)
+    
+    res_timestamp = Gauge("resource_usage_timestamp",
+                          "Timestamp", **common_kwargs)
+    if Singleton.res_mtime:
+        res_timestamp.set(Singleton.res_mtime)
 
     du = Gauge(f"firstlvl_folder_disk_usage",
                "Bytes used by first level folders",
