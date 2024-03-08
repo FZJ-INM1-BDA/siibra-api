@@ -6,7 +6,7 @@ data:
   MONITOR_FIRSTLVL_DIR: /siibra-api-volume
   # SIIBRA_CACHEDIR: /siibra-api-volume
   SIIBRA_API_REMAP_PROVIDERS: |-
-    https://neuroglancer.humanbrainproject.eu:https:://data-proxy.ebrains.eu/api/v1/buckets/reference-atlas-data
+    https://neuroglancer.humanbrainproject.eu::https://data-proxy.ebrains.eu/api/v1/buckets/reference-atlas-data
     https://object.cscs.ch/v1/AUTH_08c08f9f119744cbbf77e216988da3eb::https://data-proxy.ebrains.eu/api/v1/buckets/reference-atlas-data/imgsvc
 kind: ConfigMap
 metadata:
