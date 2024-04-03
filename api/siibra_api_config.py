@@ -120,11 +120,9 @@ try:
     remapped_providers = os.getenv("SIIBRA_API_REMAP_PROVIDERS")
     if remapped_providers:
         for mapping in remapped_providers.split("\n"):
-            regex_string = r"^(?P<from_host>(https?://)?[\w0-9./-]+(:[0-9]+)?):(?P<to_host>(https?://)?[\w0-9./-]+(:[0-9]+)?)$"
-            match = re.match(regex_string, mapping)
-            assert match
-            SIIBRA_API_REMAP_PROVIDERS[match.group("from_host")] = match.group("to_host")
-        
+            from_host, to_host = mapping.split("::")
+            SIIBRA_API_REMAP_PROVIDERS[from_host] = to_host
+
 except Exception as e:
     print(f"""Cannot parse SIIBRA_API_REMAP_PROVIDERS properly.
     SIIBRA_API_REMAP_PROVIDERS must be comma separated values, with colon indicating mapping
