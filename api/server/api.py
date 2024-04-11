@@ -21,9 +21,9 @@ from .compounds import prefixed_routers as compound_prefixed_routers
 from .features import router as feature_router
 from .volcabularies import router as vocabolaries_router
 from .metrics import prom_metrics_resp, on_startup as metrics_on_startup, on_terminate as metrics_on_terminate
-from .code_snippet import get_sourcecode
+from .code_snippet import get_sourcecode, add_sample_code
 
-from ..common import general_logger, access_logger, NotFound, SapiBaseException, name_to_fns_map
+from ..common import general_logger, access_logger, NotFound, SapiBaseException
 from ..siibra_api_config import GIT_HASH
 
 siibra_version_header = "x-siibra-api-version"
@@ -44,6 +44,8 @@ add_pagination(siibra_api)
 
 # Versioning for api endpoints
 siibra_api = VersionedFastAPI(siibra_api)
+
+add_sample_code(siibra_api)
 
 templates = Jinja2Templates(directory="templates/")
 siibra_api.mount("/static", StaticFiles(directory="static"), name="static")
@@ -254,10 +256,10 @@ async def middleware_get_python_code(request: Request, call_next):
 
     if accept_header == "text/x-sapi-python":
         try:
-            src = get_sourcecode(request)
+            src = get_sourcecode(request, "python")
             return PlainTextResponse(src)
         except NotFound as e:
-            return PlainTextResponse(str(e), 404)
+            return PlainTextResponse(str(e) or "Not found", 404)
     
     return await call_next(request)
 

@@ -19,7 +19,12 @@ router = APIRouter(route_class=SapiCustomRoute)
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=all_atlases)
 def get_all_atlases(*, func):
-    """HTTP get all atlases"""
+    """HTTP get all atlases
+    
+    ```python
+    import siibra
+    atlases = [atlas for atlas in siibra.atlases]
+    ```"""
     if func is None:
         raise HTTPException(500, "func: None passed")
     return paginate(func())
@@ -28,7 +33,12 @@ def get_all_atlases(*, func):
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=single_atlas)
 def get_single_atlas(atlas_id: str, *, func):
-    """HTTP get a single atlas"""
+    """HTTP get a single atlas
+    
+    ```python
+    import siibra
+    atlas = siibra.atlases[atlas_id]
+    ```"""
     if func is None:
         raise HTTPException(500, "func: None passed")
     return func(atlas_id)

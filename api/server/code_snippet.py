@@ -1,66 +1,18 @@
-from ..common import name_to_fns_map, NotFound
+from ..common import NotFound, name_to_fns_map
+from ..siibra_api_config import __version__
 from fastapi import FastAPI
+from fastapi.routing import APIRoute
+from fastapi.openapi.utils import get_openapi
 from starlette.routing import Match, Route, Mount
 from starlette.requests import Request
 from starlette.types import Scope
-from typing import Union, Callable, List, Tuple, Dict
+from typing import Union, Iterable, Tuple
 import json
-from inspect import unwrap, getsource
-from functools import partial
+from inspect import cleandoc
+import re
 
-target_fn_names = (
-    "async_get_direct_result",
-    "async_get_result",
-    "sync_get_result"
-)
-
-globals_to_retrieve = {
-    "_get_all_features": [
-        "_get_all_features",
-        "extract_concept",
-        "InsufficientParameters",
-    ]
-}
-
-def get_source_from_fn(fn: Callable) -> Tuple[str, str, List[str], Dict[str, str]]:
-    """Gets the all functions in a closure"""
-
-    args = []
-    kwargs = {}
-    if "feature_category" in fn.__code__.co_freevars:
-        kwargs["type"] = dict(zip(fn.__code__.co_freevars, [c.cell_contents for c in fn.__closure__]))["feature_category"]
-
-    assert fn.__name__ in name_to_fns_map
-    fn0, fn1 = name_to_fns_map[fn.__name__]
-
-    if isinstance(fn1, partial):
-        src = getsource(fn1.func)
-        func_name = fn1.func.__name__
-        args = [*args, *fn1.args]
-        kwargs = {**kwargs, **fn1.keywords}
-
-        target_fn = unwrap(fn1.func)
-    else:
-        src = getsource(fn1)
-        func_name = fn1.__name__
-        target_fn = unwrap(fn1)
-
-
-    src = src.replace("@data_decorator(ROLE)", "")
-    _globals = {
-        _global
-        for key, _globals in globals_to_retrieve.items()
-        if key in src
-        for _global in _globals
-    }
-
-    for _global in _globals:
-        assert _global in target_fn.__globals__, f"expecting {_global} to be in globals, but was not"
-        global_func = target_fn.__globals__[_global]
-        global_src = getsource(global_func)
-        src = f"""\n{global_src}\n{src}\n"""
-        
-    return src, func_name, args, kwargs
+CODE_RE = re.compile(r"```(?P<lang>.*?)\n(?P<code>[\w\W\s]*)\n```")
+IGNORE_QUERY_KEYS = ("page", "size",)
 
 
 def lookup_handler_fn(arm: Union[FastAPI, Mount, Route], scope: Scope):
@@ -78,7 +30,15 @@ def lookup_handler_fn(arm: Union[FastAPI, Mount, Route], scope: Scope):
             return arm, child_scope
     return None
 
-def get_sourcecode(request: Request) -> str:
+def yield_codeblock(uncleandoc: str) -> Iterable[Tuple[str, str]]:
+    
+    doc = cleandoc(uncleandoc)
+    matched_codeblock = CODE_RE.findall(doc)
+    for codeblock_lang, codeblock_code in matched_codeblock:
+        yield codeblock_lang, codeblock_code
+    
+
+def get_sourcecode(request: Request, lang: str="python") -> str:
     """Process a request, and transform it into the corresponding Python snippet
     
     Args:
@@ -96,24 +56,58 @@ def get_sourcecode(request: Request) -> str:
         raise NotFound("handler_fn lookup failed!")
     
     arm, scope = returned_val
+    for codeblock_lang, codeblock_code in yield_codeblock(scope['endpoint'].__doc__):
+        if codeblock_lang == lang:
 
-    source, fn_name, args, kwargs = get_source_from_fn(arm.endpoint)
-    
-    ignore_keys = ("page", "size",)
-    kwargs = {
-        **kwargs,
-        **{
-            key: value
-            for key, value in ({
-                **dict(request.query_params),
-                **scope.get("path_params")
-            }).items()
-            if key not in ignore_keys
-        }
-    }
-    args = [*args]
-    
-    header = f"""args={json.dumps(args, indent=2)}\nkwargs={json.dumps(kwargs, indent=2)}\n\n"""
-    footer = f"\n\n{fn_name}(*args, **kwargs)\n\n"
+            prefix = "\n".join([f"{key} = {json.dumps(value)}"
+                                for key, value in ({
+                                    **scope.get("path_params", {}),
+                                    **dict(request.query_params),
+                                }).items()
+                                if key not in IGNORE_QUERY_KEYS])
+            return f"{prefix}\n\n{codeblock_code}"
+    raise NotFound
 
-    return f"{header}{source}{footer}"
+def add_sample_code(rootapp: FastAPI):
+    
+    for route in rootapp.routes:
+        if (isinstance(route, Mount)
+            and route.path == "/v3_0"
+            and isinstance(route.app, FastAPI)
+        ):
+            app = route.app
+            def custom_api():
+                if app.openapi_schema:
+                    return app.openapi_schema
+                    
+                openapi_schema = get_openapi(
+                    title="siibra-api",
+                    version="v3",
+                    summary="siibra-api openapi specification",
+                    description="siibra-api is a http wrapper around siibra-python",
+                    routes=app.routes,
+                )
+                
+                id_to_route = {
+                    route.operation_id or route.unique_id: route
+                    for route in app.routes
+                    if isinstance(route, APIRoute)
+                }
+
+                for path_value in openapi_schema.get("paths").values():
+                    for method_value in path_value.values():
+                        op_id = method_value.get("operationId")
+                        if op_id not in id_to_route:
+                            continue
+                        route = id_to_route[op_id]
+                        if route.name not in name_to_fns_map:
+                            continue
+                        fn0, fn1 = name_to_fns_map[route.name]
+                        method_value["x-codeSamples"] = [{
+                            "lang": lang,
+                            "source": code,
+                        } for lang, code in yield_codeblock(fn0.__doc__)]
+
+                app.openapi_schema = openapi_schema
+                return app.openapi_schema
+            app.openapi = custom_api

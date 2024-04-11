@@ -19,7 +19,12 @@ router = APIRouter(route_class=SapiCustomRoute, tags=TAGS)
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=all_spaces)
 def get_all_spaces(*, func):
-    """HTTP get all spaces"""
+    """HTTP get all spaces
+    
+    ```python
+    import siibra
+    spaces = [space for space in siibra.spaces]
+    ```"""
     if func is None:
         raise HTTPException(500, f"func: None passed")
     return paginate(func())
@@ -28,7 +33,12 @@ def get_all_spaces(*, func):
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=single_space)
 def get_single_space(space_id: str, *, func):
-    """HTTP get a single space"""
+    """HTTP get a single space
+    
+    ```python
+    import siibra
+    space = siibra.spaces[space_id]
+    ```"""
     if func is None:
         raise HTTPException(500, f"func: None passsed")
     return func(space_id)

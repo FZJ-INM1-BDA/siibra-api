@@ -207,12 +207,22 @@ async def get_single_tabular(parcellation_id: str, region_id: str, feature_id: s
 @router.get("/Image", response_model=Page[SiibraVoiModel])
 @version(*FASTAPI_VERSION)
 @wrap_feature_category("Image")
-@async_router_decorator(ROLE, func=partial(all_features, parcellation_id=None, region_id=None, restrict_space=True))
-async def get_all_voi(space_id: str, bbox: str, type: Optional[str]=None, func=lambda: []):
-    """Get all Image features"""
+@router_decorator(ROLE, func=partial(all_features, parcellation_id=None, region_id=None, restrict_space=True))
+def get_all_voi(space_id: str, bbox: str, type: Optional[str]=None, func=lambda: []):
+    """Get all Image features
+    
+    ```python
+    import siibra
+    import json
+    from siibra.locations.boundingbox import BoundingBox
+    
+    boundingbox = BoundingBox(json.loads(bbox), space_id)
+    
+    features = siibra.features.get(boundingbox, type)
+    ```"""
     type = str(type) if type else None
     return paginate(
-        await func(space_id=space_id, type=type, bbox=bbox)
+        func(space_id=space_id, type=type, bbox=bbox)
     )
 
 @router.get("/Image/{feature_id:lazy_path}", response_model=SiibraVoiModel)
