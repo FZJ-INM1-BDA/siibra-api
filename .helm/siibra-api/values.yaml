@@ -56,10 +56,17 @@ ingress:
       paths:
         - path: /
           pathType: Prefix
+    - host: siibra-api.apps.ebrains.eu
+      paths:
+        - path: /
+          pathType: Prefix
   tls:
    - secretName: siibra-api-prod-secret
      hosts:
        - siibra-api-prod.apps.tc.humanbrainproject.eu
+   - secretName: siibra-api-prod-ebrains-secret
+     hosts:
+       - siibra-api.apps.ebrains.eu
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
