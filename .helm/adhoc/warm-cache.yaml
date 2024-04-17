@@ -8,6 +8,7 @@ spec:
   containers:
   - name: warmup-container
     image: docker-registry.ebrains.eu/siibra/siibra-api:rc-worker
+    imagePullPolicy: Always
     command:
     - python
     args:

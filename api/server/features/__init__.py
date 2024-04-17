@@ -146,7 +146,13 @@ async def get_all_connectivity_features(parcellation_id: str, region_id: str=Non
 @wrap_feature_category("RegionalConnectivity")
 @async_router_decorator(ROLE, func=partial(single_feature, space_id=None))
 async def get_single_connectivity_feature(parcellation_id: str, feature_id: str, region_id:str=None, type: Optional[str]=None, func=lambda:None):
-    """Get single connectivity feature"""
+    """Get single connectivity feature
+
+    ```python
+    import siibra
+
+    feature = siibra.features.Feature._get_instance_by_id(feature_id)
+    ```"""
     type = str(type) if type else None
     return await func(parcellation_id=parcellation_id, feature_id=feature_id, region_id=region_id, type=type)
 
@@ -170,7 +176,13 @@ async def get_all_corticalprofile_features(parcellation_id: str, region_id: str,
 @wrap_feature_category("CorticalProfile")
 @async_router_decorator(ROLE, func=partial(single_feature, space_id=None))
 async def get_single_corticalprofile_feature(parcellation_id: str, region_id: str, feature_id: str, type: Optional[str]=None, func=lambda:None):
-    """Get a single CorticalProfile feature"""
+    """Get a single CorticalProfile feature
+
+    ```python
+    import siibra
+
+    feature = siibra.features.Feature._get_instance_by_id(feature_id)
+    ```"""
     type = str(type) if type else None
     return await func(parcellation_id=parcellation_id, region_id=region_id, feature_id=feature_id, type=type)
 
@@ -198,7 +210,13 @@ async def get_all_tabular(parcellation_id: str, region_id: str, type: Optional[s
 @wrap_feature_category("Tabular")
 @async_router_decorator(ROLE, func=partial(single_feature, space_id=None))
 async def get_single_tabular(parcellation_id: str, region_id: str, feature_id: str, type: Optional[str]=None, func=lambda: None):
-    """Get a single tabular feature"""
+    """Get a single tabular feature
+
+    ```python
+    import siibra
+
+    feature = siibra.features.Feature._get_instance_by_id(feature_id)
+    ```"""
     type = str(type) if type else None
     return await func(parcellation_id=parcellation_id, region_id=region_id, feature_id=feature_id, type=type)
 
@@ -230,7 +248,13 @@ def get_all_voi(space_id: str, bbox: str, type: Optional[str]=None, func=lambda:
 @wrap_feature_category("Image")
 @async_router_decorator(ROLE, func=partial(single_feature, parcellation_id=None, region_id=None))
 async def get_single_voi(space_id: str, feature_id: str, type: Optional[str]=None, func=lambda: []):
-    """Get a single Image feature"""
+    """Get a single Image feature
+
+    ```python
+    import siibra
+
+    feature = siibra.features.Feature._get_instance_by_id(feature_id)
+    ```"""
     type = str(type) if type else None
     return await func(space_id=space_id, feature_id=feature_id, type=type)
 
@@ -251,7 +275,13 @@ async def get_all_gene(parcellation_id: str, region_id: str, gene: str, func=lam
 @wrap_feature_category("GeneExpressions")
 @async_router_decorator(ROLE, func=partial(single_feature, space_id=None, type="GeneExpressions"))
 async def get_single_gene(parcellation_id: str, region_id: str, feature_id: str, gene: str, func=lambda: []):
-    """Get a single GeneExpressions feature"""
+    """Get a single GeneExpressions feature
+
+    ```python
+    import siibra
+
+    feature = siibra.features.Feature._get_instance_by_id(feature_id)
+    ```"""
     return await func(parcellation_id=parcellation_id, region_id=region_id, feature_id=feature_id, gene=gene)
 
 
@@ -271,7 +301,13 @@ async def get_all_ebrains_df(parcellation_id: str, region_id: str, func=lambda: 
 @wrap_feature_category("EbrainsDataFeature")
 @async_router_decorator(ROLE, func=partial(single_feature, space_id=None, type="EbrainsDataFeature"))
 async def get_single_ebrains_df(parcellation_id: str, region_id: str, feature_id: str, func=lambda: None):
-    """Get a single EbrainsDataFeature"""
+    """Get a single EbrainsDataFeature
+
+    ```python
+    import siibra
+
+    feature = siibra.features.Feature._get_instance_by_id(feature_id)
+    ```"""
     return await func(parcellation_id=parcellation_id, region_id=region_id, feature_id=feature_id)
 
 
@@ -295,7 +331,14 @@ This endpoint allows detail of a single feature to be fetched, without the neces
 @version(*FASTAPI_VERSION)
 @async_router_decorator(ROLE, func=get_single_feature_from_id)
 async def get_single_feature(feature_id: str, request: Request, func):
-    """Get a single feature, from feature_id"""
+    """Get a single feature, from feature_id
+
+    ```python
+    import siibra
+
+    feature = siibra.features.Feature._get_instance_by_id(feature_id)
+    ```
+    """
     if not func:
         raise HTTPException(500, detail="get_single_feature, func not passed along")
     try:
