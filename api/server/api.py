@@ -50,28 +50,6 @@ add_sample_code(siibra_api)
 templates = Jinja2Templates(directory="templates/")
 siibra_api.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Allow Cors
-
-origins = ["*"]
-siibra_api.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_methods=["GET"],
-    expose_headers=[siibra_version_header]
-)
-
-# some plugins may strip origin header for privacy reasons
-# so if origin is unavailable, append it to trick corsmiddleware to activate
-@siibra_api.middleware("http")
-async def append_origin_header(request: Request, call_next):
-    headers = dict(request.scope["headers"])
-    origin = request.headers.get("origin")
-    new_headers = [(k, v) for k, v in headers.items()]
-    if not origin:
-        new_headers.append((b"origin", b"unknownorigin.dev"))
-    request.scope["headers"] = new_headers
-    return await call_next(request)
-
 @siibra_api.get("/metrics", include_in_schema=False)
 def get_metrics():
     """Get prometheus metrics"""
@@ -300,6 +278,29 @@ async def middleware_access_log(request: Request, call_next):
         })
     except Exception as e:
         general_logger.critical(e)
+
+# Allow Cors
+
+origins = ["*"]
+siibra_api.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_methods=["GET"],
+    expose_headers=[siibra_version_header]
+)
+
+# some plugins may strip origin header for privacy reasons
+# so if origin is unavailable, append it to trick corsmiddleware to activate
+@siibra_api.middleware("http")
+async def append_origin_header(request: Request, call_next):
+    headers = dict(request.scope["headers"])
+    origin = request.headers.get("origin")
+    new_headers = [(k, v) for k, v in headers.items()]
+    if not origin:
+        new_headers.append((b"origin", b"unknownorigin.dev"))
+    request.scope["headers"] = new_headers
+    return await call_next(request)
+
 
 @siibra_api.exception_handler(RuntimeError)
 async def exception_runtime(request: Request, exc: RuntimeError) -> JSONResponse:
