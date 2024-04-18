@@ -8,5 +8,5 @@ from api.siibra_api_config import ROLE
 
 if ROLE == "all" or ROLE == "worker":
     import siibra
-    siibra.warm_cache()
+    siibra.warm_cache(siibra.WarmupLevel.INSTANCE)
 

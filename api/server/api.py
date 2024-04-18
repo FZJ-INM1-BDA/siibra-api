@@ -41,11 +41,11 @@ siibra_api.include_router(feature_router, prefix="/feature")
 siibra_api.include_router(vocabolaries_router, prefix="/vocabularies")
 
 add_pagination(siibra_api)
+add_sample_code(siibra_api)
 
 # Versioning for api endpoints
 siibra_api = VersionedFastAPI(siibra_api)
 
-add_sample_code(siibra_api)
 
 templates = Jinja2Templates(directory="templates/")
 siibra_api.mount("/static", StaticFiles(directory="static"), name="static")

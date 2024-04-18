@@ -69,45 +69,40 @@ def get_sourcecode(request: Request, lang: str="python") -> str:
     raise NotFound
 
 def add_sample_code(rootapp: FastAPI):
+    app = rootapp
     
-    for route in rootapp.routes:
-        if (isinstance(route, Mount)
-            and route.path == "/v3_0"
-            and isinstance(route.app, FastAPI)
-        ):
-            app = route.app
-            def custom_api():
-                if app.openapi_schema:
-                    return app.openapi_schema
-                    
-                openapi_schema = get_openapi(
-                    title="siibra-api",
-                    version="v3",
-                    summary="siibra-api openapi specification",
-                    description="siibra-api is a http wrapper around siibra-python",
-                    routes=app.routes,
-                )
-                
-                id_to_route = {
-                    route.operation_id or route.unique_id: route
-                    for route in app.routes
-                    if isinstance(route, APIRoute)
-                }
+    def custom_api():
+        if app.openapi_schema:
+            return app.openapi_schema
+            
+        openapi_schema = get_openapi(
+            title="siibra-api",
+            version="v3",
+            summary="siibra-api openapi specification",
+            description="siibra-api is a http wrapper around siibra-python",
+            routes=app.routes,
+        )
+        
+        id_to_route = {
+            route.operation_id or route.unique_id: route
+            for route in app.routes
+            if isinstance(route, APIRoute)
+        }
 
-                for path_value in openapi_schema.get("paths").values():
-                    for method_value in path_value.values():
-                        op_id = method_value.get("operationId")
-                        if op_id not in id_to_route:
-                            continue
-                        route = id_to_route[op_id]
-                        if route.name not in name_to_fns_map:
-                            continue
-                        fn0, fn1 = name_to_fns_map[route.name]
-                        method_value["x-codeSamples"] = [{
-                            "lang": lang,
-                            "source": code,
-                        } for lang, code in yield_codeblock(fn0.__doc__)]
+        for path_value in openapi_schema.get("paths").values():
+            for method_value in path_value.values():
+                op_id = method_value.get("operationId")
+                if op_id not in id_to_route:
+                    continue
+                route = id_to_route[op_id]
+                if route.name not in name_to_fns_map:
+                    continue
+                fn0, fn1 = name_to_fns_map[route.name]
+                method_value["x-codeSamples"] = [{
+                    "lang": lang,
+                    "source": code,
+                } for lang, code in yield_codeblock(fn0.__doc__)]
 
-                app.openapi_schema = openapi_schema
-                return app.openapi_schema
-            app.openapi = custom_api
+        app.openapi_schema = openapi_schema
+        return app.openapi_schema
+    app.openapi = custom_api
