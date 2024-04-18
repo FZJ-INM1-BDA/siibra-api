@@ -16,10 +16,10 @@ spec:
     - import siibra; siibra.cache.clear(); siibra.warm_cache(999)
     resources:
       limits:
-        cpu: "4"
+        cpu: "2"
         memory: 4Gi
       requests:
-        cpu: "4"
+        cpu: "2"
         memory: 1Gi
     volumeMounts:
     - mountPath: /siibra-api-volume
