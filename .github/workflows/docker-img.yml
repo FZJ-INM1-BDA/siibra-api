@@ -200,7 +200,7 @@ jobs:
     - uses: ./.github/workflows/composite-set-k8s-cred
       with:
         secrets: ${{ secrets.KUBECONFIG }}
-    - timeout-minutes: 15 # should not take more than 15 minutes to warmup cache
+    - timeout-minutes: 120 # should not take more than 2h to warmup cache
       run: |
         # Delete pod at the beginning of the workflow
         # This is so that logs can be inspected
