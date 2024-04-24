@@ -64,6 +64,8 @@ QUEUE_PREFIX = f"{__version__}.{NAME_SPACE}"
 MONITOR_FIRSTLVL_DIR = os.getenv("MONITOR_FIRSTLVL_DIR") or os.getenv("_MONITOR_FIRSTLVL_DIR")
 """MONITOR_FIRSTLVL_DIR"""
 
+FASTAPI_ROOT_PATH = os.getenv("FASTAPI_ROOT_PATH")
+
 queues = [
     "core",
     "features",

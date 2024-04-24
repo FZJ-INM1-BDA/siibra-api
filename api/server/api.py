@@ -24,7 +24,7 @@ from .metrics import prom_metrics_resp, on_startup as metrics_on_startup, on_ter
 from .code_snippet import get_sourcecode, add_sample_code
 
 from ..common import general_logger, access_logger, NotFound, SapiBaseException
-from ..siibra_api_config import GIT_HASH
+from ..siibra_api_config import GIT_HASH, FASTAPI_ROOT_PATH
 
 siibra_version_header = "x-siibra-api-version"
 
@@ -32,6 +32,7 @@ siibra_api = FastAPI(
     title="siibra api",
     description="This is the REST api for siibra tools",
     version=__version__,
+    root_path=FASTAPI_ROOT_PATH or ""
 )
 
 for prefix_router in [*core_prefixed_routers, *volume_prefixed_routers, *compound_prefixed_routers]:
