@@ -1,0 +1,66 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: siibra-api-deprecated
+  labels:
+    deprecated: foo
+spec:
+  commonName: siibra-api-stable.apps.hbp.eu
+  isCA: false
+  dnsNames:
+  - siibra-api-stable.apps.hbp.eu
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-production-issuer-1
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  renewBefore: 120h
+  secretName: siibra-api-deprecated-secret
+  usages:
+  - server auth
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: siibra-api-deprecated
+  labels:
+    name: siibra-api-deprecated
+    deprecated: foo
+spec:
+  tls:
+  - secretName: siibra-api-deprecated-secret
+    hosts:
+    - siibra-api-stable.apps.hbp.eu
+  rules:
+  - host: siibra-api-stable.apps.hbp.eu
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/v1_0"
+        backend:
+          service:
+            name: siibra-api-v1
+            port: 
+              number: 5000
+  - host: siibra-api-stable.apps.hbp.eu
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/v2_0"
+        backend:
+          service:
+            name: siibra-api-v2
+            port: 
+              number: 5000
+  - host: siibra-api-stable.apps.hbp.eu
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: prod-siibra-api
+            port: 
+              number: 5000

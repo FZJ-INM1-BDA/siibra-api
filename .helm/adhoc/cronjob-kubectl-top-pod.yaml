@@ -5,6 +5,7 @@ metadata:
 spec:
   # run everyminute
   schedule: "* * * * *"
+  concurrencyPolicy: Replace
   jobTemplate:
     spec:
       template:
@@ -35,3 +36,6 @@ spec:
           - name: kubectl-config
             secret:
               secretName: kubectl-config
+
+# to enable/disable
+# kubectl patch cronjobs cronjob-pod-usage -p '{"spec" : {"suspend" : true }}'

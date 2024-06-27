@@ -1,0 +1,176 @@
+# n.b. kubectl apply -f adhoc/secrets-v1v2.yaml first
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: siibra-api-v1v2
+  labels:
+    deprecated: foo
+    mock: foo
+spec:
+  commonName: siibra-api-v1v2.apps.tc.humanbrainproject.eu
+  isCA: false
+  dnsNames:
+  - siibra-api-v1v2.apps.tc.humanbrainproject.eu
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-production-issuer-1
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  renewBefore: 120h
+  secretName: siibra-api-v1v2-secret
+  usages:
+  - server auth
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: siibra-api-v1v2
+  labels:
+    name: siibra-api-v1v2
+    deprecated: foo
+    mock: foo
+spec:
+  tls:
+  - secretName: siibra-api-v1v2-secret
+    hosts:
+    - siibra-api-v1v2.apps.tc.humanbrainproject.eu
+  rules:
+  - host: siibra-api-v1v2.apps.tc.humanbrainproject.eu
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/v1_0"
+        backend:
+          service:
+            name: siibra-api-v1
+            port: 
+              number: 5000
+  - host: siibra-api-v1v2.apps.tc.humanbrainproject.eu
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/v2_0"
+        backend:
+          service:
+            name: siibra-api-v2
+            port: 
+              number: 5000
+  - host: siibra-api-v1v2.apps.tc.humanbrainproject.eu
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: prod-siibra-api
+            port: 
+              number: 5000
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: siibra-api-v1
+  labels:
+    deprecated: foo
+spec:
+  selector:
+    app: siibra-api-v1
+  ports:
+  - port: 5000
+    targetPort: 5000
+    protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: siibra-api-v2
+  labels:
+    deprecated: foo
+spec:
+  selector:
+    app: siibra-api-v2
+  ports:
+  - port: 5000
+    targetPort: 5000
+    protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: siibra-api-v1
+  labels:
+    deprecated: foo
+spec:
+  selector:
+    matchLabels:
+      app: siibra-api-v1
+  template:
+    metadata:
+      labels:
+        app: siibra-api-v1
+    spec:
+      containers:
+      - name: siibra-api-v1
+        envFrom:
+        - secretRef:
+            name: siibra-api-deprec-secret
+        - configMapRef:
+            name: siibra-api-deprec-configmap
+        image: docker-registry.ebrains.eu/siibra/siibra-api:0.1.16
+        resources:
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+        ports:
+        - containerPort: 5000
+          protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: siibra-api-v2
+  labels:
+    deprecated: foo
+spec:
+  selector:
+    matchLabels:
+      app: siibra-api-v2
+  template:
+    metadata:
+      labels:
+        app: siibra-api-v2
+    spec:
+      containers:
+      - name: siibra-api-v2
+        envFrom:
+        - secretRef:
+            name: siibra-api-deprec-secret
+        - configMapRef:
+            name: siibra-api-deprec-configmap
+        image: docker-registry.ebrains.eu/siibra/siibra-api:0.2.3
+        resources:
+          limits:
+            memory: "2Gi"
+            cpu: "500m"
+          requests:
+            memory: "2Gi"
+            cpu: "500m"
+        ports:
+        - containerPort: 5000
+          protocol: TCP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: siibra-api-deprec-configmap
+  labels:
+    deprecated: foo
+data:
+  SIIBRA_REDIS_SERVICE_HOST: cache-redis-service
