@@ -5,6 +5,11 @@ import gzip
 from uuid import uuid4
 from pathlib import Path
 from datetime import datetime
+import json
+import math
+
+BIGBRAIN_ID = "minds/core/referencespace/v1.0.0/a1655b99-82f1-420f-a3c2-fe80fd4c8588"
+BIGBRAIN_SIZE_LIMIT = 2 * 1024 * 1024
 
 README = """# Packaged Atlas Data
 
@@ -40,7 +45,7 @@ citations:
 LICENSE = """Please check the respective citations regarding licenses to use these data."""
 
 @data_decorator(ROLE)
-def download_all(space_id: str, parcellation_id: str, region_id: str=None, feature_id: str=None) -> str:
+def download_all(space_id: str, parcellation_id: str, region_id: str=None, feature_id: str=None, bbox=None) -> str:
     """Create a download bundle (zip) for the provided specification
     
     Args:
@@ -101,7 +106,18 @@ def download_all(space_id: str, parcellation_id: str, region_id: str=None, featu
             space_filename = f"{space.key}.nii.gz"
 
             # this should fetch anything (surface, nifti, ng precomputed)
-            space_vol = space.get_template().fetch()
+            if space.id == BIGBRAIN_ID:
+                if bbox:
+                    bounding_box = space.get_bounding_box(*json.loads(bbox))
+                    value = BIGBRAIN_SIZE_LIMIT
+                    for dim in bounding_box.maxpoint - bounding_box.minpoint:
+                        value /= dim
+                    cube_rooted = math.pow(value, 1/3)
+                    space_vol = space.get_template().fetch(voi=bounding_box, resolution_mm=1/cube_rooted)
+                else:
+                    raise RuntimeError(f"For big brain, bbox must be defined.")
+            else:
+                space_vol = space.get_template().fetch()
             zipfile.writestr(space_filename, gzip.compress(space_vol.to_bytes()))
             write_desc(f'{space_filename}.info.md', space)
         except Exception as e:
