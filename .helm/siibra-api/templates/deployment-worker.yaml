@@ -16,7 +16,6 @@ spec:
     matchLabels:
       role: worker
       queuename: {{ . }}
-      sapiVersion: {{ $.Values.sapiVersion }}
       sapiFlavor: {{ $.Values.sapiFlavor }}
       {{- include "siibra-api.selectorLabels" $ | nindent 6 }}
   template:
