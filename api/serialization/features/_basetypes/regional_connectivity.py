@@ -19,7 +19,9 @@ def regional_conn_to_model(conn: RegionalConnectivity, subject:str=None, detail:
     """
     return SiibraRegionalConnectivityModel(
         **super_model_dict,
-        subject=conn.subject,
+        subjects=conn.subjects,
         cohort=conn.cohort,
-        matrix=instance_to_model(conn.data, detail=detail, **kwargs) if detail else None
+        matrices={
+            subject if subject else '_average': instance_to_model(conn.get_matrix(subject), detail=detail, **kwargs)
+        } if detail else None
     )

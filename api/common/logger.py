@@ -58,9 +58,6 @@ if log_dir:
     import socket
     filename = log_dir + f"{socket.gethostname()}.general.log"
     warn_fh = TimedRotatingFileHandler(filename, when="d", encoding="utf-8")
-else:
-    warn_fh = logging.StreamHandler()
-
-warn_fh.setLevel(logging.INFO)
-warn_fh.setFormatter(formatter)
-logger.addHandler(warn_fh)
+    warn_fh.setLevel(logging.INFO)
+    warn_fh.setFormatter(formatter)
+    logger.addHandler(warn_fh)

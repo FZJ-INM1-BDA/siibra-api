@@ -3,7 +3,7 @@ from typing import Optional, List, Union, ClassVar, Any, Literal
 from pydantic import Field, BaseModel
 from abc import ABC
 
-SIIBRA_PYTHON_VERSION = "1.0"
+SIIBRA_PYTHON_VERSION = "0.4"
 
 ignore_cls=(
     "BrainAtlasVersionModel",
@@ -107,11 +107,6 @@ class DataFrameModel(ConfigBaseModel):
             # Optional[Union[float, str, List[float], ParcellationEntityVersionModel]]
         ]]
     ]
-
-class TimedeltaModel(ConfigBaseModel):
-    """TimedeltaModel"""
-    total_seconds: float
-
 
 class TaskIdResp(BaseModel):
     """TaskIdResp"""

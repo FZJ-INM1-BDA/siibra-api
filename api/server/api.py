@@ -7,7 +7,6 @@ from fastapi_pagination import add_pagination
 from fastapi_versioning import VersionedFastAPI
 import time
 import json
-from hashlib import md5
 
 from .util import add_lazy_path
 
@@ -19,12 +18,11 @@ from .core import prefixed_routers as core_prefixed_routers
 from .volumes import prefixed_routers as volume_prefixed_routers
 from .compounds import prefixed_routers as compound_prefixed_routers
 from .features import router as feature_router
-from .volcabularies import router as vocabolaries_router
 from .metrics import prom_metrics_resp, on_startup as metrics_on_startup, on_terminate as metrics_on_terminate
-from .code_snippet import get_sourcecode, add_sample_code
+from .code_snippet import get_sourcecode
 
-from ..common import general_logger, access_logger, NotFound, SapiBaseException
-from ..siibra_api_config import GIT_HASH, FASTAPI_ROOT_PATH
+from ..common import logger, access_logger, NotFound, SapiBaseException, name_to_fns_map
+from ..siibra_api_config import GIT_HASH
 
 siibra_version_header = "x-siibra-api-version"
 
@@ -32,24 +30,42 @@ siibra_api = FastAPI(
     title="siibra api",
     description="This is the REST api for siibra tools",
     version=__version__,
-    root_path=FASTAPI_ROOT_PATH or ""
 )
 
 for prefix_router in [*core_prefixed_routers, *volume_prefixed_routers, *compound_prefixed_routers]:
     siibra_api.include_router(prefix_router.router, prefix=prefix_router.prefix)
 
 siibra_api.include_router(feature_router, prefix="/feature")
-siibra_api.include_router(vocabolaries_router, prefix="/vocabularies")
 
 add_pagination(siibra_api)
-add_sample_code(siibra_api)
 
 # Versioning for api endpoints
 siibra_api = VersionedFastAPI(siibra_api)
 
-
 templates = Jinja2Templates(directory="templates/")
 siibra_api.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Allow Cors
+
+origins = ["*"]
+siibra_api.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_methods=["GET"],
+    expose_headers=[siibra_version_header]
+)
+
+# some plugins may strip origin header for privacy reasons
+# so if origin is unavailable, append it to trick corsmiddleware to activate
+@siibra_api.middleware("http")
+async def append_origin_header(request: Request, call_next):
+    headers = dict(request.scope["headers"])
+    origin = request.headers.get("origin")
+    new_headers = [(k, v) for k, v in headers.items()]
+    if not origin:
+        new_headers.append((b"origin", b"unknownorigin.dev"))
+    request.scope["headers"] = new_headers
+    return await call_next(request)
 
 @siibra_api.get("/metrics", include_in_schema=False)
 def get_metrics():
@@ -109,8 +125,7 @@ async def middleware_cache_response(request: Request, call_next):
     """Cache requests to redis, to improve response time."""
     cache_instance = get_cache_instance()
 
-    hashed_path = md5(f"{request.url.path}{str(request.url.query)}".encode("utf-8")).hexdigest()
-    cache_key = f"[{__version__}] {hashed_path}"
+    cache_key = f"[{__version__}] {request.url.path}{str(request.url.query)}"
 
     auth_set = request.headers.get("Authorization") is not None
 
@@ -235,10 +250,10 @@ async def middleware_get_python_code(request: Request, call_next):
 
     if accept_header == "text/x-sapi-python":
         try:
-            src = get_sourcecode(request, "python")
+            src = get_sourcecode(request)
             return PlainTextResponse(src)
         except NotFound as e:
-            return PlainTextResponse(str(e) or "Not found", 404)
+            return PlainTextResponse(str(e), 404)
     
     return await call_next(request)
 
@@ -278,30 +293,7 @@ async def middleware_access_log(request: Request, call_next):
             "hit_cache": "cache_miss"
         })
     except Exception as e:
-        general_logger.critical(e)
-
-# Allow Cors
-
-origins = ["*"]
-siibra_api.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_methods=["GET"],
-    expose_headers=[siibra_version_header]
-)
-
-# some plugins may strip origin header for privacy reasons
-# so if origin is unavailable, append it to trick corsmiddleware to activate
-@siibra_api.middleware("http")
-async def append_origin_header(request: Request, call_next):
-    headers = dict(request.scope["headers"])
-    origin = request.headers.get("origin")
-    new_headers = [(k, v) for k, v in headers.items()]
-    if not origin:
-        new_headers.append((b"origin", b"unknownorigin.dev"))
-    request.scope["headers"] = new_headers
-    return await call_next(request)
-
+        logger.critical(e)
 
 @siibra_api.exception_handler(RuntimeError)
 async def exception_runtime(request: Request, exc: RuntimeError) -> JSONResponse:
@@ -309,7 +301,7 @@ async def exception_runtime(request: Request, exc: RuntimeError) -> JSONResponse
     Most of the RuntimeErrors are thrown by the siibra-python library when other Services are not responding.
     To be more resilient and not throw a simple and unplanned HTTP 500 response, this handler will return an HTTP 503
     status."""
-    general_logger.warning(f"Error handler: exception_runtime: {str(exc)}")
+    logger.warning(f"Error handler: exception_runtime: {str(exc)}")
     return JSONResponse(
         status_code=503,
         content={
@@ -321,13 +313,13 @@ async def exception_runtime(request: Request, exc: RuntimeError) -> JSONResponse
 @siibra_api.exception_handler(SapiBaseException)
 def exception_sapi(request: Request, exc: SapiBaseException):
     """Handle sapi errors"""
-    general_logger.warning(f"Error handler: exception_sapi: {str(exc)}")
+    logger.warning(f"Error handler: exception_sapi: {str(exc)}")
     raise HTTPException(400, str(exc))
 
 @siibra_api.exception_handler(Exception)
 async def exception_other(request: Request, exc: Exception):
     """Catch all exception handler"""
-    general_logger.warning(f"Error handler: exception_other: {str(exc)}")
+    logger.warning(f"Error handler: exception_other: {str(exc)}")
     return JSONResponse(
         status_code=500,
         content={

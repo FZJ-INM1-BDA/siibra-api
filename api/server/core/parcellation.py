@@ -19,12 +19,7 @@ router = APIRouter(route_class=SapiCustomRoute, tags=TAGS)
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=all_parcellations)
 def get_all_parcellations(func):
-    """HTTP get all parcellations
-    
-    ```python
-    import siibra
-    parcellations = [parcellation for parcellation in siibra.parcellations]
-    ```"""
+    """HTTP get all parcellations"""
     if func is None:
         raise HTTPException(500, f"func: None passed")
     return paginate(func())
@@ -33,12 +28,7 @@ def get_all_parcellations(func):
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=single_parcellation)
 def get_single_parcellation(parcellation_id: str, *, func):
-    """HTTP get a single parcellation
-    
-    ```python
-    import siibra
-    parcellation = siibra.parcellations[parcellation_id]
-    ```"""
+    """HTTP get a single parcellation"""
     if func is None:
         raise HTTPException(500, f"func: None passsed")
     return func(parcellation_id)

@@ -7,7 +7,6 @@ from api.common.exceptions import (
     NonStrKeyException,
 )
 from typing import Any, Dict, _GenericAlias
-import math
 
 REGISTER: Dict[Type, Callable[..., ConfigBaseModel]] = {}
 
@@ -50,19 +49,15 @@ def instance_to_model(instance: Any, * , use_class: Type=None, skip_classes: Lis
     
     if instance is None:
         return None
-    if isinstance(instance, str):
-        return instance
-    if isinstance(instance, (int, float)):
-        if math.isnan(instance):
-            return None
+    if isinstance(instance, (str, int, float)):
         return instance
     if isinstance(instance, (list, tuple)):
-        return [instance_to_model(item, **kwargs) for item in instance]
+        return [instance_to_model(item) for item in instance]
     if isinstance(instance, dict):
         if not all([isinstance(key, str) for key in instance]):
             raise NonStrKeyException(f"Attempting to serialize dict with non str keys! {instance}")
         return {
-            key: instance_to_model(value, **kwargs)
+            key: instance_to_model(value)
             for key, value in instance.items()
         }
     for Cls in instance.__class__.__mro__:

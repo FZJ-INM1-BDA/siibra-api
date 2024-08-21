@@ -1,12 +1,9 @@
 from api.siibra_api_config import ROLE
-from api.siibra_api_config import CELERY_CHANNEL, CELERY_CONFIG, QUEUE_PREFIX
-from api.common.logger import logger
+from api.siibra_api_config import CELERY_CHANNEL, CELERY_CONFIG
 
 app = None
 if ROLE == "worker" or ROLE == "server":
     from celery import Celery
-    # TODO somehow this gets called a lot... I thought this is only called once on worker/server init?
-    logger.info(f"{QUEUE_PREFIX=}, {ROLE=}")
     app = Celery(CELERY_CHANNEL)
     app.config_from_object(CELERY_CONFIG)
 else:

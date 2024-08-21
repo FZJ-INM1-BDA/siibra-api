@@ -5,6 +5,11 @@ import gzip
 from uuid import uuid4
 from pathlib import Path
 from datetime import datetime
+import json
+import math
+
+BIGBRAIN_ID = "minds/core/referencespace/v1.0.0/a1655b99-82f1-420f-a3c2-fe80fd4c8588"
+BIGBRAIN_SIZE_LIMIT = 2 * 1024 * 1024
 
 README = """# Packaged Atlas Data
 
@@ -40,7 +45,7 @@ citations:
 LICENSE = """Please check the respective citations regarding licenses to use these data."""
 
 @data_decorator(ROLE)
-def download_all(space_id: str, parcellation_id: str, region_id: str=None, feature_id: str=None) -> str:
+def download_all(space_id: str, parcellation_id: str, region_id: str=None, feature_id: str=None, bbox=None) -> str:
     """Create a download bundle (zip) for the provided specification
     
     Args:
@@ -64,8 +69,8 @@ def download_all(space_id: str, parcellation_id: str, region_id: str=None, featu
             try:
                 path_to_feature_export = Path(SIIBRA_API_SHARED_DIR, f"export-{feature_id}.zip")
                 if not path_to_feature_export.exists():
-                    feature = siibra.features.Feature._get_instance_by_id(feature_id)
-                    feature.to_zip(path_to_feature_export)
+                    feature = siibra.features.Feature.get_instance_by_id(feature_id)
+                    feature.export(path_to_feature_export)
                 zipfile.write(path_to_feature_export, f"export-{feature_id}.zip")
             except Exception as e:
                 zipfile.writestr(f"{feature_id}.error.txt", f"Feature exporting failed: {str(e)}")
@@ -101,7 +106,18 @@ def download_all(space_id: str, parcellation_id: str, region_id: str=None, featu
             space_filename = f"{space.key}.nii.gz"
 
             # this should fetch anything (surface, nifti, ng precomputed)
-            space_vol = space.get_template().fetch()
+            if space.id == BIGBRAIN_ID:
+                if bbox:
+                    bounding_box = space.get_bounding_box(*json.loads(bbox))
+                    value = BIGBRAIN_SIZE_LIMIT
+                    for dim in bounding_box.maxpoint - bounding_box.minpoint:
+                        value /= dim
+                    cube_rooted = math.pow(value, 1/3)
+                    space_vol = space.get_template().fetch(voi=bounding_box, resolution_mm=1/cube_rooted)
+                else:
+                    raise RuntimeError(f"For big brain, bbox must be defined.")
+            else:
+                space_vol = space.get_template().fetch()
             zipfile.writestr(space_filename, gzip.compress(space_vol.to_bytes()))
             write_desc(f'{space_filename}.info.md', space)
         except Exception as e:
@@ -128,7 +144,7 @@ def download_all(space_id: str, parcellation_id: str, region_id: str=None, featu
                 space: _space.Space = siibra.spaces[space_id]
                 region = siibra.get_region(parcellation_id, region_id)
                 region_filename = f"{region.key}.nii.gz"
-                regional_map = region.get_regional_map(space, siibra.MapType.STATISTICAL).fetch()
+                regional_map = region.fetch_regional_map(space, siibra.MapType.STATISTICAL)
                 zipfile.writestr(region_filename, gzip.compress(regional_map.to_bytes()))
                 write_desc(f'{region_filename}.info.md', region)
             except Exception as e:

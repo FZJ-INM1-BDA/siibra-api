@@ -12,7 +12,7 @@ from api.serialization.util import (
     instance_to_model
 )
 from api.serialization.util.siibra import Region, Space, parcellations, RegionRelationAssessments
-from api.common import general_logger
+from api.common.logger import logger
 
 
 
@@ -149,7 +149,7 @@ def region_to_model(region: Region, *, min_flag: bool=False, detail: bool=False,
         if centroids is not None and len(centroids) > 0:
             centroid = centroids[0]
             if len(centroids) > 1:
-                general_logger.warn(f"region {region.name!r} returned multiple centroids in space {space.name!r}. Returning the first one.")
+                logger.warn(f"region {region.name!r} returned multiple centroids in space {space.name!r}. Returning the first one.")
 
     pev.has_annotation = HasAnnotation(
         best_view_point=BestViewPoint(

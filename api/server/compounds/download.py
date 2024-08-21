@@ -25,9 +25,9 @@ def cleanup(filepath: Path):
 @router.get("")
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=download_all, queue_as_async=(ROLE=="server"))
-def get_download_bundle(space_id: str, parcellation_id: str, region_id: str=None, feature_id: str=None, *, background: BackgroundTasks, func):
+def get_download_bundle(space_id: str, parcellation_id: str, bbox=None, region_id: str=None, feature_id: str=None, *, background: BackgroundTasks, func):
     """Prepare the bundle. Given a specification, prepare/bundle according to the specification."""
-    returnval = func(space_id=space_id, parcellation_id=parcellation_id, region_id=region_id, feature_id=feature_id)
+    returnval = func(space_id=space_id, parcellation_id=parcellation_id, bbox=bbox, region_id=region_id, feature_id=feature_id)
     try:
         path_to_file = Path(returnval)
     except Exception as e:

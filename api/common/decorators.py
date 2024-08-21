@@ -1,14 +1,13 @@
+from .siibra_api_typing import ROLE_TYPE
+from api.common import logger
 from functools import wraps, partial
 import inspect
 import asyncio
 import time
-from typing import Dict, Callable, Tuple
-
-from .siibra_api_typing import ROLE_TYPE
-from .logger import logger as general_logger
-from .exceptions import (
+from api.common.exceptions import (
     FaultyRoleException,
 )
+from typing import Dict, Callable, Tuple
 
 name_to_fns_map: Dict[str, Tuple[Callable, Callable]] = {}
 
@@ -33,8 +32,6 @@ def data_decorator(role: ROLE_TYPE):
                 from api.worker import app
                 
                 def celery_task_wrapper(self, *args, **kwargs):
-                    if role == "worker":
-                        general_logger.info(f"Task Received: {fn.__name__=}, {args=}, {kwargs=}")
                     return fn(*args, **kwargs)
                     
                 return app.task(bind=True)(
@@ -42,7 +39,7 @@ def data_decorator(role: ROLE_TYPE):
                 )
             except ImportError as e:
                 errmsg = f"For worker role, celery must be installed as a dep"
-                general_logger.critical(errmsg)
+                logger.critical(errmsg)
                 raise ImportError(errmsg) from e
         raise FaultyRoleException(f"role must be 'all', 'server' or 'worker', but it is {role}")
     return outer_wrapper

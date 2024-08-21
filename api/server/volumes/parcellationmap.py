@@ -9,7 +9,7 @@ from api.siibra_api_config import ROLE
 from api.models.volumes.parcellationmap import MapModel
 from api.models.volumes.volume import MapType
 from api.models._commons import DataFrameModel
-from api.common import router_decorator, get_filename, NotFound
+from api.common import router_decorator, get_filename, logger, NotFound
 from api.common.data_handlers.volumes.parcellationmap import get_map, get_region_statistic_map, get_region_statistic_map_info, get_parcellation_labelled_map, assign_point, get_resampled_map
 from api.server.util import SapiCustomRoute
 import os

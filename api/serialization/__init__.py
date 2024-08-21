@@ -10,6 +10,5 @@ from . import (
     _retrieval,
     _common,
     locations,
-    # vocabularies, # For now, there are no serialization to be done on vocabolaries
 )
 
