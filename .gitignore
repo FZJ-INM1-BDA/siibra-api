@@ -16,3 +16,4 @@ tmp
 docs/_*
 **/*.log
 secret*
+venv2/*

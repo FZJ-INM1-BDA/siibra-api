@@ -7,13 +7,13 @@ metadata:
 spec:
   containers:
   - name: warmup-container
-    image: docker-registry.ebrains.eu/siibra/siibra-api:rc-worker
+    image: docker-registry.ebrains.eu/siibra/siibra-api:rc-worker-v4
     imagePullPolicy: Always
     command:
     - python
     args:
-    - -c
-    - import siibra; siibra.cache.clear(); siibra.warm_cache(999)
+    - -m
+    - new_api.run_warmup
     resources:
       limits:
         cpu: "2"

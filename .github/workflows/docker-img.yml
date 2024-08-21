@@ -1,9 +1,6 @@
 name: '[cd]docker images'
 
 on:
-  push:
-    branches:
-    - master
   release:
     types:
     - published
@@ -23,7 +20,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        flavor: ['server', 'worker', 'all']
         include:
         - flavor: 'all'
           dockerfile: 'Dockerfile'
@@ -34,6 +30,9 @@ jobs:
         - flavor: 'server'
           dockerfile: 'server.dockerfile'
           tag_suffix: '-server'
+        - flavor: 'worker'
+          dockerfile: 'worker-v4.dockerfile'
+          tag_suffix: '-worker-v4'
 
     steps:
     - name: "Sanity check github.ref"
@@ -47,15 +46,10 @@ jobs:
         docker pull $cached_image
         docker build --build-arg GIT_HASH=$GIT_HASH -t siibra-api-tmp-img -f ${{ matrix.dockerfile }} .
 
-    - name: "Tag and Push (latest || rc)"
-      if: ${{ (github.event_name == 'push') || contains(github.ref, 'rc') }}
+    - name: "Tag and Push (rc)"
+      if: ${{ contains(github.ref, 'rc') }}
       run: |
-        if [[ "$GITHUB_REF" = *"rc"* ]]
-        then
-          TAG_BASE=rc
-        else
-          TAG_BASE=latest
-        fi
+        TAG_BASE=rc
 
         NEW_TAG=${{ env.DOCKER_REGISTRY }}${{ env.DOCKER_IMG }}:${TAG_BASE}${{ matrix.tag_suffix }}
         docker tag siibra-api-tmp-img ${NEW_TAG}
@@ -111,8 +105,8 @@ jobs:
     - name: 'Setting env var'
       id: set-env-var
       run: |
-        queues=$(python -c 'import api.siibra_api_config as cfg; print(" ".join([f"{q!r}" for q in cfg.queues]))') >> "$GITHUB_OUTPUT"
-        version=$(python -c 'import api.siibra_api_config as cfg; print(cfg.__version__)') >> "$GITHUB_OUTPUT"
+        queues=$(python -c 'import api.siibra_api_config as cfg; print(" ".join([f"{q!r}" for q in cfg.queues]))')
+        version=$(python -c 'import api.siibra_api_config as cfg; print(cfg.__version__)')
         
         if [[ -z "$version" ]]
         then
@@ -128,34 +122,6 @@ jobs:
         echo queues=$queues >> $GITHUB_OUTPUT
         echo version=$version >> $GITHUB_OUTPUT
 
-  deploy-latest-on-okd:
-    needs: setup-envvar
-    if: ${{ github.event_name == 'push' }}
-
-    uses: ./.github/workflows/deploy-on-okd.yml
-    with:
-      okd_endpoint: https://okd-dev.hbp.eu:443
-      flavor: latest
-      queues: ${{ needs.setup-envvar.outputs.queues }}
-      version: ${{ needs.setup-envvar.outputs.version }}
-      workerimage: docker-registry.ebrains.eu/siibra/siibra-api:latest-worker
-    secrets:
-      okd_token: ${{ secrets.OKD_DEV_SECRET }}
-
-  deploy-rc-on-okd:
-    needs: setup-envvar
-    if:  ${{ github.event_name == 'release' && contains(github.ref, 'rc') }}
-    
-    uses: ./.github/workflows/deploy-on-okd.yml
-    with:
-      okd_endpoint: https://okd.hbp.eu:443
-      flavor: rc
-      queues: ${{ needs.setup-envvar.outputs.queues }}
-      version: ${{ needs.setup-envvar.outputs.version }}
-      workerimage: docker-registry.ebrains.eu/siibra/siibra-api:rc-worker
-    secrets:
-      okd_token: ${{ secrets.OKD_PROD_SECRET }}
-  
   deploy-rc-on-data-validation:
     needs:
     - build-docker-img
@@ -164,31 +130,6 @@ jobs:
     steps:
     - run: |
         /bin/bash -c "cd /softwares/software && ./restart.sh"
-
-  deploy-prod-on-okd:
-    needs: setup-envvar
-    if:  ${{ github.event_name == 'release' && !contains(github.ref, 'rc') }}
-    strategy:
-      fail-fast: false
-      matrix:
-        deploy-site: ['jsc', 'cscs']
-        include:
-        - deploy-site: 'jsc'
-          okd-endpoint: https://okd.jsc.hbp.eu:443
-
-        - deploy-site: 'cscs'
-          okd-endpoint: https://okd.hbp.eu:443
-          
-    uses: ./.github/workflows/deploy-on-okd.yml
-    with:
-      okd_endpoint: ${{ matrix.okd-endpoint }}
-      flavor: stable
-      queues: ${{ needs.setup-envvar.outputs.queues }}
-      version: ${{ needs.setup-envvar.outputs.version }}
-      workerimage: docker-registry.ebrains.eu/siibra/siibra-api:0.3-worker
-    secrets:
-      okd_token: ${{ matrix.deploy-site == 'jsc' && secrets.OKD_JSC_SECRET || secrets.OKD_PROD_SECRET }}
-
 
   # rc
   warmup-rc-at-helm:

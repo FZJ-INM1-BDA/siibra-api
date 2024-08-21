@@ -150,7 +150,9 @@ async def middleware_cache_response(request: Request, call_next):
     # - x-bypass-fastapi-cache is present
     bypass_cache_read = (
         request.headers.get("x-bypass-fastapi-cache")
-    ) or bypass_cache_set
+        or request.headers.get("cache-control") == "no-cache"
+        or bypass_cache_set
+    )
 
     # starlette seems to normalize header to lower case
     # so .get("origin") also works if the request has "Origin: http://..."

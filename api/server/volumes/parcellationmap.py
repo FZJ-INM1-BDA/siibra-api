@@ -10,7 +10,8 @@ from api.models.volumes.parcellationmap import MapModel
 from api.models.volumes.volume import MapType
 from api.models._commons import DataFrameModel
 from api.common import router_decorator, get_filename, logger, NotFound
-from api.common.data_handlers.volumes.parcellationmap import get_map, get_region_statistic_map, get_region_statistic_map_info, get_parcellation_labelled_map, assign_point, get_resampled_map
+from api.common.data_handlers.volumes.parcellationmap import get_map, get_region_statistic_map, get_region_statistic_map_info, get_parcellation_labelled_map, get_resampled_map
+from new_api.v3.data_handlers.map import assign
 from api.server.util import SapiCustomRoute
 import os
 
@@ -117,7 +118,7 @@ def get_region_statistical_map_metadata(parcellation_id: str, space_id: str, reg
 
 @router.get("/assign", response_model=DataFrameModel, tags=[TAGS])
 @version(*FASTAPI_VERSION)
-@router_decorator(ROLE, func=assign_point)
+@router_decorator(ROLE, func=assign)
 def get_assign_point(parcellation_id: str, space_id: str, point: str, assignment_type: str="statistical", sigma_mm: float=0., *, func):
     """Perform assignment according to specification"""
     if func is None:

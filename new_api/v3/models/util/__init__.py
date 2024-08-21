@@ -1,0 +1,1 @@
+from .numpyarray import NpArrayDataModel

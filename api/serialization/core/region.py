@@ -131,7 +131,7 @@ def region_to_model(region: Region, *, min_flag: bool=False, detail: bool=False,
     pev = ParcellationEntityVersionModel(
         id=get_region_model_id(region),
         has_parent=[{"@id": get_region_model_id(region.parent)}]
-            if (region.parent is not None)
+            if (region.parent is not None and region.parent is not region.parcellation)
             else None,
         name=region.name,
         ontology_identifier=None,
