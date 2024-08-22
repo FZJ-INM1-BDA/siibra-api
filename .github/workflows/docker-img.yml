@@ -43,7 +43,7 @@ jobs:
         GIT_HASH=$(git rev-parse --short HEAD)
         cached_image=${{ env.DOCKER_REGISTRY }}${{ env.DOCKER_IMG }}:latest${{ matrix.tag_suffix }}
         echo "Pulling $cached_image to populate cached layers."
-        docker pull $cached_image
+        docker pull $cached_image || true
         docker build --build-arg GIT_HASH=$GIT_HASH -t siibra-api-tmp-img -f ${{ matrix.dockerfile }} .
 
     - name: "Tag and Push (rc)"
