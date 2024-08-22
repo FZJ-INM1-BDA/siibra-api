@@ -94,7 +94,6 @@ jobs:
   setup-envvar:
     runs-on: ubuntu-latest
     outputs:
-      queues: ${{ steps.set-env-var.outputs.queues }}
       version: ${{ steps.set-env-var.outputs.version }}
     needs: build-docker-img
     steps:
@@ -105,21 +104,14 @@ jobs:
     - name: 'Setting env var'
       id: set-env-var
       run: |
-        queues=$(python -c 'import api.siibra_api_config as cfg; print(" ".join([f"{q!r}" for q in cfg.queues]))')
-        version=$(python -c 'import api.siibra_api_config as cfg; print(cfg.__version__)')
+        version=$(cat VERSION)
         
         if [[ -z "$version" ]]
         then
           echo "Version population failed: $version"
           exit 1
         fi
-        if [[ -z "$queues" ]]
-        then
-          echo "Queues population failed: $queues"
-          exit 1
-        fi
         
-        echo queues=$queues >> $GITHUB_OUTPUT
         echo version=$version >> $GITHUB_OUTPUT
 
   deploy-rc-on-data-validation:
