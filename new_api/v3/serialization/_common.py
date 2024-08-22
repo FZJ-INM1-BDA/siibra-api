@@ -4,7 +4,7 @@ import numpy as np
 from new_api.v3.models._commons import SeriesModel, DataFrameModel
 
 
-from . import instance_to_model
+from . import instance_to_model, serialize
 
 # will affect how dtype attribute is serialised
 serializable_dtype = (

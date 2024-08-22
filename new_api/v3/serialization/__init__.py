@@ -6,6 +6,7 @@ REGISTER: Dict[Type, Callable[..., ConfigBaseModel]] = {}
 
 def instance_to_model(instance: Any, **kwargs):
     from . import _common
+    from . import map
     
     if instance is None:
         return None

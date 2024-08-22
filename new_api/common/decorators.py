@@ -19,6 +19,8 @@ def data_decorator(role: ROLE_TYPE):
     Raises:
         ImportError: Celery not installed, but role is set to either `worker` or `server`
     """
+    if role != "worker":
+        logger.warning(f"Role was set to be {role}, calls to map/* endpoints will fail. See https://github.com/FZJ-INM1-BDA/siibra-api/issues/151")
     def outer_wrapper(fn):
         if role == "all":
             return fn

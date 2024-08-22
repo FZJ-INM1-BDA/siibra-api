@@ -29,5 +29,5 @@ class MapType(str, Enum):
     """MapType
     
     Exact match to MapType in siibra, to avoid dependency on siibra"""
-    LABELLED = "LABELLED"
-    STATISTICAL = "STATISTICAL"
+    labelled = "labelled"
+    statistical = "statistical"

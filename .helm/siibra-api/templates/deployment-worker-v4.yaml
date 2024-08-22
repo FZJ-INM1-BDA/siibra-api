@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "siibra-api.fullname" $ }}-worker-v4
+  labels:
+    queuename: {{ . }}
+    {{- include "siibra-api.labels" $ | nindent 4 }}
+spec:
+  strategy:
+    type: RollingUpdate
+    # This rolling update setup allow k8s to scale down before bringing up new pods.
+    # This should be more resource conservative, whilst sacrificing some availability during update.
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+
+  {{- if not $.Values.autoscaling.enabled }}
+  replicas: {{ $.Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      role: worker
+      queuename: v4-all
+      sapiFlavor: {{ $.Values.sapiFlavor }}
+      {{- include "siibra-api.selectorLabels" $ | nindent 6 }}
+  template:
+    metadata:
+      {{- with $.Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        role: worker
+        queuename: v4-all
+        sapiFlavor: {{ $.Values.sapiFlavor }}
+        {{- include "siibra-api.labels" $ | nindent 8 }}
+	{{- with $.Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with $.Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "siibra-api.serviceAccountName" $ }}
+      securityContext:
+        {{- toYaml $.Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ $.Chart.Name }}
+          securityContext:
+            {{- toYaml $.Values.securityContext | nindent 12 }}
+          image: "{{ $.Values.image.repository }}:{{ include "siibra-api.root-img" $ }}-worker-v4"
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          livenessProbe:
+            # each pod has 20 seconds to become lively (which by definition is ready)
+            initialDelaySeconds: 2
+            periodSeconds: 10
+            timeoutSeconds: 4
+            failureThreshold: 12
+            exec:
+              command: ["/bin/bash", "-c", "cd /worker && python worker_health_v4.py"]
+          envFrom:
+            - configMapRef:
+                name: siibra-api-common
+          env:
+            - name: SIIBRA_CACHEDIR
+              value: "/siibra-api-volume/{{- include "siibra-api.cache-dir" $ -}}"
+            - name: SIIBRA_API_NAMESPACE
+              value: {{ $.Values.sapiFlavor }}
+          resources:
+            {{- toYaml $.Values.resourcesWorkerPod | nindent 12 }}
+          {{- with $.Values.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with $.Values.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $.Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $.Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $.Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
