@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: {{ include "siibra-api.fullname" $ }}-worker-v4
   labels:
-    queuename: {{ . }}
+    queuename: all
     {{- include "siibra-api.labels" $ | nindent 4 }}
 spec:
   strategy:
