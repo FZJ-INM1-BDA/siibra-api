@@ -91,8 +91,7 @@ class CELERY_CONFIG:
 
     # source of truth on all queues
     task_routes={
-        f'api.common.data_handlers.{_queue}.*': f'{QUEUE_PREFIX}.{_queue}'
-        for _queue in _queues
+        f'new_api.v3.*': f'{QUEUE_PREFIX}.v3'
     }
 
     # define task_queues explicitly, so that if -Q is not defined, the worker

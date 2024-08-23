@@ -51,6 +51,15 @@ spec:
             {{- toYaml $.Values.securityContext | nindent 12 }}
           image: "{{ $.Values.image.repository }}:{{ include "siibra-api.root-img" $ }}-worker-v4"
           imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          command: ["celery"]
+          args: 
+          - "-A"
+          - "new_api.worker.app"
+          - "worker"
+          - "-Q"
+          - "{{ $.Values.sapiVersion }}.{{ $.Values.sapiFlavor }}.v3"
+          - "-O"
+          - "fair"
           livenessProbe:
             # each pod has 20 seconds to become lively (which by definition is ready)
             initialDelaySeconds: 2
