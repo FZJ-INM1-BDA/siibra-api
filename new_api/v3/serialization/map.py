@@ -37,8 +37,8 @@ def map_to_model(mp: Map, **kwargs):
     
     # TODO check for any non empty entry of custodian and transform properly
     datasets = [EbrainsDatasetModel(id=dsv["id"],
-                                   name=dsv["fullName"],
-                                   urls=[{"url": dsv["homepage"]}],
+                                   name=dsv["fullName"] or "",
+                                   urls=[{"url": dsv["homepage"]}] if dsv["homepage"] else [],
                                    description=dsv["description"],
                                    contributors=[EbrainsDsPerson(id=author["id"],
                                                                  identifier=author["id"],
