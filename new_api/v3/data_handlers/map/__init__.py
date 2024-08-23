@@ -47,6 +47,7 @@ def get_map(parcellation_id: str, space_id: str, maptype: Union[MapType, str], e
         maptype = maptype.name
     
     assert maptype is not None, f"maptype is neither MapType nor str"
+    maptype = maptype.lower()
     
     returned_maps = siibra.find_maps(parcellation_id, space_id, maptype=maptype, extra_spec=extra_spec)
     
