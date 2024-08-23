@@ -53,7 +53,7 @@ def get_map(parcellation_id: str, space_id: str, maptype: Union[MapType, str], e
     
     if len(returned_maps) == 0:
         raise NotFound(f"get_map with spec {parcellation_id=!r}, {space_id=!r}, {maptype=!r}, {extra_spec=!r} found no map.")
-    return instance_to_model(returned_maps[0], detail=True)
+    return instance_to_model(returned_maps[0], detail=True).dict()
 
 @data_decorator(ROLE)
 def statistical_map_nii_gz(parcellation_id: str, space_id: str, region_id: str, extra_spec: str, *, no_cache: bool):
