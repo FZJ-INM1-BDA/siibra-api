@@ -6,7 +6,7 @@ from .exceptions import FaultyRoleException
 
 def dummy(*args, **kwargs): pass
 
-ROLE_TYPE = Union[Literal['worker'], Literal["server"], Literal["all"]]
+ROLE_TYPE = Literal["worker", "server", "all"]
 
 def data_decorator(role: ROLE_TYPE):
     """data decorator
@@ -19,7 +19,7 @@ def data_decorator(role: ROLE_TYPE):
     Raises:
         ImportError: Celery not installed, but role is set to either `worker` or `server`
     """
-    if role != "worker":
+    if role == "all":
         logger.warning(f"Role was set to be {role}, calls to map/* endpoints will fail. See https://github.com/FZJ-INM1-BDA/siibra-api/issues/151")
     def outer_wrapper(fn):
         if role == "all":

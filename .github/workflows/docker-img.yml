@@ -154,7 +154,7 @@ jobs:
         include:
         - yml-file: .helm/adhoc/warm-cache.yaml
           podname: warmup-pod
-        - yaml-file: .helm/adhoc/warm-cache-v4.yaml
+        - yml-file: .helm/adhoc/warm-cache-v4.yaml
           podname: warmup-pod-v4
     steps:
     - uses: actions/checkout@v4
