@@ -173,9 +173,12 @@ class Singleton:
         for hostname in (result or {}):
             for queue in result[hostname]:
                 routing_key = queue.get("routing_key")
-                *_, namespace, queue = routing_key.split(".")
-                version = ".".join(_)
-                tally[(version, namespace, queue)] += 1
+                try:
+                    *_, namespace, queue = routing_key.split(".")
+                    version = ".".join(_)
+                    tally[(version, namespace, queue)] += 1
+                except:
+                    tally[(routing_key, None, None)] += 1
 
         for ((version, namespace, queue), total) in tally.items():
             num_worker_gauge.labels(version=version,
