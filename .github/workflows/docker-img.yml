@@ -118,16 +118,44 @@ jobs:
     needs:
     - build-docker-img
     if: ${{ github.event_name == 'push' }}
-    runs-on: siibra-data-validation
+    runs-on: self-hosted
     steps:
     - run: |
         /bin/bash -c "cd /softwares/software && ./restart.sh"
 
   # rc
-  warmup-rc-at-helm:
+  rm-cache-rc-at-helm:
     needs: setup-envvar
     if:  ${{ github.event_name == 'release' && contains(github.ref, 'rc') }}
     runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/composite-set-k8s-cred
+      with:
+        secrets: ${{ secrets.KUBECONFIG }}
+    - run: |
+        prod_server_pod=$(kubectl get pod | grep server | grep prod | awk '{print $1}')
+        echo exec on $prod_server_pod
+        kubectl exec $prod_server_pod -- rm -rf /siibra-api-volume/${{ needs.setup-envvar.outputs.version }}-rc/*
+        
+        REDIS_POD=$(kubectl get pod -l app=cache-redis | grep Running | awk '{print $1}')
+        echo kubectl exec $REDIS_POD -- /bin/ash -c 'redis-cli --scan --pattern "*\[${{ needs.setup-envvar.outputs.version }}\]*" | while IFS= read -r line; do redis-cli del "$line"; done'
+        kubectl exec $REDIS_POD -- /bin/ash -c 'redis-cli --scan --pattern "*\[${{ needs.setup-envvar.outputs.version }}\]*" | while IFS= read -r line; do redis-cli del "$line"; done'
+    
+  warmup-rc-at-helm:
+    needs:
+    - setup-envvar
+    - rm-cache-rc-at-helm
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      max-parallel: 1
+      matrix:
+        include:
+        - yml-file: .helm/adhoc/warm-cache.yaml
+          podname: warmup-pod
+        - yaml-file: .helm/adhoc/warm-cache-v4.yaml
+          podname: warmup-pod-v4
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/composite-set-k8s-cred
@@ -137,12 +165,12 @@ jobs:
       run: |
         # Delete pod at the beginning of the workflow
         # This is so that logs can be inspected
-        kubectl delete pod/warmup-pod || echo "Pod pod/warmup-pod not found." 
+        kubectl delete pod/${{ matrix.podname }} || echo "Pod pod/${{ matrix.podname }} not found." 
 
         # TODO Flaky
         # see .helm/siibra-api/templates/_helpers.tpl how siibra-api.cache-dir is defined
 
-        WARM_CACHE_YML=$(SIIBRA_CACHEDIR=/siibra-api-volume/${{ needs.setup-envvar.outputs.version }}-rc/ envsubst < .helm/adhoc/warm-cache.yaml)
+        WARM_CACHE_YML=$(SIIBRA_CACHEDIR=/siibra-api-volume/${{ needs.setup-envvar.outputs.version }}-rc/ envsubst < ${{ matrix.yml-file }})
         echo -e "WARM_CACHE_YML: \n$WARM_CACHE_YML"
 
         echo "$WARM_CACHE_YML" | kubectl apply -f -
@@ -150,7 +178,7 @@ jobs:
         while true
         do
           sleep 10
-          POD_PHASE=$(kubectl get pod warmup-pod -o json | jq -r '.status.phase')
+          POD_PHASE=$(kubectl get pod ${{ matrix.podname }} -o json | jq -r '.status.phase')
 
           echo Possible phases: Pending, Running, Succeeded, Failed, Unknown
           echo Found phase: $POD_PHASE
@@ -166,22 +194,6 @@ jobs:
           fi
         done
   
-  clear-rc-redis-cache:
-    runs-on: ubuntu-latest
-    timeout-minutes: 1 # should not take more than 1 minute to clear the cache
-    needs:
-    - warmup-rc-at-helm
-    - setup-envvar
-    steps:
-    - uses: actions/checkout@v4
-    - uses: ./.github/workflows/composite-set-k8s-cred
-      with:
-        secrets: ${{ secrets.KUBECONFIG }}
-    - run: |
-        REDIS_POD=$(kubectl get pod -l app=cache-redis | grep Running | awk '{print $1}')
-        echo kubectl exec $REDIS_POD -- /bin/ash -c 'redis-cli --scan --pattern "*\[${{ needs.setup-envvar.outputs.version }}\]*" | while IFS= read -r line; do redis-cli del "$line"; done'
-        kubectl exec $REDIS_POD -- /bin/ash -c 'redis-cli --scan --pattern "*\[${{ needs.setup-envvar.outputs.version }}\]*" | while IFS= read -r line; do redis-cli del "$line"; done'
-
   deploy-rc-via-helm:
     needs: warmup-rc-at-helm
     if:  ${{ github.event_name == 'release' && contains(github.ref, 'rc') }}

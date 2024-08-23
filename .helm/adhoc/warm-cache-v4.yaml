@@ -2,18 +2,18 @@ apiVersion: v1
 kind: Pod
 metadata:
   labels:
-    app: warmup-pod
-  name: warmup-pod
+    app: warmup-pod-v4
+  name: warmup-pod-v4
 spec:
   containers:
   - name: warmup-container
-    image: docker-registry.ebrains.eu/siibra/siibra-api:rc-worker
+    image: docker-registry.ebrains.eu/siibra/siibra-api:rc-worker-v4
     imagePullPolicy: Always
     command:
     - python
     args:
     - -c
-    - import siibra; siibra.warm_cache()
+    - from new_api import v3, warmup; warmup.warmup()
     resources:
       limits:
         cpu: "2"

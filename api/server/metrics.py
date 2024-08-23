@@ -25,9 +25,12 @@ class Singleton:
             # queries mount used/free and not directory
             dirs = os.listdir(MONITOR_FIRSTLVL_DIR)
             for dir in dirs:
-                result = run(["du", "-s", f"{MONITOR_FIRSTLVL_DIR}/{dir}"], capture_output=True, text=True)
-                size_b, *_ = result.stdout.split("\t")
-                Singleton.cached_du[dir] = int(size_b)
+                try:
+                    result = run(["du", "-s", f"{MONITOR_FIRSTLVL_DIR}/{dir}"], capture_output=True, text=True)
+                    size_b, *_ = result.stdout.split("\t")
+                    Singleton.cached_du[dir] = int(size_b)
+                except:
+                    ...
             
 
 def on_startup():
