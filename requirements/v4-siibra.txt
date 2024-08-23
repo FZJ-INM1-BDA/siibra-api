@@ -1,1 +1,2 @@
-git+https://github.com/FZJ-INM1-BDA/siibra-python.git@refactor_attr
+# refactor_attr is... borked since dataops are being introduced
+git+https://github.com/FZJ-INM1-BDA/siibra-python.git@769ab07c05555b2c66261f9a38516e247e70318a
