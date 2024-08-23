@@ -30,8 +30,6 @@ def map_to_model(mp: Map, **kwargs):
     description = mp.description
     publications = [SiibraPublication(citation=pub.text, url=pub.value)
                     for pub in mp.publications]
-    EbrainsDatasetModel(id="", name="", urls=[])
-    
     
     got_dsv = [ EbrainsQuery.get_dsv(dsv)
                 for ref in mp._find(EbrainsRef)
