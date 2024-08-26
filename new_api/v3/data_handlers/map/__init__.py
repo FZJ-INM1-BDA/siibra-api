@@ -24,7 +24,7 @@ def assign(parcellation_id: str, space_id: str, point: str, assignment_type: str
     return instance_to_model(result, detail=True).dict()
 
 @data_decorator(ROLE)
-def get_map(parcellation_id: str, space_id: str, maptype: Union[MapType, str], extra_spec: str):
+def get_map(parcellation_id: str, space_id: str, maptype: Union[MapType, str], extra_spec: str=""):
     """Get a map instance, based on specification
     
     Args:
@@ -56,12 +56,12 @@ def get_map(parcellation_id: str, space_id: str, maptype: Union[MapType, str], e
     return instance_to_model(returned_maps[0], detail=True).dict()
 
 @data_decorator(ROLE)
-def statistical_map_nii_gz(parcellation_id: str, space_id: str, region_id: str, extra_spec: str, *, no_cache: bool):
+def statistical_map_nii_gz(parcellation_id: str, space_id: str, region_id: str, extra_spec: str="", *, no_cache: bool):
     filename, return_cached, warningtext = cache_region_statistic_map(parcellation_id, region_id, space_id, extra_spec, no_cache=no_cache)
     return filename, return_cached
 
 @data_decorator(ROLE)
-def statistical_map_info_json(parcellation_id: str, space_id: str, region_id: str, extra_spec: str, *, no_cache: bool):
+def statistical_map_info_json(parcellation_id: str, space_id: str, region_id: str, extra_spec: str="", *, no_cache: bool):
     filename, return_cached, warningtext = cache_region_statistic_map(parcellation_id, region_id, space_id, extra_spec, no_cache=no_cache)
 
     import nibabel as nib

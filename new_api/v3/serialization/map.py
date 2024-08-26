@@ -9,6 +9,7 @@ from new_api.v3.models.core._concept import SiibraPublication
 from new_api.v3.models._retrieval.datasets import EbrainsDatasetModel, EbrainsDsPerson
 
 from siibra.atlases.parcellationmap import Map
+from siibra.atlases.sparsemap import SparseMap
 from siibra.attributes.descriptions import Name, EbrainsRef
 from siibra.attributes.dataitems.base import Archive
 from siibra.attributes.dataitems.volume.base import Volume, MESH_FORMATS, IMAGE_FORMATS
@@ -43,6 +44,7 @@ def clear_name(name: str):
         result = result.replace(search, repl)
     return " ".join(w for w in result.split(" ") if len(w))
 
+@serialize(SparseMap)
 @serialize(Map)
 def map_to_model(mp: Map, **kwargs):
 
