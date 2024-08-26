@@ -11,7 +11,7 @@ class EbrainsDsUrl(ConfigBaseModel):
 class EbrainsDsPerson(ConfigBaseModel):
     """EbrainsDsPerson"""
     id: str = Field(..., alias="@id")
-    schema_shortname: Optional[str] = Field(..., alias="schema.org/shortName")
+    schema_shortname: Optional[str] = Field(None, alias="schema.org/shortName")
     identifier: str
     shortName: str
     name: str

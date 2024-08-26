@@ -8,6 +8,7 @@ from new_api.v3.models.volumes.parcellationmap import MapModel
 from new_api.v3.models.core._concept import SiibraPublication
 from new_api.v3.models._retrieval.datasets import EbrainsDatasetModel, EbrainsDsPerson
 
+from siibra.cache import fn_call_cache
 from siibra.atlases.parcellationmap import Map
 from siibra.atlases.sparsemap import SparseMap
 from siibra.attributes.descriptions import Name, EbrainsRef
@@ -44,6 +45,13 @@ def clear_name(name: str):
         result = result.replace(search, repl)
     return " ".join(w for w in result.split(" ") if len(w))
 
+@fn_call_cache
+def retrieve_dsv(mp: Map):
+    got_dsv = [ EbrainsQuery.get_dsv(dsv)
+                for ref in mp._find(EbrainsRef)
+                for dsv in ref._dataset_verion_ids]
+    return got_dsv
+
 @serialize(SparseMap)
 @serialize(Map)
 def map_to_model(mp: Map, **kwargs):
@@ -57,20 +65,17 @@ def map_to_model(mp: Map, **kwargs):
     publications = [SiibraPublication(citation=pub.text, url=pub.value)
                     for pub in mp.publications]
     
-    got_dsv = [ EbrainsQuery.get_dsv(dsv)
-                for ref in mp._find(EbrainsRef)
-                for dsv in ref._dataset_verion_ids]
-    
+    got_dsv = retrieve_dsv(mp)
     # TODO check for any non empty entry of custodian and transform properly
     datasets = [EbrainsDatasetModel(id=dsv["id"],
-                                   name=dsv["fullName"] or "",
-                                   urls=[{"url": dsv["homepage"]}] if dsv["homepage"] else [],
-                                   description=dsv["description"],
-                                   contributors=[EbrainsDsPerson(id=author["id"],
-                                                                 identifier=author["id"],
-                                                                 shortName=author["shortName"],
-                                                                 name=author["fullName"]) for author in dsv["author"]],
-                                   custodians=[]) for dsv in got_dsv]
+                                    name=dsv["fullName"] or "",
+                                    urls=[{"url": dsv["homepage"]}] if dsv["homepage"] else [],
+                                    description=dsv["description"],
+                                    contributors=[EbrainsDsPerson(id=author["id"],
+                                                                  identifier=author["id"],
+                                                                  shortName=author["shortName"] or f"{author['givenName']} {author['familyName']}",
+                                                                  name=author["fullName"] or f"{author['givenName']} {author['familyName']}") for author in dsv["author"]],
+                                    custodians=[]) for dsv in got_dsv]
 
     # specific to map model
     species = mp.species

@@ -21,7 +21,7 @@ from .features import router as feature_router
 from .metrics import prom_metrics_resp, on_startup as metrics_on_startup, on_terminate as metrics_on_terminate
 from .code_snippet import get_sourcecode
 
-from ..common import logger, access_logger, NotFound, SapiBaseException, name_to_fns_map
+from ..common import logger, general_logger, access_logger, NotFound, SapiBaseException, name_to_fns_map
 from ..siibra_api_config import GIT_HASH
 
 siibra_version_header = "x-siibra-api-version"
@@ -54,18 +54,6 @@ siibra_api.add_middleware(
     allow_methods=["GET"],
     expose_headers=[siibra_version_header]
 )
-
-# some plugins may strip origin header for privacy reasons
-# so if origin is unavailable, append it to trick corsmiddleware to activate
-@siibra_api.middleware("http")
-async def append_origin_header(request: Request, call_next):
-    headers = dict(request.scope["headers"])
-    origin = request.headers.get("origin")
-    new_headers = [(k, v) for k, v in headers.items()]
-    if not origin:
-        new_headers.append((b"origin", b"unknownorigin.dev"))
-    request.scope["headers"] = new_headers
-    return await call_next(request)
 
 @siibra_api.get("/metrics", include_in_schema=False)
 def get_metrics():
@@ -295,7 +283,19 @@ async def middleware_access_log(request: Request, call_next):
             "hit_cache": "cache_miss"
         })
     except Exception as e:
-        logger.critical(e)
+        general_logger.critical(e)
+
+# some plugins may strip origin header for privacy reasons
+# so if origin is unavailable, append it to trick corsmiddleware to activate
+@siibra_api.middleware("http")
+async def append_origin_header(request: Request, call_next):
+    headers = dict(request.scope["headers"])
+    origin = request.headers.get("origin")
+    new_headers = [(k, v) for k, v in headers.items()]
+    if not origin:
+        new_headers.append((b"origin", b"unknownorigin.dev"))
+    request.scope["headers"] = new_headers
+    return await call_next(request)
 
 @siibra_api.exception_handler(RuntimeError)
 async def exception_runtime(request: Request, exc: RuntimeError) -> JSONResponse:
@@ -303,7 +303,7 @@ async def exception_runtime(request: Request, exc: RuntimeError) -> JSONResponse
     Most of the RuntimeErrors are thrown by the siibra-python library when other Services are not responding.
     To be more resilient and not throw a simple and unplanned HTTP 500 response, this handler will return an HTTP 503
     status."""
-    logger.warning(f"Error handler: exception_runtime: {str(exc)}")
+    general_logger.warning(f"Error handler: exception_runtime: {str(exc)}")
     return JSONResponse(
         status_code=503,
         content={
@@ -312,16 +312,17 @@ async def exception_runtime(request: Request, exc: RuntimeError) -> JSONResponse
         },
     )
 
+
 @siibra_api.exception_handler(SapiBaseException)
 def exception_sapi(request: Request, exc: SapiBaseException):
     """Handle sapi errors"""
-    logger.warning(f"Error handler: exception_sapi: {str(exc)}")
+    general_logger.warning(f"Error handler: exception_sapi: {str(exc)}")
     raise HTTPException(400, str(exc))
 
 @siibra_api.exception_handler(Exception)
 async def exception_other(request: Request, exc: Exception):
     """Catch all exception handler"""
-    logger.warning(f"Error handler: exception_other: {str(exc)}")
+    general_logger.warning(f"Error handler: exception_other: {str(exc)}")
     return JSONResponse(
         status_code=500,
         content={
