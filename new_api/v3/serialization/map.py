@@ -19,6 +19,30 @@ def parse_archive_options(archive: Union[Archive, None]):
         return "", ""
     return archive["format"], f" {archive['file']}"
 
+
+REMOVE_FROM_NAME = [
+    "hemisphere",
+    " -",
+    "-brain",
+    "both",
+    "Both",
+]
+
+REPLACE_IN_NAME = {
+    "ctx-lh-": "left ",
+    "ctx-rh-": "right ",
+}
+
+
+def clear_name(name: str):
+    """clean up a region name to the for matching"""
+    result = name
+    for word in REMOVE_FROM_NAME:
+        result = result.replace(word, "")
+    for search, repl in REPLACE_IN_NAME.items():
+        result = result.replace(search, repl)
+    return " ".join(w for w in result.split(" ") if len(w))
+
 @serialize(Map)
 def map_to_model(mp: Map, **kwargs):
 
@@ -74,6 +98,7 @@ def map_to_model(mp: Map, **kwargs):
             if value.get("label"):
                 new_index["label"] = value.get("label")
             indices[regionname].append(new_index)
+            indices[clear_name(regionname)].append(new_index)
     return MapModel(
         id=id,
         name=name,
