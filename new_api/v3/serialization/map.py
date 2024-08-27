@@ -111,9 +111,10 @@ def map_to_model(mp: Map, **kwargs):
         id = "https://kg.ebrains.eu/api/instances/" + id.replace("https://kg.ebrains.eu/api/instances/", "")
         assert id in dsv_dict, f"{id} not found in dsv_dict"
         dsv = dsv_dict[id]
+        urls = [{"url": doi["identifier"]} for doi in dsv.get("doi", [])]
         return EbrainsDatasetModel(id=id,
                                    name=dsv["fullName"] or "",
-                                   urls=[{"url": dsv["homepage"]}] if dsv["homepage"] else [],
+                                   urls=urls,
                                    description=get_description(dsv),
                                    contributors=[EbrainsDsPerson(id=author["id"],
                                                                  identifier=author["id"],
