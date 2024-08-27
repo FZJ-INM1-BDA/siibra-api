@@ -1,5 +1,7 @@
-from typing import Union
+from typing import Union, List
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
+from tqdm import tqdm
 
 from . import serialize
 
@@ -14,7 +16,7 @@ from siibra.atlases.sparsemap import SparseMap
 from siibra.attributes.descriptions import Name, EbrainsRef
 from siibra.attributes.dataitems.base import Archive
 from siibra.attributes.dataitems.volume.base import Volume, MESH_FORMATS, IMAGE_FORMATS
-from siibra.factory.livequery.ebrains import EbrainsQuery
+from siibra.factory.livequery.ebrains import EbrainsQuery, DatasetVersion
 
 def parse_archive_options(archive: Union[Archive, None]):
     if archive is None:
@@ -46,11 +48,39 @@ def clear_name(name: str):
     return " ".join(w for w in result.split(" ") if len(w))
 
 @fn_call_cache
-def retrieve_dsv(mp: Map):
-    got_dsv = [ EbrainsQuery.get_dsv(dsv)
-                for ref in mp._find(EbrainsRef)
-                for dsv in ref._dataset_verion_ids]
-    return got_dsv
+def retrieve_dsv_ds(mp: Map):
+    unique_dsvs = list({dsv for ref in mp._find(EbrainsRef) for dsv in ref._dataset_verion_ids})
+    with ThreadPoolExecutor() as ex:
+        got_dsv = list(
+            tqdm(
+                ex.map(
+                    EbrainsQuery.get_dsv,
+                    unique_dsvs
+                ),
+                desc="Populating all unique DSVs",
+                total=len(unique_dsvs),
+                leave=True
+            )
+        )
+        unique_ds = list(
+            {
+                is_version_of["id"].split("/")[-1]
+                for dsv in got_dsv
+                for is_version_of in dsv["isVersionOf"]
+            }
+        )
+        got_ds = list(
+            tqdm(
+                ex.map(
+                    EbrainsQuery.get_ds,
+                    unique_ds
+                ),
+                desc="Populating all unique DSs",
+                total=len(unique_ds),
+                leave=True
+            )
+        )
+        return got_dsv, got_ds
 
 @serialize(SparseMap)
 @serialize(Map)
@@ -65,36 +95,67 @@ def map_to_model(mp: Map, **kwargs):
     publications = [SiibraPublication(citation=pub.text, url=pub.value)
                     for pub in mp.publications]
     
-    got_dsv = retrieve_dsv(mp)
+    got_dsv, got_ds = retrieve_dsv_ds(mp)
+
+    dsv_dict = {dsv["id"]: dsv for dsv in got_dsv}
+    ds_dict = {ds["id"]: ds for ds in got_ds}
+
+    def get_description(dsv: DatasetVersion):
+        if dsv["description"]:
+            return dsv["description"]
+        for v in dsv.get("isVersionOf", []):
+            if v["id"] in ds_dict:
+                return ds_dict[v["id"]]["description"]
+
+    def dsv_id_to_model(id: str):
+        id = "https://kg.ebrains.eu/api/instances/" + id.replace("https://kg.ebrains.eu/api/instances/", "")
+        assert id in dsv_dict, f"{id} not found in dsv_dict"
+        dsv = dsv_dict[id]
+        return EbrainsDatasetModel(id=id,
+                                   name=dsv["fullName"] or "",
+                                   urls=[{"url": dsv["homepage"]}] if dsv["homepage"] else [],
+                                   description=get_description(dsv),
+                                   contributors=[EbrainsDsPerson(id=author["id"],
+                                                                 identifier=author["id"],
+                                                                 shortName=author["shortName"] or f"{author['givenName']} {author['familyName']}",
+                                                                 name=author["fullName"] or f"{author['givenName']} {author['familyName']}") for author in dsv["author"]],
+                                   custodians=[])
+
     # TODO check for any non empty entry of custodian and transform properly
-    datasets = [EbrainsDatasetModel(id=dsv["id"],
-                                    name=dsv["fullName"] or "",
-                                    urls=[{"url": dsv["homepage"]}] if dsv["homepage"] else [],
-                                    description=dsv["description"],
-                                    contributors=[EbrainsDsPerson(id=author["id"],
-                                                                  identifier=author["id"],
-                                                                  shortName=author["shortName"] or f"{author['givenName']} {author['familyName']}",
-                                                                  name=author["fullName"] or f"{author['givenName']} {author['familyName']}") for author in dsv["author"]],
-                                    custodians=[]) for dsv in got_dsv]
+    untargeted_datasets = [dsv_id_to_model(dsv)
+                           for ref in mp._find(EbrainsRef)
+                           for dsv in ref._dataset_verion_ids
+                           if ref.annotates is None]
 
     # specific to map model
     species = mp.species
     
     # TODO fix datasets
     all_volumes = mp._find(Volume)
-    volumes = [VolumeModel(name="",
-                           formats=[vol.format],
-                           provides_mesh=vol.format in MESH_FORMATS,
-                           provides_image=vol.format in IMAGE_FORMATS,
-                           fragments={},
-                           variant=None,
-                           provided_volumes={
-                               f"{parse_archive_options(vol.archive_options)[0]}{vol.format}": f"{vol.url}{parse_archive_options(vol.archive_options)[0]}"
-                           },
-                           space={
-                               "@id": vol.space_id
-                           },
-                           datasets=[]) for vol in all_volumes]
+    volumes: List[VolumeModel] = []
+
+    for vol in all_volumes:
+        vol_ds: List[EbrainsDatasetModel] = []
+        if vol.id:
+            vol_ds = [dsv_id_to_model(dsv)
+                      for ref in mp._find(EbrainsRef)
+                      for dsv in ref._dataset_verion_ids
+                      if ref.annotates == vol.id]
+
+        volumes.append(
+            VolumeModel(name="",
+                        formats=[vol.format],
+                        provides_mesh=vol.format in MESH_FORMATS,
+                        provides_image=vol.format in IMAGE_FORMATS,
+                        fragments={},
+                        variant=None,
+                        provided_volumes={
+                            f"{parse_archive_options(vol.archive_options)[0]}{vol.format}": f"{vol.url}{parse_archive_options(vol.archive_options)[0]}"
+                        },
+                        space={
+                            "@id": vol.space_id
+                        },
+                        datasets=vol_ds))
 
     indices = defaultdict(list)
     for idx, vol in enumerate(all_volumes):
@@ -112,7 +173,7 @@ def map_to_model(mp: Map, **kwargs):
         shortname=shortname,
         description=description,
         publications=publications,
-        datasets=datasets,
+        datasets=untargeted_datasets,
         species=species,
         indices=indices,
         volumes=volumes,

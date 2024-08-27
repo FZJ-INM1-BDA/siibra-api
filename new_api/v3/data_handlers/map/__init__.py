@@ -98,9 +98,28 @@ def resampled_template(parcellation_id: str, space_id: str):
 def warmup_maps():
     import siibra
     from siibra.atlases.sparsemap import SparseMap
-    maps: List[SparseMap] = siibra.find_maps(maptype="statistical")
-    for map in maps:
+    from siibra.atlases.parcellationmap import Map
+    smaps: List[SparseMap] = siibra.find_maps(maptype="statistical")
+    for map in smaps:
         try:
             map._get_readable_sparseindex(warmup=True)
         except Exception as e:
             logger.warning(f"Failed to save sparseindex: {str(e)}")
+        try:
+            instance_to_model(map, detail=True)
+        except Exception as e:
+            logger.warning(f"map {map.space_id=!r} {map.parcellation_id=!r} instance to model {str(e)}")
+    
+    maps: List[Map] = siibra.find_maps(maptype="labelled")
+
+    def try_instance_to_model(m: Map):
+        logger.info(f"Caching map {map.space_id=!r} {map.parcellation_id=!r}")
+        try:
+            return instance_to_model(m, detail=True)
+        except Exception as e:
+            logger.warning(f"map {map.space_id=!r} {map.parcellation_id=!r} instance to model {str(e)}")
+
+    all_maps = [*smaps, *maps]
+    for mp in all_maps:
+        try_instance_to_model(mp)
+
