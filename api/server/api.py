@@ -68,6 +68,37 @@ def get_ready():
     TODO: implement me"""
     return "ready"
 
+@siibra_api.get("/servicemeta.json", include_in_schema=False)
+def servicemeta():
+    return {
+    "@context": "https://gitlab.ebrains.eu/lauramble/servicemeta/-/raw/main/data/contexts/servicemeta.jsonld",
+    "type": "WebApplication",
+    "alternateName": "siibra-api",
+    "author": [
+        {
+            "type": "Person",
+            "schema:affiliation": {
+                "type": "Organization",
+                "name": "Forschungszentrum Juelich"
+            },
+            "email": "xgui3783@gmail.com",
+            "familyName": "Gui",
+            "givenName": "Xiaoyun"
+        }
+    ],
+    "dateModified": "2024-08-28",
+    "documentation": "https://siibra-api.readthedocs.io/en/latest/",
+    "name": "siibra-api",
+    "version": "0.3.18",
+    "inputFormat": [
+        "json"
+    ],
+    "outputFormat": [
+        "nifti",
+        "json"
+    ]
+}
+
 @siibra_api.get("/", include_in_schema=False)
 def get_home(request: Request):
     """Return the template for the siibra landing page."""
@@ -94,17 +125,19 @@ async def read_bytes(generator) -> bytes:
 do_not_cache_list = [
     "metrics",
     "openapi.json",
-    "atlas_download"
+    "atlas_download",
+    "servicemeta",
 ]
 
 do_no_cache_query_list = [
     "bbox=",
-    "find="
+    "find=",
 ]
 
 do_not_logs = (
     "/ready",
     "/metrics",
+    "servicemeta"
 )
 
 
