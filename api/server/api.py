@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_pagination import add_pagination
 from fastapi_versioning import VersionedFastAPI
 from pathlib import Path
+from contextlib import asynccontextmanager
 
 import time
 import json
@@ -20,6 +21,7 @@ from .core import prefixed_routers as core_prefixed_routers
 from .volumes import prefixed_routers as volume_prefixed_routers
 from .compounds import prefixed_routers as compound_prefixed_routers
 from .features import router as feature_router
+from .volcabularies import router as vocabularies_router
 from .metrics import prom_metrics_resp, on_startup as metrics_on_startup, on_terminate as metrics_on_terminate
 from .code_snippet import get_sourcecode
 
@@ -28,16 +30,26 @@ from ..siibra_api_config import GIT_HASH
 
 siibra_version_header = "x-siibra-api-version"
 
+@asynccontextmanager
+async def lifespan():
+    on_startup()
+    metrics_on_startup()
+    yield
+    terminate()
+    metrics_on_terminate()
+
 siibra_api = FastAPI(
     title="siibra api",
     description="This is the REST api for siibra tools",
     version=__version__,
+    lifespan=lifespan,
 )
 
 for prefix_router in [*core_prefixed_routers, *volume_prefixed_routers, *compound_prefixed_routers]:
     siibra_api.include_router(prefix_router.router, prefix=prefix_router.prefix)
 
 siibra_api.include_router(feature_router, prefix="/feature")
+siibra_api.include_router(vocabularies_router, prefix="/vocabularies")
 
 add_pagination(siibra_api)
 
@@ -356,17 +368,6 @@ async def exception_other(request: Request, exc: Exception):
         }
     )
 
-@siibra_api.on_event("shutdown")
-def shutdown():
-    """On shutdown"""
-    terminate()
-    metrics_on_terminate()
-
-@siibra_api.on_event("startup")
-def startup():
-    """On startup"""
-    on_startup()
-    metrics_on_startup()
 
 import logging
 class EndpointLoggingFilter(logging.Filter):

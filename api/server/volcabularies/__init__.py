@@ -18,7 +18,7 @@ router = APIRouter(route_class=SapiCustomRoute, tags=TAGS)
 @router.get("/genes", response_model=Page[GeneModel])
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=get_genes)
-def get_genes(find:str=None, func=None):
+def genes(find:str=None, func=None):
     """HTTP get (filtered) genes"""
     if func is None:
         raise HTTPException(500, "func: None passed")
