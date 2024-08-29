@@ -24,12 +24,12 @@ def remap_provider(obj: Dict[str, Union[dict, str]]) -> None:
     """
     if len(SIIBRA_API_REMAP_PROVIDERS) == 0:
         return obj
-    for key, value in obj.items():
-        if isinstance(value, str):
+    for key in obj:
+        if isinstance(obj[key], str):
             for from_host, to_host in SIIBRA_API_REMAP_PROVIDERS.items():
-                obj[key] = value.replace(from_host, to_host)
-        if isinstance(value, dict):
-            remap_provider(value)
+                obj[key] = obj[key].replace(from_host, to_host)
+        if isinstance(obj[key], dict):
+            remap_provider(obj[key])
     
 
 @serialize(Volume)

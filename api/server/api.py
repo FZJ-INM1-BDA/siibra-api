@@ -70,18 +70,23 @@ def get_ready():
     TODO: implement me"""
     return "ready"
 
+_code_meta = None
 @siibra_api.get("/about", include_in_schema=False)
 def servicemeta():
-    with open(Path(__file__).parent.parent.parent / "codemeta.json", "r") as fp:
-        code_meta = json.load(fp=fp)
+    global _code_meta
+    if _code_meta is None:
+        with open(Path(__file__).parent.parent.parent / "codemeta.json", "r") as fp:
+            _code_meta = json.load(fp=fp)
+    if _code_meta is None:
+        raise Exception("code meta is not found, cannot populate servicemeta")
     return {
         "@context": "https://gitlab.ebrains.eu/lauramble/servicemeta/-/raw/main/data/contexts/servicemeta.jsonld",
         "type": "WebApplication",
-        "author": code_meta["author"],
-        "dateModified": code_meta["dateModified"],
+        "author": _code_meta["author"],
+        "dateModified": _code_meta["dateModified"],
         "documentation": DOCUMENTATION_URL,
-        "name": code_meta["name"],
-        "version": code_meta["version"],
+        "name": _code_meta["name"],
+        "version": _code_meta["version"],
         "inputFormat": INPUT_FORMAT,
         "outputFormat": OUTPUT_FORMAT
     }
@@ -113,7 +118,7 @@ do_not_cache_list = [
     "metrics",
     "openapi.json",
     "atlas_download",
-    "servicemeta",
+    "/about",
 ]
 
 do_no_cache_query_list = [
@@ -124,7 +129,7 @@ do_no_cache_query_list = [
 do_not_logs = (
     "/ready",
     "/metrics",
-    "servicemeta"
+    "/about"
 )
 
 
