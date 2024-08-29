@@ -8,6 +8,7 @@ or overwrite the this file directly (with docker volume mount, for example)."""
 import os
 from pathlib import Path
 import re
+from typing import Dict
 
 SIIBRA_USE_CONFIGURATION = os.getenv("SIIBRA_USE_CONFIGURATION")
 
@@ -61,7 +62,7 @@ REDIS_PASSWORD = os.getenv("SIIBRA_API_REDIS_PASSWORD")
 QUEUE_PREFIX = f"{__version__}.{NAME_SPACE}"
 """QUEUE_PREFIX"""
 
-MONITOR_FIRSTLVL_DIR = os.getenv("MONITOR_FIRSTLVL_DIR")
+MONITOR_FIRSTLVL_DIR = os.getenv("MONITOR_FIRSTLVL_DIR") or os.getenv("_MONITOR_FIRSTLVL_DIR")
 """MONITOR_FIRSTLVL_DIR"""
 
 _queues = [
@@ -115,21 +116,22 @@ SIIBRA_API_SHARED_DIR = os.getenv("SIIBRA_API_SHARED_DIR") or os.getenv("SIIBRA_
 
 import re
 
-SIIBRA_API_REMAP_PROVIDERS = {}
+SIIBRA_API_REMAP_PROVIDERS: Dict[str, str] = {}
 try:
     remapped_providers = os.getenv("SIIBRA_API_REMAP_PROVIDERS")
     if remapped_providers:
         for mapping in remapped_providers.split("\n"):
-            regex_string = r"^(?P<from_host>(https?://)?[\w0-9./-]+(:[0-9]+)?):(?P<to_host>(https?://)?[\w0-9./-]+(:[0-9]+)?)$"
-            match = re.match(regex_string, mapping)
-            assert match
-            SIIBRA_API_REMAP_PROVIDERS[match.group("from_host")] = match.group("to_host")
+            split_components = mapping.split("::")
+            assert len(split_components) == 2
+            from_host, to_host = split_components
+            SIIBRA_API_REMAP_PROVIDERS[from_host] = to_host
         
 except Exception as e:
     print(f"""Cannot parse SIIBRA_API_REMAP_PROVIDERS properly.
     SIIBRA_API_REMAP_PROVIDERS must be comma separated values, with colon indicating mapping
     e.g.
-    me.local:localhost
+    me.local::localhost
+
     SIIBRA_API_REMAP_PROVIDERS
     {remapped_providers}
     """)

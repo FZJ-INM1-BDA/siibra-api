@@ -5,6 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi_pagination import add_pagination
 from fastapi_versioning import VersionedFastAPI
+from pathlib import Path
+
 import time
 import json
 
@@ -12,7 +14,7 @@ from .util import add_lazy_path
 
 add_lazy_path()
 
-from . import __version__, cache_header
+from .const import DOCUMENTATION_URL, INPUT_FORMAT, OUTPUT_FORMAT, cache_header, __version__
 from .cache import get_instance as get_cache_instance, terminate, on_startup
 from .core import prefixed_routers as core_prefixed_routers
 from .volumes import prefixed_routers as volume_prefixed_routers
@@ -21,7 +23,7 @@ from .features import router as feature_router
 from .metrics import prom_metrics_resp, on_startup as metrics_on_startup, on_terminate as metrics_on_terminate
 from .code_snippet import get_sourcecode
 
-from ..common import logger, general_logger, access_logger, NotFound, SapiBaseException, name_to_fns_map
+from ..common import general_logger, access_logger, NotFound, SapiBaseException, name_to_fns_map
 from ..siibra_api_config import GIT_HASH
 
 siibra_version_header = "x-siibra-api-version"
@@ -68,36 +70,21 @@ def get_ready():
     TODO: implement me"""
     return "ready"
 
-@siibra_api.get("/servicemeta.json", include_in_schema=False)
+@siibra_api.get("/about", include_in_schema=False)
 def servicemeta():
+    with open(Path(__file__).parent.parent.parent / "codemeta.json", "r") as fp:
+        code_meta = json.load(fp=fp)
     return {
-    "@context": "https://gitlab.ebrains.eu/lauramble/servicemeta/-/raw/main/data/contexts/servicemeta.jsonld",
-    "type": "WebApplication",
-    "alternateName": "siibra-api",
-    "author": [
-        {
-            "type": "Person",
-            "schema:affiliation": {
-                "type": "Organization",
-                "name": "Forschungszentrum Juelich"
-            },
-            "email": "xgui3783@gmail.com",
-            "familyName": "Gui",
-            "givenName": "Xiaoyun"
-        }
-    ],
-    "dateModified": "2024-08-28",
-    "documentation": "https://siibra-api.readthedocs.io/en/latest/",
-    "name": "siibra-api",
-    "version": "0.3.18",
-    "inputFormat": [
-        "json"
-    ],
-    "outputFormat": [
-        "nifti",
-        "json"
-    ]
-}
+        "@context": "https://gitlab.ebrains.eu/lauramble/servicemeta/-/raw/main/data/contexts/servicemeta.jsonld",
+        "type": "WebApplication",
+        "author": code_meta["author"],
+        "dateModified": code_meta["dateModified"],
+        "documentation": DOCUMENTATION_URL,
+        "name": code_meta["name"],
+        "version": code_meta["version"],
+        "inputFormat": INPUT_FORMAT,
+        "outputFormat": OUTPUT_FORMAT
+    }
 
 @siibra_api.get("/", include_in_schema=False)
 def get_home(request: Request):

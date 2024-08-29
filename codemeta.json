@@ -9,7 +9,7 @@
                 "type": "Organization",
                 "name": "Forschungszentrum Juelich"
             },
-            "email": "xgui3783@gmail.com",
+            "email": "x.gui@fz-juelich.de",
             "familyName": "Gui",
             "givenName": "Xiaoyun"
         },
@@ -22,6 +22,11 @@
         {
             "id": "_:author_3",
             "type": "Person",
+            "affiliation": {
+                "type": "Organization",
+                "name": "Forschungszentrum Juelich"
+            },
+            "email": "ah.simsek@fz-juelich.de",
             "familyName": "Simsek",
             "givenName": "Ahmet Nihat"
         },

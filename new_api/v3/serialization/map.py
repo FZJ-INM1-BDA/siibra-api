@@ -5,6 +5,7 @@ from tqdm import tqdm
 
 from . import serialize
 
+from new_api.siibra_api_config import SIIBRA_API_REMAP_PROVIDERS
 from new_api.v3.models.volumes.volume import VolumeModel
 from new_api.v3.models.volumes.parcellationmap import MapModel
 from new_api.v3.models.core._concept import SiibraPublication
@@ -37,6 +38,8 @@ REPLACE_IN_NAME = {
     "ctx-rh-": "right ",
 }
 
+FSA_ID = "minds/core/referencespace/v1.0.0/tmp-fsaverage"
+
 
 def clear_name(name: str):
     """clean up a region name to the for matching"""
@@ -46,6 +49,11 @@ def clear_name(name: str):
     for search, repl in REPLACE_IN_NAME.items():
         result = result.replace(search, repl)
     return " ".join(w for w in result.split(" ") if len(w))
+
+def remap_url(url: str):
+    for from_host, to_host in SIIBRA_API_REMAP_PROVIDERS.items():
+        url = url.replace(from_host, to_host)
+    return url
 
 @fn_call_cache
 def retrieve_dsv_ds(mp: Map):
@@ -151,7 +159,7 @@ def map_to_model(mp: Map, **kwargs):
                         fragments={},
                         variant=None,
                         provided_volumes={
-                            f"{parse_archive_options(vol.archive_options)[0]}{vol.format}": f"{vol.url}{parse_archive_options(vol.archive_options)[0]}"
+                            f"{parse_archive_options(vol.archive_options)[0]}{vol.format}": f"{remap_url(vol.url)}{parse_archive_options(vol.archive_options)[0]}"
                         },
                         space={
                             "@id": vol.space_id
@@ -168,6 +176,61 @@ def map_to_model(mp: Map, **kwargs):
                 new_index["label"] = value.get("label")
             indices[regionname].append(new_index)
             indices[clear_name(regionname)].append(new_index)
+    
+    if mp.space_id == FSA_ID:
+        assert len(all_volumes) == 2, f"Expected fsaverage to have 2 volumes, but got {len(all_volumes)}"
+        
+        lh_vols = [v for v in all_volumes if "lh" in v.url]
+        rh_vols = [v for v in all_volumes if "rh" in v.url]
+        assert len(lh_vols) == 1, f"Expected to be one and only one lh volume, but got {len(lh_vols)}"
+        assert len(rh_vols) == 1, f"Expected to be one and only one rh volume, but got {len(rh_vols)}"
+        
+        lh_vol = lh_vols[0]
+        rh_vol = rh_vols[0]
+        
+        formats = list({lh_vol.format, rh_vol.format})
+        assert len(formats) == 1, f"Expected only one type of format, but got {formats}"
+        format = formats[0]
+        assert lh_vol.archive_options is None and rh_vol.archive_options is None, f"Expected neither volume has archive options"
+
+        all_vol_ids = [vol.id for vol in all_volumes if vol.id]
+        all_vol_ds = [dsv_id_to_model(dsv)
+                      for ref in mp._find(EbrainsRef)
+                      for dsv in ref._dataset_verion_ids
+                      if ref.annotates in all_vol_ids]
+        
+        volumes = [
+            VolumeModel(name="",
+                        formats=[format],
+                        provides_mesh=vol.format in MESH_FORMATS,
+                        provides_image=vol.format in IMAGE_FORMATS,
+                        fragments={},
+                        variant=None,
+                        provided_volumes={
+                            format: {
+                                "left hemisphere": remap_url(lh_vol.url),
+                                "right hemisphere": remap_url(rh_vol.url),
+                            }
+                        },
+                        space={
+                            "@id": mp.space_id
+                        },
+                        datasets=all_vol_ds
+            )
+        ]
+        for regionname, mappings in indices.items():
+            assert len(mappings) == 1, f"Expected only one mapping, but got {len(mappings)}"
+            mapping = mappings[0]
+            if "left" in regionname:
+                mapping["volume"] = 0
+                mapping["fragment"] = "left hemisphere"
+                continue
+            if "right" in regionname:
+                mapping["volume"] = 0
+                mapping["fragment"] = "right hemisphere"
+                continue
+            raise RuntimeError(f"{regionname=!r} is neither lh or rh")
+
     return MapModel(
         id=id,
         name=name,

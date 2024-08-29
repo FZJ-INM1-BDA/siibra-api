@@ -7,3 +7,9 @@ FASTAPI_VERSION = (3, 0)
 PrefixedRouter = namedtuple("PrefixedRouter", ["prefix", "router"])
 
 cache_header = "x-fastapi-cache"
+
+DOCUMENTATION_URL = "https://siibra-api.readthedocs.io/en/latest/"
+
+INPUT_FORMAT = ["json"]
+
+OUTPUT_FORMAT = ["json", "nifti"]
