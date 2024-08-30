@@ -11,8 +11,8 @@ def get_genes(find:str=None):
     
     Returns:
         List of the genes."""
-    from api.serialization.util.siibra import GENE_NAMES
-
+    
+    from siibra.vocabularies import GENE_NAMES
     if find == None:
         return_list = [v for v in GENE_NAMES]
     else:

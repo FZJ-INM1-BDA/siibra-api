@@ -72,7 +72,7 @@ jobs:
           -p '${{ secrets.EBRAINS_DOCKER_REG_TOKEN }}' \
           docker-registry.ebrains.eu
         
-        VERSION=$(cat api/VERSION)
+        VERSION=$(cat VERSION)
         while [[ "$VERSION" == *"."* ]]
         do
           if [[ "$BREAK" == "0" ]]
