@@ -48,17 +48,6 @@ siibra_api = FastAPI(
 )
 
 
-@siibra_api.on_event("shutdown")
-def shutdown():
-    terminate()
-    metrics_on_terminate()
-    
-
-@siibra_api.on_event("startup")
-def startup():
-    on_startup()
-    metrics_on_startup()
-
 
 for prefix_router in [*core_prefixed_routers, *volume_prefixed_routers, *compound_prefixed_routers]:
     siibra_api.include_router(prefix_router.router, prefix=prefix_router.prefix)
@@ -382,6 +371,19 @@ async def exception_other(request: Request, exc: Exception):
             "error": str(exc)
         }
     )
+
+
+# TODO lifespan not working properly. Fix and use lifespan in future
+@siibra_api.on_event("shutdown")
+def shutdown():
+    terminate()
+    metrics_on_terminate()
+    
+
+@siibra_api.on_event("startup")
+def startup():
+    on_startup()
+    metrics_on_startup()
 
 
 import logging
