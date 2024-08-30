@@ -2,7 +2,7 @@ import requests
 import time
 import sys
 
-url = "http://localhost:5000/metrics"
+url = "http://127.0.0.1:5000/metrics"
 
 def main():
     try:
