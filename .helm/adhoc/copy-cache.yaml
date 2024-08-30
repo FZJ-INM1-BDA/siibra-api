@@ -12,11 +12,11 @@ spec:
     - /bin/ash
     args:
     - -c
-    - "echo FROM_DIR: $FROM_DIR TO_DIR: $TO_DIR && cp -r $FROM_DIR $TO_DIR"
+    - "echo FROM_DIR: $FROM_DIR TO_DIR: $TO_DIR && mkdir $TO_DIR && cp -r $FROM_DIR/* $TO_DIR/"
     resources:
       limits:
-        cpu: 200m
-        memory: 200Mi
+        cpu: 1000m
+        memory: 2000Mi
       requests:
         cpu: 200m
         memory: 200Mi

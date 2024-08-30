@@ -219,10 +219,10 @@ jobs:
         VERSION=${{ needs.setup-envvar.outputs.version }}
 
         # TODO use label exclusively in the future
-        POD=$(kubectl get pod -l role=server | grep rc-siibra-api | awk '{print $1}')
+        POD=$(kubectl get pod -l role=server -l app-flavor=rc -o json | jq -r '.items[0].metadata.name')
         echo POD: $POD
 
-        cache_str=$(kubectl exec $POD env | grep SIIBRA_CACHEDIR)
+        cache_str=$(kubectl exec $POD -- env | grep SIIBRA_CACHEDIR)
         FROM_DIR=${cache_str//SIIBRA_CACHEDIR=/}
         TO_DIR=${FROM_DIR//-rc/}
         POD_NAME=copy-cache

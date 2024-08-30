@@ -30,20 +30,35 @@ from ..siibra_api_config import GIT_HASH
 
 siibra_version_header = "x-siibra-api-version"
 
-@asynccontextmanager
-async def lifespan():
-    on_startup()
-    metrics_on_startup()
-    yield
-    terminate()
-    metrics_on_terminate()
+
+# TODO lifespan not working properly. Fix and use lifespan in future
+# @asynccontextmanager
+# async def lifespan(app: FastAPI):
+#     on_startup()
+#     metrics_on_startup()
+#     yield
+#     terminate()
+#     metrics_on_terminate()
 
 siibra_api = FastAPI(
     title="siibra api",
     description="This is the REST api for siibra tools",
     version=__version__,
-    lifespan=lifespan,
+    # lifespan=lifespan,
 )
+
+
+@siibra_api.on_event("shutdown")
+def shutdown():
+    terminate()
+    metrics_on_terminate()
+    
+
+@siibra_api.on_event("startup")
+def startup():
+    on_startup()
+    metrics_on_startup()
+
 
 for prefix_router in [*core_prefixed_routers, *volume_prefixed_routers, *compound_prefixed_routers]:
     siibra_api.include_router(prefix_router.router, prefix=prefix_router.prefix)
