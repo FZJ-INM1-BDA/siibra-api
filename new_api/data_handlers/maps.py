@@ -36,8 +36,9 @@ def cache_region_statistic_map(parcellation_id: str, region_id: str, space_id: s
     
     if len(maps) > 1:
         warning_texts = f"Multiple ({len(maps)}) maps found"
-
-    volume_data = maps[0].fetch(region=region_id)
+    map = maps[0]
+    vol = map.extract_regional_map(region=region_id)
+    volume_data = vol.get_data()
 
     error_text = f"{error_text}, with region_id '{region_id}'"
     assert isinstance(volume_data, nib.Nifti1Image), f"{error_text}, volume provided is not of type Nifti1Image"
@@ -77,14 +78,14 @@ def cache_parcellation_labelled_map(parcellation_id: str, space_id: str, region_
     import nibabel as nib
     error_text = f"Map with parc id '{parcellation_id}', space id '{space_id}'"
 
+    labelled_map = siibra.get_map(parcellation_id, space_id, "labelled")
+    assert labelled_map is not None, f"{error_text} returns None"
     volume_data = None
     if region_id is not None:
-        region = siibra.get_region(parcellation_id, region_id)
-        volume_data = region.fetch_regional_map(space_id, "labelled")
+        volprov = labelled_map.extract_regional_map(region_id)
     else:
-        labelled_map = siibra.get_map(parcellation_id, space_id, "labelled")
-        assert labelled_map is not None, f"{error_text} returns None"
-        volume_data = labelled_map.fetch()
+        volprov = labelled_map.extract_full_map()
+    volume_data = volprov.get_data()
 
     assert isinstance(volume_data, nib.Nifti1Image), f"{error_text}, volume provided is not of type Nifti1Image"
     

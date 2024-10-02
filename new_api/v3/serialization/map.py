@@ -15,8 +15,9 @@ from siibra.cache import fn_call_cache
 from siibra.atlases.parcellationmap import Map
 from siibra.atlases.sparsemap import SparseMap
 from siibra.attributes.descriptions import Name, EbrainsRef
-from siibra.attributes.dataitems.base import Archive
-from siibra.attributes.dataitems.volume.base import Volume, MESH_FORMATS, IMAGE_FORMATS
+from siibra.attributes.dataproviders.base import Archive
+from siibra.attributes.dataproviders.volume.base import VolumeProvider
+from siibra.operations.volume_fetcher.base import VolumeFormats
 from siibra.factory.livequery.ebrains import EbrainsQuery, DatasetVersion
 
 def parse_archive_options(archive: Union[Archive, None]):
@@ -140,10 +141,14 @@ def map_to_model(mp: Map, **kwargs):
     species = mp.species
     
     # TODO fix datasets
-    all_volumes = mp._find(Volume)
+    all_volumes = mp._find(VolumeProvider)
     volumes: List[VolumeModel] = []
 
-    for vol in all_volumes:
+    indices = defaultdict(list)
+    volume_name_to_idx = {}
+
+    for idx, vol in enumerate(all_volumes):
+        volume_name_to_idx[vol.name] = idx
         vol_ds: List[EbrainsDatasetModel] = []
         if vol.id:
             vol_ds = [dsv_id_to_model(dsv)
@@ -154,8 +159,8 @@ def map_to_model(mp: Map, **kwargs):
         volumes.append(
             VolumeModel(name="",
                         formats=[vol.format],
-                        provides_mesh=vol.format in MESH_FORMATS,
-                        provides_image=vol.format in IMAGE_FORMATS,
+                        provides_mesh=vol.format in VolumeFormats.MESH_FORMATS,
+                        provides_image=vol.format in VolumeFormats.IMAGE_FORMATS,
                         fragments={},
                         variant=None,
                         provided_volumes={
@@ -166,17 +171,19 @@ def map_to_model(mp: Map, **kwargs):
                         },
                         datasets=vol_ds))
 
-    indices = defaultdict(list)
-    for idx, vol in enumerate(all_volumes):
-        for regionname, value in vol.mapping.items():
+    
+    for regionname, mappings in mp.region_mapping.items():
+        for mapping in mappings:
+            target = mapping["target"]
+            assert target in volume_name_to_idx, f"target {target} not found in volume name {volume_name_to_idx}"
             new_index = {
-                "volume": idx
+                "volume": volume_name_to_idx[target]
             }
-            if value.get("label"):
-                new_index["label"] = value.get("label")
+            if mapping.get("label"):
+                new_index["label"] = mapping.get("label")
             indices[regionname].append(new_index)
             indices[clear_name(regionname)].append(new_index)
-    
+
     if mp.space_id == FSA_ID:
         assert len(all_volumes) == 2, f"Expected fsaverage to have 2 volumes, but got {len(all_volumes)}"
         
@@ -191,19 +198,18 @@ def map_to_model(mp: Map, **kwargs):
         formats = list({lh_vol.format, rh_vol.format})
         assert len(formats) == 1, f"Expected only one type of format, but got {formats}"
         format = formats[0]
-        assert lh_vol.archive_options is None and rh_vol.archive_options is None, f"Expected neither volume has archive options"
+        # assert lh_vol.archive_options is None and rh_vol.archive_options is None, f"Expected neither volume has archive options"
 
         all_vol_ids = [vol.id for vol in all_volumes if vol.id]
         all_vol_ds = [dsv_id_to_model(dsv)
                       for ref in mp._find(EbrainsRef)
                       for dsv in ref._dataset_verion_ids
                       if ref.annotates in all_vol_ids]
-        
         volumes = [
             VolumeModel(name="",
                         formats=[format],
-                        provides_mesh=vol.format in MESH_FORMATS,
-                        provides_image=vol.format in IMAGE_FORMATS,
+                        provides_mesh=vol.format in VolumeFormats.MESH_FORMATS,
+                        provides_image=vol.format in VolumeFormats.IMAGE_FORMATS,
                         fragments={},
                         variant=None,
                         provided_volumes={
