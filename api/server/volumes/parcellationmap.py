@@ -23,11 +23,11 @@ router = APIRouter(route_class=SapiCustomRoute, tags=TAGS)
 @router.get("", response_model=MapModel)
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=get_map)
-def get_siibra_map(parcellation_id: str, space_id: str, map_type: MapType,  extra_spec: str= "", *, func):
+def get_siibra_map(parcellation_id: str, space_id: str, map_type: MapType,  name: str= "", *, func):
     """Get map according to specification"""
     if func is None:
         raise HTTPException(500, f"func: None passsed")
-    return func(parcellation_id, space_id, map_type, extra_spec)
+    return func(parcellation_id, space_id, map_type, name)
 
 @router.get("/resampled_template", response_class=FileResponse, tags=TAGS, description="""
 Return a resampled template volume, based on labelled parcellation map.
@@ -83,7 +83,7 @@ region_id MUST refer to leaf region on the region hierarchy.
 """)
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=statistical_map_nii_gz)
-def get_region_statistical_map(parcellation_id: str, region_id: str, space_id: str, extra_spec: str="", *, func):
+def get_region_statistical_map(parcellation_id: str, region_id: str, space_id: str, name: str="", *, func):
     """Get statistical map according to specification"""
     if func is None:
         raise HTTPException(500, f"func: None passsed")
@@ -92,8 +92,7 @@ def get_region_statistical_map(parcellation_id: str, region_id: str, space_id: s
         "content-type": "application/octet-stream",
         "content-disposition": f'attachment; filename="statistical_map.nii.gz"'
     }
-
-    full_filename, cache_flag = func(parcellation_id=parcellation_id, region_id=region_id, space_id=space_id, extra_spec=extra_spec)
+    full_filename, cache_flag = func(parcellation_id=parcellation_id, region_id=region_id, space_id=space_id, name=name)
     if cache_flag:
         headers[cache_header] = "hit"
     assert os.path.isfile(full_filename), f"file saved incorrectly"
@@ -106,12 +105,12 @@ class StatisticModelInfo(BaseModel):
 @router.get("/statistical_map.info.json", response_model=StatisticModelInfo, tags=TAGS)
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=statistical_map_info_json)
-def get_region_statistical_map_metadata(parcellation_id: str, region_id: str, space_id: str, extra_spec: str="", *, func):
+def get_region_statistical_map_metadata(parcellation_id: str, region_id: str, space_id: str, name: str="", *, func):
     """Get metadata of statistical map according to specification"""
     if func is None:
         raise HTTPException(500, f"func: None passsed")
     
-    data = func(parcellation_id=parcellation_id, region_id=region_id, space_id=space_id, extra_spec=extra_spec)
+    data = func(parcellation_id=parcellation_id, region_id=region_id, space_id=space_id, name=name)
     return StatisticModelInfo(**data)
 
 @router.get("/assign", response_model=DataFrameModel, tags=TAGS)

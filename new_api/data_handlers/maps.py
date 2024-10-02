@@ -6,7 +6,7 @@ import os
 
 from new_api.common import get_filename
 
-def cache_region_statistic_map(parcellation_id: str, region_id: str, space_id: str, extra_spec: str= "", *, no_cache=False) -> Tuple[str, bool, str]:
+def cache_region_statistic_map(parcellation_id: str, region_id: str, space_id: str, name: str= "", *, no_cache=False) -> Tuple[str, bool, str]:
     """Retrieve and save regional statistical map (if necessary), and then return the path of the map.
 
     Args:
@@ -31,7 +31,7 @@ def cache_region_statistic_map(parcellation_id: str, region_id: str, space_id: s
 
     error_text = f"Map with parc id '{parcellation_id}', space id '{space_id}'"
 
-    maps = siibra.find_maps(parcellation_id, space_id, "statistical", extra_spec)
+    maps = siibra.find_maps(parcellation_id, space_id, "statistical", name)
     assert len(maps) > 0, f"{error_text} returns None"
     
     if len(maps) > 1:
