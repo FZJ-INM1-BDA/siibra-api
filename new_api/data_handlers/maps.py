@@ -100,7 +100,7 @@ def cache_parcellation_labelled_map(parcellation_id: str, space_id: str, region_
     return full_filename, False, None
 
 
-def cache_resampled_map(parcellation_id: str, space_id: str, *, no_cache: bool):
+def cache_resampled_map(parcellation_id: str, space_id: str, *, no_cache: bool=False):
     full_filename = get_filename("resampled_map", parcellation_id, space_id, ext=".nii.gz")
     if not no_cache and os.path.isfile(full_filename):
         return full_filename, True, None
