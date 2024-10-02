@@ -298,6 +298,8 @@ async def middleware_add_version_header(request: Request, call_next):
 @siibra_api.middleware("http")
 async def middleware_access_log(request: Request, call_next):
     """Access log middleware"""
+
+    print("AccessLog middleware called")
     
     if request.url.path in do_not_logs:
         return await call_next(request)
@@ -324,6 +326,7 @@ async def middleware_access_log(request: Request, call_next):
             "hit_cache": "cache_miss"
         })
     except Exception as e:
+        print("Exception at logging:", type(e), str(e))
         general_logger.critical(e)
 
 # some plugins may strip origin header for privacy reasons

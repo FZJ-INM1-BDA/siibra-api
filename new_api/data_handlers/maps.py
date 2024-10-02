@@ -106,13 +106,15 @@ def cache_resampled_map(parcellation_id: str, space_id: str, *, no_cache: bool):
 
     import nibabel as nib
     import siibra
-    from siibra.commons.maps import resample_img_to_img
+    from siibra.operations.volume_fetcher.nifti import ResampleNifti
 
     mp = siibra.get_map(parcellation_id, space_id, "labelled")
-    nii = mp.fetch()
+    src_dp = mp.extract_full_map()
+    nii = src_dp.get_data()
     space = siibra.get_space(space_id)
-    tmpl_nii = space.fetch_template()
-    resampled = resample_img_to_img(nii, tmpl_nii)
+    target_dp = space.get_dataprovider(index=0)
+    tmpl_nii = target_dp.get_data()
+    resampled = ResampleNifti.resample_img_to_img(nii, tmpl_nii)
     
     nib.save(resampled, full_filename)
     with open(f"{full_filename}.{str(int(time.time()))}.json", "w") as fp:

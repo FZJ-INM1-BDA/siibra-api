@@ -38,7 +38,6 @@ def get_resampled_map(parcellation_id: str, space_id: str, *, func):
     """Get resampled map according to specification"""
     if func is None:
         raise HTTPException(500, f"func: None passsed")
-    raise HTTPException(501, "Not yet implemented. If you are using this endpoint, please contact us.")
     headers={
         "content-type": "application/octet-stream",
         "content-disposition": f'attachment; filename="labelled_map.nii.gz"'

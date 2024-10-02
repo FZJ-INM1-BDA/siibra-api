@@ -1,2 +1,2 @@
 # refactor_attr is... borked since dataops are being introduced
-git+https://github.com/xgui3783/siibra-python.git@aeffb478a1c98f3bec276ab820f5e50355c598a4
+git+https://github.com/xgui3783/siibra-python.git@90ba8150f4d3b01c36176b03ffa906f8090907cd
