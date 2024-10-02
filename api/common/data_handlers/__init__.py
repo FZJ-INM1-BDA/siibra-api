@@ -1,6 +1,7 @@
 from . import core
 from . import features
 from . import compounds
+from . import vocabularies
 
 from ...siibra_api_config import ROLE
 
