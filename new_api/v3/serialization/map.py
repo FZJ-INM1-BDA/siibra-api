@@ -145,10 +145,10 @@ def map_to_model(mp: Map, **kwargs):
     volumes: List[VolumeModel] = []
 
     indices = defaultdict(list)
-    volume_name_to_idx = {}
+    volume_name_to_idx = defaultdict(list)
 
     for idx, vol in enumerate(all_volumes):
-        volume_name_to_idx[vol.name] = idx
+        volume_name_to_idx[vol.name].append(idx)
         vol_ds: List[EbrainsDatasetModel] = []
         if vol.id:
             vol_ds = [dsv_id_to_model(dsv)
@@ -176,13 +176,14 @@ def map_to_model(mp: Map, **kwargs):
         for mapping in mappings:
             target = mapping["target"]
             assert target in volume_name_to_idx, f"target {target} not found in volume name {volume_name_to_idx}"
-            new_index = {
-                "volume": volume_name_to_idx[target]
-            }
-            if mapping.get("label"):
-                new_index["label"] = mapping.get("label")
-            indices[regionname].append(new_index)
-            indices[clear_name(regionname)].append(new_index)
+            for idx in volume_name_to_idx[target]:
+                new_index = {
+                    "volume": volume_name_to_idx[target]
+                }
+                if mapping.get("label"):
+                    new_index["label"] = mapping.get("label")
+                indices[regionname].append(new_index)
+                indices[clear_name(regionname)].append(new_index)
 
     if mp.space_id == FSA_ID:
         assert len(all_volumes) == 2, f"Expected fsaverage to have 2 volumes, but got {len(all_volumes)}"
