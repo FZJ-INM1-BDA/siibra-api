@@ -14,7 +14,7 @@ from new_api.v3.models._retrieval.datasets import EbrainsDatasetModel, EbrainsDs
 from siibra.cache import fn_call_cache
 from siibra.atlases.parcellationmap import Map
 from siibra.atlases.sparsemap import SparseMap
-from siibra.attributes.descriptions import Name, EbrainsRef
+from siibra.attributes.descriptions import Name, EbrainsRef, AttributeMapping
 from siibra.attributes.dataproviders.base import Archive
 from siibra.attributes.dataproviders.volume.base import VolumeProvider
 from siibra.operations.volume_fetcher.base import VolumeFormats
@@ -58,7 +58,17 @@ def remap_url(url: str):
 
 @fn_call_cache
 def retrieve_dsv_ds(mp: Map):
-    unique_dsvs = list({dsv for ref in mp._find(EbrainsRef) for dsv in ref._dataset_verion_ids})
+    list_dsvs = list({dsv for ref in mp._find(EbrainsRef) for dsv in ref._dataset_verion_ids})
+    ds_ids = [ref
+              for attr_mapping in mp._find(AttributeMapping)
+              if attr_mapping.ref_type == "openminds/Dataset"
+              for ref in attr_mapping.refs]
+    dsv_ids = [ref
+               for attr_mapping in mp._find(AttributeMapping)
+               if attr_mapping.ref_type == "openminds/DatasetVersion"
+               for ref in attr_mapping.refs]
+
+    unique_dsvs = set([*list_dsvs, *dsv_ids])
     with ThreadPoolExecutor() as ex:
         got_dsv = list(
             tqdm(
@@ -71,13 +81,13 @@ def retrieve_dsv_ds(mp: Map):
                 leave=True
             )
         )
-        unique_ds = list(
-            {
-                is_version_of["id"].split("/")[-1]
-                for dsv in got_dsv
-                for is_version_of in dsv["isVersionOf"]
-            }
-        )
+        unique_ds = set([
+                        is_version_of["id"].split("/")[-1]
+                        for dsv in got_dsv
+                        for is_version_of in dsv["isVersionOf"]
+                    ])
+        
+        unique_ds = unique_ds | set(ds_ids)
         got_ds = list(
             tqdm(
                 ex.map(
@@ -150,11 +160,17 @@ def map_to_model(mp: Map, **kwargs):
     for idx, vol in enumerate(all_volumes):
         volume_name_to_idx[vol.name].append(idx)
         vol_ds: List[EbrainsDatasetModel] = []
-        if vol.id:
-            vol_ds = [dsv_id_to_model(dsv)
-                      for ref in mp._find(EbrainsRef)
-                      for dsv in ref._dataset_verion_ids
-                      if ref.annotates == vol.id]
+
+        for attr_mapping in mp._find(AttributeMapping):
+            
+            ids = [uuid
+                   for uuid, mappings in attr_mapping.refs.items()
+                   # if mapping has "target": None or "target": vol.name
+                   if len({mapping.get("target") for mapping in mappings} & {vol.name, None}) > 0 ]
+            ebrains_ref = EbrainsRef(ids={ attr_mapping.ref_type: ids })
+
+            vol_ds.extend([dsv_id_to_model(dsv) for dsv in ebrains_ref._dataset_verion_ids])
+            
 
         volumes.append(
             VolumeModel(name="",
