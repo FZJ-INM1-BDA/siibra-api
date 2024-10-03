@@ -178,7 +178,7 @@ def map_to_model(mp: Map, **kwargs):
             assert target in volume_name_to_idx, f"target {target} not found in volume name {volume_name_to_idx}"
             for idx in volume_name_to_idx[target]:
                 new_index = {
-                    "volume": volume_name_to_idx[target]
+                    "volume": idx
                 }
                 if mapping.get("label"):
                     new_index["label"] = mapping.get("label")
