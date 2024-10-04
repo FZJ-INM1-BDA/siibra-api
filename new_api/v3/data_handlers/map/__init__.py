@@ -11,20 +11,20 @@ from new_api.common.logger import logger
 from new_api.warmup import register_warmup_fn
 
 @data_decorator(ROLE)
-def assign(parcellation_id: str, space_id: str, point: str, assignment_type: str=Literal["statistical", "labelled"], sigma_mm: float=0., name: str=""):
+def assign(parcellation_id: str, space_id: str, point: str, assignment_type: str=Literal["statistical", "labelled"], sigma_mm: float=0., extra_specs: str=""):
     import siibra
     from siibra.attributes.locations.point import parse_coordinate, Point
     coordinate = parse_coordinate(point)
     point = Point(coordinate=coordinate, space_id=space_id, sigma=sigma_mm)
-    maps = siibra.find_maps(parcellation_id, space_id, assignment_type, name)
+    maps = siibra.find_maps(parcellation_id, space_id, assignment_type, extra_specs)
     if len(maps) == 0:
-        raise NotFound(f"map with {parcellation_id=!r}, {space_id=!r}, {assignment_type=!r}, {name=!r} not found")
+        raise NotFound(f"map with {parcellation_id=!r}, {space_id=!r}, {assignment_type=!r}, {extra_specs=!r} not found")
     mp = maps[0]
     result = mp.lookup_points(point)
     return instance_to_model(result, detail=True).dict()
 
 @data_decorator(ROLE)
-def get_map(parcellation_id: str, space_id: str, maptype: Union[MapType, str], name: str=""):
+def get_map(parcellation_id: str, space_id: str, maptype: Union[MapType, str], extra_spec: str=""):
     """Get a map instance, based on specification
     
     Args:
@@ -49,20 +49,20 @@ def get_map(parcellation_id: str, space_id: str, maptype: Union[MapType, str], n
     assert maptype is not None, f"maptype is neither MapType nor str"
     maptype = maptype.lower()
     
-    returned_maps = siibra.find_maps(parcellation_id, space_id, maptype=maptype, name=name)
+    returned_maps = siibra.find_maps(parcellation_id, space_id, maptype=maptype, extra_spec=extra_spec)
     
     if len(returned_maps) == 0:
-        raise NotFound(f"get_map with spec {parcellation_id=!r}, {space_id=!r}, {maptype=!r}, {name=!r} found no map.")
+        raise NotFound(f"get_map with spec {parcellation_id=!r}, {space_id=!r}, {maptype=!r}, {extra_spec=!r} found no map.")
     return instance_to_model(returned_maps[0], detail=True).dict()
 
 @data_decorator(ROLE)
-def statistical_map_nii_gz(parcellation_id: str, region_id: str, space_id: str, name: str="", *, no_cache: bool=False):
-    filename, return_cached, warningtext = cache_region_statistic_map(parcellation_id, region_id, space_id, name, no_cache=no_cache)
+def statistical_map_nii_gz(parcellation_id: str, region_id: str, space_id: str, extra_spec: str="", *, no_cache: bool=False):
+    filename, return_cached, warningtext = cache_region_statistic_map(parcellation_id, region_id, space_id, extra_spec, no_cache=no_cache)
     return filename, return_cached
 
 @data_decorator(ROLE)
-def statistical_map_info_json(parcellation_id: str, region_id: str, space_id: str, name: str="", *, no_cache: bool=False):
-    filename, return_cached, warningtext = cache_region_statistic_map(parcellation_id, region_id, space_id, name, no_cache=no_cache)
+def statistical_map_info_json(parcellation_id: str, region_id: str, space_id: str, extra_spec: str="", *, no_cache: bool=False):
+    filename, return_cached, warningtext = cache_region_statistic_map(parcellation_id, region_id, space_id, extra_spec, no_cache=no_cache)
 
     import nibabel as nib
     import numpy as np
