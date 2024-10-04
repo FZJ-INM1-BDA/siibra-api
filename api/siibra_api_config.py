@@ -70,7 +70,7 @@ _queues = [
     "features",
     "volumes",
     "compounds",
-    "vocabularies",
+    # "vocabularies",
 ]
 
 class CELERY_CONFIG:

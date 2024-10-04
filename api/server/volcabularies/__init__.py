@@ -7,7 +7,8 @@ from api.server import FASTAPI_VERSION
 from api.siibra_api_config import ROLE
 from api.common import router_decorator
 from api.models.vocabularies.genes import GeneModel
-from api.common.data_handlers.vocabularies.gene import get_genes
+# from api.common.data_handlers.vocabularies.gene import get_genes
+from api.common.data_handlers.features.misc import get_genes
 
 TAGS= ["vocabularies"]
 """HTTP vocabularies tags"""
