@@ -35,7 +35,7 @@ def get_siibra_map(parcellation_id: str, space_id: str, map_type: MapType,  name
     """Get map according to specification"""
     if func is None:
         raise HTTPException(500, f"func: None passsed")
-    return func(parcellation_id, space_id, map_type, name)
+    return func(parcellation_id, space_id, map_type)
 
 
 # still use the old worker. New worker not stable (?)
