@@ -40,6 +40,10 @@ citations:
 ---
 {citations}
 
+license:
+---
+{license}
+
 """
 
 LICENSE = """Please check the respective citations regarding licenses to use these data."""
@@ -88,7 +92,7 @@ def download_all(space_id: str, parcellation_id: str, region_id: str=None, featu
                                                 if p.get('url')
                                                 else p.get("citation", "CITATION")
                                                 for p in obj.publications])
-                    desc_str = DESC.format(name=obj.name, description=obj.description, citations=publications)
+                    desc_str = DESC.format(name=obj.name, description=obj.description, citations=publications, license=obj.LICENSE)
                     zipfile.writestr(filename, desc_str)
                 except Exception as e:
                     zipfile.writestr(f"{filename}.error.txt", str(e))
