@@ -114,14 +114,14 @@ jobs:
         
         echo version=$version >> $GITHUB_OUTPUT
 
-  deploy-rc-on-data-validation:
-    needs:
-    - build-docker-img
-    if: ${{ github.event_name == 'push' }}
-    runs-on: self-hosted
-    steps:
-    - run: |
-        /bin/bash -c "cd /softwares/software && ./restart.sh"
+  # deploy-rc-on-data-validation:
+  #   needs:
+  #   - build-docker-img
+  #   if: ${{ github.event_name == 'push' }}
+  #   runs-on: self-hosted
+  #   steps:
+  #   - run: |
+  #       /bin/bash -c "cd /softwares/software && ./restart.sh"
 
   # rc
   rm-cache-rc-at-helm:
@@ -194,14 +194,14 @@ jobs:
           fi
         done
   
-  deploy-rc-via-helm:
-    needs: warmup-rc-at-helm
-    if:  ${{ github.event_name == 'release' && contains(github.ref, 'rc') }}
-    uses: ./.github/workflows/deploy-helm.yml
-    with:
-      DEPLOYMENT_NAME: rc
-    secrets:
-      KUBECONFIG: ${{ secrets.KUBECONFIG }}
+  # deploy-rc-via-helm:
+  #   needs: warmup-rc-at-helm
+  #   if:  ${{ github.event_name == 'release' && contains(github.ref, 'rc') }}
+  #   uses: ./.github/workflows/deploy-helm.yml
+  #   with:
+  #     DEPLOYMENT_NAME: rc
+  #   secrets:
+  #     KUBECONFIG: ${{ secrets.KUBECONFIG }}
   
   # prod
   copy-by-helm:
