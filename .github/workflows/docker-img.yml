@@ -194,14 +194,34 @@ jobs:
           fi
         done
   
-  # deploy-rc-via-helm:
-  #   needs: warmup-rc-at-helm
-  #   if:  ${{ github.event_name == 'release' && contains(github.ref, 'rc') }}
-  #   uses: ./.github/workflows/deploy-helm.yml
-  #   with:
-  #     DEPLOYMENT_NAME: rc
-  #   secrets:
-  #     KUBECONFIG: ${{ secrets.KUBECONFIG }}
+  deploy-rc-worker-via-helm:
+    needs:
+    - warmup-rc-at-helm
+    - setup-envvar
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        queue: ["core", "features", "compounds"]
+        resource: ["low"]
+        exclude:
+        - queue: "compounds"
+          resource: "low"
+        include:
+        - queue: "comopunds"
+          resource: 'high'
+
+    if:  ${{ github.event_name == 'release' && contains(github.ref, 'rc') }}
+    uses: ./.github/workflows/deploy-worker-helm-v4.yml
+    with:
+      DEPLOYMENT_NAME: rc-worker-${{ matrix.queue }}
+      HELM_FILE: .helm/siibra-api-v4-worker
+      FALVOR: rc
+      QUEUE: ${{ needs.setup-envvar.outputs.version }}.rc.${{ matrix.queue }}
+      IMAGE_TAG: rc-worker
+      RESOURCE: ${{ matrix.resource }}
+    secrets:
+      KUBECONFIG: ${{ secrets.KUBECONFIG }}
   
   # prod
   copy-by-helm:
