@@ -1,2 +1,2 @@
-siibra==0.4a81
+siibra==0.4a82
 plotly

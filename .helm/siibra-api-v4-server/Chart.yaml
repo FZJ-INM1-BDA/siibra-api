@@ -1,5 +1,5 @@
 apiVersion: v2
-name: siibra-api-v4-worker
+name: siibra-api-v4-server
 description: A Helm chart for Kubernetes
 
 # A chart can be either an 'application' or a 'library' chart.

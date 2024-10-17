@@ -222,7 +222,37 @@ jobs:
       RESOURCE: ${{ matrix.resource }}
     secrets:
       KUBECONFIG: ${{ secrets.KUBECONFIG }}
+      
+  deploy-rc-worker-v4-via-helm:
+    needs:
+    - warmup-rc-at-helm
+    - setup-envvar
+
+    if:  ${{ github.event_name == 'release' && contains(github.ref, 'rc') }}
+    uses: ./.github/workflows/deploy-worker-helm-v4.yml
+    with:
+      DEPLOYMENT_NAME: rc-worker-v4
+      HELM_FILE: .helm/siibra-api-v4-worker
+      FALVOR: rc
+      QUEUE: celery
+      IMAGE_TAG: rc-worker-v4
+      WORKER_PATH: new_api.worker.app
+    secrets:
+      KUBECONFIG: ${{ secrets.KUBECONFIG }}
   
+  deploy-rc-server-via-helm:
+    needs:
+    - warmup-rc-at-helm
+    - setup-envvar
+    if:  ${{ github.event_name == 'release' && contains(github.ref, 'rc') }}
+    uses: ./.github/workflows/deploy-worker-helm-v4.yml
+    with:
+      DEPLOYMENT_NAME: rc-server
+      FALVOR: rc
+      IMAGE_TAG: rc-server
+    secrets:
+      KUBECONFIG: ${{ secrets.KUBECONFIG }}
+
   # prod
   copy-by-helm:
     needs: setup-envvar
