@@ -84,19 +84,45 @@ def download_all(space_id: str, parcellation_id: str, region_id: str=None, featu
                 zipfile.writestr(filename, instance_to_model(obj, **kwargs).json(indent=2))
             except Exception as e:
                 zipfile.writestr(f"{filename}.error.txt", str(e))
-        
+
         def write_desc(filename, obj, **kwargs):
-            if isinstance(obj, _concept.AtlasConcept):
-                try:
+            try:
+                if isinstance(obj, siibra.core.parcellation.region.Region):
+                    space = kwargs.get("space")
+                    assert isinstance(space, _space.Space)
+                    mp = siibra.get_map(obj.parcellation, space, "statistical")
+                    volidx = mp.get_index(obj)
+                    vol = mp.volumes[volidx.volume]
+                    publications = "\n\n".join([
+                        f"[{url.get('citation', 'url')}]({url.get('url')})"
+                        for ds in vol.datasets
+                        for url in ds.urls
+                    ])
+                    desc = "\n\n".join([ds.description for ds in vol.datasets])
+                    license_list = []
+                    for ds in vol.datasets:
+                        if isinstance(ds.LICENSE, list):
+                            license_list.extend(ds.LICENSE)
+                        if isinstance(ds.LICENSE, str):
+                            license_list.append(ds.LICENSE)
+                        
+                    license = "\n\n".join(license_list)
+                    desc_str = DESC.format(name=f"Statistical map of {obj.name} in {space.name}",
+                                           description=desc,
+                                           citations=publications,
+                                           license=license)
+                    zipfile.writestr(filename, desc_str)
+                    return
+                if isinstance(obj, _concept.AtlasConcept):
                     publications = "\n\n".join([f"[{p.get('citation', 'url')}]({p.get('url')})"
                                                 if p.get('url')
                                                 else p.get("citation", "CITATION")
                                                 for p in obj.publications])
                     desc_str = DESC.format(name=obj.name, description=obj.description, citations=publications, license=obj.LICENSE)
                     zipfile.writestr(filename, desc_str)
-                except Exception as e:
-                    zipfile.writestr(f"{filename}.error.txt", str(e))
-            
+                    return
+            except Exception as e:
+                zipfile.writestr(f"{filename}.error.txt", str(e))
         
         readme_txt = README.format(siibra_api_version=__version__,
                                    timestamp=str(datetime.now()),
@@ -150,7 +176,7 @@ def download_all(space_id: str, parcellation_id: str, region_id: str=None, featu
                 region_filename = f"{region.key}.nii.gz"
                 regional_map = region.fetch_regional_map(space, siibra.MapType.STATISTICAL)
                 zipfile.writestr(region_filename, gzip.compress(regional_map.to_bytes()))
-                write_desc(f'{region_filename}.info.md', region)
+                write_desc(f'{region_filename}.info.md', region, space=space)
             except Exception as e:
                 zipfile.writestr(f"{region_filename or 'UNKNOWN_REGION'}.error.txt", str(e))
 

@@ -208,7 +208,7 @@ jobs:
         - queue: "compounds"
           resource: "low"
         include:
-        - queue: "comopunds"
+        - queue: "compounds"
           resource: 'high'
 
     if:  ${{ github.event_name == 'release' && contains(github.ref, 'rc') }}
@@ -220,6 +220,7 @@ jobs:
       QUEUE: ${{ needs.setup-envvar.outputs.version }}.rc.${{ matrix.queue }}
       IMAGE_TAG: rc-worker
       RESOURCE: ${{ matrix.resource }}
+      PULL_POLICY: Always
     secrets:
       KUBECONFIG: ${{ secrets.KUBECONFIG }}
       
@@ -237,6 +238,7 @@ jobs:
       QUEUE: celery
       IMAGE_TAG: rc-worker-v4
       WORKER_PATH: new_api.worker.app
+      PULL_POLICY: Always
     secrets:
       KUBECONFIG: ${{ secrets.KUBECONFIG }}
   
