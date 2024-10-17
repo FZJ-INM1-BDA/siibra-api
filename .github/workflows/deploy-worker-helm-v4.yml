@@ -77,7 +77,7 @@ jobs:
             --set sapi.flavor=${{ inputs.FALVOR }} \
             --set sapi.queue=${{ inputs.QUEUE }} \
             --set image.tag=${{ inputs.IMAGE_TAG }} \
-            --set image.pullPolicy=${{ input.PULL_POLICY }} \
+            --set image.pullPolicy=${{ inputs.PULL_POLICY }} \
             --set sapi.worker=${{ inputs.WORKER_PATH }} \
             --set sapi.resources.flavor=${{ inputs.RESOURCE }} \
             --reuse-values \
@@ -90,7 +90,7 @@ jobs:
             --set sapi.flavor=${{ inputs.FALVOR }} \
             --set sapi.queue=${{ inputs.QUEUE }} \
             --set image.tag=${{ inputs.IMAGE_TAG }} \
-            --set image.pullPolicy=${{ input.PULL_POLICY }} \
+            --set image.pullPolicy=${{ inputs.PULL_POLICY }} \
             --set sapi.worker=${{ inputs.WORKER_PATH }} \
             --set sapi.resources.flavor=${{ inputs.RESOURCE }} \
             ${{ inputs.DEPLOYMENT_NAME }} \
