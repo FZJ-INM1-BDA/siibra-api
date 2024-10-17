@@ -245,7 +245,7 @@ jobs:
     - warmup-rc-at-helm
     - setup-envvar
     if:  ${{ github.event_name == 'release' && contains(github.ref, 'rc') }}
-    uses: ./.github/workflows/deploy-worker-helm-v4.yml
+    uses: ./.github/workflows/deploy-server-helm-v4.yml
     with:
       DEPLOYMENT_NAME: rc-server
       FALVOR: rc
