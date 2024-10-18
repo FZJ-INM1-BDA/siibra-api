@@ -252,6 +252,7 @@ jobs:
       DEPLOYMENT_NAME: rc-server
       FALVOR: rc
       IMAGE_TAG: rc-server
+      PULL_POLICY: Always
     secrets:
       KUBECONFIG: ${{ secrets.KUBECONFIG }}
 

@@ -19,6 +19,10 @@ on:
         default: "0.3-server"
         type: string
       
+      PULL_POLICY:
+        default: IfNotPresent
+        type: string
+
     secrets:
       KUBECONFIG:
         required: true
@@ -60,6 +64,7 @@ jobs:
             --set sapi.version=$SAPI_VERSION \
             --set sapi.flavor=${{ inputs.FALVOR }} \
             --set image.tag=${{ inputs.IMAGE_TAG }} \
+            --set image.pullPolicy=${{ inputs.PULL_POLICY }} \
             --reuse-values \
             --history-max 1 \
             ${{ inputs.DEPLOYMENT_NAME }} \
@@ -69,6 +74,7 @@ jobs:
             --set sapi.version=$SAPI_VERSION \
             --set sapi.flavor=${{ inputs.FALVOR }} \
             --set image.tag=${{ inputs.IMAGE_TAG }} \
+            --set image.pullPolicy=${{ inputs.PULL_POLICY }} \
             ${{ inputs.DEPLOYMENT_NAME }} \
             ${{ inputs.HELM_FILE }}
         fi
