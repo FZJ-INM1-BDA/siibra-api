@@ -36,6 +36,7 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{ if .Values.sapi.worker }}
           command: ["celery"]
           args:
           - "-A"
@@ -45,6 +46,7 @@ spec:
           - "{{ .Values.sapi.queue }}"
           - "-O"
           - "fair"
+          {{ end }}
           livenessProbe:
             {{- toYaml .Values.livenessProbe | nindent 12 }}
           env:

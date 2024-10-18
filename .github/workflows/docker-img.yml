@@ -235,9 +235,9 @@ jobs:
       DEPLOYMENT_NAME: rc-worker-v4
       HELM_FILE: .helm/siibra-api-v4-worker
       FALVOR: rc
-      QUEUE: celery
+      QUEUE: ""
       IMAGE_TAG: rc-worker-v4
-      WORKER_PATH: new_api.worker.app
+      WORKER_PATH: ""
       PULL_POLICY: Always
     secrets:
       KUBECONFIG: ${{ secrets.KUBECONFIG }}

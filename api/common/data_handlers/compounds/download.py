@@ -87,8 +87,8 @@ def download_all(space_id: str, parcellation_id: str, region_id: str=None, featu
 
         def write_desc(filename, obj, **kwargs):
             try:
-                if isinstance(obj, siibra.core.parcellation.region.Region):
-                    space = kwargs.get("space")
+                space = kwargs.get("space")
+                if space is not None and isinstance(obj, siibra.core.parcellation.region.Region):
                     assert isinstance(space, _space.Space)
                     mp = siibra.get_map(obj.parcellation, space, "statistical")
                     volidx = mp.get_index(obj)
