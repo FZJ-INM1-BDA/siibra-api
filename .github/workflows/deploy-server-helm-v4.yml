@@ -37,8 +37,9 @@ jobs:
         secrets: ${{ secrets.KUBECONFIG }}
     - name: 'Get status'
       run: |
+        set -e
         helm status ${{ inputs.DEPLOYMENT_NAME }}
-        HELM_STATUS=$(echo $?)
+        HELM_STATUS=$?
         echo "HELM_STATUS: $HELM_STATUS"
         echo "HELM_STATUS=$HELM_STATUS" >> $GITHUB_ENV
         
