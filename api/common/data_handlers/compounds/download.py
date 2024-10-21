@@ -46,7 +46,7 @@ license:
 
 """
 
-LICENSE = """Please check the respective citations regarding licenses to use these data."""
+LICENSE = """Please check the respective `.info.md` regarding licenses of the data."""
 
 @data_decorator(ROLE)
 def download_all(space_id: str, parcellation_id: str, region_id: str=None, feature_id: str=None, bbox=None) -> str:
@@ -124,9 +124,11 @@ def download_all(space_id: str, parcellation_id: str, region_id: str=None, featu
             except Exception as e:
                 zipfile.writestr(f"{filename}.error.txt", str(e))
         
+        injected_content=f"space_id={space_id}, parcellation_id={parcellation_id}, region_id={region_id}, bbox={bbox}"
+
         readme_txt = README.format(siibra_api_version=__version__,
                                    timestamp=str(datetime.now()),
-                                   injected_content=f"space_id={space_id}, parcellation_id={parcellation_id}, region_id={region_id}")
+                                   injected_content=injected_content)
         zipfile.writestr("README.md", readme_txt)
         zipfile.writestr("LICENCE.txt", LICENSE)
         try:

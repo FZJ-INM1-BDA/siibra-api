@@ -1,0 +1,42 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: siibra-api-prod
+  labels:
+    name: siibra-api-prod
+spec:
+  tls:
+  - secretName: siibra-api-prod-secret
+    hosts:
+    - siibra-api-prod.apps.tc.humanbrainproject.eu
+  rules:
+  - host: siibra-api-prod.apps.tc.humanbrainproject.eu
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/v1_0"
+        backend:
+          service:
+            name: siibra-api-v1
+            port: 
+              number: 5000
+  - host: siibra-api-prod.apps.tc.humanbrainproject.eu
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/v2_0"
+        backend:
+          service:
+            name: siibra-api-v2
+            port: 
+              number: 5000
+  - host: siibra-api-prod.apps.tc.humanbrainproject.eu
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: prod-server-siibra-api-v4-server
+            port: 
+              number: 5000

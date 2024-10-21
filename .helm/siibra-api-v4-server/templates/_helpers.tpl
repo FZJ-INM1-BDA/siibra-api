@@ -52,6 +52,7 @@ Create chart name and version as used by the chart label.
 Common labels
 */}}
 {{- define "siibra-api-v4-server.labels" -}}
+app-role: server
 helm.sh/chart: {{ include "siibra-api-v4-server.chart" . }}
 {{ include "siibra-api-v4-server.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
