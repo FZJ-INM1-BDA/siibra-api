@@ -312,11 +312,11 @@ jobs:
           fi
         done
 
-  deploy-prod-via-helm:
-    needs: copy-by-helm
-    if:  ${{ github.event_name == 'release' && !contains(github.ref, 'rc') }}
-    uses: ./.github/workflows/deploy-helm.yml
-    with:
-      DEPLOYMENT_NAME: prod
-    secrets:
-      KUBECONFIG: ${{ secrets.KUBECONFIG }}
+  # deploy-prod-via-helm:
+  #   needs: copy-by-helm
+  #   if:  ${{ github.event_name == 'release' && !contains(github.ref, 'rc') }}
+  #   uses: ./.github/workflows/deploy-helm.yml
+  #   with:
+  #     DEPLOYMENT_NAME: prod
+  #   secrets:
+  #     KUBECONFIG: ${{ secrets.KUBECONFIG }}
