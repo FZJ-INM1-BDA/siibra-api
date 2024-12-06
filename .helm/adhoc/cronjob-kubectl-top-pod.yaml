@@ -39,3 +39,35 @@ spec:
 
 # to enable/disable
 # kubectl patch cronjobs cronjob-pod-usage -p '{"spec" : {"suspend" : true }}'
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cronjob-trim-old-log-usage
+spec:
+  # run two month
+  schedule: "41 1 */5 */2 *"
+  concurrencyPolicy: Replace
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: cronjob-trim-old-log-usage
+            image: docker-registry.ebrains.eu/monitoring/kubectl:v1.29.2
+            imagePullPolicy: Always
+            command:
+            - /bin/ash
+            - -c
+            # delete all files over 30 days of modification date
+            - "find /siibra_api_logs -mindepth 1 -maxdepth 1 -mtime +30 -delete"
+            volumeMounts:
+              - mountPath: /siibra_api_logs
+                name: log-volume
+
+          restartPolicy: OnFailure
+          volumes:
+          - name: log-volume
+            persistentVolumeClaim:
+              claimName: log-volume-claim

@@ -5,6 +5,13 @@ Expand the name of the chart.
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
+{{- define "siibra-api-v4-worker.image-full-spec" -}}
+{{- if eq (substr 0 7 .Values.image.spec) "sha256:" -}}
+{{- printf "%s@%s" .Values.image.repository .Values.image.spec }}
+{{- else -}}
+{{- printf "%s:%s" .Values.image.repository .Values.image.spec }}
+{{- end -}}
+
 
 {{/*
 Define cache-dir. append -rc if is rc

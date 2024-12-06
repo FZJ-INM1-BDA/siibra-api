@@ -21,6 +21,7 @@ image:
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: 0.3-worker
+  spec: 0.3-worker # can be 1/ tag 2/ sha256:<sha-hash>
 
 imagePullSecrets: []
 nameOverride: ""

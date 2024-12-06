@@ -7,6 +7,7 @@ from api.common.exceptions import (
     NonStrKeyException,
 )
 from typing import Any, Dict, _GenericAlias
+import math
 
 REGISTER: Dict[Type, Callable[..., ConfigBaseModel]] = {}
 
@@ -50,6 +51,8 @@ def instance_to_model(instance: Any, * , use_class: Type=None, skip_classes: Lis
     if instance is None:
         return None
     if isinstance(instance, (str, int, float)):
+        if math.isnan(instance):
+            return None
         return instance
     if isinstance(instance, (list, tuple)):
         return [instance_to_model(item) for item in instance]

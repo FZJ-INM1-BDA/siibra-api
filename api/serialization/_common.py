@@ -51,7 +51,7 @@ def pdseries_to_model(series: Series, **kwargs) -> SeriesModel:
         name=series.name,
         dtype=str(series.dtype),
         index=[instance_to_model(el) for el in series.index],
-        data=series.values.tolist()
+        data=instance_to_model(series.values.tolist())
     )
 
 @serialize(DataFrame)
