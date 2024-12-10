@@ -11,6 +11,7 @@ Expand the name of the chart.
 {{- else -}}
 {{- printf "%s:%s" .Values.image.repository .Values.image.spec }}
 {{- end -}}
+{{- end -}}
 
 
 {{/*

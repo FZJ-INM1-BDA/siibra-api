@@ -3,7 +3,7 @@ from api.serialization.util import serialize, instance_to_model
 from api.models.core._concept import SiibraAtlasConcept, SiibraPublication
 
 @serialize(AtlasConcept)
-def atlasconcept_to_model(concept: AtlasConcept) -> SiibraAtlasConcept:
+def atlasconcept_to_model(concept: AtlasConcept, **kwargs) -> SiibraAtlasConcept:
     """Serialize base concept.
 
     Args:

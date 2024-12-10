@@ -28,11 +28,13 @@ router = APIRouter(route_class=SapiCustomRoute, tags=TAGS)
 """HTTP map router"""
 
 # still use the old worker. New worker not stable (?)
-@router.get("", response_model=MapModel)
+@router.get("", response_model=MapModel, deprecated=True)
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=old_get_map)
 def get_siibra_map(parcellation_id: str, space_id: str, map_type: MapType,  name: str= "", *, func):
-    """Get map according to specification"""
+    """Get map according to specification.
+    
+    Deprecated. use /maps/{map_id} instead."""
     if func is None:
         raise HTTPException(500, f"func: None passsed")
     return func(parcellation_id, space_id, map_type)

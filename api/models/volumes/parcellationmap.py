@@ -9,5 +9,7 @@ class MapModel(_SiibraAtlasConcept):
     species: str
     indices: Dict[str, List[MapIndexModel]]
     volumes: List[VolumeModel]
+    parcellation: SiibraAtIdModel
+    space: SiibraAtIdModel
+    maptype: str
     # affine: List[float]
-    

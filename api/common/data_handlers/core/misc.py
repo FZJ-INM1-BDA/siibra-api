@@ -1,7 +1,14 @@
 from api.common import data_decorator, get_filename, NotFound
 from api.models.volumes.volume import MapType
 from api.siibra_api_config import ROLE
-from typing import Union, Dict, Tuple
+from typing import Union, Dict, Tuple, List
+
+def parse_maptype(maptype: Union[MapType, str]):
+    if isinstance(maptype, MapType):
+        assert maptype.name == maptype.value, f"str enum, expecting .name and .value to equal"
+        return maptype.name
+    if isinstance(maptype, str):
+        return maptype
 
 @data_decorator(ROLE)
 def get_map(parcellation_id: str, space_id: str, maptype: Union[MapType, str]) -> Dict:
@@ -22,13 +29,7 @@ def get_map(parcellation_id: str, space_id: str, maptype: Union[MapType, str]) -
     import siibra
     from api.serialization.util import instance_to_model
 
-    maptype_string = None
-    # check maptype name and value both matches
-    if isinstance(maptype, MapType):
-        assert maptype.name == maptype.value, f"str enum, expecting .name and .value to equal"
-        maptype_string = maptype.name
-    if isinstance(maptype, str):
-        maptype_string = maptype
+    maptype_string = parse_maptype(maptype)
     
     assert maptype_string is not None, f"maptype is neither MapType nor str"
     
@@ -41,7 +42,7 @@ def get_map(parcellation_id: str, space_id: str, maptype: Union[MapType, str]) -
         raise NotFound
     
     return instance_to_model(
-        returned_map
+        returned_map, detail=True
     ).dict()
 
 
@@ -214,3 +215,41 @@ def get_resampled_map(parcellation_id: str, space_id: str):
             "space_id": space_id,
         }, indent="\t", fp=fp)
     return full_filename, False
+
+
+@data_decorator(ROLE)
+def get_filtered_maps(parcellation_id: str=None, space_id: str=None, maptype: Union[MapType, str, None]=None):
+    import siibra
+    from api.serialization.util import instance_to_model
+
+    return_arr: List[siibra._parcellationmap.Map] = []
+    for mp in siibra.maps:
+        mp: siibra._parcellationmap.Map = mp
+        if (
+            parcellation_id is not None
+            and mp.parcellation.id != parcellation_id
+        ):
+            continue
+        if (
+            space_id is not None
+            and mp.space.id != space_id
+        ):
+            continue
+        if (
+            maptype is not None
+            and mp.maptype != parse_maptype(maptype)
+        ):
+            continue
+        return_arr.append(mp)
+    return [ instance_to_model(m).dict() for m in return_arr]
+
+
+@data_decorator(ROLE)
+def get_single_map(map_id: str):
+    import siibra
+    from api.serialization.util import instance_to_model
+    for mp in siibra.maps:
+        mp: siibra._parcellationmap.Map = mp
+        if mp.id == map_id:
+            return instance_to_model(mp, detail=True).dict()
+    raise NotFound(f"map with id {map_id} not found.")
