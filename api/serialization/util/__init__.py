@@ -50,7 +50,9 @@ def instance_to_model(instance: Any, * , use_class: Type=None, skip_classes: Lis
     
     if instance is None:
         return None
-    if isinstance(instance, (str, int, float)):
+    if isinstance(instance, str):
+        return instance
+    if isinstance(instance, (int, float)):
         if math.isnan(instance):
             return None
         return instance
