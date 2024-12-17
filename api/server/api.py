@@ -57,12 +57,6 @@ siibra_api.include_router(vocabularies_router, prefix="/vocabularies")
 
 add_pagination(siibra_api)
 
-# Versioning for api endpoints
-siibra_api = VersionedFastAPI(siibra_api)
-
-templates = Jinja2Templates(directory="templates/")
-siibra_api.mount("/static", StaticFiles(directory="static"), name="static")
-
 # Allow Cors
 
 origins = ["*"]
@@ -363,6 +357,13 @@ def exception_sapi(request: Request, exc: SapiBaseException):
     general_logger.warning(f"Error handler: exception_sapi: {str(exc)}")
     raise HTTPException(400, str(exc))
 
+@siibra_api.exception_handler(IndexError)
+async def handle_index_error(request: Request, exc: IndexError):
+    return JSONResponse(status_code=404, content={
+        "detail": "Cannot find item",
+        "error": str(exc)
+    })
+
 @siibra_api.exception_handler(Exception)
 async def exception_other(request: Request, exc: Exception):
     """Catch all exception handler"""
@@ -375,6 +376,20 @@ async def exception_other(request: Request, exc: Exception):
         }
     )
 
+# Versioning for api endpoints
+exception_handlers = siibra_api.exception_handlers
+siibra_api = VersionedFastAPI(siibra_api)
+
+# add error handlers to versioned fastapi
+# see https://github.com/DeanWay/fastapi-versioning/issues/30
+for sub_app in siibra_api.routes:
+    if hasattr(sub_app.app, "add_exception_handler"):
+        for klass, handler in exception_handlers.items():
+            sub_app.app.add_exception_handler(klass, handler)
+
+# it seems other mounts must be mounted **after** VersionedFastAPI is called
+templates = Jinja2Templates(directory="templates/")
+siibra_api.mount("/static", StaticFiles(directory="static"), name="static")
 
 # TODO lifespan not working properly. Fix and use lifespan in future
 @siibra_api.on_event("shutdown")

@@ -182,7 +182,7 @@ def get_parcellation_labelled_map(parcellation_id: str, space_id: str, region_id
 #         raise e
 
 @data_decorator(ROLE)
-def get_resampled_map(parcellation_id: str, space_id: str):
+def get_resampled_map(parcellation_id: str, space_id: str, name: str=""):
     """Retrieve and save a labelled map, resampled in space (if necessary), and then return the path of the map.
 
     Args:
@@ -193,7 +193,7 @@ def get_resampled_map(parcellation_id: str, space_id: str):
         path to statistical map, if a cached file is returned
     """
     import os
-    full_filename = get_filename("resampled_map", parcellation_id, space_id, ext=".nii.gz")
+    full_filename = get_filename("resampled_map", parcellation_id, space_id, name, ext=".nii.gz")
     if os.path.isfile(full_filename):
         return full_filename, True
     
@@ -201,7 +201,10 @@ def get_resampled_map(parcellation_id: str, space_id: str):
     import nibabel as nib
     parcellation: siibra.core.parcellation.Parcellation = siibra.parcellations[parcellation_id]
     parcellation_map = parcellation.get_map(siibra.spaces[space_id], siibra.MapType.LABELLED)
-    nii = parcellation_map.get_resampled_template()
+    if len(parcellation_map.fragments) > 0:
+        nii = parcellation_map.get_resampled_template(fragment=name)
+    else:
+        nii = parcellation_map.get_resampled_template()
 
     assert isinstance(nii, nib.Nifti1Image), f"resample failed... returned not of type nii"
     

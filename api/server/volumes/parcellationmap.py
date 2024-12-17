@@ -46,7 +46,7 @@ Return a resampled template volume, based on labelled parcellation map.
 """)
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=old_get_resampled_map)
-def get_resampled_map(parcellation_id: str, space_id: str, *, func):
+def get_resampled_map(parcellation_id: str, space_id: str, name: str="", *, func):
     """Get resampled map according to specification"""
     if func is None:
         raise HTTPException(500, f"func: None passsed")
@@ -55,7 +55,7 @@ def get_resampled_map(parcellation_id: str, space_id: str, *, func):
         "content-disposition": f'attachment; filename="labelled_map.nii.gz"'
     }
 
-    full_filename, cache_flag = func(parcellation_id=parcellation_id, space_id=space_id)
+    full_filename, cache_flag = func(parcellation_id=parcellation_id, space_id=space_id, name=name)
     if cache_flag:
         headers[cache_header] = "hit"
     assert os.path.isfile(full_filename), f"file saved incorrectly"
