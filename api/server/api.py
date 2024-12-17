@@ -67,18 +67,6 @@ siibra_api.add_middleware(
     expose_headers=[siibra_version_header]
 )
 
-@siibra_api.get("/metrics", include_in_schema=False)
-def get_metrics():
-    """Get prometheus metrics"""
-    return prom_metrics_resp()
-
-
-@siibra_api.get("/ready", include_in_schema=False)
-def get_ready():
-    """Ready probe
-    
-    TODO: implement me"""
-    return "ready"
 
 _code_meta = None
 @siibra_api.get("/about", include_in_schema=False)
@@ -390,6 +378,20 @@ for sub_app in siibra_api.routes:
 # it seems other mounts must be mounted **after** VersionedFastAPI is called
 templates = Jinja2Templates(directory="templates/")
 siibra_api.mount("/static", StaticFiles(directory="static"), name="static")
+
+@siibra_api.get("/metrics", include_in_schema=False)
+def get_metrics():
+    """Get prometheus metrics"""
+    return prom_metrics_resp()
+
+
+@siibra_api.get("/ready", include_in_schema=False)
+def get_ready():
+    """Ready probe
+    
+    TODO: implement me"""
+    return "ready"
+
 
 # TODO lifespan not working properly. Fix and use lifespan in future
 @siibra_api.on_event("shutdown")

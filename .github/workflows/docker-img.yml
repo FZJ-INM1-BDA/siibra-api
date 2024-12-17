@@ -202,13 +202,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        queue: ["core", "features", "compounds"]
-        resource: ["low"]
-        exclude:
-        - queue: "compounds"
-          resource: "low"
         include:
+        - queue: "core"
+          resource: 'low'
         - queue: "compounds"
+          resource: 'high'
+        - queue: "features"
           resource: 'high'
 
     if:  ${{ github.event_name == 'release' && contains(github.ref, 'rc') }}
