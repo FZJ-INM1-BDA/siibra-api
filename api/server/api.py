@@ -67,39 +67,6 @@ siibra_api.add_middleware(
     expose_headers=[siibra_version_header]
 )
 
-
-_code_meta = None
-@siibra_api.get("/about", include_in_schema=False)
-def servicemeta():
-    global _code_meta
-    if _code_meta is None:
-        with open(Path(__file__).parent.parent.parent / "codemeta.json", "r") as fp:
-            _code_meta = json.load(fp=fp)
-    if _code_meta is None:
-        raise Exception("code meta is not found, cannot populate servicemeta")
-    return {
-        "@context": "https://gitlab.ebrains.eu/lauramble/servicemeta/-/raw/main/data/contexts/servicemeta.jsonld",
-        "type": "WebApplication",
-        "author": _code_meta["author"],
-        "dateModified": _code_meta["dateModified"],
-        "documentation": DOCUMENTATION_URL,
-        "name": _code_meta["name"],
-        "version": _code_meta["version"],
-        "inputFormat": INPUT_FORMAT,
-        "outputFormat": OUTPUT_FORMAT
-    }
-
-@siibra_api.get("/", include_in_schema=False)
-def get_home(request: Request):
-    """Return the template for the siibra landing page."""
-    return templates.TemplateResponse(
-        "index.html", context={
-            "request": request,
-            "api_version": __version__,
-            "git_hash": GIT_HASH,
-            "versions": ["v3_0", "v2_0", "v1_0"]
-        })
-
 # Each middleware function is called before the request is processed
 # For FastAPI the order is important.
 # The functions are called (perhaps counter-intuitively) from bottom to top.
@@ -377,6 +344,39 @@ for sub_app in siibra_api.routes:
 
 # it seems other mounts must be mounted **after** VersionedFastAPI is called
 templates = Jinja2Templates(directory="templates/")
+
+_code_meta = None
+@siibra_api.get("/about", include_in_schema=False)
+def servicemeta():
+    global _code_meta
+    if _code_meta is None:
+        with open(Path(__file__).parent.parent.parent / "codemeta.json", "r") as fp:
+            _code_meta = json.load(fp=fp)
+    if _code_meta is None:
+        raise Exception("code meta is not found, cannot populate servicemeta")
+    return {
+        "@context": "https://gitlab.ebrains.eu/lauramble/servicemeta/-/raw/main/data/contexts/servicemeta.jsonld",
+        "type": "WebApplication",
+        "author": _code_meta["author"],
+        "dateModified": _code_meta["dateModified"],
+        "documentation": DOCUMENTATION_URL,
+        "name": _code_meta["name"],
+        "version": _code_meta["version"],
+        "inputFormat": INPUT_FORMAT,
+        "outputFormat": OUTPUT_FORMAT
+    }
+
+@siibra_api.get("/", include_in_schema=False)
+def get_home(request: Request):
+    """Return the template for the siibra landing page."""
+    return templates.TemplateResponse(
+        "index.html", context={
+            "request": request,
+            "api_version": __version__,
+            "git_hash": GIT_HASH,
+            "versions": ["v3_0", "v2_0", "v1_0"]
+        })
+
 siibra_api.mount("/static", StaticFiles(directory="static"), name="static")
 
 @siibra_api.get("/metrics", include_in_schema=False)
