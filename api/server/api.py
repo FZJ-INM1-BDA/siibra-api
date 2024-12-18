@@ -57,6 +57,52 @@ siibra_api.include_router(vocabularies_router, prefix="/vocabularies")
 
 add_pagination(siibra_api)
 
+@siibra_api.exception_handler(RuntimeError)
+async def exception_runtime(request: Request, exc: RuntimeError) -> JSONResponse:
+    """Handling RuntimeErrors.
+    Most of the RuntimeErrors are thrown by the siibra-python library when other Services are not responding.
+    To be more resilient and not throw a simple and unplanned HTTP 500 response, this handler will return an HTTP 503
+    status."""
+    general_logger.warning(f"Error handler: exception_runtime: {str(exc)}")
+    return JSONResponse(
+        status_code=503,
+        content={
+            "detail": "This part of the siibra service is temporarily unavailable",
+            "error": str(exc)
+        },
+    )
+
+
+@siibra_api.exception_handler(SapiBaseException)
+def exception_sapi(request: Request, exc: SapiBaseException):
+    """Handle sapi errors"""
+    general_logger.warning(f"Error handler: exception_sapi: {str(exc)}")
+    raise HTTPException(400, str(exc))
+
+@siibra_api.exception_handler(IndexError)
+async def handle_index_error(request: Request, exc: IndexError):
+    return JSONResponse(status_code=404, content={
+        "detail": "Cannot find item",
+        "error": str(exc)
+    })
+
+@siibra_api.exception_handler(Exception)
+async def exception_other(request: Request, exc: Exception):
+    """Catch all exception handler"""
+    general_logger.warning(f"Error handler: exception_other: {str(exc)}")
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": "Some error occurred",
+            "error": str(exc)
+        }
+    )
+
+# Versioning for api endpoints
+exception_handlers = siibra_api.exception_handlers
+siibra_api = VersionedFastAPI(siibra_api)
+
+
 # Allow Cors
 
 origins = ["*"]
@@ -247,8 +293,6 @@ async def middleware_add_version_header(request: Request, call_next):
 @siibra_api.middleware("http")
 async def middleware_access_log(request: Request, call_next):
     """Access log middleware"""
-
-    print("AccessLog middleware called")
     
     if request.url.path in do_not_logs:
         return await call_next(request)
@@ -290,50 +334,6 @@ async def append_origin_header(request: Request, call_next):
     request.scope["headers"] = new_headers
     return await call_next(request)
 
-@siibra_api.exception_handler(RuntimeError)
-async def exception_runtime(request: Request, exc: RuntimeError) -> JSONResponse:
-    """Handling RuntimeErrors.
-    Most of the RuntimeErrors are thrown by the siibra-python library when other Services are not responding.
-    To be more resilient and not throw a simple and unplanned HTTP 500 response, this handler will return an HTTP 503
-    status."""
-    general_logger.warning(f"Error handler: exception_runtime: {str(exc)}")
-    return JSONResponse(
-        status_code=503,
-        content={
-            "detail": "This part of the siibra service is temporarily unavailable",
-            "error": str(exc)
-        },
-    )
-
-
-@siibra_api.exception_handler(SapiBaseException)
-def exception_sapi(request: Request, exc: SapiBaseException):
-    """Handle sapi errors"""
-    general_logger.warning(f"Error handler: exception_sapi: {str(exc)}")
-    raise HTTPException(400, str(exc))
-
-@siibra_api.exception_handler(IndexError)
-async def handle_index_error(request: Request, exc: IndexError):
-    return JSONResponse(status_code=404, content={
-        "detail": "Cannot find item",
-        "error": str(exc)
-    })
-
-@siibra_api.exception_handler(Exception)
-async def exception_other(request: Request, exc: Exception):
-    """Catch all exception handler"""
-    general_logger.warning(f"Error handler: exception_other: {str(exc)}")
-    return JSONResponse(
-        status_code=500,
-        content={
-            "detail": "Some error occurred",
-            "error": str(exc)
-        }
-    )
-
-# Versioning for api endpoints
-exception_handlers = siibra_api.exception_handlers
-siibra_api = VersionedFastAPI(siibra_api)
 
 # add error handlers to versioned fastapi
 # see https://github.com/DeanWay/fastapi-versioning/issues/30

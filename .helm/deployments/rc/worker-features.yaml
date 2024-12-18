@@ -1,0 +1,10 @@
+sapi:
+  flavor: "rc"
+  version: "0.3.22"
+  worker: "api.worker.app"
+  queue: "0.3.22.rc.features"
+  resources:
+    flavor: "high"
+
+image:
+  spec: rc-worker

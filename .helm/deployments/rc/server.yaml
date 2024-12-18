@@ -1,0 +1,6 @@
+sapi:
+  flavor: "rc"
+
+image:
+  tag: rc-server
+  pullPolicy: Always
