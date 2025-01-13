@@ -41,6 +41,15 @@ If release name contains chart name it will be used as a full name.
 {{- end }}
 {{- end }}
 
+{{- define "siibra-api-v4-server.image-full-spec" -}}
+{{- if eq (substr 0 7 .Values.image.spec) "sha256:" -}}
+{{- printf "%s@%s" .Values.image.repository .Values.image.spec }}
+{{- else -}}
+{{- printf "%s:%s" .Values.image.repository .Values.image.spec }}
+{{- end -}}
+{{- end -}}
+
+
 {{/*
 Create chart name and version as used by the chart label.
 */}}

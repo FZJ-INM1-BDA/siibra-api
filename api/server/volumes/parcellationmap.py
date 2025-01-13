@@ -31,7 +31,7 @@ router = APIRouter(route_class=SapiCustomRoute, tags=TAGS)
 @router.get("", response_model=MapModel, deprecated=True)
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=old_get_map)
-def get_siibra_map(parcellation_id: str, space_id: str, map_type: MapType,  name: str= "", *, func):
+def get_siibra_map(parcellation_id: str, space_id: str, map_type: MapType, *, func):
     """Get map according to specification.
     
     Deprecated. use /maps/{map_id} instead."""

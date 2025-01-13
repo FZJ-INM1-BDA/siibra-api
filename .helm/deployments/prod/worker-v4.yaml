@@ -1,0 +1,10 @@
+sapi:
+  flavor: "prod"
+  version: "0.3.22"
+  worker: ""
+  queue: ""
+  resources:
+    flavor: "low"
+
+image:
+  spec: 0.3.22-worker-v4

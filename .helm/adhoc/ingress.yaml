@@ -40,3 +40,46 @@ spec:
             name: prod-server-siibra-api-v4-server
             port: 
               number: 5000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: siibra-api-prod-canonical
+  labels:
+    name: siibra-api-prod-canonical
+spec:
+  tls:
+  - secretName: siibra-api-prod-ebrains-secret
+    hosts:
+    - siibra-api.apps.ebrains.eu
+  rules:
+  - host: siibra-api.apps.ebrains.eu
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/v1_0"
+        backend:
+          service:
+            name: siibra-api-v1
+            port: 
+              number: 5000
+  - host: siibra-api.apps.ebrains.eu
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/v2_0"
+        backend:
+          service:
+            name: siibra-api-v2
+            port: 
+              number: 5000
+  - host: siibra-api.apps.ebrains.eu
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: prod-server-siibra-api-v4-server
+            port: 
+              number: 5000

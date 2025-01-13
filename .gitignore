@@ -12,7 +12,6 @@ siibra-python/*
 venv/*
 .env
 tmp
-*.sh
 docs/_*
 **/*.log
 secret*
