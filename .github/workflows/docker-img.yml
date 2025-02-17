@@ -16,6 +16,10 @@ env:
 
 jobs:
   build-docker-img:
+    outputs:
+      DOCKER_IMGSHA_SERVER: ${{ steps.dockerimg_sha.outputs.DOCKER_IMGSHA-server }}
+      DOCKER_IMGSHA_WORKER: ${{ steps.dockerimg_sha.outputs.DOCKER_IMGSHA-worker }}
+      DOCKER_IMGSHA_WORKER_V4: ${{ steps.dockerimg_sha.outputs.DOCKER_IMGSHA-worker-v4 }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -45,6 +49,16 @@ jobs:
         echo "Pulling $cached_image to populate cached layers."
         docker pull $cached_image || true
         docker build --build-arg GIT_HASH=$GIT_HASH -t siibra-api-tmp-img -f ${{ matrix.dockerfile }} .
+
+    - name: "Output"
+      id: dockerimg_sha
+      run: |
+        SHA=$(docker inspect \
+          --format='{{ index .RepoDigests 0 }}'\
+          siibra-api-tmp-img | sed -E 's/^.*?@//' -)
+        echo SHA:$SHA
+        echo "DOCKER_IMGSHA${{ matrix.tag_suffix }}=$SHA" >> "$GITHUB_OUTPUT"
+
 
     - name: "Tag and Push (rc)"
       if: ${{ contains(github.ref, 'rc') }}
@@ -196,10 +210,15 @@ jobs:
   
   deploy-rc-via-helm:
     needs:
+    - build-docker-img
     - warmup-rc-at-helm
     - setup-envvar
     if:  ${{ github.event_name == 'release' && contains(github.ref, 'rc') }}
     runs-on: ubuntu-latest
+    env:
+      DOCKER_IMGSHA_SERVER: ${{ needs.build-docker-img.outputs.DOCKER_IMGSHA_SERVER }}
+      DOCKER_IMGSHA_WORKER: ${{ needs.build-docker-img.outputs.DOCKER_IMGSHA_WORKER }}
+      DOCKER_IMGSHA_WORKER_V4: ${{ needs.build-docker-img.outputs.DOCKER_IMGSHA_WORKER_V4 }}
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/composite-set-k8s-cred

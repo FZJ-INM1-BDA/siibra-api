@@ -1,6 +1,6 @@
 sapi:
   flavor: "rc"
-  version: "0.3.22"
+  version: "0.3.23"
   worker: ""
   queue: ""
   resources:

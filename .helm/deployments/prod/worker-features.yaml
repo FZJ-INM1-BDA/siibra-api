@@ -1,10 +1,10 @@
 sapi:
   flavor: "prod"
-  version: "0.3.22"
+  version: "0.3.23"
   worker: "api.worker.app"
-  queue: "0.3.22.prod.features"
+  queue: "0.3.23.prod.features"
   resources:
     flavor: "high"
 
 image:
-  spec: 0.3.22-worker
+  spec: 0.3.23-worker
