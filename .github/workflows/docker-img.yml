@@ -50,17 +50,8 @@ jobs:
         docker pull $cached_image || true
         docker build --build-arg GIT_HASH=$GIT_HASH -t siibra-api-tmp-img -f ${{ matrix.dockerfile }} .
 
-    - name: "Output"
-      id: dockerimg_sha
-      run: |
-        SHA=$(docker inspect \
-          --format='{{ index .RepoDigests 0 }}'\
-          siibra-api-tmp-img | sed -E 's/^.*?@//' -)
-        echo SHA:$SHA
-        echo "DOCKER_IMGSHA${{ matrix.tag_suffix }}=$SHA" >> "$GITHUB_OUTPUT"
-
-
     - name: "Tag and Push (rc)"
+      id: dockerimg_sha
       if: ${{ contains(github.ref, 'rc') }}
       run: |
         TAG_BASE=rc
@@ -75,6 +66,12 @@ jobs:
           docker-registry.ebrains.eu
         
         docker push $NEW_TAG
+
+        SHA=$(docker inspect \
+          --format='{{ index .RepoDigests 0 }}'\
+          $NEW_TAG | sed -E 's/^.*?@//' -)
+        echo SHA:$SHA
+        echo "DOCKER_IMGSHA${{ matrix.tag_suffix }}=$SHA" >> "$GITHUB_OUTPUT"
 
     - name: "Tag and Push (release)"
       if : ${{ (github.event_name == 'release') && !contains(github.ref, 'rc') }}
