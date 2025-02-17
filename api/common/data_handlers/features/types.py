@@ -1,4 +1,5 @@
-from api.common import data_decorator, InsufficientParameters, NotFound, AmbiguousParameters, logger
+from api.common import data_decorator, InsufficientParameters, NotFound, AmbiguousParameters
+from api.common.logger import logger
 from api.siibra_api_config import ROLE, SIIBRA_API_SHARED_DIR
 from typing import List, Type, Any, Dict
 from hashlib import md5
