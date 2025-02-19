@@ -87,7 +87,7 @@ class Singleton:
         try:
             dirs = os.listdir(MONITOR_FIRSTLVL_DIR)
         except Exception as e:
-            general_logger.warn(f"Failed to listdir of {MONITOR_FIRSTLVL_DIR}: {str(e)}")
+            general_logger.warning(f"Failed to listdir of {MONITOR_FIRSTLVL_DIR}: {str(e)}")
             return
         
         for dir in dirs:
@@ -99,7 +99,7 @@ class Singleton:
                 size_b, *_ = result.stdout.split("\t")
                 Singleton.cached_du[dir] = int(size_b)
             except Exception as e:
-                general_logger.warn(f"Failed to check du of {str(path_to_dir)}: {str(e)}")
+                general_logger.warning(f"Failed to check du of {str(path_to_dir)}: {str(e)}")
 
     @staticmethod
     @cron.minutely
@@ -199,6 +199,20 @@ class Singleton:
 
 def on_startup():
     """On startup"""
+
+    # Set cached_metrics first
+    # Populating metrics takes a while
+
+    from prometheus_client import Gauge, CollectorRegistry, generate_latest
+    registry = CollectorRegistry()
+    common_kwargs = {
+        'registry':registry,
+        'namespace':NAME_SPACE,
+    }
+    last_pinged = Gauge("last_pinged", "Last pinged time", labelnames=[], **common_kwargs)
+    last_pinged.set_to_current_time()
+    Singleton.cached_metrics = generate_latest(registry)
+
     cron.start()
 
 
