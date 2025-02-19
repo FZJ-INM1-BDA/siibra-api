@@ -4,6 +4,7 @@ prefix="rc-"
 
 for f in $( find .helm/deployments/rc -name "*.yaml" )
 do
+    echo "processing $f ..."
     file=${f%.yaml}
     file=${file#.helm/deployments/rc/}
     helm status $prefix$file > /dev/null 2>&1

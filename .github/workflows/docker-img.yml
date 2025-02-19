@@ -17,9 +17,9 @@ env:
 jobs:
   build-docker-img:
     outputs:
-      DOCKER_IMGSHA_SERVER: ${{ steps.dockerimg_sha.outputs.DOCKER_IMGSHA-server }}
-      DOCKER_IMGSHA_WORKER: ${{ steps.dockerimg_sha.outputs.DOCKER_IMGSHA-worker }}
-      DOCKER_IMGSHA_WORKER_V4: ${{ steps.dockerimg_sha.outputs.DOCKER_IMGSHA-worker-v4 }}
+      DOCKER_IMGSHA_SERVER: ${{ steps.dockerimg_sha.outputs.docker-imgsha-server }}
+      DOCKER_IMGSHA_WORKER: ${{ steps.dockerimg_sha.outputs.docker-imgsha-worker }}
+      DOCKER_IMGSHA_WORKER_V4: ${{ steps.dockerimg_sha.outputs.docker-imgsha-worker-v4 }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -71,7 +71,7 @@ jobs:
           --format='{{ index .RepoDigests 0 }}'\
           $NEW_TAG | sed -E 's/^.*?@//' -)
         echo SHA:$SHA
-        echo "DOCKER_IMGSHA${{ matrix.tag_suffix }}=$SHA" >> "$GITHUB_OUTPUT"
+        echo "docker-imgsha${{ matrix.tag_suffix }}=$SHA" >> "$GITHUB_OUTPUT"
 
     - name: "Tag and Push (release)"
       if : ${{ (github.event_name == 'release') && !contains(github.ref, 'rc') }}
