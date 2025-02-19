@@ -49,16 +49,20 @@ if low (default, also fallback if neither): 100m/500m, 1Gi/2.5Gi, scale
 limits:
   cpu: 1500m
   memory: 5Gi
+  ephemeral-storage: 32Mi
 requests:
   cpu: 300m
   memory: 2Gi
+  ephemeral-storage: 16Mi
 {{- else -}}
 limits:
   cpu: 500m
   memory: 2.5Gi
+  ephemeral-storage: 32Mi
 requests:
   cpu: 100m
   memory: 1Gi
+  ephemeral-storage: 16Mi
 {{- end }}
 {{- end }}
 
