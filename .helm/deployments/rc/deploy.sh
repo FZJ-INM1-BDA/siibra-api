@@ -44,14 +44,14 @@ do
     then
         echo "upgrading $prefix$file ..."
         helm upgrade -f $f \
-            --set spec=$spec \
+            --set image.spec=$spec \
             --history-max 3 \
             $prefix$file \
             $helm_path
     else
         echo "[NEW] installing $prefix$file ..."
         helm install -f $f \
-            --set spec=$spec \
+            --set image.spec=$spec \
             $prefix$file $helm_path
     fi
 done
