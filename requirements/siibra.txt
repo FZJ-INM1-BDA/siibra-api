@@ -1,2 +1,2 @@
 siibra==0.4a87
-plotly
+plotly<6
