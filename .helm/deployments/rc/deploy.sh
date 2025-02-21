@@ -22,7 +22,11 @@ do
     then
         helm_path=.helm/siibra-api-v4-worker/
         spec="$DOCKER_IMGSHA_WORKER"
-        if [[ "$file" == *"worker-v4.yaml" ]]
+
+        # the cursed duo spy dependency
+        # hopefully, spy v2 would fix this issue
+        # and will not need to have two separate worker images
+        if [[ "$file" == *"worker-v4"* ]]
         then
             spec="$DOCKER_IMGSHA_WORKER_V4"
         fi
