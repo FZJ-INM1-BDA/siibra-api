@@ -14,9 +14,13 @@ from siibra.cache import fn_call_cache
 from siibra.atlases.parcellationmap import Map
 from siibra.atlases.sparsemap import SparseMap
 from siibra.attributes.descriptions import Name, EbrainsRef
-from siibra.attributes.dataitems.base import Archive
-from siibra.attributes.dataitems.volume.base import Volume, MESH_FORMATS, IMAGE_FORMATS
+from siibra.attributes.dataproviders.base import Archive
+from siibra.attributes.dataproviders.volume import VolumeProvider
+from siibra.operations.volume_fetcher import VolumeFormats
 from siibra.factory.livequery.ebrains import EbrainsQuery, DatasetVersion
+
+MESH_FORMATS = VolumeFormats.MESH_FORMATS
+IMAGE_FORMATS = VolumeFormats.IMAGE_FORMATS
 
 def parse_archive_options(archive: Union[Archive, None]):
     if archive is None:
@@ -131,7 +135,7 @@ def map_to_model(mp: Map, **kwargs):
     species = mp.species
     
     # TODO fix datasets
-    all_volumes = mp._find(Volume)
+    all_volumes = mp._find(VolumeProvider)
     volumes: List[VolumeModel] = []
 
     for vol in all_volumes:
