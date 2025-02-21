@@ -240,7 +240,7 @@ def get_filtered_maps(parcellation_id: str=None, space_id: str=None, maptype: Un
             continue
         if (
             maptype is not None
-            and mp.maptype != parse_maptype(maptype)
+            and mp.maptype.name != parse_maptype(maptype)
         ):
             continue
         return_arr.append(mp)
