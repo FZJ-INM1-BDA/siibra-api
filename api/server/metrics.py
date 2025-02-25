@@ -112,7 +112,6 @@ class Singleton:
         registry = CollectorRegistry()
         common_kwargs = {
             'registry':registry,
-            'namespace':NAME_SPACE,
         }
 
         cpu_usage = Gauge("resource_usage_cpu",

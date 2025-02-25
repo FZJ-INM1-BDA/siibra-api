@@ -19,6 +19,7 @@ def cache_region_statistic_map(parcellation_id: str, region_id: str, space_id: s
     """
     import siibra
     import nibabel as nib
+    import numpy as np
 
     full_filename = get_filename("statistical_map", parcellation_id, region_id, space_id, ext=".nii.gz")
     warning_texts = None
@@ -41,6 +42,12 @@ def cache_region_statistic_map(parcellation_id: str, region_id: str, space_id: s
 
     error_text = f"{error_text}, with region_id '{region_id}'"
     assert isinstance(volume_data, nib.Nifti1Image), f"{error_text}, volume provided is not of type Nifti1Image"
+
+    if volume_data.get_data_dtype() == np.float64:
+        warning_texts += "\ndatatype is float64. casting to float32"
+        data = volume_data.get_fdata()
+        data = data.astype(np.float32)
+        volume_data = nib.Nifti1Image(data, volume_data.affine, volume_data.header)
     
     nib.save(volume_data, full_filename)
 
