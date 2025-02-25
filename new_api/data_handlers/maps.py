@@ -37,8 +37,7 @@ def cache_region_statistic_map(parcellation_id: str, region_id: str, space_id: s
     if len(maps) > 1:
         warning_texts = f"Multiple ({len(maps)}) maps found"
     map = maps[0]
-    vol = map.extract_regional_map(region=region_id)
-    volume_data = vol.get_data()
+    volume_data = map.fetch(region=region_id)
 
     error_text = f"{error_text}, with region_id '{region_id}'"
     assert isinstance(volume_data, nib.Nifti1Image), f"{error_text}, volume provided is not of type Nifti1Image"

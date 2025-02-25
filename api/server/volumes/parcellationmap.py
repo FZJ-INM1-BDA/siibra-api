@@ -96,7 +96,7 @@ Returns a statistic map.
 region_id MUST refer to leaf region on the region hierarchy.
 """)
 @version(*FASTAPI_VERSION)
-@router_decorator(ROLE, func=old_get_region_statistic_map)
+@router_decorator(ROLE, func=statistical_map_nii_gz)
 def get_region_statistical_map(parcellation_id: str, region_id: str, space_id: str, name: str="", *, func):
     """Get statistical map according to specification"""
     if func is None:
@@ -120,7 +120,7 @@ class StatisticModelInfo(BaseModel):
 # still use the old worker. New worker not stable (?)
 @router.get("/statistical_map.info.json", response_model=StatisticModelInfo, tags=TAGS)
 @version(*FASTAPI_VERSION)
-@router_decorator(ROLE, func=old_get_region_statistic_map_info)
+@router_decorator(ROLE, func=statistical_map_info_json)
 def get_region_statistical_map_metadata(parcellation_id: str, region_id: str, space_id: str, name: str="", *, func):
     """Get metadata of statistical map according to specification"""
     if func is None:
