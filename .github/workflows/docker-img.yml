@@ -42,6 +42,8 @@ jobs:
     - name: "Sanity check github.ref"
       run: echo GITHUB_REF - $GITHUB_REF - github.ref - ${{ github.ref }}
     - uses: actions/checkout@v4
+    - name: Check deployment metadata
+      run: ./prepare_release.sh
     - name: "Build docker image"
       run: |
         GIT_HASH=$(git rev-parse --short HEAD)

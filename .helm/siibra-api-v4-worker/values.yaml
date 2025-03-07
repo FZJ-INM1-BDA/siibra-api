@@ -6,7 +6,7 @@ replicaCount: 1
 
 sapi:
   flavor: "prod" # could be prod, rc
-  version: "0.3.21"
+  version: ""
   
   worker: "api.worker.app" # passed to celery -A $worker
   queue: "0.3.21.prod.core" # passed to celery -Q $queue

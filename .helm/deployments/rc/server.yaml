@@ -1,10 +1,9 @@
 sapi:
   flavor: "rc"
-
+  version: "0.3.24"
 image:
   # n.b. need to define spec
   # spec: sha256:e30afd3a150eac4d5f48b0abf69c16f88824c2d0eb33c2e612b406ae882d17a9
   pullPolicy: Always
-  
 podLabels:
   flavor: rc

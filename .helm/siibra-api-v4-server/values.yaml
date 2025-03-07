@@ -6,7 +6,7 @@ replicaCount: 1
 
 sapi:
   flavor: "prod"
-  version: "0.3.21"
+  version: ""
 
 image:
   repository: docker-registry.ebrains.eu/siibra/siibra-api

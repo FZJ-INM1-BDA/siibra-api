@@ -1,13 +1,11 @@
 sapi:
   flavor: "rc"
-  version: "0.3.23"
+  version: "0.3.24"
   worker: "api.worker.app"
-  queue: "0.3.23.rc.core"
+  queue: "0.3.24.rc.core"
   resources:
     flavor: "low"
-
 image:
   spec: rc-worker
-
 podLabels:
   flavor: rc
