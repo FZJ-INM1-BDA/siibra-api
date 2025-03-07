@@ -14,7 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.set-env-var.outputs.version }}
-    needs: build-docker-img
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v5
