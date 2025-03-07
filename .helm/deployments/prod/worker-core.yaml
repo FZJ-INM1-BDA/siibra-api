@@ -8,3 +8,7 @@ sapi:
 
 image:
   spec: 0.3.23-worker
+
+
+podLabels:
+  flavor: prod

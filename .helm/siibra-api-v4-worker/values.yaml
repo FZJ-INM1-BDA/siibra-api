@@ -39,7 +39,8 @@ serviceAccount:
   name: ""
 
 podAnnotations: {}
-podLabels: {}
+podLabels:
+  role: worker
 
 podSecurityContext: {}
   # fsGroup: 2000

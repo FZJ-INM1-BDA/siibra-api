@@ -2,6 +2,11 @@
 
 prefix="prod-"
 
+if [[ -z "$version" ]]
+then
+    exit 1
+fi
+
 for f in $( find .helm/deployments/prod -name "*.yaml" )
 do
     file=${f%.yaml}
@@ -10,6 +15,7 @@ do
     HELM_STATUS=$?
     
     helm_path=""
+    spec="$version-$file"
     if [[ "$file" == *"server"* ]]
     then
         helm_path=.helm/siibra-api-v4-server/
@@ -30,11 +36,14 @@ do
     then
         echo "upgrading $prefix$file ..."
         helm upgrade -f $f \
+            --set image.spec=$spec \
             --history-max 3 \
             $prefix$file \
             $helm_path
     else
         echo "[NEW] installing $prefix$file ..."
-        helm install -f $f $prefix$file $helm_path
+        helm install -f $f $prefix$file \
+            --set image.spec=$spec \
+            $helm_path
     fi
 done

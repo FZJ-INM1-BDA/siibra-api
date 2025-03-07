@@ -8,3 +8,6 @@ sapi:
 
 image:
   spec: rc-worker-v4
+
+podLabels:
+  flavor: rc

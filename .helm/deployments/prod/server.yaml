@@ -8,3 +8,6 @@ image:
 # managed via adhoc k8s configs
 ingress:
   enabled: false
+
+podLabels:
+  flavor: prod

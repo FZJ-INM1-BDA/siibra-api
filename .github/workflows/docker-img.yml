@@ -240,7 +240,7 @@ jobs:
         VERSION=${{ needs.setup-envvar.outputs.version }}
 
         # TODO use label exclusively in the future
-        POD=$(kubectl get pod -l role=server -l app-flavor=rc -o json | jq -r '.items[0].metadata.name')
+        POD=$(kubectl get pod -l app.kubernetes.io/instance=rc-server -o json | jq -r '.items[0].metadata.name')
         echo POD: $POD
 
         cache_str=$(kubectl exec $POD -- env | grep SIIBRA_CACHEDIR)
@@ -281,9 +281,13 @@ jobs:
         done
 
   deploy-prod-via-helm:
-    needs: copy-by-helm
+    needs:
+    - copy-by-helm
+    - setup-envvar
     if:  ${{ github.event_name == 'release' && !contains(github.ref, 'rc') }}
     runs-on: ubuntu-latest
+    env:
+      version: ${{ needs.setup-envvar.outputs.version }}
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/composite-set-k8s-cred

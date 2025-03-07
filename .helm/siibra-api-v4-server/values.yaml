@@ -31,7 +31,8 @@ serviceAccount:
   name: ""
 
 podAnnotations: {}
-podLabels: {}
+podLabels:
+  role: server
 
 podSecurityContext: {}
   # fsGroup: 2000
@@ -72,9 +73,11 @@ resources:
   limits:
     cpu: 200m
     memory: 512Mi
+    ephemeral-storage: 32Mi
   requests:
     cpu: 100m
     memory: 256Mi
+    ephemeral-storage: 16Mi
 
 livenessProbe:
   initialDelaySeconds: 20
