@@ -6,21 +6,42 @@ on:
     - published
 
 env:
-  OKD_PROJECT: siibra-api
-  OKD_PROD_ENDPOINT: https://okd.hbp.eu:443
-  OKD_DEV_ENDPOINT: https://okd-dev.hbp.eu:443
-  OKD_PROD_SECRET: ${{ secrets.OKD_PROD_SECRET }}
-  OKD_DEV_SECRET: ${{ secrets.OKD_DEV_SECRET }}
   DOCKER_REGISTRY: 'docker-registry.ebrains.eu/siibra/'
   DOCKER_IMG: 'siibra-api'
 
 jobs:
+  setup-envvar:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.set-env-var.outputs.version }}
+    needs: build-docker-img
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+    - name: Check deployment metadata
+      run: ./prepare_release.sh
+    - name: 'Setting env var'
+      id: set-env-var
+      run: |
+        version=$(cat VERSION)
+        
+        if [[ -z "$version" ]]
+        then
+          echo "Version population failed: $version"
+          exit 1
+        fi
+        
+        echo version=$version >> $GITHUB_OUTPUT
+
   build-docker-img:
     outputs:
       DOCKER_IMGSHA_SERVER: ${{ steps.dockerimg_sha.outputs.docker-imgsha-server }}
       DOCKER_IMGSHA_WORKER: ${{ steps.dockerimg_sha.outputs.docker-imgsha-worker }}
       DOCKER_IMGSHA_WORKER_V4: ${{ steps.dockerimg_sha.outputs.docker-imgsha-worker-v4 }}
     runs-on: ubuntu-latest
+    needs: setup-envvar
     strategy:
       fail-fast: false
       matrix:
@@ -42,8 +63,6 @@ jobs:
     - name: "Sanity check github.ref"
       run: echo GITHUB_REF - $GITHUB_REF - github.ref - ${{ github.ref }}
     - uses: actions/checkout@v4
-    - name: Check deployment metadata
-      run: ./prepare_release.sh
     - name: "Build docker image"
       run: |
         GIT_HASH=$(git rev-parse --short HEAD)
@@ -104,28 +123,6 @@ jobs:
         done
         echo "Done"
 
-  setup-envvar:
-    runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.set-env-var.outputs.version }}
-    needs: build-docker-img
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
-    - name: 'Setting env var'
-      id: set-env-var
-      run: |
-        version=$(cat VERSION)
-        
-        if [[ -z "$version" ]]
-        then
-          echo "Version population failed: $version"
-          exit 1
-        fi
-        
-        echo version=$version >> $GITHUB_OUTPUT
 
   # deploy-rc-on-data-validation:
   #   needs:

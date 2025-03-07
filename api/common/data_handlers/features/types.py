@@ -138,6 +138,10 @@ def _get_all_features(*, space_id: str, parcellation_id: str, region_id: str, ty
     if type is None:
         raise InsufficientParameters(f"type is a required kwarg")
     
+    # regionalbold cannot be serialized like a normal tabular data
+    # feature.data will return error
+    banned_list = ("Regional BOLD signal", )
+
     *_, type = type.split(".")
 
     concept = extract_concept(space_id=space_id, parcellation_id=parcellation_id, region_id=region_id)
@@ -145,7 +149,7 @@ def _get_all_features(*, space_id: str, parcellation_id: str, region_id: str, ty
     if concept is None:
         raise InsufficientParameters(f"at least one of space_id, parcellation_id and/or region_id must be defined.")
     
-    features = siibra.features.get(concept, type, **kwargs)
+    features = [f for f in siibra.features.get(concept, type, **kwargs) if f.modality not in banned_list]
 
     if bbox:
         assert isinstance(concept, siibra.core.space.Space)
