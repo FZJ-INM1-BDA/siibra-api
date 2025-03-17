@@ -37,7 +37,30 @@ spec:
         path: "/"
         backend:
           service:
-            name: prod-server-siibra-api-v4-server
+            name: rc-server-siibra-api-v4-server # prod-server-siibra-api-v4-server
+            port: 
+              number: 5000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rc-server-siibra-api-v4-server
+  labels:
+    name: rc-server-siibra-api-v4-server
+spec:
+  tls:
+  - secretName: siibra-api-rc-secret
+    hosts:
+    - siibra-api-rc.apps.tc.humanbrainproject.eu
+  rules:
+  - host: siibra-api-rc.apps.tc.humanbrainproject.eu
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: prod-server-siibra-api-v4-server # rc-server-siibra-api-v4-server
             port: 
               number: 5000
 ---
@@ -80,6 +103,6 @@ spec:
         path: "/"
         backend:
           service:
-            name: prod-server-siibra-api-v4-server
+            name: rc-server-siibra-api-v4-server # prod-server-siibra-api-v4-server
             port: 
               number: 5000

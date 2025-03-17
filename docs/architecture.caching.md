@@ -6,13 +6,13 @@ flowchart TD
 
     Internet
     RespCache[Cache database]
-    OpenshiftServer[Server Pod]
+    K8sPod[Server Pod]
 
-    Internet --> |queries| OpenshiftServer
-    OpenshiftServer --> |caches| RespCache
-    RespCache --> |provides cache| OpenshiftServer
+    Internet --> |queries| K8sPod
+    K8sPod --> |caches| RespCache
+    RespCache --> |provides cache| K8sPod
 
-    OpenshiftServer --> |responds| Internet
+    K8sPod --> |responds| Internet
 ```
 
 ## [Gzipped b64 redis store][api.server.cache.redis.CacheGzipRedis]

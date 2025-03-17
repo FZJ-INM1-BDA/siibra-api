@@ -15,14 +15,19 @@ do
     HELM_STATUS=$?
     
     helm_path=""
-    spec="$version-$file"
     if [[ "$file" == *"server"* ]]
     then
+        spec="$version-$file"
         helm_path=.helm/siibra-api-v4-server/
     fi
 
     if [[ "$file" == *"worker"* ]]
     then
+        spec="$version-worker"
+        if [[ "$file" == *"worker-v4"* ]]
+        then
+            spec="$version-worker-v4"
+        fi
         helm_path=.helm/siibra-api-v4-worker/
     fi
 
