@@ -34,6 +34,7 @@ check_spec() {
 
     if [[ "$deploy_target" != "prod" ]]
     then
+        # do not check spec other than in prod setting
         return 0
     fi
 

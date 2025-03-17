@@ -61,6 +61,6 @@ spec:
         path: "/"
         backend:
           service:
-            name: rc-server-siibra-api-v4-server # prod-server-siibra-api-v4-server
+            name: prod-server-siibra-api-v4-server
             port: 
               number: 5000

@@ -1,5 +1,8 @@
 #! /bin/bash
 
+# n.b. we do not set spec for prod deployments
+# since the {deployname}.yaml should contain the info needed
+
 prefix="prod-"
 
 if [[ -z "$version" ]]
@@ -17,17 +20,11 @@ do
     helm_path=""
     if [[ "$file" == *"server"* ]]
     then
-        spec="$version-$file"
         helm_path=.helm/siibra-api-v4-server/
     fi
 
     if [[ "$file" == *"worker"* ]]
     then
-        spec="$version-worker"
-        if [[ "$file" == *"worker-v4"* ]]
-        then
-            spec="$version-worker-v4"
-        fi
         helm_path=.helm/siibra-api-v4-worker/
     fi
 
@@ -41,14 +38,12 @@ do
     then
         echo "upgrading $prefix$file ..."
         helm upgrade -f $f \
-            --set image.spec=$spec \
             --history-max 3 \
             $prefix$file \
             $helm_path
     else
         echo "[NEW] installing $prefix$file ..."
         helm install -f $f $prefix$file \
-            --set image.spec=$spec \
             $helm_path
     fi
 done

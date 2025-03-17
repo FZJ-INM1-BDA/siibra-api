@@ -1,5 +1,8 @@
 #! /bin/bash
 
+# n.b. we *need* to set the spec in the form of sha256:<sha_hash>
+# this will force redeploy of pods, and be specific about which image to use
+
 prefix="rc-"
 
 for f in $( find .helm/deployments/rc -name "*.yaml" )
