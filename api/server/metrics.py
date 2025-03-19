@@ -196,6 +196,7 @@ class Singleton:
         Singleton.cached_metrics = generate_latest(registry)
 
 
+@is_server
 def on_startup():
     """On startup"""
 
@@ -215,6 +216,7 @@ def on_startup():
     cron.start()
 
 
+@is_server
 def on_terminate():
     """On terminate"""
     cron.stop()
