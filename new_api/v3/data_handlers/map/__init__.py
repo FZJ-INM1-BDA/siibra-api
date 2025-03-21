@@ -112,16 +112,16 @@ def warmup_maps():
         try:
             instance_to_model(map, detail=True)
         except Exception as e:
-            logger.warning(f"map {map.space_id=!r} {map.parcellation_id=!r} instance to model {str(e)}")
+            logger.warning(f"map {map.space_id!r} {map.parcellation_id!r} instance to model {str(e)}")
     
     maps: List[Map] = siibra.find_maps(maptype="labelled")
 
     def try_instance_to_model(m: Map):
-        logger.info(f"Caching map {map.space_id=!r} {map.parcellation_id=!r}")
+        logger.info(f"Caching map {map.space_id!r} {map.parcellation_id!r}")
         try:
             return instance_to_model(m, detail=True)
         except Exception as e:
-            logger.warning(f"map {map.space_id=!r} {map.parcellation_id=!r} instance to model {str(e)}")
+            logger.warning(f"map {map.space_id!r} {map.parcellation_id!r} instance to model {str(e)}")
 
     all_maps = [*smaps, *maps]
     for mp in all_maps:
