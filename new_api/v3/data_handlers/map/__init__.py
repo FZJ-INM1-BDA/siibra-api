@@ -22,7 +22,7 @@ def assign(parcellation_id: str, space_id: str, point: str, assignment_type: str
     point = Point(coordinate=coordinate, space_id=space_id, sigma=sigma_mm)
     maps = siibra.find_maps(parcellation_id, space_id, assignment_type, extra_specs)
     if len(maps) == 0:
-        raise NotFound(f"map with {parcellation_id=!r}, {space_id=!r}, {assignment_type=!r}, {extra_specs=!r} not found")
+        raise NotFound(f"map with {parcellation_id!r}, {space_id!r}, {assignment_type!r}, {extra_specs!r} not found")
     mp = maps[0]
     result = mp.lookup_points(point)
     return instance_to_model(result, detail=True).dict()
@@ -56,7 +56,7 @@ def get_map(parcellation_id: str, space_id: str, maptype: Union[MapType, str], e
     returned_maps = siibra.find_maps(parcellation_id, space_id, maptype=maptype, extra_spec=extra_spec)
     
     if len(returned_maps) == 0:
-        raise NotFound(f"get_map with spec {parcellation_id=!r}, {space_id=!r}, {maptype=!r}, {extra_spec=!r} found no map.")
+        raise NotFound(f"get_map with spec {parcellation_id!r}, {space_id!r}, {maptype!r}, {extra_spec!r} found no map.")
     return instance_to_model(returned_maps[0], detail=True).dict()
 
 @data_decorator(ROLE)
