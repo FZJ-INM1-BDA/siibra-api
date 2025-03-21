@@ -1,5 +1,8 @@
-from typing import Literal, Union
 from functools import wraps
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 
 from .logger import logger
 from .exceptions import FaultyRoleException

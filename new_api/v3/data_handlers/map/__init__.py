@@ -1,4 +1,8 @@
-from typing import Literal, List, Union
+try:
+    from typing import Literal, List, Union
+except ImportError:
+    from typing import List, Union
+    from typing_extensions import Literal
 
 from new_api.data_handlers.maps import cache_region_statistic_map, cache_parcellation_labelled_map, cache_resampled_map
 from new_api.v3.serialization import instance_to_model

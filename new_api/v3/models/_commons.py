@@ -1,7 +1,12 @@
 from new_api.v3.models.openminds.base import _BaseModel
-from typing import Optional, List, Union, ClassVar, Any, Literal
 from pydantic import Field, BaseModel
 from abc import ABC
+
+try:
+    from typing import Optional, List, Union, ClassVar, Any, Literal
+except ImportError:
+    from typing import Optional, List, Union, ClassVar, Any
+    from typing_extensions import Literal
 
 SIIBRA_PYTHON_VERSION = "2.0"
 
