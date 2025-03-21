@@ -7,3 +7,4 @@ jinja2
 uvicorn[standard]
 redis
 diskcache
+typing-extensions; python_version < "3.8"
