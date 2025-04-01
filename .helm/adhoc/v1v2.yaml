@@ -33,6 +33,7 @@ metadata:
     deprecated: foo
     mock: foo
 spec:
+  ingressClassName: nginx
   tls:
   - secretName: siibra-api-v1v2-secret
     hosts:

@@ -29,6 +29,7 @@ metadata:
     name: siibra-api-deprecated
     deprecated: foo
 spec:
+  ingressClassName: nginx
   tls:
   - secretName: siibra-api-deprecated-secret
     hosts:

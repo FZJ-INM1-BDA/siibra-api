@@ -5,6 +5,7 @@ metadata:
   labels:
     name: siibra-api-prod
 spec:
+  ingressClassName: nginx
   tls:
   - secretName: siibra-api-prod-secret
     hosts:
@@ -48,6 +49,7 @@ metadata:
   labels:
     name: rc-server-siibra-api-v4-server
 spec:
+  ingressClassName: nginx
   tls:
   - secretName: siibra-api-rc-secret
     hosts:
@@ -71,6 +73,7 @@ metadata:
   labels:
     name: siibra-api-prod-canonical
 spec:
+  ingressClassName: nginx
   tls:
   - secretName: siibra-api-prod-ebrains-secret
     hosts:
