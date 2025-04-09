@@ -1,3 +1,4 @@
+import os
 from pydantic import BaseModel
 
 from fastapi import APIRouter, HTTPException
@@ -19,7 +20,7 @@ from api.common.data_handlers.core.misc import (
 )
 from new_api.v3.data_handlers.map import assign, get_map, statistical_map_info_json, statistical_map_nii_gz, labelled_map_nii_gz, resampled_template
 from api.server.util import SapiCustomRoute
-import os
+
 
 TAGS=["maps"]
 """HTTP map tags"""
