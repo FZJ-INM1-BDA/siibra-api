@@ -1,6 +1,5 @@
 FROM python:3.10
-RUN python -m pip install -U pip
-RUN python -m pip install wheel
+RUN python -m pip install -U pip setuptools wheel
 COPY ./requirements /requirements
 RUN python -m pip install -r /requirements/v4-worker.txt 
 

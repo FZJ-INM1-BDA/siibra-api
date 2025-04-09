@@ -134,7 +134,9 @@ jobs:
 
   # rc
   rm-cache-rc-at-helm:
-    needs: setup-envvar
+    needs:
+    - setup-envvar
+    - build-docker-img
     if:  ${{ github.event_name == 'release' && contains(github.ref, 'rc') }}
     runs-on: ubuntu-latest
     steps:
