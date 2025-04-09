@@ -8,8 +8,7 @@ from datetime import datetime
 import json
 import math
 
-BIGBRAIN_ID = "minds/core/referencespace/v1.0.0/a1655b99-82f1-420f-a3c2-fe80fd4c8588"
-BIGBRAIN_SIZE_LIMIT = 2 * 1024 * 1024
+VOLUME_SIZE_LIMIT = 2 * 1024 * 1024
 
 README = """# Packaged Atlas Data
 
@@ -138,17 +137,13 @@ def download_all(space_id: str=None, parcellation_id: str=None, region_id: str=N
                 space: _space.Space = siibra.spaces[space_id]
                 space_filename = f"{space.key}.nii.gz"
 
-                # this should fetch anything (surface, nifti, ng precomputed)
-                if space.id == BIGBRAIN_ID:
-                    if bbox:
-                        bounding_box = space.get_bounding_box(*json.loads(bbox))
-                        value = BIGBRAIN_SIZE_LIMIT
-                        for dim in bounding_box.maxpoint - bounding_box.minpoint:
-                            value /= dim
-                        cube_rooted = math.pow(value, 1/3)
-                        space_vol = space.get_template().fetch(voi=bounding_box, resolution_mm=1/cube_rooted)
-                    else:
-                        raise RuntimeError(f"For big brain, bbox must be defined.")
+                if bbox:
+                    bounding_box = space.get_bounding_box(*json.loads(bbox))
+                    value = VOLUME_SIZE_LIMIT
+                    for dim in bounding_box.maxpoint - bounding_box.minpoint:
+                        value /= dim
+                    cube_rooted = math.pow(value, 1/3)
+                    space_vol = space.get_template().fetch(voi=bounding_box, resolution_mm=1/cube_rooted)
                 else:
                     space_vol = space.get_template().fetch()
                 zipfile.writestr(space_filename, gzip.compress(space_vol.to_bytes()))
