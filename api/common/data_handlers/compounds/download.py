@@ -7,6 +7,7 @@ from pathlib import Path
 from datetime import datetime
 import json
 import math
+import requests
 
 VOLUME_SIZE_LIMIT = 2 * 1024 * 1024
 
@@ -127,26 +128,54 @@ def download_all(space_id: str=None, parcellation_id: str=None, region_id: str=N
             injected_content=f"space_id={space_id}, parcellation_id={parcellation_id}, region_id={region_id}, bbox={bbox}"
 
             readme_txt = README.format(siibra_api_version=__version__,
-                                    timestamp=str(datetime.now()),
-                                    injected_content=injected_content)
+                                       timestamp=str(datetime.now()),
+                                       injected_content=injected_content)
             zipfile.writestr("README.md", readme_txt)
             zipfile.writestr("LICENCE.txt", LICENSE)
             try:
                 space_filename = None
 
                 space: _space.Space = siibra.spaces[space_id]
-                space_filename = f"{space.key}.nii.gz"
+                space_filename = space.key
 
-                if bbox:
+                template = space.get_template()
+
+                if "neuroglancer/precomputed" in template.formats:
+                    space_filename += ".nii.gz"
+                    if bbox is None:
+                        bbox = template.boundingbox
                     bounding_box = space.get_bounding_box(*json.loads(bbox))
                     value = VOLUME_SIZE_LIMIT
                     for dim in bounding_box.maxpoint - bounding_box.minpoint:
                         value /= dim
                     cube_rooted = math.pow(value, 1/3)
-                    space_vol = space.get_template().fetch(voi=bounding_box, resolution_mm=1/cube_rooted)
-                else:
-                    space_vol = space.get_template().fetch()
-                zipfile.writestr(space_filename, gzip.compress(space_vol.to_bytes()))
+                    space_vol = template.fetch(voi=bounding_box,
+                                               format="neuroglancer/precomputed",
+                                               resolution_mm=1/cube_rooted)
+                    zipfile.writestr(space_filename, gzip.compress(space_vol.to_bytes()))
+                if "gii-mesh" in template.formats:
+                    for idx, vol in enumerate(space.volumes):
+                        variant = vol.variant or f'unknown-variant-{idx}'
+                        root = f"{space_filename}/{variant}"
+                        if "gii-mesh" in vol.providers:
+                            url = vol.providers["gii-mesh"]
+                            def write_url(base_path: str, url: str):
+                                filename = "unknownfile"
+                                try:
+                                    filepath = Path(url)
+                                    filename = filepath.name
+                                    resp = requests.get(url)
+                                    resp.raise_for_status()
+
+                                    zipfile.writestr(f"{base_path}/{filename}", resp.content)
+                                except Exception as e:
+                                    zipfile.writestr(f"{base_path}/{filename}.error.txt", str(e))
+                            if isinstance(url, str):
+                                write_url(root, url)
+                            if isinstance(url, dict):
+                                for key, _url in url.items():
+                                    write_url(f"{root}/{key}", _url)
+
                 write_desc(f'{space_filename}.info.md', space)
             except Exception as e:
                 zipfile.writestr(f"{space_filename or 'UNKNOWN_SPACE'}.error.txt", str(e))
