@@ -54,8 +54,21 @@ spec:
   - secretName: siibra-api-rc-secret
     hosts:
     - siibra-api-rc.apps.tc.humanbrainproject.eu
+  - secretName: siibra-api-rc-ebrains-secret
+    hosts:
+    - siibra-api-rc.apps.ebrains.eu
   rules:
   - host: siibra-api-rc.apps.tc.humanbrainproject.eu
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: rc-server-siibra-api-v4-server
+            port: 
+              number: 5000
+  - host: siibra-api-rc.apps.ebrains.eu
     http:
       paths:
       - pathType: Prefix
