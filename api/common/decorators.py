@@ -1,5 +1,5 @@
 from .siibra_api_typing import ROLE_TYPE
-from api.common import logger
+from api.common.logger import logger
 from functools import wraps, partial
 import inspect
 import asyncio

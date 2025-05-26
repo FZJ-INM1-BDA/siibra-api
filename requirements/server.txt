@@ -8,4 +8,6 @@ uvicorn[standard]
 redis
 diskcache
 celery[redis]==5.2.6
-prometheus-client
+prometheus-client<0.22.0 
+# https://github.com/prometheus/client_python/commit/33e682846b2d8f60ea34fc60c41b448b22405c4a
+# broke import, thus pinning to <0.22.0. not broken why fix it?
