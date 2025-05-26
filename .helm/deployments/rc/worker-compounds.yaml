@@ -1,8 +1,8 @@
 sapi:
   flavor: "rc"
-  version: "0.3.25"
+  version: "0.3.26"
   worker: "api.worker.app"
-  queue: "0.3.25.rc.compounds"
+  queue: "0.3.26.rc.compounds"
   resources:
     flavor: "high"
 image:
