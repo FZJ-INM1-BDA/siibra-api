@@ -50,20 +50,11 @@ service:
   port: 5000
 
 ingress:
-  enabled: true
+  enabled: false
   className: ""
   annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: siibra-api-rc.apps.tc.humanbrainproject.eu
-      paths:
-        - path: /
-          pathType: Prefix
-  tls:
-   - secretName: siibra-api-rc-secret
-     hosts:
-       - siibra-api-rc.apps.tc.humanbrainproject.eu
 
 resources:
   # We usually recommend not to specify default resources and to leave this as a conscious

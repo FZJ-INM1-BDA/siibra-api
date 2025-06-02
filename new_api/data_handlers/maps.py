@@ -1,4 +1,4 @@
-from typing import Tuple, Union
+from typing import Tuple, Union, List
 from pathlib import Path
 import json
 import time
@@ -22,13 +22,13 @@ def cache_region_statistic_map(parcellation_id: str, region_id: str, space_id: s
     import numpy as np
 
     full_filename = get_filename("statistical_map", parcellation_id, region_id, space_id, ext=".nii.gz")
-    warning_texts = None
+    warning_texts_arr: List[str] = []
     if not no_cache and os.path.isfile(full_filename):
         try:
-            warning_texts = Path(f"{full_filename}.warning.txt").read_text()
+            warning_texts_arr.append(Path(f"{full_filename}.warning.txt").read_text())
         except:
             ...
-        return full_filename, True, warning_texts
+        return full_filename, True, "\n".join(warning_texts_arr) if len(warning_texts_arr) > 0 else None
 
     error_text = f"Map with parc id '{parcellation_id}', space id '{space_id}'"
 
@@ -36,7 +36,7 @@ def cache_region_statistic_map(parcellation_id: str, region_id: str, space_id: s
     assert len(maps) > 0, f"{error_text} returns None"
     
     if len(maps) > 1:
-        warning_texts = f"Multiple ({len(maps)}) maps found"
+        warning_texts_arr.append(f"Multiple ({len(maps)}) maps found")
     map = maps[0]
     volume_data = map.fetch(region=region_id)
 
@@ -44,16 +44,16 @@ def cache_region_statistic_map(parcellation_id: str, region_id: str, space_id: s
     assert isinstance(volume_data, nib.Nifti1Image), f"{error_text}, volume provided is not of type Nifti1Image"
 
     if volume_data.get_data_dtype() == np.float64:
-        warning_texts += "\ndatatype is float64. casting to float32"
+        warning_texts_arr.append("datatype is float64. casting to float32")
         data = volume_data.get_fdata()
         data = data.astype(np.float32)
         volume_data = nib.Nifti1Image(data, volume_data.affine, volume_data.header)
     
     nib.save(volume_data, full_filename)
 
-    if warning_texts:
+    if len(warning_texts_arr) > 0:
         with open(f"{full_filename}.warning.txt", "w") as fp:
-            fp.write(warning_texts)
+            fp.write("\n".join(warning_texts_arr))
 
     with open(f"{full_filename}.{str(int(time.time()))}.json", "w") as fp:
         json.dump({
@@ -62,7 +62,7 @@ def cache_region_statistic_map(parcellation_id: str, region_id: str, space_id: s
             "region_id": region_id,
             "space_id": space_id,
         }, fp=fp, indent="\t")
-    return full_filename, False, warning_texts
+    return full_filename, False, "\n".join(warning_texts_arr) if len(warning_texts_arr) > 0 else None
 
 
 def cache_parcellation_labelled_map(parcellation_id: str, space_id: str, region_id:Union[str, None]=None, *,  no_cache=False) -> Tuple[str, bool, str]:
