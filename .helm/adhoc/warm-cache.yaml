@@ -7,7 +7,9 @@ metadata:
 spec:
   containers:
   - name: warmup-container
-    image: docker-registry.ebrains.eu/siibra/siibra-api:rc-worker
+    # while ebrains gets the docker registry sorted out
+    # image: docker-registry.ebrains.eu/siibra/siibra-api:rc-worker
+    image: ghcr.io/fzj-inm1-bda/siibra-api:rc-worker
     imagePullPolicy: Always
     command:
     - python

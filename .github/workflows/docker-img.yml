@@ -13,7 +13,8 @@ jobs:
   setup-envvar:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.set-env-var.outputs.version }}
+      version: ${{ steps.export-env-var.outputs.version }}
+      BASE_TAG: ${{ steps.export-env-var.outputs.BASE_TAG }}
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v5
@@ -22,7 +23,6 @@ jobs:
     - name: Check deployment metadata
       run: ./prepare_release.sh
     - name: 'Setting env var'
-      id: set-env-var
       run: |
         version=$(cat VERSION)
         
@@ -32,13 +32,25 @@ jobs:
           exit 1
         fi
         
+        echo version=$version >> $GITHUB_ENV
+        echo BASE_TAG=$version >> $GITHUB_ENV
+    - name: 'Setting tag'
+      if: ${{ contains(github.ref, 'rc') }}
+      run: |
+        echo BASE_TAG=rc >> $GITHUB_ENV
+    
+    - name: 'export env var'
+      id: export-env-var
+      run: |
         echo version=$version >> $GITHUB_OUTPUT
+        echo BASE_TAG=$BASE_TAG >> $GITHUB_OUTPUT
+        
 
   build-docker-img-ghcr:
-    # outputs:
-    #   DOCKER_IMGSHA_SERVER: ${{ steps.dockerimg_sha.outputs.docker-imgsha-server }}
-    #   DOCKER_IMGSHA_WORKER: ${{ steps.dockerimg_sha.outputs.docker-imgsha-worker }}
-    #   DOCKER_IMGSHA_WORKER_V4: ${{ steps.dockerimg_sha.outputs.docker-imgsha-worker-v4 }}
+    outputs:
+      DOCKER_IMGSHA_SERVER: ${{ steps.dockerimg_sha.outputs.docker-imgsha-server }}
+      DOCKER_IMGSHA_WORKER: ${{ steps.dockerimg_sha.outputs.docker-imgsha-worker }}
+      DOCKER_IMGSHA_WORKER_V4: ${{ steps.dockerimg_sha.outputs.docker-imgsha-worker-v4 }}
     runs-on: ubuntu-latest
     needs: setup-envvar
     strategy:
@@ -71,7 +83,7 @@ jobs:
       # https://github.com/orgs/community/discussions/10553#discussioncomment-10538593
       # IMAGE_NAME: ${{ github.repository }}
       IMAGE_NAME: fzj-inm1-bda/siibra-api
-      BASE_TAG: siibra-api
+      BASE_TAG: ${{ needs.setup-envvar.outputs.BASE_TAG }}
 
     steps:
     - uses: actions/checkout@v4
@@ -96,6 +108,10 @@ jobs:
         file: ${{ matrix.dockerfile }}
         build-args: |
           GIT_HASH=${{ env.GIT_HASH }}
+    - name: Set Digest SHA
+      id: dockerimg_sha
+      run: |
+        echo "docker-imgsha${{ matrix.tag_suffix }}=${{ steps.push.outputs.digest }}" >> "$GITHUB_OUTPUT"
 
   build-docker-img:
     outputs:
@@ -199,7 +215,7 @@ jobs:
   rm-cache-rc-at-helm:
     needs:
     - setup-envvar
-    - build-docker-img
+    - build-docker-img-ghcr
     if:  ${{ github.event_name == 'release' && contains(github.ref, 'rc') }}
     runs-on: ubuntu-latest
     steps:
@@ -270,15 +286,15 @@ jobs:
   
   deploy-rc-via-helm:
     needs:
-    - build-docker-img
+    - build-docker-img-ghcr
     - warmup-rc-at-helm
     - setup-envvar
     if:  ${{ github.event_name == 'release' && contains(github.ref, 'rc') }}
     runs-on: ubuntu-latest
     env:
-      DOCKER_IMGSHA_SERVER: ${{ needs.build-docker-img.outputs.DOCKER_IMGSHA_SERVER }}
-      DOCKER_IMGSHA_WORKER: ${{ needs.build-docker-img.outputs.DOCKER_IMGSHA_WORKER }}
-      DOCKER_IMGSHA_WORKER_V4: ${{ needs.build-docker-img.outputs.DOCKER_IMGSHA_WORKER_V4 }}
+      DOCKER_IMGSHA_SERVER: ${{ needs.build-docker-img-ghcr.outputs.DOCKER_IMGSHA_SERVER }}
+      DOCKER_IMGSHA_WORKER: ${{ needs.build-docker-img-ghcr.outputs.DOCKER_IMGSHA_WORKER }}
+      DOCKER_IMGSHA_WORKER_V4: ${{ needs.build-docker-img-ghcr.outputs.DOCKER_IMGSHA_WORKER_V4 }}
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/composite-set-k8s-cred
