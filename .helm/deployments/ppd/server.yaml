@@ -1,0 +1,10 @@
+sapi:
+  flavor: "prod"
+  version: "0.3.26"
+image:
+  spec: "0.3.26-server"
+# managed via adhoc k8s configs
+ingress:
+  enabled: false
+podLabels:
+  flavor: prod

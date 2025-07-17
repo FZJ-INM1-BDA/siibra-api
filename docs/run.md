@@ -108,6 +108,11 @@ docker run -it \
 server:
 
 ```bash
+
+# If using a custom configuration, ensure that it is also set on the server environment
+# This is because the hash of the configuration (at the time of writing, git hash), will be used for queue isolation
+
+# export SIIBRA_USE_CONFIGURATION=PATH/TO/SIIBRA-CFG
 export SIIBRA_API_ROLE=server
 uvicorn api.server.api
 ```
@@ -115,9 +120,14 @@ uvicorn api.server.api
 worker(s): (feel free to spawn as many instance as resource allows/you wish)
 
 ```bash
+
+# uncomment if using a custom configuration
+
+# export SIIBRA_USE_CONFIGURATION=PATH/TO/SIIBRA-CFG
 export SIIBRA_API_ROLE=worker
 # listen on all queues by:
 celery -A api.worker.app worker -l INFO
+
 # or listen to specific queues by:
 # celery -A api.worker.app worker -l INFO -Q 0.3.11.siibraapilatest.core
 ```

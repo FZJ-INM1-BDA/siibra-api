@@ -34,6 +34,69 @@ jobs:
         
         echo version=$version >> $GITHUB_OUTPUT
 
+  build-docker-img-ghcr:
+    # outputs:
+    #   DOCKER_IMGSHA_SERVER: ${{ steps.dockerimg_sha.outputs.docker-imgsha-server }}
+    #   DOCKER_IMGSHA_WORKER: ${{ steps.dockerimg_sha.outputs.docker-imgsha-worker }}
+    #   DOCKER_IMGSHA_WORKER_V4: ${{ steps.dockerimg_sha.outputs.docker-imgsha-worker-v4 }}
+    runs-on: ubuntu-latest
+    needs: setup-envvar
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - flavor: 'all'
+          dockerfile: 'Dockerfile'
+          tag_suffix: ''
+        - flavor: 'worker'
+          dockerfile: 'worker.dockerfile'
+          tag_suffix: '-worker'
+        - flavor: 'server'
+          dockerfile: 'server.dockerfile'
+          tag_suffix: '-server'
+        - flavor: 'worker'
+          dockerfile: 'worker-v4.dockerfile'
+          tag_suffix: '-worker-v4'
+
+    permissions:
+      contents: read
+      packages: write
+      # attestations: write
+      id-token: write
+
+
+    env:
+      REGISTRY: ghcr.io
+
+      # https://github.com/orgs/community/discussions/10553#discussioncomment-10538593
+      # IMAGE_NAME: ${{ github.repository }}
+      IMAGE_NAME: fzj-inm1-bda/siibra-api
+      BASE_TAG: siibra-api
+
+    steps:
+    - uses: actions/checkout@v4
+    - id: get-rev
+      run: |
+        GIT_HASH=$(git rev-parse --short HEAD)
+        echo GIT_HASH=$GIT_HASH >> $GITHUB_ENV
+    - name: Log in to the Container registry
+      uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and push Docker image
+      id: push
+      uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
+      with:
+        context: .
+        push: true
+        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BASE_TAG }}${{ matrix.tag_suffix }}
+        file: ${{ matrix.dockerfile }}
+        build-args: |
+          GIT_HASH=${{ env.GIT_HASH }}
+
   build-docker-img:
     outputs:
       DOCKER_IMGSHA_SERVER: ${{ steps.dockerimg_sha.outputs.docker-imgsha-server }}

@@ -31,8 +31,8 @@ Development documentations can be found on [readthedocs](https://siibra-api.read
 
 siibra-api can be configured by:
 
-- environment variables, as indicated by the <./api/siibra_api_config.py> , or ...
-- directly overwriting the <./api/siibra_api_config.py> file, by overwriting or docker volume mounting
+- environment variables, as indicated by the `./api/siibra_api_config.py` , or ...
+- directly overwriting the `./api/siibra_api_config.py` file, by overwriting or docker volume mounting
 
 ## How to contribute
 

@@ -1,0 +1,11 @@
+sapi:
+  flavor: "prod"
+  version: "0.3.26"
+  worker: "api.worker.app"
+  queue: "0.3.26.prod.features"
+  resources:
+    flavor: "high"
+image:
+  spec: "0.3.26-worker"
+podLabels:
+  flavor: prod
