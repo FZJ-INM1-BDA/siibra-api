@@ -1,6 +1,6 @@
 sapi:
   flavor: "rc"
-  version: "0.3.26"
+  version: "0.3.27"
 image:
   # n.b. need to define spec
   # spec: sha256:e30afd3a150eac4d5f48b0abf69c16f88824c2d0eb33c2e612b406ae882d17a9
