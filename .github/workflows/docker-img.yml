@@ -158,6 +158,9 @@ jobs:
         NEW_TAG=${{ env.DOCKER_REGISTRY }}${{ env.DOCKER_IMG }}:${TAG_BASE}${{ matrix.tag_suffix }}
         docker tag siibra-api-tmp-img ${NEW_TAG}
         
+        echo "curl first otherwise docker login result in tls handshake timeout"
+        curl -v https://docker-registry.ebrains.eu/v2/
+        
         echo "Login to docker registry"
         docker login \
           -u '${{ secrets.EBRAINS_DOCKER_REG_USER }}' \
@@ -175,7 +178,10 @@ jobs:
     - name: "Tag and Push (release)"
       if : ${{ (github.event_name == 'release') && !contains(github.ref, 'rc') }}
       run: |
-      
+        
+        echo "curl first otherwise docker login result in tls handshake timeout"
+        curl -v https://docker-registry.ebrains.eu/v2/
+
         echo "Login to docker registry"
         docker login \
           -u '${{ secrets.EBRAINS_DOCKER_REG_USER }}' \
