@@ -20,6 +20,7 @@ class SiibraParcellationVersionModel(ConfigBaseModel, type="parcellation_version
     """SiibraParcellationVersionModel"""
     name: str
     deprecated: Optional[bool]
+    collection: Optional[str]
     prev: Optional[SiibraAtIdModel]
     next: Optional[SiibraAtIdModel]
 

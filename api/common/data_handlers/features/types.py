@@ -59,7 +59,7 @@ def get_single_feature_plot_from_id(feature_id: str, template="plotly", **kwargs
         raise NotFound from e
 
     try:
-        plotly_fig = feature.plot(backend="plotly", template=template)
+        plotly_fig = feature.plot(backend="plotly", template=template, **kwargs)
         json_str = to_json(plotly_fig)
         return json.loads(json_str)
 

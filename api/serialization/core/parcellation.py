@@ -99,5 +99,6 @@ def parcversion_to_model(version: ParcellationVersion, **kwargs) -> SiibraParcel
         next=SiibraAtIdModel(
             id=version.next_id
         ) if version.next_id is not None else None,
+        collection=version.collection,
     )
 
