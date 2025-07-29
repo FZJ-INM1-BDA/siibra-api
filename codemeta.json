@@ -53,7 +53,7 @@
         "python 3"
     ],
     "runtimePlatform": "docker",
-    "version": "0.3.18",
+    "version": "0.3.28",
     "contIntegration": "https://github.com/FZJ-INM1-BDA/siibra-api/actions",
     "codemeta:continuousIntegration": {
         "id": "https://github.com/FZJ-INM1-BDA/siibra-api/actions"
