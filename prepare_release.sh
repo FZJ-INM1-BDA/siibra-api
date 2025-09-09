@@ -24,8 +24,15 @@ fi
 
 if [[ ! "$latest_tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
 then
-    echo "latest_tag: '"$latest_tag"' does not fit ^v[0-9]+\.[0-9]+\.[0-9]+$"
-    exit 1
+    echo "Warning: latest_tag: '"$latest_tag"' does not fit ^v[0-9]+\.[0-9]+\.[0-9]+$"
+    echo "I hope you know what you are doing ..."
+fi
+
+
+if [[ "v$version" = "$latest_tag" ]]
+then
+    echo "Version did not seem to be incremented."
+    echo "I hope you know what you are doing ..."
 fi
 
 error=""
