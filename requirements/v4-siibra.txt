@@ -1,2 +1,3 @@
 # refactor_attr is... borked since dataops are being introduced
+# do not change until siibra-python v2 is properly in place
 git+https://github.com/xgui3783/siibra-python.git@ebc1b0d3fc9e85d863057e7147fe27a40e0e5158

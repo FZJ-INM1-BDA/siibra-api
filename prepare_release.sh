@@ -14,6 +14,26 @@ then
 fi
 
 version=$(cat VERSION)
+latest_tag=$(curl 'https://api.github.com/repos/FZJ-INM1-BDA/siibra-api/releases' | jq -r '[.[] | select(.prerelease==false) | .tag_name][0]')
+
+if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+then
+    echo "cat VERSION: '"$version"' does not fit ^[0-9]+\.[0-9]+\.[0-9]+$"
+    exit 1
+fi
+
+if [[ ! "$latest_tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+then
+    echo "latest_tag: '"$latest_tag"' does not fit ^v[0-9]+\.[0-9]+\.[0-9]+$"
+    exit 1
+fi
+
+
+if [[ "v$version" = "$latest_tag" ]]
+then
+    echo "Version needs to be incremented"
+    exit 1
+fi
 
 error=""
 
