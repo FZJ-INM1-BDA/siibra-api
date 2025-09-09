@@ -15,7 +15,9 @@ Go to https://docker-registry.ebrains.eu/harbor/projects/28/summary , and ensure
 
 ## Steps
 
-0. Increment `VERSION`. Run `prepare_release.sh lint` and ensure passes (`prepare_release.sh fix`, if necessary). Commit, and push to remote main. Ensure test passes.
+0. Increment `VERSION`. Run `./prepare_release.sh lint` and ensure passes (`./prepare_release.sh fix`, if necessary). Commit, and push to remote main. Ensure test passes.
+
+**n.b. VERSION must be incremented. siibra-api uses VERSION as key for cache invalidation**
 
 1. Make prerelease with the name `$VERSION-rc` e.g. `0.3.19-rc`, then `0.3.19-rc2` ... etc. 
 
