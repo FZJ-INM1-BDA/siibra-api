@@ -28,13 +28,6 @@ then
     exit 1
 fi
 
-
-if [[ "v$version" = "$latest_tag" ]]
-then
-    echo "Version needs to be incremented"
-    exit 1
-fi
-
 error=""
 
 # check image.spec is correct
