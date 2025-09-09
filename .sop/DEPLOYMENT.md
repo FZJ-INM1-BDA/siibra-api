@@ -25,7 +25,10 @@ Go to https://docker-registry.ebrains.eu/harbor/projects/28/summary , and ensure
 
 **Ensure rc is in the tag**
 
-2. Wait until action completes
+2. Wait until action completes. Once it does, check https://siibra-api-rc.apps.ebrains.eu/ , and ensure:
+
+    - the hash matches with the git hash of the prerelease.
+    - the version matches with the value of the file `VERSION`
 
 3. Ensure siibra-explorer release checklist is complete.
 
