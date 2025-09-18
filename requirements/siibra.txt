@@ -1,2 +1,2 @@
-siibra==0.4a95
+siibra==0.4a96
 plotly<6

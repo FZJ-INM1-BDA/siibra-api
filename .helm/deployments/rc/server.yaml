@@ -1,6 +1,6 @@
 sapi:
   flavor: "rc"
-  version: "0.3.29"
+  version: "0.3.30"
 image:
   # n.b. need to define spec
 
