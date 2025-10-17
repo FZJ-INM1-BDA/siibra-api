@@ -35,3 +35,17 @@ Go to https://docker-registry.ebrains.eu/harbor/projects/28/summary , and ensure
 3. Ensure siibra-explorer release checklist is complete.
 
 4. Make release with the name `$VERSION` e.g. `0.3.19`. 
+
+## FAQ
+
+### Action failed at `Remove existing RC cache`
+
+e.g. https://github.com/FZJ-INM1-BDA/siibra-api/actions/runs/17832862850/job/50703912531
+
+Check if there are zombie pods with the command
+
+```sh
+kubectl get pod \
+    -l flavor=prod,app-role=server \
+    -n siibra-api
+```

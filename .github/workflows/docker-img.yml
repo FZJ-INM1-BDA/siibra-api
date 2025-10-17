@@ -229,7 +229,8 @@ jobs:
     - uses: ./.github/workflows/composite-set-k8s-cred
       with:
         secrets: ${{ secrets.KUBECONFIG }}
-    - run: |
+    - name: Remove existing RC cache
+      run: |
         prod_server_pod=$(kubectl get pod | grep server | grep prod | awk '{print $1}')
         echo exec on $prod_server_pod
         kubectl exec $prod_server_pod -- rm -rf /siibra-api-volume/${{ needs.setup-envvar.outputs.version }}-rc/*
