@@ -5,6 +5,7 @@ import time
 import os
 
 from new_api.common import get_filename
+from .data import extra_data
 
 def cache_region_statistic_map(parcellation_id: str, region_id: str, space_id: str, name: str= "", *, no_cache=False) -> Tuple[str, bool, str]:
     """Retrieve and save regional statistical map (if necessary), and then return the path of the map.
@@ -20,6 +21,7 @@ def cache_region_statistic_map(parcellation_id: str, region_id: str, space_id: s
     import siibra
     import nibabel as nib
     import numpy as np
+    import requests
 
     full_filename = get_filename("statistical_map", parcellation_id, region_id, space_id, ext=".nii.gz")
     warning_texts_arr: List[str] = []
@@ -29,7 +31,19 @@ def cache_region_statistic_map(parcellation_id: str, region_id: str, space_id: s
         except:
             ...
         return full_filename, True, "\n".join(warning_texts_arr) if len(warning_texts_arr) > 0 else None
-
+    if (space_id, parcellation_id) in extra_data:
+        extra_cont_map = extra_data[space_id, parcellation_id]
+        try:
+            volume_idx = extra_cont_map["indices"][region_id][0]["volume"]
+            nii_url = extra_cont_map["volumes"][volume_idx]["providers"]["nii"]
+            resp = requests.get(nii_url)
+            resp.raise_for_status()
+            with open(full_filename, "wb") as fp:
+                fp.write(resp.content)
+            return full_filename, False, None
+        except (KeyError, IndexError) as e:
+            raise Exception(f"{region_id} cannot be properly parsed") from e
+        
     error_text = f"Map with parc id '{parcellation_id}', space id '{space_id}'"
 
     maps = siibra.find_maps(parcellation_id, space_id, "statistical", name)
