@@ -40,6 +40,15 @@ def cache_region_statistic_map(parcellation_id: str, region_id: str, space_id: s
             resp.raise_for_status()
             with open(full_filename, "wb") as fp:
                 fp.write(resp.content)
+
+            nii: nib.Nifti1Image = nib.load(full_filename)
+            if nii.get_data_dtype() == np.float64:
+                warning_texts_arr.append("datatype is float64. casting to float32")
+                data = nii.get_fdata()
+                data = data.astype(np.float32)
+                nii = nib.Nifti1Image(data, nii.affine, nii.header)
+                nib.save(nii, full_filename)
+
             return full_filename, False, None
         except (KeyError, IndexError) as e:
             raise Exception(f"{region_id} cannot be properly parsed") from e
