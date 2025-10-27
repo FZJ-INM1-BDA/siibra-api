@@ -25,7 +25,7 @@ def assign(parcellation_id: str, space_id: str, point: str, assignment_type: str
         raise NotFound(f"map with {parcellation_id!r}, {space_id!r}, {assignment_type!r}, {extra_specs!r} not found")
     mp = maps[0]
     result = mp.lookup_points(point)
-    result.drop("input_structure_index", axis=1)
+    result = result.drop("input_structure_index", axis=1)
     return instance_to_model(result, detail=True).dict()
 
 @data_decorator(ROLE)
