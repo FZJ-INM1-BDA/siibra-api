@@ -47,6 +47,11 @@ check_spec() {
         deploy_target="prod"
     fi
     
+    if [[ "$filepath" = *"/ppd/"* ]]
+    then
+        deploy_target="prod"
+    fi
+    
     if [[ "$filepath" = *"/rc/"* ]]
     then
         deploy_target="rc"
@@ -123,7 +128,7 @@ check_queue() {
 }
 
 # iterate and check
-for dir in rc prod
+for dir in rc prod ppd
 do
     for f in $( find .helm/deployments/$dir -name "*.yaml" )
     do

@@ -1,9 +1,10 @@
 sapi:
   flavor: "prod"
-  version: "0.3.26"
+  version: "0.3.31"
 image:
-  spec: "0.3.26-server"
+  spec: "0.3.31-server"
 # managed via adhoc k8s configs
+
 ingress:
   enabled: false
 podLabels:
