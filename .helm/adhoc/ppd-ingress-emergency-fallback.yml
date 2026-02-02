@@ -1,0 +1,47 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: siibra-api-prod-ebrains-backup
+  labels:
+    fallback: emergency
+spec:
+  commonName: siibra-api.apps.ebrains.eu
+  isCA: false
+  dnsNames:
+  - siibra-api.apps.ebrains.eu
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-production-issuer-1
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  renewBefore: 120h
+  secretName: siibra-api-ppd-cert-secret-backup
+  usages:
+  - server auth
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: siibra-api-prod-canonical-backup
+  labels:
+    fallback: emergency
+spec:
+  ingressClassName: nginx
+  tls:
+  - secretName: siibra-api-ppd-cert-secret-backup
+    hosts:
+    - siibra-api.apps.ebrains.eu
+  rules:
+  - host: siibra-api.apps.ebrains.eu
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: ppd-server-siibra-api-v4-server
+            port: 
+              number: 5000

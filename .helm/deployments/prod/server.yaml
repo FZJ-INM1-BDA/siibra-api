@@ -1,8 +1,8 @@
 sapi:
   flavor: "prod"
-  version: "0.3.31"
+  version: "0.3.32"
 image:
-  spec: "0.3.31-server"
+  spec: "0.3.32-server"
 # managed via adhoc k8s configs
 
 ingress:

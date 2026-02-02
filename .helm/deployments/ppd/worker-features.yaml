@@ -1,11 +1,11 @@
 sapi:
   flavor: "prod"
-  version: "0.3.31"
+  version: "0.3.32"
   worker: "api.worker.app"
-  queue: "0.3.31.prod.features"
+  queue: "0.3.32.ppd.features"
   resources:
     flavor: "high"
 image:
-  spec: "0.3.31-worker"
+  spec: "0.3.32-worker"
 podLabels:
   flavor: prod
