@@ -182,7 +182,7 @@ def get_parcellation_labelled_map(parcellation_id: str, space_id: str, region_id
 #         raise e
 
 @data_decorator(ROLE)
-def get_resampled_map(parcellation_id: str, space_id: str, name: str=""):
+def get_resampled_map(parcellation_id: str, space_id: str, name: str=None):
     """Retrieve and save a labelled map, resampled in space (if necessary), and then return the path of the map.
 
     Args:

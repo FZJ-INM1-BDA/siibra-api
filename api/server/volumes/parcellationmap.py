@@ -47,7 +47,7 @@ Return a resampled template volume, based on labelled parcellation map.
 """)
 @version(*FASTAPI_VERSION)
 @router_decorator(ROLE, func=old_get_resampled_map)
-def get_resampled_map(parcellation_id: str, space_id: str, name: str="", *, func):
+def get_resampled_map(parcellation_id: str, space_id: str, name: str=None, *, func):
     """Get resampled map according to specification"""
     if func is None:
         raise HTTPException(500, f"func: None passsed")
