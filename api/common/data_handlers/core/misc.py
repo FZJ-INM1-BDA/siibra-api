@@ -193,7 +193,7 @@ def get_resampled_map(parcellation_id: str, space_id: str, name: str=None):
         path to statistical map, if a cached file is returned
     """
     import os
-    full_filename = get_filename("resampled_map", parcellation_id, space_id, name, ext=".nii.gz")
+    full_filename = get_filename("resampled_map", parcellation_id, space_id, name or "none", ext=".nii.gz")
     if os.path.isfile(full_filename):
         return full_filename, True
     

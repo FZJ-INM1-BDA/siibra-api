@@ -380,20 +380,3 @@ jobs:
       with:
         secrets: ${{ secrets.KUBECONFIG }}
     - run: .helm/deployments/prod/deploy.sh
-
-  deploy-ppd-via-helm:
-    needs:
-    - setup-envvar
-    # this step keeps on failing. debug using rc flags
-    # if:  ${{ github.event_name == 'release' && !contains(github.ref, 'rc') }}
-    if:  ${{ github.event_name == 'release' && contains(github.ref, 'rc') }}
-    runs-on: ubuntu-latest
-    env:
-      version: ${{ needs.setup-envvar.outputs.version }}
-    steps:
-    - uses: actions/checkout@v4
-    - uses: ./.github/workflows/composite-set-k8s-cred
-      with:
-        secrets: ${{ secrets.KUBECONFIG_CINECA }}
-    - run: .helm/deployments/ppd/deploy.sh
-
