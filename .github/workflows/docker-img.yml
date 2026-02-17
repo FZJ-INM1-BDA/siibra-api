@@ -381,10 +381,12 @@ jobs:
         secrets: ${{ secrets.KUBECONFIG }}
     - run: .helm/deployments/prod/deploy.sh
 
-  deploy-PPD-via-helm:
+  deploy-ppd-via-helm:
     needs:
     - setup-envvar
-    if:  ${{ github.event_name == 'release' && !contains(github.ref, 'rc') }}
+    # this step keeps on failing. debug using rc flags
+    # if:  ${{ github.event_name == 'release' && !contains(github.ref, 'rc') }}
+    if:  ${{ github.event_name == 'release' && contains(github.ref, 'rc') }}
     runs-on: ubuntu-latest
     env:
       version: ${{ needs.setup-envvar.outputs.version }}

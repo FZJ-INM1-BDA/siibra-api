@@ -14,7 +14,8 @@ then
 fi
 
 version=$(cat VERSION)
-latest_tag=$(curl 'https://api.github.com/repos/FZJ-INM1-BDA/siibra-api/releases' | jq -r '[.[] | select(.prerelease==false) | .tag_name][0]')
+# latest_tag=$(curl 'https://api.github.com/repos/FZJ-INM1-BDA/siibra-api/releases' | jq -r '[.[] | select(.prerelease==false) | .tag_name][0]')
+latest_release_tag=$(curl 'https://api.github.com/repos/FZJ-INM1-BDA/siibra-api/releases/latest' | jq -r '.tag_name')
 
 if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
 then
@@ -22,14 +23,14 @@ then
     exit 1
 fi
 
-if [[ ! "$latest_tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+if [[ ! "$latest_release_tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
 then
-    echo "Warning: latest_tag: '"$latest_tag"' does not fit ^v[0-9]+\.[0-9]+\.[0-9]+$"
+    echo "Warning: latest_release_tag: '"$latest_release_tag"' does not fit ^v[0-9]+\.[0-9]+\.[0-9]+$"
     echo "I hope you know what you are doing ..."
 fi
 
 
-if [[ "v$version" = "$latest_tag" ]]
+if [[ "v$version" = "$latest_release_tag" ]]
 then
     echo "Version did not seem to be incremented."
     echo "I hope you know what you are doing ..."
