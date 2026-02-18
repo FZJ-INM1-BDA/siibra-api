@@ -45,7 +45,6 @@ jobs:
         echo version=$version >> $GITHUB_OUTPUT
         echo BASE_TAG=$BASE_TAG >> $GITHUB_OUTPUT
         
-
   build-docker-img-ghcr:
     outputs:
       DOCKER_IMGSHA_SERVER: ${{ steps.dockerimg_sha.outputs.docker-imgsha-server }}
@@ -75,7 +74,6 @@ jobs:
       packages: write
       # attestations: write
       id-token: write
-
 
     env:
       REGISTRY: ghcr.io
@@ -112,6 +110,12 @@ jobs:
       id: dockerimg_sha
       run: |
         echo "docker-imgsha${{ matrix.tag_suffix }}=${{ steps.push.outputs.digest }}" >> "$GITHUB_OUTPUT"
+    - name: Delete untagged images
+      uses: actions/delete-package-versions@v5
+      with:
+        package-name: ${{ env.IMAGE_NAME }}
+        package-type: container
+        delete-only-untagged-versions: 'true'
 
   build-docker-img:
     outputs:
