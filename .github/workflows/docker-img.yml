@@ -110,10 +110,23 @@ jobs:
       id: dockerimg_sha
       run: |
         echo "docker-imgsha${{ matrix.tag_suffix }}=${{ steps.push.outputs.digest }}" >> "$GITHUB_OUTPUT"
+
+  cleanup-docker-img-ghcr:
+    permissions:
+      contents: read
+      packages: write
+      # attestations: write
+      id-token: write
+    runs-on: ubuntu-latest
+    needs: build-docker-img-ghcr
+    env:
+      IMAGE_NAME: fzj-inm1-bda/siibra-api
+      PKG_NAME: siibra-api
+    steps:
     - name: Delete untagged images
       uses: actions/delete-package-versions@v5
       with:
-        package-name: ${{ env.IMAGE_NAME }}
+        package-name: ${{ env.PKG_NAME }}
         package-type: container
         delete-only-untagged-versions: 'true'
 
