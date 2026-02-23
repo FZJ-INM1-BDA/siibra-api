@@ -52,15 +52,17 @@ do
         echo "upgrading $prefix$file ..."
         helm upgrade -f $f \
             --set image.spec=$spec \
-            --set image.repository=ghcr.io/fzj-inm1-bda/siibra-api \
             --history-max 3 \
             $prefix$file \
             $helm_path
+
+            # --set image.repository=ghcr.io/fzj-inm1-bda/siibra-api \
     else
         echo "[NEW] installing $prefix$file ..."
         helm install -f $f \
             --set image.spec=$spec \
-            --set image.repository=ghcr.io/fzj-inm1-bda/siibra-api \
             $prefix$file $helm_path
+
+            # --set image.repository=ghcr.io/fzj-inm1-bda/siibra-api \
     fi
 done
