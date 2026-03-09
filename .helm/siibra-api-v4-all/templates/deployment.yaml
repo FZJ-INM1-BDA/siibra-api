@@ -52,10 +52,6 @@ spec:
           envFrom:
             - configMapRef:
                 name: sapi-cdn-configmap
-          # {{- with .Values.livenessProbe }}
-          # livenessProbe:
-          #   {{- toYaml . | nindent 12 }}
-          # {{- end }}
           {{- with .Values.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
