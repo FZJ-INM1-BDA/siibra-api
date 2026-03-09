@@ -1,0 +1,38 @@
+envObj:
+  SKIP_CACHEINIT_MAINTENANCE: "1"
+  SIIBRA_API_LOG_DIR: /siibra_api_logs
+  REDIS_HOST: cache-redis-service
+  SIIBRA_API_REMAP_PROVIDERS: |
+    https://object.cscs.ch/v1/AUTH_08c08f9f119744cbbf77e216988da3eb::https://siibra-cdn.examcopedia.club/dp-eb-eu/api/v1/buckets/reference-atlas-data/imgsvc
+    https://neuroglancer.humanbrainproject.eu::https://siibra-cdn.examcopedia.club/ng-hbp-eu
+    https://data-proxy.ebrains.eu::https://siibra-cdn.examcopedia.club/dp-eb-eu
+
+volumes:
+  - name: log-volume
+    persistentVolumeClaim:
+      claimName: log-volume-claim
+  - name: data-volume
+    persistentVolumeClaim:
+      claimName: data-volume-claim
+
+volumeMounts: 
+  - mountPath: /siibra-api-volume
+    name: data-volume
+  - mountPath: /siibra_api_logs
+    name: log-volume
+
+ingress:
+  enabled: true
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: siibra-api-cdn.apps.dev-adacloud.ebrains.eu
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: 
+    - secretName: sapi-cdn-cert-secret
+      hosts:
+        - siibra-api-cdn.apps.dev-adacloud.ebrains.eu
