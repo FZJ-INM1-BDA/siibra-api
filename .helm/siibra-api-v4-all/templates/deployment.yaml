@@ -44,11 +44,9 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
-          env:
-            {{- range $key, $val := .Values.envObj }}
-            - name: {{ $key }}
-              value: {{ $val }}
-            {{- end }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "siibra-api-v4-all.fullname" . }}
           {{- with .Values.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
