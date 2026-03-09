@@ -24,6 +24,7 @@ apiVersion: v1
 data: 
   SKIP_CACHEINIT_MAINTENANCE: "1"
   SIIBRA_API_LOG_DIR: /siibra_api_logs
+  SIIBRA_CACHEDIR: /siibra-api-volume
   REDIS_HOST: cache-redis-service
   SIIBRA_API_REMAP_PROVIDERS: |
     https://object.cscs.ch/v1/AUTH_08c08f9f119744cbbf77e216988da3eb::https://siibra-cdn.examcopedia.club/dp-eb-eu/api/v1/buckets/reference-atlas-data/imgsvc
