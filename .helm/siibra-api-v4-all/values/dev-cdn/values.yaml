@@ -21,6 +21,9 @@ volumeMounts:
   - mountPath: /siibra_api_logs
     name: log-volume
 
+
+livenessProbe: {}
+
 ingress:
   enabled: true
   className: ""
