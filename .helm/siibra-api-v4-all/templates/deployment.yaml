@@ -46,7 +46,7 @@ spec:
               protocol: TCP
           envFrom:
             - configMapRef:
-                name: {{ include "siibra-api-v4-all.fullname" . }}
+                name: sapi-cdn-configmap
           {{- with .Values.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
