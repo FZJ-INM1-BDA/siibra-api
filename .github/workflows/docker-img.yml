@@ -161,6 +161,10 @@ jobs:
     - name: "Build docker image"
       run: |
         GIT_HASH=$(git rev-parse --short HEAD)
+        
+        echo "curl first otherwise docker login result in tls handshake timeout"
+        curl -v https://docker-registry.ebrains.eu/v2/
+
         cached_image=${{ env.DOCKER_REGISTRY }}${{ env.DOCKER_IMG }}:latest${{ matrix.tag_suffix }}
         echo "Pulling $cached_image to populate cached layers."
         docker pull $cached_image || true
