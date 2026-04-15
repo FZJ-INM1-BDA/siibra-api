@@ -24,5 +24,5 @@ def find_spatial_features(space_id: str, bbox: Optional[str] = None):
         v.boundingbox.minpoint.coordinate_space = space_spec
         v.boundingbox.maxpoint.coordinate_space = space_spec
         v.volume.space = space_spec
-        result.append(v)
+        result.append(v.dict())
     return result
