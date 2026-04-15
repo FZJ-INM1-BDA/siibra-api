@@ -36,6 +36,8 @@ def cache_region_statistic_map(parcellation_id: str, region_id: str, space_id: s
 @data_decorator(ROLE)
 def assign(parcellation_id: str, space_id: str, point: str, assignment_type: str=Literal["statistical", "labelled"], sigma_mm: float=0., extra_specs: str=""):
     import siibra
+    if parcellation_id == "minds/core/parcellationatlas/v1.0.0/94c1125b-b87e-45e4-901c-00daee7f2579-bb":
+        parcellation_id = "minds/core/parcellationatlas/v1.0.0/94c1125b-b87e-45e4-901c-00daee7f2579-290"
     df = siibra.assign(point, parcellation_id, space_id, assignment_type)
     return instance_to_model(df, detail=True).dict()
     
