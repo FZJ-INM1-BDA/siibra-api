@@ -65,9 +65,10 @@ jobs:
         - flavor: 'server'
           dockerfile: 'server.dockerfile'
           tag_suffix: '-server'
-        - flavor: 'worker'
-          dockerfile: 'worker-v4.dockerfile'
-          tag_suffix: '-worker-v4'
+        # can't pull from docker-register.ebrains.eu
+        # - flavor: 'worker'
+        #   dockerfile: 'worker-v4.dockerfile'
+        #   tag_suffix: '-worker-v4'
 
     permissions:
       contents: read
