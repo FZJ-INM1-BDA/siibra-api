@@ -88,7 +88,7 @@ class CELERY_CONFIG:
     # some long running tasks can take a while, but should not exceed 10 minutes to run
     task_time_limit = 600
 
-    include=['new_api.v3.data_handlers', 'new_api.v3.serialization']
+    include=['new_api.data_handlers', 'new_api.v3.serialization']
 
     # source of truth on all queues
     task_routes={
