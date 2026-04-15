@@ -6,7 +6,6 @@ REGISTER: Dict[Type, Callable[..., ConfigBaseModel]] = {}
 
 def instance_to_model(instance: Any, **kwargs):
     from . import _common
-    from . import map
     
     if instance is None:
         return None
@@ -30,7 +29,7 @@ def instance_to_model(instance: Any, **kwargs):
 
 
 def serialize(Cls: Type):
-    def outer(fn: Callable):
+    def outer(fn):
         REGISTER[Cls] = fn
         return fn
     return outer

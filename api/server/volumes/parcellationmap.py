@@ -18,7 +18,7 @@ from api.common.data_handlers.core.misc import (
     get_region_statistic_map as old_get_region_statistic_map,
     get_region_statistic_map_info as old_get_region_statistic_map_info
 )
-from new_api.v3.data_handlers.map import assign, get_map, statistical_map_info_json, statistical_map_nii_gz, labelled_map_nii_gz, resampled_template
+from new_api.data_handlers.maps import assign, statistical_map_info_json, statistical_map_nii_gz
 from api.server.util import SapiCustomRoute
 
 
