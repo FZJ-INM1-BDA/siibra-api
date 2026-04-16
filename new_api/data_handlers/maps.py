@@ -42,13 +42,48 @@ def assign(parcellation_id: str, space_id: str, point: str, assignment_type: str
     return instance_to_model(df, detail=True).dict()
     
 
+def _decode_region_id(parcellation_id: str, region_id: str):
+    import siibra
+
+    parc = siibra.catalog.parcellationschemes.get(id=parcellation_id)
+
+    def check_region_id(check_region_id: str):
+        return (
+            len(list(filter(lambda a: a.name == check_region_id, parc.descendants))) > 0
+        )
+
+    candidates = [
+        region_id,
+    ]
+    if region_id.endswith(" left"):
+        candidates.append(region_id.removesuffix(" left") + " - left hemisphere")
+
+    if region_id.endswith(" right"):
+        candidates.append(region_id.removesuffix(" right") + " - right hemisphere")
+
+    for cand in candidates:
+        if check_region_id(cand):
+            return cand
+
+
 @data_decorator(ROLE)
-def statistical_map_nii_gz(parcellation_id: str, region_id: str, space_id: str, extra_spec: str="", *, no_cache: bool=False):
+def statistical_map_nii_gz(
+    parcellation_id: str,
+    region_id: str,
+    space_id: str,
+    extra_spec: str = "",
+    *,
+    no_cache: bool = False
+):
+    region_id = _decode_region_id(parcellation_id, region_id)
+
     filename, return_cached, warningtext = cache_region_statistic_map(parcellation_id, region_id, space_id, extra_spec, no_cache=no_cache)
     return filename, return_cached
 
 @data_decorator(ROLE)
 def statistical_map_info_json(parcellation_id: str, region_id: str, space_id: str, extra_spec: str="", *, no_cache: bool=False):
+    
+    region_id = _decode_region_id(parcellation_id, region_id)
     filename, return_cached, warningtext = cache_region_statistic_map(parcellation_id, region_id, space_id, extra_spec, no_cache=no_cache)
 
     import nibabel as nib

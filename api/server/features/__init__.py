@@ -206,13 +206,24 @@ async def get_single_tabular(parcellation_id: str, region_id: str, feature_id: s
 @async_router_decorator(ROLE, func=find_spatial_features)
 async def get_all_voi(space_id: str, bbox: Optional[str]=None, type: Optional[str]=None, func=lambda: []):
     """Get all Image features n.b. type will no longer be parsed as intended. If unset, will return all spatial features.
-    If set, only `MorphometryVolumeOfInterest` will return any data."""
+    If set, only `BlockfaceVolumeOfInterest`, `CellBodyStainedVolumeOfInterest`,` DTIVolumeOfInterest` will return VOI features
+    of the corresponding category."""
 
-    if type is None or type == "MorphometryVolumeOfInterest":
-        return paginate(
-            await func(space_id=space_id, bbox=bbox)
-        )
-    return paginate([])
+    category = None
+    match type:
+        case None:
+            category = None
+        case "BlockfaceVolumeOfInterest":
+            category = "macrostructural"
+        case "CellBodyStainedVolumeOfInterest":
+            category = "cellular"
+        case "DTIVolumeOfInterest":
+            category = "fibres"
+        case _:
+            return paginate([])
+
+    return paginate(await func(space_id=space_id, bbox=bbox, category=category))
+
 
 # GeneExpression
 @router.get("/GeneExpressions", response_model=Page[SiibraTabularModel])

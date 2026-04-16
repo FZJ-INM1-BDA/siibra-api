@@ -16,7 +16,7 @@ from ..models.locations.point import CoordinatePointModel, QuantitativeValueMode
 
 @serialize(FeatureSet)
 def featureset_to_voi(
-    featureset: FeatureSet, super_model_dict={}, detail=False, **kwargs
+    featureset: FeatureSet, super_model_dict={}, detail=False, space_id="monkey-patch", **kwargs
 ):
     from siibra.attributes.descriptions import Modality, Doi, TextDescription
     from siibra.attributes.datarecipes import DataRecipe
@@ -78,7 +78,7 @@ def featureset_to_voi(
         provides_image = True
         fragments = {}
         provided_volumes = {"neuroglancer/precomputed": vol.origin}
-        space = SiibraAtIdModel(id="monkey-patch")
+        space = SiibraAtIdModel(id=space_id)
         datasets = dss
         volume_model = VolumeModel(
             name=name,
@@ -98,7 +98,7 @@ def featureset_to_voi(
         def cvt_pt(coords: list[float]):
             return CoordinatePointModel(
                 id="foo",
-                coordinate_space=SiibraAtIdModel(id="monkey-patch"),
+                coordinate_space=SiibraAtIdModel(id=space_id),
                 coordinates=[QuantitativeValueModel(value=coord) for coord in coords]
             )
         
@@ -108,7 +108,7 @@ def featureset_to_voi(
             maxpoint=cvt_pt(max_mm),
             center=cvt_pt(((np.asarray(max_mm) + np.asarray(min_mm)) / 2).tolist()),
             is_planar=False,
-            space=SiibraAtIdModel(id="monkey-patch")
+            space=SiibraAtIdModel(id=space_id)
         )
 
 
