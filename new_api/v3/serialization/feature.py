@@ -1,6 +1,7 @@
 from siibra.attr_collections import FeatureSet
+from siibra.commons.cache import memoize
+from joblib import Memory
 
-from . import serialize
 from ..models.features._basetypes.volume_of_interest import SiibraVoiModel
 from ..models._retrieval.datasets import (
     EbrainsDatasetModel,
@@ -12,11 +13,11 @@ from ..models._commons import SiibraAtIdModel
 from ..models.locations.boundingbox import BoundingBoxModel
 from ..models.locations.point import CoordinatePointModel, QuantitativeValueModel
 
+inmemcache = Memory()
 
-
-@serialize(FeatureSet)
+@memoize.cache(ignore=["featureset", "space_id"])
 def featureset_to_voi(
-    featureset: FeatureSet, super_model_dict={}, detail=False, space_id="monkey-patch", **kwargs
+    id: str, featureset: FeatureSet, space_id="monkey-patch"
 ):
     from siibra.attributes.descriptions import Modality, Doi, TextDescription
     from siibra.attributes.datarecipes import DataRecipe

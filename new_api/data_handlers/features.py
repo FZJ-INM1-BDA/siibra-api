@@ -17,10 +17,13 @@ def find_spatial_features(
 
     return_all_flag = category is None
 
+    if bbox is None:
+        bbox = "[[-255,-255,-255],[255,255,255]]"
+
     fts: list[FeatureSet] = siibra.spatial_query(space_id, bbox)
     result = []
     for ft in fts:
-        v = featureset_to_voi(ft, space_id=space_id)
+        v = featureset_to_voi(ft.id, ft, space_id=space_id)
         if not return_all_flag and v.category != category:
             continue
 
