@@ -1,4 +1,4 @@
-FROM docker-registry.ebrains.eu/siibra/siibra-python:v2.0.0a1
+FROM docker-registry.ebrains.eu/siibra/siibra-python:v2.0.0a2
 
 COPY ./requirements /requirements
 RUN python -m pip install -r /requirements/v4-worker.txt 
