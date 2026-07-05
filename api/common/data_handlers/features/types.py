@@ -6,6 +6,16 @@ from hashlib import md5
 from pathlib import Path
 from zipfile import ZipFile
 
+_FEATURE_BAN_LIST = {
+    # 20260705 - AS: But LocalFieldPotentail should not be exposed.
+    # per matrix communication
+    "LocalFieldPotential",
+    
+    # regionalbold cannot be serialized like a normal tabular data
+    # feature.data will return error
+    "RegionalBOLD",
+}
+
 @data_decorator(ROLE)
 def all_feature_types() -> List[Dict[str, str]]:
     """Get all feature types
@@ -137,9 +147,9 @@ def _get_all_features(*, space_id: str, parcellation_id: str, region_id: str, ty
     import json
     if type is None:
         raise InsufficientParameters(f"type is a required kwarg")
+    if type in _FEATURE_BAN_LIST:
+        return []
     
-    # regionalbold cannot be serialized like a normal tabular data
-    # feature.data will return error
     banned_list = ("Regional BOLD signal", )
 
     *_, type = type.split(".")
