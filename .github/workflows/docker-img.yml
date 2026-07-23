@@ -15,6 +15,7 @@ jobs:
     outputs:
       version: ${{ steps.export-env-var.outputs.version }}
       BASE_TAG: ${{ steps.export-env-var.outputs.BASE_TAG }}
+      MR_TITLE: ${{ steps.export-env-var.outputs.MR_TITLE }}
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v5
@@ -44,6 +45,7 @@ jobs:
       run: |
         echo version=$version >> $GITHUB_OUTPUT
         echo BASE_TAG=$BASE_TAG >> $GITHUB_OUTPUT
+        echo MR_TITLE="siibra-api $version $BASE_TAG" >> $GITHUB_OUTPUT
         
   build-docker-img-ghcr:
     outputs:
@@ -180,8 +182,9 @@ jobs:
         NEW_TAG=${{ env.DOCKER_REGISTRY }}${{ env.DOCKER_IMG }}:${TAG_BASE}${{ matrix.tag_suffix }}
         docker tag siibra-api-tmp-img ${NEW_TAG}
         
-        echo "curl first otherwise docker login result in tls handshake timeout"
-        curl -v https://docker-registry.ebrains.eu/v2/
+        # echo "curl first otherwise docker login result in tls handshake timeout"
+        # curl -v https://docker-registry.ebrains.eu/v2/
+        echo "Let's go wild and try without curl'ing first"
         
         echo "Login to docker registry"
         docker login \
@@ -253,15 +256,66 @@ jobs:
         secrets: ${{ secrets.KUBECONFIG }}
     - name: Remove existing RC cache
       run: |
-        # TODO fix deploy
-        exit 1
-        prod_server_pod=$(kubectl get pod | grep server | grep prod | awk '{print $1}')
-        echo exec on $prod_server_pod
-        kubectl exec $prod_server_pod -- rm -rf /siibra-api-volume/${{ needs.setup-envvar.outputs.version }}-rc/*
+        SERVER_FNAME="siibra-sapi/server/values/rc.yaml"
+        WORKERCORE_FNAME="siibra-sapi/worker/values/rc/core.yaml"
+        WORKERFEATURES_FNAME="siibra-sapi/worker/values/rc/features.yaml"
+        WORKERCOMPND_FNAME="siibra-sapi/worker/values/rc/compound.yaml"
+        WORKERV4_FNAME="siibra-sapi/worker/values/rc/v4.yaml"
+
+        cat > /tmp/server-delta.yaml << EOF
+        sapi:
+          version: "${{ needs.setup-envvar.outputs.version }}"
+        image:
+          spec: "${{ needs.build-docker-img.outputs.DOCKER_IMGSHA_SERVER }}"
+        EOF
         
-        REDIS_POD=$(kubectl get pod -l app=cache-redis | grep Running | awk '{print $1}')
-        echo kubectl exec $REDIS_POD -- /bin/ash -c 'redis-cli --scan --pattern "*\[${{ needs.setup-envvar.outputs.version }}\]*" | while IFS= read -r line; do redis-cli del "$line"; done'
-        kubectl exec $REDIS_POD -- /bin/ash -c 'redis-cli --scan --pattern "*\[${{ needs.setup-envvar.outputs.version }}\]*" | while IFS= read -r line; do redis-cli del "$line"; done'
+        for queue in core features compound
+        do
+        cat > /tmp/worker-$queue-delta.yaml << EOF
+        sapi:
+          version: "${{ needs.setup-envvar.outputs.version }}"
+          queue: "${{ needs.setup-envvar.outputs.version }}.rc.$queue"
+        image:
+          spec: "${{ needs.build-docker-img.outputs.DOCKER_IMGSHA_WORKER }}"
+        EOF
+        done
+
+        cat > /tmp/worker-v4-delta.yaml << EOF
+        sapi:
+          version: "${{ needs.setup-envvar.outputs.version }}"
+        image:
+          spec: "${{ needs.build-docker-img.outputs.DOCKER_IMGSHA_WORKER_V4 }}"
+        EOF
+
+        # filename -> delta file
+        declare -A FILES=(
+          ["$SERVER_FNAME"]=/tmp/server-delta.yaml
+          ["$WORKERCORE_FNAME"]=/tmp/worker-core-delta.yaml
+          ["$WORKERFEATURES_FNAME"]=/tmp/worker-features-delta.yaml
+          ["$WORKERCOMPND_FNAME"]=/tmp/worker-compound-delta.yaml
+          ["$WORKERV4_FNAME"]=/tmp/worker-v4-delta.yaml
+        )
+
+        UPDATE_FILES=$(
+          for fname in "${!FILES[@]}"; do
+            jq -cn \
+              --arg filename "$fname" \
+              --arg delta "$(base64 -w 0 "${FILES[$fname]}")" \
+              '{filename: $filename, delta: $delta}'
+          done | jq -cs '.'
+        )
+        
+        MR_TITLE="${{ needs.set-vars.outputs.MR_TITLE }}"
+
+        curl -fL -X POST \
+          --form "token=${{ secrets.GITLAB_TRIGGER_TOKEN }}" \
+          --form "ref=main" \
+          --form "variables[UPDATE_FILES]=$UPDATE_FILES" \
+          --form "variables[MR_TITLE]=$MR_TITLE" \
+          --form 'variables[PIPELINE_TYPE]=sapi-rc-deploy' \
+          --form 'variables[SAPI_VERSION]=${{ needs.setup-envvar.outputs.version }}' \
+          "${{ secrets.GITLAB_GITOPS_URL }}/api/v4/projects/${{ secrets.GITLAB_GITOPS_PROJECT_ID }}/trigger/pipeline"
+
     
   warmup-rc-at-helm:
     needs:
