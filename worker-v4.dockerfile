@@ -1,4 +1,4 @@
-FROM ghcr.io/fzj-inm1-bda/siibra-api:baseworkerv4
+FROM docker-registry.ebrains.eu/siibra/siibra-python:v2.0.0a4
 
 COPY ./requirements /requirements
 RUN python -m pip install -r /requirements/v4-worker.txt 
