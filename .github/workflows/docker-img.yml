@@ -165,8 +165,9 @@ jobs:
       run: |
         GIT_HASH=$(git rev-parse --short HEAD)
         
-        echo "curl first otherwise docker login result in tls handshake timeout"
-        curl -v https://docker-registry.ebrains.eu/v2/
+        # echo "curl first otherwise docker login result in tls handshake timeout"
+        # curl -v https://docker-registry.ebrains.eu/v2/
+        echo "Let's go wild and try without curl'ing first"
 
         cached_image=${{ env.DOCKER_REGISTRY }}${{ env.DOCKER_IMG }}:latest${{ matrix.tag_suffix }}
         echo "Pulling $cached_image to populate cached layers."
@@ -204,8 +205,8 @@ jobs:
       if : ${{ (github.event_name == 'release') && !contains(github.ref, 'rc') }}
       run: |
         
-        echo "curl first otherwise docker login result in tls handshake timeout"
-        curl -v https://docker-registry.ebrains.eu/v2/
+        # echo "curl first otherwise docker login result in tls handshake timeout"
+        # curl -v https://docker-registry.ebrains.eu/v2/
 
         echo "Login to docker registry"
         docker login \
@@ -243,7 +244,7 @@ jobs:
   #       /bin/bash -c "cd /softwares/software && ./restart.sh"
 
   # rc
-  rm-cache-rc-at-helm:
+  argodeploy-rc:
     needs:
     - setup-envvar
     - build-docker-img
@@ -251,9 +252,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: ./.github/workflows/composite-set-k8s-cred
-      with:
-        secrets: ${{ secrets.KUBECONFIG }}
     - name: Remove existing RC cache
       run: |
         SERVER_FNAME="siibra-sapi/server/values/rc.yaml"
@@ -317,134 +315,63 @@ jobs:
           "${{ secrets.GITLAB_GITOPS_URL }}/api/v4/projects/${{ secrets.GITLAB_GITOPS_PROJECT_ID }}/trigger/pipeline"
 
     
-  warmup-rc-at-helm:
-    needs:
-    - setup-envvar
-    - rm-cache-rc-at-helm
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: true
-      max-parallel: 1
-      matrix:
-        include:
-        - yml-file: .helm/adhoc/warm-cache.yaml
-          podname: warmup-pod
-        - yml-file: .helm/adhoc/warm-cache-v4.yaml
-          podname: warmup-pod-v4
-    steps:
-    - uses: actions/checkout@v4
-    - uses: ./.github/workflows/composite-set-k8s-cred
-      with:
-        secrets: ${{ secrets.KUBECONFIG }}
-    - timeout-minutes: 120 # should not take more than 2h to warmup cache
-      run: |
-        # Delete pod at the beginning of the workflow
-        # This is so that logs can be inspected
-        kubectl delete pod/${{ matrix.podname }} || echo "Pod pod/${{ matrix.podname }} not found." 
-
-        # TODO Flaky
-        # see .helm/siibra-api/templates/_helpers.tpl how siibra-api.cache-dir is defined
-
-        WARM_CACHE_YML=$(SIIBRA_CACHEDIR=/siibra-api-volume/${{ needs.setup-envvar.outputs.version }}-rc/ envsubst < ${{ matrix.yml-file }})
-        echo -e "WARM_CACHE_YML: \n$WARM_CACHE_YML"
-
-        echo "$WARM_CACHE_YML" | kubectl apply -f -
-        
-        while true
-        do
-          sleep 10
-          POD_PHASE=$(kubectl get pod ${{ matrix.podname }} -o json | jq -r '.status.phase')
-
-          echo Possible phases: Pending, Running, Succeeded, Failed, Unknown
-          echo Found phase: $POD_PHASE
-
-          if [[ "$POD_PHASE" == "Failed" ]] || [[ "$POD_PHASE" == "Unknown" ]]
-          then
-            exit 1
-          fi
-
-          if [[ "$POD_PHASE" == "Succeeded" ]]
-          then
-            exit 0
-          fi
-        done
-  
-  deploy-rc-via-helm:
-    needs:
-    - build-docker-img
-    - warmup-rc-at-helm
-    - setup-envvar
-    if:  ${{ github.event_name == 'release' && contains(github.ref, 'rc') }}
-    runs-on: ubuntu-latest
-    env:
-      DOCKER_IMGSHA_SERVER: ${{ needs.build-docker-img.outputs.DOCKER_IMGSHA_SERVER }}
-      DOCKER_IMGSHA_WORKER: ${{ needs.build-docker-img.outputs.DOCKER_IMGSHA_WORKER }}
-      DOCKER_IMGSHA_WORKER_V4: ${{ needs.build-docker-img.outputs.DOCKER_IMGSHA_WORKER_V4 }}
-    steps:
-    - uses: actions/checkout@v4
-    - uses: ./.github/workflows/composite-set-k8s-cred
-      with:
-        secrets: ${{ secrets.KUBECONFIG }}
-    - run: .helm/deployments/rc/deploy.sh
-    
-
   # prod
-  copy-by-helm:
-    needs: setup-envvar
-    if:  ${{ github.event_name == 'release' && !contains(github.ref, 'rc') }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 15 # should not take more than 15 minutes to copy cache
-    steps:
-    - uses: actions/checkout@v4
-    - uses: ./.github/workflows/composite-set-k8s-cred
-      with:
-        secrets: ${{ secrets.KUBECONFIG }}
-    - name: 'set FROM_DIR TO_DIR'
-      run: |
-        # TODO fix deploy
-        exit 1
-        VERSION=${{ needs.setup-envvar.outputs.version }}
+  # copy-by-helm:
+  #   needs: setup-envvar
+  #   if:  ${{ github.event_name == 'release' && !contains(github.ref, 'rc') }}
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 15 # should not take more than 15 minutes to copy cache
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #   - uses: ./.github/workflows/composite-set-k8s-cred
+  #     with:
+  #       secrets: ${{ secrets.KUBECONFIG }}
+  #   - name: 'set FROM_DIR TO_DIR'
+  #     run: |
+  #       # TODO fix deploy
+  #       exit 1
+  #       VERSION=${{ needs.setup-envvar.outputs.version }}
 
-        # TODO use label exclusively in the future
-        POD=$(kubectl get pod -l app.kubernetes.io/instance=rc-server -o json | jq -r '.items[0].metadata.name')
-        echo POD: $POD
+  #       # TODO use label exclusively in the future
+  #       POD=$(kubectl get pod -l app.kubernetes.io/instance=rc-server -o json | jq -r '.items[0].metadata.name')
+  #       echo POD: $POD
 
-        cache_str=$(kubectl exec $POD -- env | grep SIIBRA_CACHEDIR)
-        FROM_DIR=${cache_str//SIIBRA_CACHEDIR=/}
-        TO_DIR=${FROM_DIR//-rc/}
-        POD_NAME=copy-cache
+  #       cache_str=$(kubectl exec $POD -- env | grep SIIBRA_CACHEDIR)
+  #       FROM_DIR=${cache_str//SIIBRA_CACHEDIR=/}
+  #       TO_DIR=${FROM_DIR//-rc/}
+  #       POD_NAME=copy-cache
 
-        echo FROM_DIR: $FROM_DIR, TO_DIR: $TO_DIR, POD_NAME: $POD_NAME
+  #       echo FROM_DIR: $FROM_DIR, TO_DIR: $TO_DIR, POD_NAME: $POD_NAME
 
-        echo "FROM_DIR=$FROM_DIR" >> $GITHUB_ENV
-        echo "TO_DIR=$TO_DIR" >> $GITHUB_ENV
-        echo "POD_NAME=$POD_NAME" >> $GITHUB_ENV
+  #       echo "FROM_DIR=$FROM_DIR" >> $GITHUB_ENV
+  #       echo "TO_DIR=$TO_DIR" >> $GITHUB_ENV
+  #       echo "POD_NAME=$POD_NAME" >> $GITHUB_ENV
 
-    - name: 'start container'
-      run: |
-        # delete pod before workflow, so that logs can be inspected
-        kubectl delete pod/$POD_NAME || echo "Pod pod/$POD_NAME not found." 
-        FROM_DIR=$FROM_DIR TO_DIR=$TO_DIR envsubst < .helm/adhoc/copy-cache.yaml | kubectl apply -f -
-    - name: 'Ensure copy completes'
-      run: |
-        while true
-        do
-          sleep 10
-          POD_PHASE=$(kubectl get pod $POD_NAME -o json | jq -r '.status.phase')
+  #   - name: 'start container'
+  #     run: |
+  #       # delete pod before workflow, so that logs can be inspected
+  #       kubectl delete pod/$POD_NAME || echo "Pod pod/$POD_NAME not found." 
+  #       FROM_DIR=$FROM_DIR TO_DIR=$TO_DIR envsubst < .helm/adhoc/copy-cache.yaml | kubectl apply -f -
+  #   - name: 'Ensure copy completes'
+  #     run: |
+  #       while true
+  #       do
+  #         sleep 10
+  #         POD_PHASE=$(kubectl get pod $POD_NAME -o json | jq -r '.status.phase')
 
-          echo Possible phases: Pending, Running, Succeeded, Failed, Unknown
-          echo Found phase: $POD_PHASE
+  #         echo Possible phases: Pending, Running, Succeeded, Failed, Unknown
+  #         echo Found phase: $POD_PHASE
 
-          if [[ "$POD_PHASE" == "Failed" ]] || [[ "$POD_PHASE" == "Unknown" ]]
-          then
-            exit 1
-          fi
+  #         if [[ "$POD_PHASE" == "Failed" ]] || [[ "$POD_PHASE" == "Unknown" ]]
+  #         then
+  #           exit 1
+  #         fi
 
-          if [[ "$POD_PHASE" == "Succeeded" ]]
-          then
-            exit 0
-          fi
-        done
+  #         if [[ "$POD_PHASE" == "Succeeded" ]]
+  #         then
+  #           exit 0
+  #         fi
+  #       done
 
   # TODO fix deploy
   # deploy-prod-via-helm:
