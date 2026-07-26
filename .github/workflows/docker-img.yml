@@ -254,11 +254,11 @@ jobs:
     - uses: actions/checkout@v4
     - name: Remove existing RC cache
       run: |
-        SERVER_FNAME="siibra-sapi/server/values/rc.yaml"
-        WORKERCORE_FNAME="siibra-sapi/worker/values/rc/core.yaml"
-        WORKERFEATURES_FNAME="siibra-sapi/worker/values/rc/features.yaml"
-        WORKERCOMPND_FNAME="siibra-sapi/worker/values/rc/compound.yaml"
-        WORKERV4_FNAME="siibra-sapi/worker/values/rc/v4.yaml"
+        SERVER_FNAME="siibra-api/server/values/rc.yaml"
+        WORKERCORE_FNAME="siibra-api/worker/values/rc/core.yaml"
+        WORKERFEATURES_FNAME="siibra-api/worker/values/rc/features.yaml"
+        WORKERCOMPND_FNAME="siibra-api/worker/values/rc/compound.yaml"
+        WORKERV4_FNAME="siibra-api/worker/values/rc/v4.yaml"
 
         cat > /tmp/server-delta.yaml << EOF
         sapi:
@@ -267,7 +267,7 @@ jobs:
           spec: "${{ needs.build-docker-img.outputs.DOCKER_IMGSHA_SERVER }}"
         EOF
         
-        for queue in core features compound
+        for queue in core features compounds
         do
         cat > /tmp/worker-$queue-delta.yaml << EOF
         sapi:
@@ -316,76 +316,76 @@ jobs:
 
     
   # prod
-  # copy-by-helm:
-  #   needs: setup-envvar
-  #   if:  ${{ github.event_name == 'release' && !contains(github.ref, 'rc') }}
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 15 # should not take more than 15 minutes to copy cache
-  #   steps:
-  #   - uses: actions/checkout@v4
-  #   - uses: ./.github/workflows/composite-set-k8s-cred
-  #     with:
-  #       secrets: ${{ secrets.KUBECONFIG }}
-  #   - name: 'set FROM_DIR TO_DIR'
-  #     run: |
-  #       # TODO fix deploy
-  #       exit 1
-  #       VERSION=${{ needs.setup-envvar.outputs.version }}
 
-  #       # TODO use label exclusively in the future
-  #       POD=$(kubectl get pod -l app.kubernetes.io/instance=rc-server -o json | jq -r '.items[0].metadata.name')
-  #       echo POD: $POD
+  argodeploy-prod:
+    needs:
+    - setup-envvar
+    - build-docker-img
+    - copy-cache
+    if:  ${{ github.event_name == 'release' && !contains(github.ref, 'rc') }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Trigger gitops pipeline
+      run: |
+        SERVER_FNAME="siibra-api/server/values/prod.yaml"
+        WORKERCORE_FNAME="siibra-api/worker/values/prod/core.yaml"
+        WORKERFEATURES_FNAME="siibra-api/worker/values/prod/features.yaml"
+        WORKERCOMPND_FNAME="siibra-api/worker/values/prod/compound.yaml"
+        WORKERV4_FNAME="siibra-api/worker/values/prod/v4.yaml"
 
-  #       cache_str=$(kubectl exec $POD -- env | grep SIIBRA_CACHEDIR)
-  #       FROM_DIR=${cache_str//SIIBRA_CACHEDIR=/}
-  #       TO_DIR=${FROM_DIR//-rc/}
-  #       POD_NAME=copy-cache
+        exit 1
 
-  #       echo FROM_DIR: $FROM_DIR, TO_DIR: $TO_DIR, POD_NAME: $POD_NAME
+        cat > /tmp/server-delta.yaml << EOF
+        sapi:
+          version: "${{ needs.setup-envvar.outputs.version }}"
+        image:
+          spec: "${{ needs.build-docker-img.outputs.DOCKER_IMGSHA_SERVER }}"
+        EOF
+        
+        for queue in core features compounds
+        do
+        cat > /tmp/worker-$queue-delta.yaml << EOF
+        sapi:
+          version: "${{ needs.setup-envvar.outputs.version }}"
+          queue: "${{ needs.setup-envvar.outputs.version }}.prod.$queue"
+        image:
+          spec: "${{ needs.setup-envvar.outputs.version }}-worker"
+        EOF
+        done
 
-  #       echo "FROM_DIR=$FROM_DIR" >> $GITHUB_ENV
-  #       echo "TO_DIR=$TO_DIR" >> $GITHUB_ENV
-  #       echo "POD_NAME=$POD_NAME" >> $GITHUB_ENV
+        cat > /tmp/worker-v4-delta.yaml << EOF
+        sapi:
+          version: "${{ needs.setup-envvar.outputs.version }}"
+        image:
+          spec: "${{ needs.setup-envvar.outputs.version }}-worker-v4"
+        EOF
 
-  #   - name: 'start container'
-  #     run: |
-  #       # delete pod before workflow, so that logs can be inspected
-  #       kubectl delete pod/$POD_NAME || echo "Pod pod/$POD_NAME not found." 
-  #       FROM_DIR=$FROM_DIR TO_DIR=$TO_DIR envsubst < .helm/adhoc/copy-cache.yaml | kubectl apply -f -
-  #   - name: 'Ensure copy completes'
-  #     run: |
-  #       while true
-  #       do
-  #         sleep 10
-  #         POD_PHASE=$(kubectl get pod $POD_NAME -o json | jq -r '.status.phase')
+        # filename -> delta file
+        declare -A FILES=(
+          ["$SERVER_FNAME"]=/tmp/server-delta.yaml
+          ["$WORKERCORE_FNAME"]=/tmp/worker-core-delta.yaml
+          ["$WORKERFEATURES_FNAME"]=/tmp/worker-features-delta.yaml
+          ["$WORKERCOMPND_FNAME"]=/tmp/worker-compound-delta.yaml
+          ["$WORKERV4_FNAME"]=/tmp/worker-v4-delta.yaml
+        )
 
-  #         echo Possible phases: Pending, Running, Succeeded, Failed, Unknown
-  #         echo Found phase: $POD_PHASE
+        UPDATE_FILES=$(
+          for fname in "${!FILES[@]}"; do
+            jq -cn \
+              --arg filename "$fname" \
+              --arg delta "$(base64 -w 0 "${FILES[$fname]}")" \
+              '{filename: $filename, delta: $delta}'
+          done | jq -cs '.'
+        )
+        
+        MR_TITLE="${{ needs.set-vars.outputs.MR_TITLE }}"
 
-  #         if [[ "$POD_PHASE" == "Failed" ]] || [[ "$POD_PHASE" == "Unknown" ]]
-  #         then
-  #           exit 1
-  #         fi
-
-  #         if [[ "$POD_PHASE" == "Succeeded" ]]
-  #         then
-  #           exit 0
-  #         fi
-  #       done
-
-  # TODO fix deploy
-  # deploy-prod-via-helm:
-  #   needs:
-  #   - copy-by-helm
-  #   - setup-envvar
-  #   - build-docker-img
-  #   if:  ${{ github.event_name == 'release' && !contains(github.ref, 'rc') }}
-  #   runs-on: ubuntu-latest
-  #   env:
-  #     version: ${{ needs.setup-envvar.outputs.version }}
-  #   steps:
-  #   - uses: actions/checkout@v4
-  #   - uses: ./.github/workflows/composite-set-k8s-cred
-  #     with:
-  #       secrets: ${{ secrets.KUBECONFIG }}
-  #   - run: .helm/deployments/prod/deploy.sh
+        curl -fL -X POST \
+          --form "token=${{ secrets.GITLAB_TRIGGER_TOKEN }}" \
+          --form "ref=main" \
+          --form "variables[UPDATE_FILES]=$UPDATE_FILES" \
+          --form "variables[MR_TITLE]=$MR_TITLE" \
+          --form 'variables[PIPELINE_TYPE]=sapi-prod-deploy' \
+          --form 'variables[SAPI_VERSION]=${{ needs.setup-envvar.outputs.version }}' \
+          "${{ secrets.GITLAB_GITOPS_URL }}/api/v4/projects/${{ secrets.GITLAB_GITOPS_PROJECT_ID }}/trigger/pipeline"
