@@ -321,7 +321,6 @@ jobs:
     needs:
     - setup-envvar
     - build-docker-img
-    - copy-cache
     if:  ${{ github.event_name == 'release' && !contains(github.ref, 'rc') }}
     runs-on: ubuntu-latest
     steps:
