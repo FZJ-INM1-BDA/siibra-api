@@ -303,7 +303,7 @@ jobs:
           done | jq -cs '.'
         )
         
-        MR_TITLE="${{ needs.set-vars.outputs.MR_TITLE }}"
+        MR_TITLE="${{ needs.setup-envvar.outputs.MR_TITLE }}"
 
         curl -fL -X POST \
           --form "token=${{ secrets.GITLAB_TRIGGER_TOKEN }}" \
@@ -339,7 +339,7 @@ jobs:
         sapi:
           version: "${{ needs.setup-envvar.outputs.version }}"
         image:
-          spec: "${{ needs.build-docker-img.outputs.DOCKER_IMGSHA_SERVER }}"
+          spec: "${{ needs.setup-envvar.outputs.version }}-server"
         EOF
         
         for queue in core features compounds
@@ -378,7 +378,9 @@ jobs:
           done | jq -cs '.'
         )
         
-        MR_TITLE="${{ needs.set-vars.outputs.MR_TITLE }}"
+        MR_TITLE="${{ needs.setup-envvar.outputs.MR_TITLE }}"
+
+        echo "UPDATE_FILES: $UPDATE_FILES"
 
         curl -fL -X POST \
           --form "token=${{ secrets.GITLAB_TRIGGER_TOKEN }}" \
