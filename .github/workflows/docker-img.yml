@@ -333,8 +333,6 @@ jobs:
         WORKERCOMPND_FNAME="siibra-api/worker/values/prod/compound.yaml"
         WORKERV4_FNAME="siibra-api/worker/values/prod/v4.yaml"
 
-        exit 1
-
         cat > /tmp/server-delta.yaml << EOF
         sapi:
           version: "${{ needs.setup-envvar.outputs.version }}"
