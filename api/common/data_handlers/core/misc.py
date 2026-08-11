@@ -147,6 +147,7 @@ def get_parcellation_labelled_map(parcellation_id: str, space_id: str, region_id
 
     volume_data = None
     if region_id is not None:
+        raise NotImplementedError(f"parcellation labelled map is temporarily disabled. some region_id results in full masks being built, and causes OOM")
         region = siibra.get_region(parcellation_id, region_id)
         volume_data = region.fetch_regional_map(space_id, siibra.MapType.LABELLED)
     else:
