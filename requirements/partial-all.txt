@@ -1,8 +1,10 @@
 pydantic<2
 requests
-fastapi
-fastapi-versioning
-fastapi-pagination
+# fastapi/fastapi-pagination pinned together: unpinned resolution can pull an
+# incompatible pair -> "get_body_field() got an unexpected keyword argument 'body_params'"
+fastapi==0.125.0
+fastapi-versioning==0.10.0
+fastapi-pagination==0.15.15
 jinja2
 uvicorn[standard]
 redis
