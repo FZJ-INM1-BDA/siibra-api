@@ -290,7 +290,7 @@ jobs:
           ["$SERVER_FNAME"]=/tmp/server-delta.yaml
           ["$WORKERCORE_FNAME"]=/tmp/worker-core-delta.yaml
           ["$WORKERFEATURES_FNAME"]=/tmp/worker-features-delta.yaml
-          ["$WORKERCOMPND_FNAME"]=/tmp/worker-compound-delta.yaml
+          ["$WORKERCOMPND_FNAME"]=/tmp/worker-compounds-delta.yaml
           ["$WORKERV4_FNAME"]=/tmp/worker-v4-delta.yaml
         )
 

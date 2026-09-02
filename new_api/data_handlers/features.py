@@ -2,9 +2,10 @@ from typing import Optional
 
 from new_api.common.decorators import data_decorator
 from new_api.siibra_api_config import ROLE
-
+from new_api.data_handlers import overrides
 
 @data_decorator(ROLE)
+@overrides.override_image
 def find_spatial_features(
     space_id: str, bbox: Optional[str] = None, category: str = None
 ):

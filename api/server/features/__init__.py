@@ -31,7 +31,6 @@ from api.models.features.dataset.ebrains import (
     SiibraEbrainsDataFeatureModel
 )
 from api.common.exceptions import NotFound
-from api.common.data_handlers import overrides
 from api.server.util import SapiCustomRoute
 from new_api.data_handlers.features import find_spatial_features
 from .util import wrap_feature_category
@@ -204,7 +203,7 @@ async def get_single_tabular(parcellation_id: str, region_id: str, feature_id: s
 @router.get("/Image", response_model=Page[SiibraVoiModel])
 @version(*FASTAPI_VERSION)
 @wrap_feature_category("Image")
-@async_router_decorator(ROLE, func=overrides.override_image(find_spatial_features))
+@async_router_decorator(ROLE, func=find_spatial_features)
 async def get_all_voi(space_id: str, bbox: Optional[str]=None, type: Optional[str]=None, func=lambda: []):
     """Get all Image features n.b. type will no longer be parsed as intended. If unset, will return all spatial features.
     If set, only `BlockfaceVolumeOfInterest`, `CellBodyStainedVolumeOfInterest`,` DTIVolumeOfInterest` will return VOI features
