@@ -48,14 +48,8 @@ def all_feature_types() -> List[Dict[str, str]]:
     ]
 
 @data_decorator(ROLE)
+@overrides.override_id()
 def get_single_feature_from_id(feature_id: str, **kwargs):
-    for item in overrides.override_items:
-        if (
-            item.get("_type") == "features"
-            and item.get("id") == feature_id
-        ):
-            return overrides.cleanup_item(item)
-    
     import siibra
     from api.serialization.util import instance_to_model
     try:
