@@ -14,7 +14,7 @@ def wrap_feature_category(feature_category: str):
         overrides.cleanup_item(item)
         for item in overrides.override_items
         if (
-            item.get("_type") == "_features"
+            item.get("_type") == "features"
             and item.get("_feature") == feature_category
         )
     ]
