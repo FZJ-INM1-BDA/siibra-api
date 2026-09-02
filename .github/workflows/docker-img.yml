@@ -302,6 +302,8 @@ jobs:
               '{filename: $filename, delta: $delta}'
           done | jq -cs '.'
         )
+
+        echo "UPDATE_FILES: $UPDATE_FILES"
         
         MR_TITLE="${{ needs.setup-envvar.outputs.MR_TITLE }}"
 
