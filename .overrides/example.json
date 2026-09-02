@@ -1,0 +1,160 @@
+[
+    {
+        "@type": "siibra-0.4/feature/volume_of_interest",
+        "id": "test-override",
+        "modality": "cell body staining",
+        "category": "cellular",
+        "description": "Image feature with modality cell body staining at Bounding box of image in BigBrain microscopic template (histology)",
+        "name": "test override 0047 (cell body staining)",
+        "datasets": [],
+        "anchor": null,
+        "volume": {
+            "@type": null,
+            "name": "test override 0047 (cell body staining)",
+            "formats": [
+                "image",
+                "neuroglancer/precomputed"
+            ],
+            "providesMesh": false,
+            "providesImage": true,
+            "fragments": {},
+            "variant": null,
+            "providedVolumes": {
+                "neuroglancer/precomputed": "https://1um.brainatlas.eu/registered_sections/bigbrain/B20_0047/precomputed"
+            },
+            "space": {
+                "@id": "minds/core/referencespace/v1.0.0/a1655b99-82f1-420f-a3c2-fe80fd4c8588"
+            },
+            "datasets": []
+        },
+        "boundingbox": {
+            "@type": "siibra-0.4/location/bbox",
+            "space": {
+                "@id": "minds/core/referencespace/v1.0.0/a1655b99-82f1-420f-a3c2-fe80fd4c8588"
+            },
+            "center": {
+                "@type": "siibra-0.4/point",
+                "@context": {
+                    "@vocab": "https://openminds.ebrains.eu/vocab/"
+                },
+                "@id": "272df1804a142f7e95785b58129f875d",
+                "coordinateSpace": {
+                    "@id": "minds/core/referencespace/v1.0.0/a1655b99-82f1-420f-a3c2-fe80fd4c8588"
+                },
+                "coordinates": [
+                    {
+                        "@context": {
+                            "@vocab": "https://openminds.ebrains.eu/vocab/"
+                        },
+                        "typeOfUncertainty": null,
+                        "uncertainty": null,
+                        "unit": null,
+                        "value": -1.1171833333333012
+                    },
+                    {
+                        "@context": {
+                            "@vocab": "https://openminds.ebrains.eu/vocab/"
+                        },
+                        "typeOfUncertainty": null,
+                        "uncertainty": null,
+                        "unit": null,
+                        "value": -69.08000000000001
+                    },
+                    {
+                        "@context": {
+                            "@vocab": "https://openminds.ebrains.eu/vocab/"
+                        },
+                        "typeOfUncertainty": null,
+                        "uncertainty": null,
+                        "unit": null,
+                        "value": 1.661716666666706
+                    }
+                ]
+            },
+            "minpoint": {
+                "@type": "siibra-0.4/point",
+                "@context": {
+                    "@vocab": "https://openminds.ebrains.eu/vocab/"
+                },
+                "@id": "ec7e6acfa93d69dcee7aed0f5b0765bc",
+                "coordinateSpace": {
+                    "@id": "minds/core/referencespace/v1.0.0/a1655b99-82f1-420f-a3c2-fe80fd4c8588"
+                },
+                "coordinates": [
+                    {
+                        "@context": {
+                            "@vocab": "https://openminds.ebrains.eu/vocab/"
+                        },
+                        "typeOfUncertainty": null,
+                        "uncertainty": null,
+                        "unit": null,
+                        "value": -70.6771833333333
+                    },
+                    {
+                        "@context": {
+                            "@vocab": "https://openminds.ebrains.eu/vocab/"
+                        },
+                        "typeOfUncertainty": null,
+                        "uncertainty": null,
+                        "unit": null,
+                        "value": -69.09
+                    },
+                    {
+                        "@context": {
+                            "@vocab": "https://openminds.ebrains.eu/vocab/"
+                        },
+                        "typeOfUncertainty": null,
+                        "uncertainty": null,
+                        "unit": null,
+                        "value": -58.7882833333333
+                    }
+                ]
+            },
+            "maxpoint": {
+                "@type": "siibra-0.4/point",
+                "@context": {
+                    "@vocab": "https://openminds.ebrains.eu/vocab/"
+                },
+                "@id": "9a609a6892b7fa4f0c2bef01a9f58b6b",
+                "coordinateSpace": {
+                    "@id": "minds/core/referencespace/v1.0.0/a1655b99-82f1-420f-a3c2-fe80fd4c8588"
+                },
+                "coordinates": [
+                    {
+                        "@context": {
+                            "@vocab": "https://openminds.ebrains.eu/vocab/"
+                        },
+                        "typeOfUncertainty": null,
+                        "uncertainty": null,
+                        "unit": null,
+                        "value": 68.4428166666667
+                    },
+                    {
+                        "@context": {
+                            "@vocab": "https://openminds.ebrains.eu/vocab/"
+                        },
+                        "typeOfUncertainty": null,
+                        "uncertainty": null,
+                        "unit": null,
+                        "value": -69.07000000000001
+                    },
+                    {
+                        "@context": {
+                            "@vocab": "https://openminds.ebrains.eu/vocab/"
+                        },
+                        "typeOfUncertainty": null,
+                        "uncertainty": null,
+                        "unit": null,
+                        "value": 62.11171666666671
+                    }
+                ]
+            },
+            "shape": [
+                139.12,
+                0.01999999999999602,
+                120.9
+            ],
+            "isPlanar": false
+        }
+    }
+]

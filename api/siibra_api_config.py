@@ -11,6 +11,7 @@ import re
 from typing import Dict
 
 SIIBRA_USE_CONFIGURATION = os.getenv("SIIBRA_USE_CONFIGURATION")
+SIIBRA_API_INSTANCES_OVERRIDES = os.getenv("SIIBRA_API_INSTANCES_OVERRIDES", ".overrides")
 
 # Rather than using git rev-parse --short HEAD
 # Directly crawl through the git file system
