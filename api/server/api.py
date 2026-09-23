@@ -259,7 +259,12 @@ async def middleware_cache_response(request: Request, call_next):
         
 
     # conditions when do not cache
-    if (not bypass_cache_set) and response_content_type == "application/json":
+    if (
+        (not bypass_cache_set)
+        and (response_content_type == "application/json")
+        # only cache if successful
+        and (status_code < 400)
+    ):
         cache_instance.set_value(cache_key, content)
     return Response(
         content,

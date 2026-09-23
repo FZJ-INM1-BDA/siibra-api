@@ -140,3 +140,6 @@ except Exception as e:
 
 GIT_HASH = os.getenv("GIT_HASH", "unknown-hash")
 """GIT_HASH"""
+
+SIIBRA_API_USE_OLD_STATMAP = os.getenv("SIIBRA_API_USE_OLD_STATMAP")
+"""use old statmap worker"""
