@@ -1,3 +1,8 @@
+from pathlib import Path
+from contextlib import asynccontextmanager
+import time
+import json
+
 from fastapi import FastAPI, Request, Response, HTTPException
 from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
@@ -5,11 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi_pagination import add_pagination
 from fastapi_versioning import VersionedFastAPI
-from pathlib import Path
-from contextlib import asynccontextmanager
 
-import time
-import json
 
 from .util import add_lazy_path
 
@@ -21,6 +22,7 @@ from .core import prefixed_routers as core_prefixed_routers
 from .volumes import prefixed_routers as volume_prefixed_routers
 from .compounds import prefixed_routers as compound_prefixed_routers
 from .features import router as feature_router
+from .spatial import router as spatial_router
 from .volcabularies import router as vocabularies_router
 from .metrics import prom_metrics_resp, on_startup as metrics_on_startup, on_terminate as metrics_on_terminate
 from .code_snippet import get_sourcecode
@@ -53,6 +55,7 @@ for prefix_router in [*core_prefixed_routers, *volume_prefixed_routers, *compoun
     siibra_api.include_router(prefix_router.router, prefix=prefix_router.prefix)
 
 siibra_api.include_router(feature_router, prefix="/feature")
+siibra_api.include_router(spatial_router, prefix="/spatial")
 siibra_api.include_router(vocabularies_router, prefix="/vocabularies")
 
 add_pagination(siibra_api)

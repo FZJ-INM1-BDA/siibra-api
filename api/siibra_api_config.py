@@ -143,3 +143,7 @@ GIT_HASH = os.getenv("GIT_HASH", "unknown-hash")
 
 SIIBRA_API_USE_OLD_STATMAP = os.getenv("SIIBRA_API_USE_OLD_STATMAP")
 """use old statmap worker"""
+
+SIIBRA_API_GEOMSVC_ENDPOINT = os.getenv("SIIBRA_API_GEOMSVC_ENDPOINT", "https://geom-svc.apps.ebrains.eu")
+
+SIIBRA_API_SPATIAL_BACKEND = os.getenv("SIIBRA_API_SPATIAL_BACKEND", "https://siibra-spatial-backend.apps.ebrains.eu")

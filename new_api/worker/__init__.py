@@ -3,6 +3,13 @@ from new_api.siibra_api_config import ROLE, CELERY_CHANNEL, CELERY_CONFIG
 app = None
 if ROLE == "worker" or ROLE == "server":
     from celery import Celery
+    from celery.signals import worker_process_init
+    from opentelemetry.instrumentation.celery import CeleryInstrumentor
+
+    @worker_process_init.connect(weak=False)
+    def init_otel(*args, **kwargs):
+        CeleryInstrumentor().instrument()
+
     app = Celery(CELERY_CHANNEL)
     app.config_from_object(CELERY_CONFIG)
 else:

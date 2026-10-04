@@ -1,2 +1,4 @@
 celery[redis]==5.2.6
 pydantic<2
+opentelemetry-distro
+opentelemetry-exporter-otlp
