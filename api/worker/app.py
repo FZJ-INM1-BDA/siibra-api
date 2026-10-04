@@ -1,15 +1,23 @@
 from api.siibra_api_config import ROLE
 from api.siibra_api_config import CELERY_CHANNEL, CELERY_CONFIG
 
+OTEL_INSTALLED = False
+try:
+    from opentelemetry.instrumentation.celery import CeleryInstrumentor
+    OTEL_INSTALLED = True
+except ImportError:
+    print("otel not installed. will not try to instrument")
+
 app = None
 if ROLE == "worker" or ROLE == "server":
     from celery import Celery
     from celery.signals import worker_process_init
     from opentelemetry.instrumentation.celery import CeleryInstrumentor
 
-    @worker_process_init.connect(weak=False)
-    def init_otel(*args, **kwargs):
-        CeleryInstrumentor().instrument()
+    if OTEL_INSTALLED:
+        @worker_process_init.connect(weak=False)
+        def init_otel(*args, **kwargs):
+            CeleryInstrumentor().instrument()
 
     app = Celery(CELERY_CHANNEL)
     app.config_from_object(CELERY_CONFIG)
