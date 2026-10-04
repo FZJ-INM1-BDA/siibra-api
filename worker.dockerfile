@@ -1,4 +1,4 @@
-FROM python:3.10
+FROM python:3.11
 RUN python -m pip install -U pip
 COPY ./requirements /requirements
 

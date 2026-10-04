@@ -1,4 +1,4 @@
-FROM python:3.10
+FROM python:3.11
 
 ARG GIT_HASH
 ENV GIT_HASH=${GIT_HASH:-unknown-hash}
