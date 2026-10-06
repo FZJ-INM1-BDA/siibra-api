@@ -198,3 +198,15 @@ def single_feature(*, space_id: str, parcellation_id: str, region_id: str, featu
     features = _get_all_features(space_id=space_id, parcellation_id=parcellation_id, region_id=region_id, type=type, **kwargs)
     found_feature = [f for f in features if f.id == feature_id]
     return instance_to_model(found_feature[0], detail=True, **kwargs).dict()
+
+
+@data_decorator(ROLE)
+def many_feature_from_ids(*, feature_ids: list[str]):
+    import siibra
+    from api.serialization.util import instance_to_model
+
+    return_arr = []
+    for feature_id in feature_ids:
+        feature = siibra.features.Feature.get_instance_by_id(feature_id)
+        return_arr.append(instance_to_model(feature, detail=False))
+    return return_arr

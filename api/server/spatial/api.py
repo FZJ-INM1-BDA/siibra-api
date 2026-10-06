@@ -1,5 +1,6 @@
 import json
 from enum import StrEnum
+from collections.abc import Sequence
 
 import requests
 from fastapi import APIRouter
@@ -117,27 +118,30 @@ def _iter_all(url: str, params: dict = None):
         page += 1
 
 
-@router.get("/features")
-def features(space_id: str, bbox: str) -> Page[GeomSvcModel]:
+def get_geom_features(space_id: str, bbox: str) -> Sequence[GeomSvcModel]:
     loaded_bbox = json.loads(bbox)
     bbox_min = ",".join([str(v) for v in loaded_bbox[0]])
     bbox_max = ",".join([str(v) for v in loaded_bbox[1]])
 
     if space_enum := _space_id_enum.get(space_id):
+        # https://geom-svc.apps.ebrains.eu/spaces/bigbrain?bbox_min=-100%2C-100%2C-100&bbox_max=100%2C100%2C100&page=1&size=50
         url = f"{SIIBRA_API_GEOMSVC_ENDPOINT}/spaces/{space_enum}"
 
         result = _iter_all(
             url,
             params={
-                "space": space_enum,
                 "bbox_min": bbox_min,
                 "bbox_max": bbox_max,
             },
         )
-        return paginate(list(result))
-        # https://geom-svc.apps.ebrains.eu/spaces/bigbrain?bbox_min=-100%2C-100%2C-100&bbox_max=100%2C100%2C100&page=1&size=50
+        return result
     else:
-        return paginate([])
+        return []
+
+
+@router.get("/features")
+def features(space_id: str, bbox: str) -> Page[GeomSvcModel]:
+    return paginate(get_geom_features(space_id, bbox))
 
 
 @router.get("/geometry/{uuid:path}")

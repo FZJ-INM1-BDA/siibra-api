@@ -14,7 +14,7 @@ from api.siibra_api_config import ROLE
 from api.common import router_decorator, async_router_decorator
 from api.common.data_handlers.features.types import (
     all_feature_types, all_features, single_feature, get_single_feature_from_id, get_single_feature_plot_from_id,
-    get_single_feature_download_zip_path,
+    get_single_feature_download_zip_path, many_feature_from_ids
 )
 from api.models.features._basetypes.regional_connectivity import SiibraRegionalConnectivityModel
 from api.models.features._basetypes.cortical_profiles import SiibraCorticalProfileModel
@@ -26,6 +26,9 @@ from api.models.features._basetypes.tabular import (
 )
 from api.models.features._basetypes.volume_of_interest import (
     SiibraVoiModel
+)
+from api.models.features._basetypes.feature import (
+    FeatureModel,
 )
 from api.models.features.dataset.ebrains import (
     SiibraEbrainsDataFeatureModel
@@ -224,6 +227,21 @@ async def get_all_voi(space_id: str, bbox: Optional[str]=None, type: Optional[st
 
     return paginate(await func(space_id=space_id, bbox=bbox, category=category))
 
+
+@router.get("/Geom", response_model=Page[FeatureModel])
+@version(*FASTAPI_VERSION)
+@async_router_decorator(ROLE, func=many_feature_from_ids)
+async def all_geom_feature(space_id: str, bbox: Optional[str]=None, func=lambda: []):
+    from api.server.spatial.api import get_geom_features
+    
+    if bbox is None:
+        bbox = f"[[-100,-100,-100],[100,100,100]]"
+    features = get_geom_features(space_id, bbox)
+    feature_ids = [item['name'] for item in features]
+    
+    return paginate(
+        await func(feature_ids=feature_ids)
+    )
 
 # GeneExpression
 @router.get("/GeneExpressions", response_model=Page[SiibraTabularModel])

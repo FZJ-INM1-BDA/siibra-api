@@ -11,10 +11,9 @@ except ImportError:
 app = None
 if ROLE == "worker" or ROLE == "server":
     from celery import Celery
-    from celery.signals import worker_process_init
-    from opentelemetry.instrumentation.celery import CeleryInstrumentor
 
     if OTEL_INSTALLED:
+        from celery.signals import worker_process_init
         @worker_process_init.connect(weak=False)
         def init_otel(*args, **kwargs):
             CeleryInstrumentor().instrument()
