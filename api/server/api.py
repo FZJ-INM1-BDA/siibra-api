@@ -267,6 +267,7 @@ async def middleware_cache_response(request: Request, call_next):
         and (response_content_type == "application/json")
         # only cache if successful
         and (status_code < 400)
+        and response.headers.get("cache-control") != "no-cache"
     ):
         cache_instance.set_value(cache_key, content)
     return Response(
