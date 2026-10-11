@@ -1,11 +1,14 @@
 from api.common import data_decorator, InsufficientParameters, NotFound, AmbiguousParameters
 from api.common.logger import logger
 from api.common.data_handlers import overrides
+from api.common.tracing import get_tracer
 from api.siibra_api_config import ROLE, SIIBRA_API_SHARED_DIR
 from typing import List, Type, Any, Dict
 from hashlib import md5
 from pathlib import Path
 from zipfile import ZipFile
+
+tracer = get_tracer(__name__)
 
 _FEATURE_BAN_LIST = {
     # 20260705 - AS: But LocalFieldPotentail should not be exposed.
@@ -156,22 +159,35 @@ def _get_all_features(*, space_id: str, parcellation_id: str, region_id: str, ty
 
     *_, type = type.split(".")
 
-    concept = extract_concept(space_id=space_id, parcellation_id=parcellation_id, region_id=region_id)
-    
-    if concept is None:
-        raise InsufficientParameters(f"at least one of space_id, parcellation_id and/or region_id must be defined.")
-    
-    features = [f for f in siibra.features.get(concept, type, **kwargs) if f.modality not in banned_list]
+    with tracer.start_as_current_span("_get_all_features") as span:
+        span.set_attribute("siibra_api.feature.type", type)
+        span.set_attribute("siibra_api.space_id", space_id or "")
+        span.set_attribute("siibra_api.parcellation_id", parcellation_id or "")
+        span.set_attribute("siibra_api.region_id", region_id or "")
+        span.set_attribute("siibra_api.bbox", bbox or "")
 
-    if bbox:
-        assert isinstance(concept, siibra.core.space.Space)
-        bounding_box = concept.get_bounding_box(*json.loads(bbox))
-        features = [f
-                for f in features
-                if isinstance(f, Image) and
-                f.anchor.location.intersects(bounding_box)]
+        with tracer.start_as_current_span("extract_concept"):
+            concept = extract_concept(space_id=space_id, parcellation_id=parcellation_id, region_id=region_id)
 
-    return features
+        if concept is None:
+            raise InsufficientParameters(f"at least one of space_id, parcellation_id and/or region_id must be defined.")
+
+        with tracer.start_as_current_span("siibra.features.get") as query_span:
+            features = [f for f in siibra.features.get(concept, type, **kwargs) if f.modality not in banned_list]
+            query_span.set_attribute("siibra_api.feature.count", len(features))
+
+        if bbox:
+            with tracer.start_as_current_span("bbox_filter") as bbox_span:
+                assert isinstance(concept, siibra.core.space.Space)
+                bounding_box = concept.get_bounding_box(*json.loads(bbox))
+                features = [f
+                        for f in features
+                        if isinstance(f, Image) and
+                        f.anchor.location.intersects(bounding_box)]
+                bbox_span.set_attribute("siibra_api.feature.count", len(features))
+
+        span.set_attribute("siibra_api.feature.result_count", len(features))
+        return features
 
 @data_decorator(ROLE)
 def all_features(*, space_id: str, parcellation_id: str, region_id: str, type: str, **kwargs):
@@ -179,15 +195,18 @@ def all_features(*, space_id: str, parcellation_id: str, region_id: str, type: s
 
     features = _get_all_features(space_id=space_id, parcellation_id=parcellation_id, region_id=region_id, type=type, **kwargs)
 
-    re_features = []
-    for f in features:
-        try:
-            re_features.append(
-                instance_to_model(f, detail=False).dict()
-            )
-        except Exception as e:
-            err_str = str(e).replace('\n', ' ')
-            logger.warning(f"feature failed to be serialized. Params: space_id={space_id}, parcellation_id={parcellation_id}, region_id={region_id}. feature id: {f.id}, error: {err_str}")
+    with tracer.start_as_current_span("serialize_features") as span:
+        span.set_attribute("siibra_api.feature.count", len(features))
+        re_features = []
+        for f in features:
+            try:
+                re_features.append(
+                    instance_to_model(f, detail=False).dict()
+                )
+            except Exception as e:
+                err_str = str(e).replace('\n', ' ')
+                logger.warning(f"feature failed to be serialized. Params: space_id={space_id}, parcellation_id={parcellation_id}, region_id={region_id}. feature id: {f.id}, error: {err_str}")
+        span.set_attribute("siibra_api.feature.serialized_count", len(re_features))
     return re_features
 
 
