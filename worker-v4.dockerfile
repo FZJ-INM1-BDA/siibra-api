@@ -38,4 +38,4 @@ ENV OTEL_EXPORTER_OTLP_PROTOCOL=grpc
 HEALTHCHECK --interval=60s --timeout=10s --start-period=120s --retries=3 \
     CMD [ "python", "worker_health_v4.py" ]
 
-ENTRYPOINT ["opentelemetry-instrument", "celery", "-A", "new_api.worker.app", "worker", "-l", "WARNING", "-O", "fair"]
+ENTRYPOINT ["opentelemetry-instrument", "celery", "-A", "new_api.worker.app", "worker", "--pool=solo", "-l", "WARNING"]
