@@ -227,5 +227,5 @@ def many_feature_from_ids(*, feature_ids: list[str]):
     return_arr = []
     for feature_id in feature_ids:
         feature = siibra.features.Feature.get_instance_by_id(feature_id)
-        return_arr.append(instance_to_model(feature, detail=False))
+        return_arr.append(instance_to_model(feature, detail=False).dict())
     return return_arr
