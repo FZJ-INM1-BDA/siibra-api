@@ -10,3 +10,4 @@ uvicorn[standard]
 redis
 diskcache
 typing-extensions; python_version < "3.8"
+ebrains-iam @ git+https://github.com/xgui3783/ebrains-iam-util.git@8411752baeb002535c27aeeb26effa6b9c68f2fe
