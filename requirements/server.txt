@@ -15,3 +15,4 @@ prometheus-client<0.22.0
 # broke import, thus pinning to <0.22.0. not broken why fix it?
 opentelemetry-distro
 opentelemetry-exporter-otlp
+ebrains-iam @ git+https://github.com/xgui3783/ebrains-iam-util.git@8411752baeb002535c27aeeb26effa6b9c68f2fe

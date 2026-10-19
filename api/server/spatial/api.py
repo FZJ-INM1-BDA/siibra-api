@@ -7,8 +7,8 @@ from fastapi import APIRouter
 from fastapi.responses import Response
 from fastapi.exceptions import HTTPException
 from fastapi_pagination import Page, paginate
+from fastapi.background import BackgroundTasks
 
-from api.common.swr import StaleWhileRevalidate
 from api.siibra_api_config import (
     SIIBRA_API_GEOMSVC_ENDPOINT,
     SIIBRA_API_SPATIAL_BACKEND,
@@ -20,6 +20,10 @@ from .models import (
     SpatialBackendMultiRespModel,
     GeomSvcArtefactStatus,
     GeomSvcArtefactEnum,
+)
+from .mappings import (
+    MappingArtefact,
+    MetaResp,
 )
 
 router = APIRouter(tags=["spatial"])
@@ -146,31 +150,15 @@ def features(space_id: str, bbox: str) -> Page[GeomSvcModel]:
     return paginate(get_geom_features(space_id, bbox))
 
 
-# stale-while-revalidate cache for the (expensive) geometry route.
-# Serves cached content immediately and refreshes at most once every 5s in the
-# background; the request that triggers a refresh is served the stale content.
-_geom_cache: StaleWhileRevalidate[GeomSvcArtefactStatus] = StaleWhileRevalidate(ttl=5.0)
-
-
-def _fetch_geometry(url: str) -> GeomSvcArtefactStatus:
-    resp = requests.get(url)
-    resp.raise_for_status()
-    resp_json: GeomSvcArtefactStatus = resp.json()
-    if resp_json["status"] != GeomSvcArtefactEnum.ABSENT:
-        return resp_json
-    resp = requests.post(url)
-    resp.raise_for_status()
-    return resp.json()
-
-
 @router.get("/geometry/{uuid:path}")
-def geometries(uuid: str, response: Response) -> GeomSvcArtefactStatus:
+def geometries(uuid: str, response: Response, background_tasks: BackgroundTasks) -> MetaResp:
     if "--" not in uuid:
         raise HTTPException(404)
     response.headers['cache-control'] = 'no-cache'
     mapping_uuid, mapping_artefact = uuid.split("--", maxsplit=1)
-    url = f"{SIIBRA_API_GEOMSVC_ENDPOINT}/mapping/{mapping_uuid}/artefacts/{mapping_artefact}"
     try:
-        return _geom_cache.get(url, lambda: _fetch_geometry(url))
-    except requests.exceptions.HTTPError as e:
-        raise HTTPException(e.response.status_code) from e
+        art = MappingArtefact(uuid=mapping_uuid, artefact=mapping_artefact)
+        return art.get_artefact_urls(background_tasks=background_tasks)
+        
+    except KeyError as e:
+        raise HTTPException(404) from e
