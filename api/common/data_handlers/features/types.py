@@ -226,6 +226,9 @@ def many_feature_from_ids(*, feature_ids: list[str]):
 
     return_arr = []
     for feature_id in feature_ids:
-        feature = siibra.features.Feature.get_instance_by_id(feature_id)
-        return_arr.append(instance_to_model(feature, detail=False).dict())
+        try:
+            feature = siibra.features.Feature.get_instance_by_id(feature_id)
+            return_arr.append(instance_to_model(feature, detail=False).dict())
+        except Exception as e:
+            logger.warning(f"Cannot parse {feature_id} {str(e)}. Skipping")
     return return_arr

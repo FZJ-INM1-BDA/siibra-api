@@ -117,17 +117,12 @@ class NutilParam(TypedDict):
 @dataclass
 class Mapping:
     uuid: str
+    uuid_aliases: list[str]
     base: str
     paths: list[str]
-    path_alias: dict[str, str]
+    path_alias_mapping: dict[str, str]
     use_wf: dict[str, WfEnum]
     """Should contain key 'default', and any other path_alias for overrides"""
-
-
-@dataclass
-class MappingAlias:
-    from_key: str
-    to_key: str
 
 
 GEOMSVC_MAPPING_DATAPROXY_BASEURL = "https://data-proxy.ebrains.eu/api/v1"

@@ -1,31 +1,6 @@
-from .const import Mapping, MappingAlias, WfEnum, NUTIL_PARAM_KEY, NutilParam
+from .const import Mapping, WfEnum, NUTIL_PARAM_KEY, NutilParam
 from api.common.logger import logger as general_logger
 
-alias = [
-    MappingAlias(
-        from_key="d-019f935b-9b63-4f59-98c0-a49e035eb426",
-        to_key="doi.org/10.25493/19ED-N2A",
-    ),
-    MappingAlias(
-        from_key="019f935b-9b63-4f59-98c0-a49e035eb426",
-        to_key="doi.org/10.25493/19ED-N2A",
-    ),
-    
-    MappingAlias(
-        from_key="c25f0a96-cdf0-4277-ba3c-495de13f3ccd",
-        to_key="doi.org/10.25493/BT8X-FN9",
-    ),
-    
-    MappingAlias(
-        from_key="73c1fa55-d099-4854-8cda-c9a403c6080a",
-        to_key="doi.org/10.25493/JWTF-PAB",
-    ),
-
-    MappingAlias(
-        from_key="494818fa-9126-4432-a167-52ff02534a8b",
-        to_key="doi.org/10.25493/Y7J0-8S9",
-    )
-]
 
 # since paths will be exposed to the frontend, will be easier if the path matches that in the bucket
 lsfm_paths = [
@@ -52,15 +27,22 @@ def _extract_sub(p: str):
 mapping_list = [
     Mapping(
         uuid="doi.org/10.25493/19ED-N2A",
+        uuid_aliases=[
+            "d-019f935b-9b63-4f59-98c0-a49e035eb426",
+            "019f935b-9b63-4f59-98c0-a49e035eb426",
+        ],
         base="https://data-proxy.ebrains.eu/api/v1/buckets/d-019f935b-9b63-4f59-98c0-a49e035eb426/",
         paths=lsfm_paths,
-        path_alias={_extract_sub(p): p for p in lsfm_paths},
+        path_alias_mapping={_extract_sub(p): p for p in lsfm_paths},
         use_wf={
             "default": WfEnum.TSV
         }
     ),
     Mapping(
         uuid="doi.org/10.25493/BT8X-FN9",
+        uuid_aliases=[
+            "c25f0a96-cdf0-4277-ba3c-495de13f3ccd",
+        ],
         base="https://data-proxy.ebrains.eu/api/v1/buckets/p4791e-ext-d000033_PVMouseExtraction_pub/",
         paths=[
             "Nutil_Quantifier_analysis/81264/Output_dir/Coordinates/3D_combined.json",
@@ -70,7 +52,7 @@ mapping_list = [
             "Nutil_Quantifier_analysis/81267/Output_dir_colliculi/Coordinates/3D_combined.json",
             "Nutil_Quantifier_analysis/81267/Output_dir/Coordinates/3D_combined.json",
         ],
-        path_alias={
+        path_alias_mapping={
             "81264": "Nutil_Quantifier_analysis/81264/Output_dir/Coordinates/3D_combined.json",
             "81265_brainstem": "Nutil_Quantifier_analysis/81265/Output_dir_brainstem/Coordinates/3D_combined.json",
             "81265": "Nutil_Quantifier_analysis/81265/Output_dir/Coordinates/3D_combined.json",
@@ -80,17 +62,45 @@ mapping_list = [
         },
         use_wf={
             "default": WfEnum.NUTIL_JSON,
+            NUTIL_PARAM_KEY: NutilParam(space="allenccfv3")
+        }
+    ),
+
+    
+    Mapping(
+        uuid="doi.org/10.25493/KR92-C33",
+        uuid_aliases=[
+            "d56d6bd3-1b24-4f1e-97c3-637bf8e9231b",
+        ],
+        base="https://data-proxy.ebrains.eu/api/v1/buckets/p4791e-ext-d000034_PVRatExtraction_pub/",
+        paths=[
+            "Nutil_Quantifier_analysis/25203/Output_dir/Coordinates/3D_combined.json",
+            "Nutil_Quantifier_analysis/25204/Output_dir/Coordinates/3D_combined.json",
+            "Nutil_Quantifier_analysis/25205/Output_dir/Coordinates/3D_combined.json",
+            "Nutil_Quantifier_analysis/25206/Output_dir/Coordinates/3D_combined.json",
+        ],
+        path_alias_mapping={
+            "25203": "Nutil_Quantifier_analysis/25203/Output_dir/Coordinates/3D_combined.json",
+            "25204": "Nutil_Quantifier_analysis/25204/Output_dir/Coordinates/3D_combined.json",
+            "25205": "Nutil_Quantifier_analysis/25205/Output_dir/Coordinates/3D_combined.json",
+            "25206": "Nutil_Quantifier_analysis/25206/Output_dir/Coordinates/3D_combined.json",
+        },
+        use_wf={
+            "default": WfEnum.NUTIL_JSON,
             NUTIL_PARAM_KEY: NutilParam(space="waxholm")
         }
     ),
     
     Mapping(
         uuid="doi.org/10.25493/JWTF-PAB",
+        uuid_aliases=[
+            "73c1fa55-d099-4854-8cda-c9a403c6080a",
+        ],
         base="https://data-proxy.ebrains.eu/api/v1/buckets/reference-atlas-data/temp/",
         paths=[
             "geomsvc-data/B20_7300.centroids.tsv",
         ],
-        path_alias={
+        path_alias_mapping={
             "94c92ffa642b3cf4eb2c2f39f3baf16f": "geomsvc-data/B20_7300.centroids.tsv",
         },
         use_wf={
@@ -99,12 +109,15 @@ mapping_list = [
     ),
     
     Mapping(
-        uuid="10.25493/Y7J0-8S9",
+        uuid="doi.org/10.25493/Y7J0-8S9",
+        uuid_aliases=[
+            "494818fa-9126-4432-a167-52ff02534a8b",
+        ],
         base="https://data.kg.ebrains.eu/zip?container=https://data-proxy.ebrains.eu/api/v1/buckets/d-494818fa-9126-4432-a167-52ff02534a8b?prefix=",
         paths=[
             "sub-chenonceau/derivatives/sub-chenonceau_space-MNI152NLin2009cAsym_model-global-tractography_desc-deep-white-matter-atlas.trx",
         ],
-        path_alias={
+        path_alias_mapping={
             "icbm152": "sub-chenonceau/derivatives/sub-chenonceau_space-MNI152NLin2009cAsym_model-global-tractography_desc-deep-white-matter-atlas.trx",
         },
         use_wf={
@@ -113,15 +126,8 @@ mapping_list = [
     ),
 ]
 
-# https://data.kg.ebrains.eu/zip?container=https://data-proxy.ebrains.eu/api/v1/buckets/d-494818fa-9126-4432-a167-52ff02534a8b?prefix=sub-chenonceau/derivatives/sub-chenonceau_space-MNI152NLin2009cAsym_model-global-tractography_desc-deep-white-matter-atlas.trx
-
-uuid_to_mapping: dict[str, Mapping] = {m.uuid: m for m in mapping_list}
-
-for a in alias:
-    if resolved_mapping := uuid_to_mapping.get(a.to_key):
-        uuid_to_mapping[a.from_key] = resolved_mapping
-
-
-
-# breaks data proxy
-# https://data-proxy.ebrains.eu/reference-atlas-data?prefix=geomsvc%2Fv0%2Fdoi.org%2F10.25493%2FBT8X-FN9%2FNutil_Quantifier_analysis%2F81264%2F
+uuid_to_mapping: dict[str, Mapping] = {}
+for m in mapping_list:
+    uuid_to_mapping[m.uuid] = m
+    for alias in m.uuid_aliases:
+        uuid_to_mapping[alias] = m

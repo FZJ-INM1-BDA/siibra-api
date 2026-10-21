@@ -79,7 +79,7 @@ class MappingArtefact:
     def _resolved_mapping(self):
         mapping_val = uuid_to_mapping[self.uuid]
 
-        if resolved_artefact := mapping_val.path_alias.get(self.artefact):
+        if resolved_artefact := mapping_val.path_alias_mapping.get(self.artefact):
             self.artefact = resolved_artefact
         assert self.artefact in mapping_val.paths, f"{self.artefact} not in mapping_obj"
         return mapping_val
