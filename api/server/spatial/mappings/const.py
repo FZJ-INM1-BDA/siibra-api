@@ -2,14 +2,16 @@
 #   filename:  <stdin>
 #   timestamp: 2026-10-01T07:01:41+00:00
 
-from typing import Literal, TypeAlias, TypedDict, NamedTuple, Optional
+from typing import Literal, TypeAlias, TypedDict, Callable, Optional
 from dataclasses import dataclass
 from enum import StrEnum, auto
 from datetime import datetime, timezone
+from functools import wraps
 
 
 def get_ts():
     return datetime.now(timezone.utc).isoformat()
+
 
 class DatumBase(TypedDict):
     id: str
@@ -131,50 +133,89 @@ GEOMSVC_MAPPING_BUCKET_PATH = "geomsvc/v0/"
 GEOMSVC_MAPPING_BUCKET_PROGRESS = ".gomsvctask.log"
 GEOMSVC_SCHEMA_NS = "https://schema.brainatlas.eu/apps.ebrains.eu/geom-svc/directory"
 
-PTCLD_KDE = {
-    "id": "kde",
-    "label": "pointcloud aggregation via kernel density estimate",
-    "path": "kde",
-    "modality": "image/kde",
-    "protocol": "neuroglancer-precomputed",
-    "format": "multiresVolume",
-    "protocol": "neuroglancer-precomputed",
-}
 
-PTCLD_RTREE = {
-    "id": "rtree",
-    "label": "spatial index via rtree",
-    "format": "rtree",
-    "path": "rtree",
-    "modality": "AABBSpatialIdx",
-}
-
-PTCLD_MULTIREZ = {
-    "id": "multires",
-    "label": "pointcloud aggregation via multi resolution NG annotation",
-    "format": "multiresAnnot",
-    "path": "multires",
-    "modality": "geometry",
-    "protocol": "neuroglancer-precomputed",
-}
-
-MAPPING_TASKNAME_GEOMSVC_DATUM = {
-    "tsv_to_ngp": PTCLD_KDE,
-    "tsv_to_rtree": PTCLD_RTREE,
-    "tsv_to_multires": PTCLD_MULTIREZ,
-
-    "nutil_json_to_ngp": PTCLD_KDE,
-    "nutil_json_to_rtree": PTCLD_RTREE,
-    "nutil_json_to_multires": PTCLD_MULTIREZ,
-}
+MAPPING_TASKNAME_GEOMSVC_DATUM_FN: dict[str, Callable] = {}
 
 
-GeomSvcMetaResp = TypedDict("GeomSvcMetaResp", {
-    "ingArtfactsUrls": list[str],
-    "ingArtfactsUrls.log": str
-})
+def decorate_workflow_name(wfname: str):
+    def outer(fn: Callable):
+        assert (
+            wfname not in MAPPING_TASKNAME_GEOMSVC_DATUM_FN
+        ), f"{wfname} already registered to {MAPPING_TASKNAME_GEOMSVC_DATUM_FN.get(wfname)}"
+        MAPPING_TASKNAME_GEOMSVC_DATUM_FN[wfname] = fn
 
-MetaResp = TypedDict("MetaResp", {
-    "version": str,
-    GEOMSVC_SCHEMA_NS: GeomSvcMetaResp
-})
+        @wraps(fn)
+        def inner(*args, **kwargs):
+            return fn(*args, **kwargs)
+
+        return inner
+
+    return outer
+
+
+@decorate_workflow_name("tsv_to_ngp")
+@decorate_workflow_name("nutil_json_to_ngp")
+def get_datum_kde(*args, modality=None, **kwargs):
+    label = "pointcloud aggregation via kernel density estimate"
+
+    if modality:
+        label = f"{modality} aggregated via kernel density estimate"
+
+    return {
+        "label": label,
+        "format": "multiresVolume",
+        "protocol": "neuroglancer-precomputed",
+    }
+
+
+@decorate_workflow_name("tsv_to_rtree")
+@decorate_workflow_name("nutil_json_to_rtree")
+def get_datum_rtree(*args, modality=None, **kwargs):
+    label = "spatial index into rtree"
+
+    if modality:
+        label = f"{modality} indexed into rtree"
+
+    return {
+        "label": label,
+        "format": "rtree",
+    }
+
+
+@decorate_workflow_name("tsv_to_multires")
+@decorate_workflow_name("nutil_json_to_multires")
+def get_datum_multirez(*args, modality=None, **kwargs):
+    label = "pointcloud decomposed into multiresolution pointcloud"
+
+    if modality:
+        label = f"{modality} decomposed into multiresolution pointcloud"
+
+    return {
+        "label": label,
+        "format": "multiresAnnot",
+        "protocol": "neuroglancer-precomputed",
+    }
+
+
+@decorate_workflow_name("nutil_json_to_tsv")
+def get_datum_nutil_tsv(*args, modality=None, **kwargs):
+
+    label = "nutil json decomposed into tsvs"
+
+    if modality:
+        label = f"{modality} nutil json decomposed into tsvs"
+
+    return {
+        "label": label,
+        "format": "tsv",
+    }
+
+
+DATUM_FMT_KEY = "_datum_fmt_key"
+
+
+GeomSvcMetaResp = TypedDict(
+    "GeomSvcMetaResp", {"ingArtfactsUrls": list[str], "ingArtfactsUrls.log": str}
+)
+
+MetaResp = TypedDict("MetaResp", {"version": str, GEOMSVC_SCHEMA_NS: GeomSvcMetaResp})

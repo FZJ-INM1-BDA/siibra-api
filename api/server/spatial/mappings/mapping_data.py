@@ -1,4 +1,4 @@
-from .const import Mapping, WfEnum, NUTIL_PARAM_KEY, NutilParam
+from .const import Mapping, WfEnum, NUTIL_PARAM_KEY, NutilParam, DATUM_FMT_KEY
 from api.common.logger import logger as general_logger
 
 
@@ -35,7 +35,10 @@ mapping_list = [
         paths=lsfm_paths,
         path_alias_mapping={_extract_sub(p): p for p in lsfm_paths},
         use_wf={
-            "default": WfEnum.TSV
+            "default": WfEnum.TSV,
+            DATUM_FMT_KEY: {
+                "modality": "neuronal markers"
+            }
         }
     ),
     Mapping(
@@ -62,7 +65,10 @@ mapping_list = [
         },
         use_wf={
             "default": WfEnum.NUTIL_JSON,
-            NUTIL_PARAM_KEY: NutilParam(space="allenccfv3")
+            NUTIL_PARAM_KEY: NutilParam(space="allenccfv3"),
+            DATUM_FMT_KEY: {
+                "modality": "labelled cells"
+            }
         }
     ),
 
@@ -87,7 +93,10 @@ mapping_list = [
         },
         use_wf={
             "default": WfEnum.NUTIL_JSON,
-            NUTIL_PARAM_KEY: NutilParam(space="waxholm")
+            NUTIL_PARAM_KEY: NutilParam(space="waxholm"),
+            DATUM_FMT_KEY: {
+                "modality": "labelled cells"
+            }
         }
     ),
     
@@ -105,6 +114,9 @@ mapping_list = [
         },
         use_wf={
             "default": WfEnum.TSV,
+            DATUM_FMT_KEY: {
+                "modality": "cell detections"
+            }
         }
     ),
     

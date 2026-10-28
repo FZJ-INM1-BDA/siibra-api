@@ -22,9 +22,10 @@ from .const import (
     WfEnum,
     NUTIL_PARAM_KEY,
     NutilParam,
-    MAPPING_TASKNAME_GEOMSVC_DATUM,
     MetaResp,
     get_ts,
+    MAPPING_TASKNAME_GEOMSVC_DATUM_FN,
+    DATUM_FMT_KEY,
 )
 from .mapping_data import uuid_to_mapping
 from .lock import lock_key
@@ -136,8 +137,7 @@ class MappingArtefact:
         if not refresh:
             try:
                 f = ro_bucket.get_file(self.geomsvc_metafname)
-                general_logger.debug("Already present.")
-                print("already present")
+                general_logger.info(f"{self.uuid} :: {self.artefact} already present.")
                 return json.loads(f.get_content().decode())
             except DoesNotExist:
                 ...
@@ -236,7 +236,10 @@ class MappingArtefact:
                     and isinstance(destprefix, str)
                     and (bucketname := wf.get("output_bucketname"))
                     and isinstance(bucketname, str)
-                    and (datum := MAPPING_TASKNAME_GEOMSVC_DATUM.get(wf.get("name")))
+                    and (fn := MAPPING_TASKNAME_GEOMSVC_DATUM_FN.get(wf.get("name")))
+                    and (datum := fn(
+                        **self._resolved_mapping.use_wf.get(DATUM_FMT_KEY, {})
+                    ))
                     and isinstance(datum, dict)
                 )
             ]
