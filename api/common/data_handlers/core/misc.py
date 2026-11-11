@@ -67,7 +67,9 @@ def cache_region_statistic_map(parcellation_id: str, region_id: str, space_id: s
     error_text = f"Map with parc id '{parcellation_id}', space id '{space_id}'"
 
     stat_map = siibra.get_map(parcellation_id, space_id, siibra.MapType.STATISTICAL)
-    assert stat_map is not None, f"{error_text} returns None"
+    
+    if stat_map is None:
+        raise FileNotFoundError(f"{error_text} returns None")
     
     volume_data = stat_map.fetch(region=region_id)
 
