@@ -2,6 +2,7 @@ from typing import Optional
 
 from new_api.common.decorators import data_decorator
 from new_api.siibra_api_config import ROLE
+from new_api.common.logger import logger as sapi_logger
 
 
 @data_decorator(ROLE)
@@ -23,9 +24,12 @@ def find_spatial_features(
     fts: list[FeatureSet] = siibra.spatial_query(space_id, bbox)
     result = []
     for ft in fts:
-        v = featureset_to_voi(ft.id, ft, space_id=space_id)
-        if not return_all_flag and v.category != category:
-            continue
+        try:
+            v = featureset_to_voi(ft.id, ft, space_id=space_id)
+            if not return_all_flag and v.category != category:
+                continue
+            result.append(v.dict())
+        except Exception as e:
+            sapi_logger.warning(f"Cannot serialize VOI, skipping: {e}")
 
-        result.append(v.dict())
     return result
