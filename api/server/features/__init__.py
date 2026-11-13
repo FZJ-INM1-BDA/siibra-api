@@ -232,15 +232,26 @@ async def get_all_voi(space_id: str, bbox: Optional[str]=None, type: Optional[st
 @version(*FASTAPI_VERSION)
 @async_router_decorator(ROLE, func=many_feature_from_ids)
 async def all_geom_feature(space_id: str, bbox: Optional[str]=None, func=lambda: []):
+    from fastapi_pagination import resolve_params
+    from fastapi_pagination.api import create_page
     from api.server.spatial.api import get_geom_features
-    
+
     if bbox is None:
         bbox = f"[[-100,-100,-100],[100,100,100]]"
     features = get_geom_features(space_id, bbox)
     feature_ids = [item['name'] for item in features]
-    
-    return paginate(
-        await func(feature_ids=feature_ids)
+
+    # feature_ids is cheap to compute, but func resolves + serializes each id
+    # (expensive for >100 items). Slice to the requested page first so func only
+    # processes the ids actually returned.
+    params = resolve_params()
+    raw = params.to_raw_params()
+    page_ids = feature_ids[raw.offset:raw.offset + raw.limit]
+
+    return create_page(
+        func(feature_ids=page_ids),
+        total=len(feature_ids),
+        params=params,
     )
 
 # GeneExpression
