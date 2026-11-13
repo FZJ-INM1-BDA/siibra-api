@@ -249,7 +249,7 @@ async def all_geom_feature(space_id: str, bbox: Optional[str]=None, func=lambda:
     page_ids = feature_ids[raw.offset:raw.offset + raw.limit]
 
     return create_page(
-        func(feature_ids=page_ids),
+        await func(feature_ids=page_ids),
         total=len(feature_ids),
         params=params,
     )
